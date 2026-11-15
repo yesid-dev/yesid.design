@@ -52,6 +52,15 @@ describe('RailTitle', () => {
 		expect(title.style.getPropertyValue('--rail-title-size')).toBe('4rem');
 	});
 
+	it.each([false, true])('keeps rotated and horizontal sizes independent (content=%s)', (withContent) => {
+		const view = render(RailTitle, {
+			props: { heading: 'Contact', size: '9rem', horizontalSize: '2rem', children: withContent ? content : undefined },
+		});
+		const root = slot(view.container, withContent ? 'rail-title-layout' : 'rail-title');
+		expect(root.style.getPropertyValue('--rail-title-size')).toBe('9rem');
+		expect(root.style.getPropertyValue('--rail-title-horizontal-size')).toBe('2rem');
+	});
+
 	it('draws hidden decoration, not a heading, when decorative', () => {
 		const view = render(RailTitle, { props: { heading: 'Catalogue', decorative: true } });
 		expect(view.queryAllByRole('heading')).toHaveLength(0);

@@ -292,6 +292,31 @@ test('fitting keeps a 12px floor: a title too long to rotate reads horizontally 
 	await expectNoHorizontalOverflow(page);
 });
 
+test('horizontal size changes phone and fallback titles while rotation and defaults stay unchanged', async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto('/rail-title-fit');
+	await ready(page);
+	const baseline = (await snapshot(page)).sections[0].fontSize;
+	await page.goto('/rail-title-fit?horizontalSize=2rem');
+	await ready(page);
+	await expect.poll(async () => (await snapshot(page)).sections[0].fontSize).toBe(baseline);
+	for (const width of [390, 768, 1023]) {
+		await page.setViewportSize({ width, height: 900 });
+		const text = page.locator('#fit [data-slot="rail-title-text"]');
+		await expect(text).toHaveCSS('font-size', '32px');
+		await expect(text).toHaveCSS('writing-mode', 'horizontal-tb');
+		expect((await snapshot(page)).sections[1].fontSize, 'the sibling default remains the display size').toBeGreaterThan(32);
+	}
+	await page.evaluate(() => { document.documentElement.style.fontSize = '20px'; });
+	await expect(page.locator('#fit [data-slot="rail-title-text"]')).toHaveCSS('font-size', '40px');
+	await page.evaluate(() => { document.documentElement.style.removeProperty('font-size'); });
+	await page.setViewportSize({ width: 1024, height: 600 });
+	await page.getByTestId('title-long').click();
+	await expect(page.locator('#fit [data-slot="rail-title"]')).toHaveAttribute('data-fit', 'horizontal');
+	await expect(page.locator('#fit [data-slot="rail-title-text"]')).toHaveCSS('font-size', '32px');
+	await expectNoHorizontalOverflow(page);
+});
+
 test('a title in an overflow container fits that scrollport and refits when it resizes', async ({ page }) => {
 	test.skip(page.viewportSize()!.width < DESKTOP_MIN_WIDTH, 'Rail titles are sticky from 1024px');
 	await page.setViewportSize({ width: 1280, height: 900 });

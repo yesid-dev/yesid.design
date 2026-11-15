@@ -43,6 +43,16 @@ describe('MetricDisplay', () => {
 		expect(follows(valueOf(below)!, below.getByText('Below'))).toBe(true);
 	});
 
+	it.each([false, true])('opts into reading labels without changing label/info order (below=%s)', (labelBelow) => {
+		const view = show({ value: '0', tone: 'reading', labelRole: 'reading', labelBelow, info });
+		const label = view.getByText('Label');
+		expect(label.classList.contains('label-reading')).toBe(true);
+		expect(label.classList.contains('label-metric')).toBe(false);
+		expect(follows(label, view.getByTestId('info'))).toBe(true);
+		expect(follows(labelBelow ? valueOf(view)! : label, labelBelow ? label : valueOf(view)!)).toBe(true);
+		expect(valueOf(view)?.classList.contains('text-foreground')).toBe(true);
+	});
+
 	it.each([
 		['sm', 'text-subheading'],
 		['md', 'text-heading'],

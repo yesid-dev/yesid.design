@@ -16,6 +16,7 @@
 	onMount(() => (params = new URLSearchParams(page.url.searchParams.toString())));
 	const offset = $derived(params.get('offset'));
 	const scroller = $derived(params.get('scroller'));
+	const horizontalSize = $derived(params.get('horizontalSize') ?? undefined);
 	let length = $state<Length>('short');
 	let dot = $state(true);
 	let size = $state<string | undefined>(undefined);
@@ -42,7 +43,7 @@
 		{#key scroller}
 		{#each ['fit', 'after'] as id (id)}
 			<section id={id} aria-labelledby="{id}-title" data-testid="rail-section-{id}" class="py-12">
-				<RailTitle heading={id === 'fit' ? titles[length] : 'Suite'} side={id === 'fit' ? 'left' : 'right'} titleId="{id}-title" dot={id === 'fit' ? dot : true} size={id === 'fit' ? size : undefined}>
+				<RailTitle heading={id === 'fit' ? titles[length] : 'Suite'} side={id === 'fit' ? 'left' : 'right'} titleId="{id}-title" dot={id === 'fit' ? dot : true} size={id === 'fit' ? size : undefined} horizontalSize={id === 'fit' ? horizontalSize : undefined}>
 					<div class="mx-auto grid max-w-3xl gap-4 px-[var(--space-page-x)]" data-testid="rail-content-{id}">
 						{#each { length: 12 } as _, index (index)}
 							<p class="rounded-md border border-border p-4">{paragraph}</p>

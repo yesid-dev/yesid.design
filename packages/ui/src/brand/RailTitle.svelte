@@ -30,6 +30,8 @@
 		 * capped by the rail width and shrinks to fit the viewport height.
 		 */
 		size?: string;
+		/** Font size for the phone/tablet title and the too-long-to-rotate fallback. Defaults to the display token. */
+		horizontalSize?: string;
 		/**
 		 * Draws the title as hidden decoration instead of a heading, for a frame whose real heading is
 		 * elsewhere (ListingFrame's `edgeTitle`). Defaults to false.
@@ -52,6 +54,7 @@
 		titleId,
 		dot = true,
 		size,
+		horizontalSize,
 		decorative = false,
 		children,
 		class: className,
@@ -67,7 +70,11 @@
 		return match ? { head: match[1], tail: match[2] } : { head: '', tail: heading };
 	});
 	const sizeStyle = $derived(
-		[size ? `--rail-title-size: ${size}` : '', style ?? ''].filter(Boolean).join('; ') || undefined,
+		[
+			size ? `--rail-title-size: ${size}` : '',
+			horizontalSize ? `--rail-title-horizontal-size: ${horizontalSize}` : '',
+			style ?? '',
+		].filter(Boolean).join('; ') || undefined,
 	);
 
 	let railEl = $state<HTMLElement>();
@@ -206,7 +213,7 @@
 
 	// Refits when the words or sizing inputs change; effects run after the DOM has the new text.
 	$effect(() => {
-		void [heading, dot, size, level, decorative, side];
+		void [heading, dot, size, horizontalSize, level, decorative, side];
 		untrack(fit);
 	});
 </script>
@@ -253,7 +260,7 @@
 	.rail-title-text {
 		margin: 0;
 		font-family: var(--font-heading);
-		font-size: var(--text-display);
+		font-size: var(--rail-title-horizontal-size, var(--text-display));
 		font-weight: 900;
 		line-height: 1.05;
 		letter-spacing: -0.02em;
@@ -342,7 +349,7 @@
 			max-height: none;
 			writing-mode: horizontal-tb;
 			rotate: none;
-			font-size: var(--text-display);
+			font-size: var(--rail-title-horizontal-size, var(--text-display));
 			line-height: 1.05;
 			letter-spacing: -0.02em;
 			white-space: normal;
