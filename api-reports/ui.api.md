@@ -186,6 +186,7 @@ import { Dialog } from 'bits-ui';
 import type { HTMLAnchorAttributes } from 'svelte/elements';
 import type { HTMLAttributes } from 'svelte/elements';
 import type { HTMLButtonAttributes } from 'svelte/elements';
+import type { HTMLInputAttributes } from 'svelte/elements';
 import { MediaQuery } from 'svelte/reactivity';
 import { Pane } from 'paneforge';
 import { PortalProps } from 'bits-ui';
@@ -1468,6 +1469,7 @@ interface FilterGroupProps {
     label: string;
     // (undocumented)
     onSelect: (key: string | null) => void;
+    selectedStyle?: 'legacy' | 'consistent';
     // (undocumented)
     startOpen?: boolean;
     testIdPrefix?: string;
@@ -1836,10 +1838,12 @@ interface MetricDisplayProps extends HTMLAttributes<HTMLDivElement> {
     label: string;
     // (undocumented)
     labelBelow?: boolean;
+    layout?: 'stacked' | 'phone-row';
     // (undocumented)
     size?: 'sm' | 'md' | 'lg';
     // (undocumented)
     sublabel?: string;
+    tone?: 'accent' | 'reading';
     // (undocumented)
     value: string | null | undefined;
 }
@@ -2094,22 +2098,29 @@ const ScrollAreaScrollbar: Component<Omit<ScrollArea_2.ScrollbarProps, "child">,
 type ScrollAreaScrollbar = ReturnType<typeof ScrollAreaScrollbar>;
 
 // @public (undocumented)
-const SearchInput: Component<SearchInputProps, {}, "value">;
+const SearchInput: Component<SearchInputProps, {}, "ref" | "value">;
 
 // @public (undocumented)
 type SearchInput = ReturnType<typeof SearchInput>;
 
 // @public (undocumented)
-interface SearchInputProps {
+interface SearchInputProps extends Omit<HTMLInputAttributes, 'value'> {
+    // (undocumented)
+    description?: string;
     // (undocumented)
     label: string;
     name?: string;
     // (undocumented)
     placeholder: string;
     // (undocumented)
+    ref?: HTMLInputElement | null;
+    // (undocumented)
     testId?: string;
+    textSize?: 'small' | 'body';
     // (undocumented)
     value?: string;
+    // (undocumented)
+    visibleLabel?: boolean;
 }
 
 // @public (undocumented)
@@ -2285,7 +2296,7 @@ interface SegmentedChoiceProps<K extends string = string> extends Omit<HTMLAttri
     // (undocumented)
     readonly value: K;
     // (undocumented)
-    readonly variant?: 'default' | 'joined-grid';
+    readonly variant?: 'default' | 'joined-grid' | 'fit-row';
 }
 
 // @public (undocumented)

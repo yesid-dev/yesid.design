@@ -113,6 +113,7 @@
 					{#snippet child({ props })}
 						<button
 							{...props}
+							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 							class="tap-press filter-btn w-full rounded py-3 min-h-11 text-left transition-colors"
 							class:px-2={density === 'compact'}
 							class:text-sm={density === 'compact'}
@@ -136,6 +137,7 @@
 						{#snippet child({ props })}
 							<button
 								{...props}
+							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 								class="tap-press filter-btn w-full rounded border border-border py-3 min-h-11 text-left text-[var(--muted-foreground)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] active:border-[var(--primary)] active:text-[var(--primary)]"
 								class:px-2={density === 'compact'}
 								class:text-sm={density === 'compact'}
@@ -186,10 +188,10 @@
 		background: var(--accent);
 	}
 
-	[data-selected-style='consistent'] .filter-btn[aria-checked='true'] {
+	.filter-btn[data-selected-style='consistent'][aria-checked='true'] {
 		background: var(--primary); border-color: var(--primary); color: var(--primary-foreground);
 	}
-	[data-selected-style='consistent'] .filter-btn::after { display: none; }
+	.filter-btn[data-selected-style='consistent']::after { display: none; }
 
 	.filter-collapse {
 		display: grid;

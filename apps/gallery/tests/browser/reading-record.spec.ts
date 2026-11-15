@@ -16,6 +16,7 @@ for (const language of ['en', 'fr', 'es']) {
     expect(await field.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
     const values = await page.locator('[data-slot="metric-display"] .metric-value').evaluateAll(els => els.map(el => ({color:getComputedStyle(el).color, figures:getComputedStyle(el).fontVariantNumeric})));
     expect(values[0].figures).toContain('tabular-nums');
+    expect(values[0].color).toBe(await page.locator('article').evaluate(el => getComputedStyle(el).color));
     const radios = page.getByRole('radiogroup').first().getByRole('radio');
     const boxes = await Promise.all((await radios.all()).map(el => el.boundingBox()));
     if (width >= 390) expect(new Set(boxes.map(box => box?.y)).size).toBe(1);
@@ -29,13 +30,13 @@ for (const language of ['en', 'fr', 'es']) {
    await search.fill('Peel');
    await expect(page.locator('section').first().getByRole('listitem')).toHaveCount(1);
    await search.focus(); await expect(search).toBeFocused();
-   const filter = page.locator('[data-selected-style="consistent"]');
+   const filter = page.locator('div[data-selected-style="consistent"]');
    const selected = filter.getByRole('radio', {checked:true});
    const resetColor = await selected.evaluate(el => getComputedStyle(el).backgroundColor);
    await filter.getByRole('radio').nth(1).click();
    await expect(filter.getByRole('radio').nth(1)).toBeChecked();
-   expect(await filter.getByRole('radio').nth(1).evaluate(el => getComputedStyle(el).backgroundColor)).toBe(resetColor);
-   const region = page.getByRole('region');
+   await expect(filter.getByRole('radio').nth(1)).toHaveCSS('background-color', resetColor);
+   const region = page.getByRole('region').filter({ has: page.getByRole('table') });
    await region.focus(); await expect(region).toBeFocused();
    await expect(page.locator('th[scope="row"]')).toHaveCount(2);
    await expect(page.locator('dl dt')).toHaveCount(2);
