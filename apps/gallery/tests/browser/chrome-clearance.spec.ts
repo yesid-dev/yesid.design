@@ -92,8 +92,10 @@ test('a contents jump still lands on the 25% line under the clearance padding', 
 	await page.locator('.toc-drawer-item', { hasText: 'Section limits' }).click();
 	const target = page.locator('[data-toc="limits"]');
 	await expect(target.locator('[data-section-trigger]')).toHaveAttribute('aria-expanded', 'true');
+	const startY = await page.evaluate(() => scrollY);
+	// The jump settles layout over a few frames before it lands, so wait for the landing itself.
 	await expect
-		.poll(async () => Math.round(await target.evaluate((element) => element.getBoundingClientRect().top - innerHeight * 0.25)))
-		.toBeGreaterThanOrEqual(-2);
-	expect(Math.abs(await target.evaluate((element) => element.getBoundingClientRect().top - innerHeight * 0.25))).toBeLessThanOrEqual(2);
+		.poll(async () => Math.abs(await target.evaluate((element) => element.getBoundingClientRect().top - innerHeight * 0.25)))
+		.toBeLessThanOrEqual(2);
+	expect(await page.evaluate(() => scrollY)).toBeGreaterThan(startY);
 });

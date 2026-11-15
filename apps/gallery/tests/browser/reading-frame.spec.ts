@@ -64,6 +64,47 @@ for (const lang of LANGS) {
 	});
 }
 
+for (const lang of LANGS) {
+	test(`the ${lang} contents are an unnumbered list of 44px link targets at 390px`, async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await open(page, lang);
+		const list = page.locator('[data-slot="reading-frame-contents"] ul');
+		await expect(list).toHaveAttribute('role', 'list');
+		for (const item of await list.locator('li').all()) {
+			await expect(item).toHaveCSS('list-style-type', 'none');
+			expect(await item.evaluate((element) => getComputedStyle(element, '::marker').content)).not.toMatch(/\d/);
+		}
+		const links = await list.locator('a').all();
+		expect(links.length).toBe(4);
+		for (const link of links) {
+			await expect(link).toHaveCSS('text-decoration-line', 'underline');
+			await expect(link).toHaveCSS('color', await link.evaluate(() => {
+				const probe = document.createElement('span');
+				probe.style.color = 'var(--primary)';
+				document.body.append(probe);
+				const color = getComputedStyle(probe).color;
+				probe.remove();
+				return color;
+			}));
+			await link.scrollIntoViewIfNeeded();
+			const box = (await link.boundingBox())!;
+			expect(box.width, await link.textContent() ?? '').toBeGreaterThanOrEqual(44);
+			expect(box.height, await link.textContent() ?? '').toBeGreaterThanOrEqual(44);
+			// The whole box is the link's hit area: its corners and centre resolve to the link.
+			const hits = await link.evaluate((element) => {
+				const rect = element.getBoundingClientRect();
+				const points = [
+					[rect.left + 1, rect.top + 1],
+					[rect.right - 1, rect.bottom - 1],
+					[rect.left + rect.width / 2, rect.top + rect.height / 2],
+				];
+				return points.map(([x, y]) => element.contains(document.elementFromPoint(x, y)));
+			});
+			expect(hits).toEqual([true, true, true]);
+		}
+	});
+}
+
 for (const width of [1024, 1440]) {
 	test(`the measure holds about 65 to 70 characters at ${width}px`, async ({ page }) => {
 		await page.setViewportSize({ width, height: 900 });

@@ -50,13 +50,43 @@ describe('ReadingFrame (experimental)', () => {
 		expect(() => html({ updated: { ...base.updated, datetime } })).toThrow(/updated\.datetime/);
 	});
 
+	it('checks the date on the always-rendered time, also with a product contents snippet', () => {
+		expect(() => html({ ownContents: true, contentsLabel: undefined, updated: { ...base.updated, datetime: 'today' } })).toThrow(
+			/updated\.datetime/,
+		);
+		expect(() => html({ sections: undefined, contentsLabel: undefined, updated: { ...base.updated, datetime: 'today' } })).toThrow(
+			/updated\.datetime/,
+		);
+	});
+
+	it.each(['2026-02-31', '2026-02-29', '2026-04-31', '2026-00-10', '2026-11-00'])('refuses an impossible calendar date: %s', (datetime) => {
+		expect(() => html({ updated: { ...base.updated, datetime } })).toThrow(/updated\.datetime/);
+	});
+
+	it.each(['2026-11-02T99:99:99Z', '2026-11-02T24:00Z', '2026-11-02T12:60', '2026-11-02T12:00:60Z', '2026-11-02T12:00+25:00'])(
+		'refuses an out-of-range time: %s',
+		(datetime) => {
+			expect(() => html({ updated: { ...base.updated, datetime } })).toThrow(/updated\.datetime/);
+		},
+	);
+
+	it.each(['2028-02-29', '2026-11-02T23:59:59.5-04:00', '2026-11-02T09:30'])('accepts a real date and time: %s', (datetime) => {
+		expect(html({ updated: { ...base.updated, datetime } })).toContain(`datetime="${datetime}"`);
+	});
+
 	it('accepts a full ISO timestamp and requires a contents label with built-in sections', () => {
 		expect(html({ updated: { ...base.updated, datetime: '2026-11-02T09:30:00Z' } })).toContain('datetime="2026-11-02T09:30:00Z"');
 		expect(() => html({ contentsLabel: undefined })).toThrow(/contentsLabel/);
 	});
 
-	it('draws no decoration: no mono, uppercase, tape, glow or numbering markup', () => {
+	it('draws no decoration: no mono, uppercase, tape or glow markup', () => {
 		const markup = html();
 		for (const banned of ['font-mono', 'uppercase', 'hazard', 'glow', 'label-station']) expect(markup).not.toContain(banned);
+	});
+
+	it('renders the contents as an unnumbered list that keeps list semantics', () => {
+		const markup = html();
+		expect(markup).toMatch(/<ul class="reading-frame__contents-list[^"]*" role="list"/);
+		expect(markup).not.toContain('<ol');
 	});
 });

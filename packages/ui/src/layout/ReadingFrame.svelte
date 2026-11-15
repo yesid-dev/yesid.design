@@ -43,18 +43,36 @@
 	}
 
 	const SECTION_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-	const ISO_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(T[\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/;
+	const ISO_DATETIME =
+		/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,9})?)?(?:Z|[+-](\d{2}):?(\d{2}))?)?$/;
 
-	/** Throws when an id is not a stable slug or appears twice, or when the date is not ISO 8601. */
+	/**
+	 * Returns the date when it is a real ISO 8601 calendar date (optionally with a time and offset),
+	 * checked field by field without Date parsing, so the result never depends on the runtime.
+	 */
+	function checkedDatetime(datetime: string): string {
+		const match = ISO_DATETIME.exec(datetime);
+		const fail = () => {
+			throw new Error(`ReadingFrame: updated.datetime must be a real ISO 8601 date, got "${datetime}"`);
+		};
+		if (!match) return fail();
+		const [, y, mo, d, h = '0', mi = '0', se = '0', oh = '0', om = '0'] = match;
+		const year = Number(y);
+		const month = Number(mo);
+		const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+		const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+		const day = Number(d);
+		if (days === undefined || day < 1 || day > days) return fail();
+		if (Number(h) > 23 || Number(mi) > 59 || Number(se) > 59 || Number(oh) > 23 || Number(om) > 59) return fail();
+		return datetime;
+	}
+
+	/** Throws when an id is not a stable slug or appears twice. */
 	function checkedSections(
-		updated: ReadingFrameUpdated,
 		sections: readonly ReadingFrameSection[] = [],
 		contentsLabel: string | undefined,
 		ownContents: boolean,
 	): readonly ReadingFrameSection[] {
-		if (!ISO_DATE.test(updated.datetime)) {
-			throw new Error(`ReadingFrame: updated.datetime must be an ISO 8601 date, got "${updated.datetime}"`);
-		}
 		const seen = new Set<string>();
 		for (const { id } of sections) {
 			if (!SECTION_ID.test(id)) {
@@ -89,7 +107,9 @@
 	const uid = $props.id();
 	const contentsHeadingId = `${uid}-contents`;
 	// Checked during server rendering too: a malformed date or id fails loudly instead of shipping.
-	const entries = $derived(checkedSections(updated, sections, contentsLabel, contents !== undefined));
+	// The date is read by the always-rendered <time>, whatever renders the contents.
+	const datetime = $derived(checkedDatetime(updated.datetime));
+	const entries = $derived(checkedSections(sections, contentsLabel, contents !== undefined));
 	const showBuiltInContents = $derived(!contents && entries.length > 0);
 </script>
 
@@ -98,7 +118,7 @@
 		<h1 class="reading-frame__title" id={titleId}>{title}</h1>
 		<p class="reading-frame__updated" data-slot="reading-frame-updated">
 			{updated.label}
-			<time datetime={updated.datetime}>{updated.text}</time>
+			<time {datetime}>{updated.text}</time>
 		</p>
 		{#if summary}
 			<div class="reading-frame__summary" data-slot="reading-frame-summary">{@render summary()}</div>
@@ -110,11 +130,12 @@
 	{:else if showBuiltInContents}
 		<nav class="reading-frame__contents" data-slot="reading-frame-contents" aria-labelledby={contentsHeadingId}>
 			<h2 class="reading-frame__contents-heading" id={contentsHeadingId}>{contentsLabel}</h2>
-			<ol class="reading-frame__contents-list">
+			<!-- Unnumbered; role="list" keeps list semantics in Safari once list-style is none. -->
+			<ul class="reading-frame__contents-list" role="list">
 				{#each entries as section (section.id)}
-					<li><a href={`#${section.id}`}>{section.title}</a></li>
+					<li><a class="reading-frame__contents-link" href={`#${section.id}`}>{section.title}</a></li>
 				{/each}
-			</ol>
+			</ul>
 		</nav>
 	{/if}
 
@@ -198,12 +219,24 @@
 
 	.reading-frame__contents-list {
 		margin: 0;
-		padding-inline-start: 1.25em;
-		list-style: decimal;
+		padding: 0;
+		list-style: none;
 	}
 
-	.reading-frame__contents-list li + li {
-		margin-block-start: 0.25rem;
+	/* A full tap target (44px) around each entry, still an orange underlined text link. */
+	.reading-frame__contents-link {
+		display: inline-flex;
+		align-items: center;
+		min-block-size: var(--size-tap-min, 44px);
+		min-inline-size: var(--size-tap-min, 44px);
+		color: var(--primary);
+		text-decoration-line: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.2em;
+	}
+
+	.reading-frame__contents-link:hover {
+		text-decoration-thickness: 2px;
 	}
 
 	.reading-frame__body {

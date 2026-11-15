@@ -22,8 +22,8 @@ New options:
   subtracts a scroller's `scroll-padding-top`, so contents jumps keep the 25% landing line
   (unchanged when no scroll padding is set).
 - `ReadingFrame` from `@yesid/ui/layout`, **Experimental**: title, real update date (ISO 8601,
-  checked), summary, contents (built-in list from `sections`, or a `contents` snippet) and body, on a
-  65 to 70 character measure, with section ids that must be language-independent slugs.
+  calendar and time ranges checked), summary, contents (an unnumbered list of 44px links from
+  `sections`, or a `contents` snippet) and body, on a 65 to 70 character measure, with section ids that must be language-independent slugs.
 - Documentation: SectionHeading `overline` is signage only; when numbering, hazard tape and artwork
   carry meaning. DESIGN.md records the label roles, the clearance pattern and the hover rule.
 
