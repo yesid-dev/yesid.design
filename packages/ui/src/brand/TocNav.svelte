@@ -13,6 +13,8 @@
 		navigation?: SectionJump;
 		heading: string;
 		counterPrefix?: string;
+		/** Shows the "SEC n / total" line (default). Pass false on reading pages where it carries no meaning. */
+		counter?: boolean;
 		open?: boolean;
 		collapsible?: boolean;
 	}
@@ -32,6 +34,7 @@
 		navigation: navigationProp,
 		heading,
 		counterPrefix = 'SEC',
+		counter: showCounter = true,
 		collapsible = true,
 		open = $bindable(true),
 	}: TocNavProps = $props();
@@ -79,13 +82,15 @@
 		{/each}
 	</nav>
 
-	<div class="mt-6 flex items-center gap-2">
-		<div class="toc-counter-dot"></div>
-		<span class="toc-counter-text font-mono text-micro tracking-[1.5px]">
-			{counterPrefix}
-			{counter.current} / {counter.total}
-		</span>
-	</div>
+	{#if showCounter}
+		<div class="mt-6 flex items-center gap-2">
+			<div class="toc-counter-dot"></div>
+			<span class="toc-counter-text font-mono text-micro tracking-[1.5px]">
+				{counterPrefix}
+				{counter.current} / {counter.total}
+			</span>
+		</div>
+	{/if}
 </SectionCard>
 
 <style>

@@ -21,7 +21,7 @@
 <BrandGallery />
 <MotionGallery />
 
-<p class="mt-4"><a href="/text-links">Text links and surfaces</a> · <a href="/registers">Presentation registers</a> · <a href="/masthead">Masthead compositions</a> · <a href="/error-page/small-after.no-label.no-tape.en">Quiet error page</a></p>
+<p class="mt-4"><a href="/text-links">Text links and surfaces</a> · <a href="/registers">Presentation registers</a> · <a href="/masthead">Masthead compositions</a> · <a href="/error-page/small-after.no-label.no-tape.en">Quiet error page</a> · <a href="/reading-surfaces">Reading surfaces</a> · <a href="/reading-frame/en">Reading frame</a> · <a href="/chrome-clearance">Chrome clearance</a></p>
 
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/labelled-field">Labelled field recipe</a></p>
 

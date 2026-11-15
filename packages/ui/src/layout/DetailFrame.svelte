@@ -27,6 +27,8 @@
 		selector?: string;
 		/** Let the controller correct same-page fragment landings. */
 		landFragments?: boolean;
+		/** Shows the pill's "n/total" position (default). */
+		counter?: boolean;
 	} & ({ openAria: string; closeAria: string } | { openAria?: never; closeAria?: never });
 
 	export interface DetailFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
@@ -194,6 +196,7 @@
 		closeAria={toc.closeAria}
 		onNavigate={toc.onNavigate}
 		navigation={toc.navigation ?? ownNavigation}
+		counter={toc.counter}
 	/>
 {/if}
 

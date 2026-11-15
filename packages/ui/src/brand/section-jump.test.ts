@@ -222,6 +222,22 @@ it('opens the owner of a nested heading and lands on the shared 25% line', async
 	expect(observer.targets).toContain(view.heading);
 });
 
+it('keeps the 25% landing line under an opt-in scroll-padding-top (chrome clearance)', async () => {
+	const view = section('cleared');
+	let margin = '';
+	view.target.scrollIntoView = vi.fn(() => { margin = view.target.style.scrollMarginTop; });
+	document.documentElement.style.scrollPaddingTop = '80px';
+	try {
+		const jump = createSectionJump();
+		register(jump, ['cleared']);
+		await expect(jump.jump('cleared')).resolves.toBe(true);
+	} finally {
+		document.documentElement.style.scrollPaddingTop = '';
+	}
+	expect(margin.replace(/\s+/g, ' ')).toBe('calc(25vh - 80px)');
+	expect(view.target.style.scrollMarginTop).toBe('');
+});
+
 it('tracks and reconciles active ids, refreshes on resize and releases observers', async () => {
 	const a = section('a'); section('b'); section('c');
 	const changed = vi.fn();

@@ -148,7 +148,7 @@ Carried by: Y-28 orange text links (v0.43.0), Y-6 neutral surfaces (v0.44.0), Y-
 
 **Why.** Monospace, tracked uppercase labels and tiny categories made ordinary reading look like technical signage. Highlighting part of a word can also change its meaning, so type treatment must follow the content.
 
-**Gallery:** [`/registers`](../apps/gallery/src/routes/registers/+page.svelte).
+**Gallery:** [`/registers`](../apps/gallery/src/routes/registers/+page.svelte). Reading labels: [`/reading-surfaces`](../apps/gallery/src/routes/reading-surfaces/+page.svelte).
 
 | Do | Don't |
 | --- | --- |
@@ -165,7 +165,7 @@ Cards hold one subject; comparisons are aligned rows inside one card; no card in
 
 **Why.** Repeated frames compete with the content and hide which items belong together. Hover effects on static cards suggest an action that the surface cannot perform.
 
-**Gallery:** [`/registers`](../apps/gallery/src/routes/registers/+page.svelte).
+**Gallery:** [`/registers`](../apps/gallery/src/routes/registers/+page.svelte). Static and interactive cards: [`/reading-surfaces`](../apps/gallery/src/routes/reading-surfaces/+page.svelte).
 
 | Do | Don't |
 | --- | --- |

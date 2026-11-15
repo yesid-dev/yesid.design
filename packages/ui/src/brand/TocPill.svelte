@@ -15,6 +15,8 @@
 		closeAria: string;
 		/** Overrides the controller action when the consumer owns additional navigation policy. */
 		onNavigate?: (id: string) => void;
+		/** Shows the "n/total" position (default). Pass false on reading pages where it carries no meaning. */
+		counter?: boolean;
 	}
 </script>
 
@@ -25,7 +27,15 @@
 	import { flattenToc, resolveTocCounter } from './toc.js';
 	import { defaultSectionJump } from './section-jump.js';
 
-	let { entries, activeId: activeIdProp, navigation: navigationProp, openAria, closeAria, onNavigate }: TocPillProps = $props();
+	let {
+		entries,
+		activeId: activeIdProp,
+		navigation: navigationProp,
+		openAria,
+		closeAria,
+		onNavigate,
+		counter: showCounter = true,
+	}: TocPillProps = $props();
 	const navigation = $derived(navigationProp ?? defaultSectionJump);
 	const activeId = $derived(activeIdProp ?? navigation.activeId);
 
@@ -76,16 +86,20 @@
 		class="tap-press toc-pill"
 		onclick={() => (drawerOpen = !drawerOpen)}
 		aria-expanded={drawerOpen}
-		aria-label={`${activeName} ${counter.current}/${counter.total} · ${openAria}`}
+		aria-label={showCounter
+			? `${activeName} ${counter.current}/${counter.total} · ${openAria}`
+			: `${activeName} · ${openAria}`}
 	>
 		<!-- The accessible name starts with the visible text (WCAG 2.5.3, label in name). -->
 		<div class="h-1.5 w-1.5 rounded-full bg-primary"></div>
 		<span class="toc-pill-name font-mono text-caption">
 			{activeName}
 		</span>
-		<span class="toc-pill-counter font-mono text-micro">
-			{counter.current}/{counter.total}
-		</span>
+		{#if showCounter}
+			<span class="toc-pill-counter font-mono text-micro">
+				{counter.current}/{counter.total}
+			</span>
+		{/if}
 		<ChevronToggle open={drawerOpen} size="sm" direction="down" />
 	</button>
 
@@ -132,6 +146,19 @@
 	@media (max-width: 1023.98px) {
 		:global(html:has(.toc-pill-container) .section-header) {
 			scroll-margin-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+		}
+
+		/* With a SurfaceRail pill on the same page the two pills would share one spot, so the
+		   contents pill stacks 8px above it (44px pill), and steps aside while the rail sheet,
+		   which opens over that spot, is open. */
+		:global(html:has([data-slot='surface-rail-mobile']) .toc-pill-container) {
+			bottom: calc(20px + 44px + 8px + env(safe-area-inset-bottom, 0px));
+		}
+		:global(html:has([data-slot='surface-rail-mobile'][data-open='true']) .toc-pill-container) {
+			visibility: hidden;
+		}
+		:global(html:has(.toc-pill-container):has([data-slot='surface-rail-mobile']) .section-header) {
+			scroll-margin-bottom: calc(5rem + 52px + env(safe-area-inset-bottom, 0px));
 		}
 	}
 

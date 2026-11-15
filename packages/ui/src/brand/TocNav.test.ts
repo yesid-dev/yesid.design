@@ -66,4 +66,11 @@ describe('TocNav', () => {
 		await tick();
 		expect([expanded(first), expanded(second)]).toEqual(['true', 'false']);
 	});
+
+	it('drops the SEC counter line with counter={false} and keeps the entries', () => {
+		const view = show({ counter: false });
+		expect(view.container.querySelector('.toc-counter-text')).toBeNull();
+		expect(view.container.querySelector('.toc-counter-dot')).toBeNull();
+		expect(view.container.querySelectorAll('nav .toc-item')).toHaveLength(3);
+	});
 });

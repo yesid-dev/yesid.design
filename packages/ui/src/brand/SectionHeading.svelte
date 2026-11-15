@@ -9,7 +9,11 @@
 	export interface SectionHeadingProps extends HTMLAttributes<HTMLDivElement> {
 		heading?: string;
 		subheading?: string;
-		/** Renders the mono overline style; ignored when `heading` is set. */
+		/**
+		 * Signage only: a short route plate, sign code or board name in tracked mono uppercase.
+		 * Never a label above a heading and never a reading label; use `heading`, or the
+		 * `.label-reading` role for a sentence-case label. Ignored when `heading` is set.
+		 */
 		overline?: string;
 		level?: 1 | 2 | 3 | 4 | 5 | 6;
 		dot?: boolean;

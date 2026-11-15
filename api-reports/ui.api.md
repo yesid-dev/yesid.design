@@ -143,7 +143,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `d98c41dee63aa6ffd5ae9be092549d30ec66b947b85c8c53380d302c6def985a`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `6b8133789829aa4ca9fd793ebc0e9c728c97a08c02890a2fd510c2eee6175c45`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `40450a648e4a461734946514b529ca42bc67cd38a813f0c51babd335e5409683`
 
 ## Declaration namespaces
@@ -222,6 +222,8 @@ type $$ComponentProps_3 = BlueprintProps & {
 type $$ComponentProps_4 = WithElementRef<HTMLAttributes<HTMLDivElement>> & {
     size?: 'default' | 'sm';
     interactive?: boolean;
+    edge?: 'brand' | 'neutral';
+    textSize?: 'small' | 'inherit';
 };
 
 // @public (undocumented)
@@ -1067,6 +1069,8 @@ interface CollapsibleSectionProps {
     children?: Snippet;
     // (undocumented)
     collapsible?: boolean;
+    edge?: 'brand' | 'neutral';
+    edgeWeight?: 'heavy' | 'regular' | 'thin';
     firstVisitClosed?: boolean;
     // (undocumented)
     headerActions?: Snippet;
@@ -1081,6 +1085,7 @@ interface CollapsibleSectionProps {
     // (undocumented)
     subtitle?: string;
     summary?: Snippet;
+    textSize?: 'small' | 'inherit';
     // (undocumented)
     title: string;
 }
@@ -1373,6 +1378,7 @@ type DetailFrameToc = {
     navigation?: SectionJump;
     selector?: string;
     landFragments?: boolean;
+    counter?: boolean;
 } & ({
     openAria: string;
     closeAria: string;
@@ -1737,7 +1743,11 @@ declare namespace Layout {
         SurfaceRail,
         SurfaceRailContext,
         SurfaceRailPresentation,
-        SurfaceRailProps
+        SurfaceRailProps,
+        ReadingFrame,
+        ReadingFrameProps,
+        ReadingFrameSection,
+        ReadingFrameUpdated
     }
 }
 
@@ -2065,6 +2075,41 @@ declare namespace PrimitivesTabs {
         TabsList,
         TabsTrigger
     }
+}
+
+// @public (undocumented)
+const ReadingFrame: Component<ReadingFrameProps, {}, "">;
+
+// @public (undocumented)
+type ReadingFrame = ReturnType<typeof ReadingFrame>;
+
+// @public
+interface ReadingFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'children'> {
+    children: Snippet;
+    contents?: Snippet;
+    contentsLabel?: string;
+    sections?: ReadingFrameSection[];
+    summary?: Snippet;
+    // (undocumented)
+    title: string;
+    titleId?: string;
+    // (undocumented)
+    updated: ReadingFrameUpdated;
+}
+
+// @public
+interface ReadingFrameSection {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    title: string;
+}
+
+// @public (undocumented)
+interface ReadingFrameUpdated {
+    datetime: string;
+    label: string;
+    text: string;
 }
 
 // @public
@@ -3008,6 +3053,7 @@ interface TocNavProps {
     activeId?: string;
     // (undocumented)
     collapsible?: boolean;
+    counter?: boolean;
     // (undocumented)
     counterPrefix?: string;
     // (undocumented)
@@ -3034,6 +3080,7 @@ interface TocPillProps {
     activeId?: string;
     // (undocumented)
     closeAria: string;
+    counter?: boolean;
     // (undocumented)
     entries: TocEntry[];
     // (undocumented)

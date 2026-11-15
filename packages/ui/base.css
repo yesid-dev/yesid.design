@@ -49,6 +49,26 @@ select {
 		--nav-padding-y: 8px;
 	}
 }
+
+/* Chrome clearance. A floating pill (TocPill or the SurfaceRail pill) sits 20px above the bottom
+   edge below 1024px and is 44px tall; two pills stack 8px apart. Put .chrome-clearance on the
+   scrolling element (normally <html>) so focus and fragment jumps land clear of the fixed header
+   and the pills. Set --chrome-clearance-top when the app's header is not SiteHeader. */
+:root {
+	--floating-pill-clearance: calc(20px + env(safe-area-inset-bottom, 0px) + 44px + 1rem);
+	--floating-pill-stack-clearance: calc(20px + env(safe-area-inset-bottom, 0px) + 44px + 8px + 44px + 1rem);
+}
+.chrome-clearance {
+	scroll-padding-top: var(--chrome-clearance-top, var(--nav-clearance));
+}
+@media (max-width: 1023.98px) {
+	.chrome-clearance:has(:is(.toc-pill-container, [data-slot='surface-rail-mobile'])) {
+		scroll-padding-bottom: var(--floating-pill-clearance);
+	}
+	.chrome-clearance:has(.toc-pill-container):has([data-slot='surface-rail-mobile']) {
+		scroll-padding-bottom: var(--floating-pill-stack-clearance);
+	}
+}
 @media (max-width: 479px) {
 	:root {
 		--nav-padding-y: 6px;
@@ -256,6 +276,17 @@ pre, code, table {
 	letter-spacing: 3px;
 	text-transform: uppercase;
 	color: var(--accent-text);
+}
+/* The reading label: data and form labels in Inter, sentence case as written, no tracking, in
+   muted reading ink. .label-station stays for real signage (route plates, sign codes, boards). */
+.label-reading {
+	font-family: var(--font-body);
+	font-size: var(--text-small);
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--muted-foreground);
 }
 .label-metric {
 	font-family: var(--font-mono);

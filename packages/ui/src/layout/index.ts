@@ -46,3 +46,6 @@ export type {
 	SurfaceRailPresentation,
 	SurfaceRailProps,
 } from './SurfaceRail.svelte';
+
+export { default as ReadingFrame } from './ReadingFrame.svelte';
+export type { ReadingFrameProps, ReadingFrameSection, ReadingFrameUpdated } from './ReadingFrame.svelte';
