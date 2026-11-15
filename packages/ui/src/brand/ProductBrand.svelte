@@ -70,12 +70,12 @@
 		flex-shrink: 0;
 		background: var(--border-brand);
 	}
-	/* A long name wraps between words beside the house mark; the cluster never overflows. */
+	/* A long name wraps between words beside the house mark; a short one keeps a 44px target. */
 	.product-brand-name {
 		display: inline-flex;
 		align-items: center;
 		min-block-size: var(--size-tap-min);
-		min-width: 0;
+		min-inline-size: var(--size-tap-min);
 		overflow-wrap: break-word;
 		font-family: var(--font-heading);
 		font-weight: 700;

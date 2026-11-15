@@ -152,3 +152,36 @@ test('links that do not fit leave by priority: priority 2 goes, priority 1 stays
 	state = await pillState(page);
 	expect(state.pill.right).toBeLessThanOrEqual(width + 1);
 });
+
+test.describe('with normal motion', () => {
+	test.use({ contextOptions: { reducedMotion: 'no-preference' } });
+
+	test('closing the menu keeps priority 2 out when it still does not fit', async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run sets the width');
+		// The links row collapses to max-width 0 while the menu is open and grows back after it closes.
+		await page.setViewportSize({ width: 767, height: 800 });
+		await page.goto('/site-header-pill/es');
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		await page.evaluate(() => document.fonts.ready);
+		const nav = page.getByTestId('nav-pill');
+		await nav.locator('[data-slot="wordmark-letters"]').evaluate((letters) => { letters.textContent = 'yesid design studio'; });
+		await settle(page);
+		const width = Math.ceil(await nav.evaluate((pill) => pill.getBoundingClientRect().width)) + 8 - 1;
+		expect(width).toBeGreaterThanOrEqual(600);
+		await page.setViewportSize({ width, height: 800 });
+		await expect.poll(async () => (await pillState(page)).links).toEqual(['Contacto']);
+
+		for (let round = 0; round < 2; round++) {
+			await nav.getByRole('button', { name: 'Abrir el menú' }).click();
+			await expect(page.getByRole('dialog', { name: 'Menú del sitio' })).toBeVisible();
+			await page.keyboard.press('Escape');
+			await expect(page.getByRole('dialog', { name: 'Menú del sitio' })).toBeHidden();
+			// Wait until every transition in the pill has finished, then for the links to settle.
+			await expect.poll(() => nav.evaluate((pill) => pill.getAnimations({ subtree: true }).filter((animation) => animation.playState === 'running').length), { timeout: 5_000 }).toBe(0);
+			await expect.poll(async () => (await pillState(page)).links).toEqual(['Contacto']);
+			const state = await pillState(page);
+			expect(state.pill.left, `round ${round}`).toBeGreaterThanOrEqual(0);
+			expect(state.pill.right, `round ${round}`).toBeLessThanOrEqual(width);
+		}
+	});
+});

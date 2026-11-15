@@ -34,14 +34,18 @@ function header(rootWidth: number, links: Array<[priority: 1 | 2 | 3, width: num
 	let width = rootWidth;
 	Object.defineProperty(root, 'clientWidth', { get: () => width });
 	pill.getBoundingClientRect = () => {
-		const shown = inRow(row) ? items.filter(inRow).reduce((sum, item) => sum + item.offsetWidth, 0) : 0;
+		// A collapsed row (the open menu folds it to max-width 0) adds nothing to the pill.
+		const collapsed = row.classList.contains('nav-collapsed');
+		const shown = inRow(row) && !collapsed ? items.filter(inRow).reduce((sum, item) => sum + item.offsetWidth, 0) : 0;
 		return { width: BASE + (inRow(divider) ? DIVIDER : 0) + shown } as DOMRect;
 	};
 	const action = linksFit(pill, { paused: false });
 	notify();
 	return {
 		pill,
+		row,
 		items,
+		update: action.update,
 		resize(next: number) { width = next; notify(); },
 		shown: () => (inRow(row) ? items.filter(inRow).map((item) => item.dataset.priority) : []),
 		destroy: () => action.destroy(),
@@ -80,6 +84,24 @@ describe('linksFit', () => {
 		const view = header(560, [[3, 80], [3, 80], [3, 80]]);
 		expect(view.shown()).toEqual([]);
 		expect(view.pill.hasAttribute('data-links-overflow')).toBe(true);
+	});
+
+	it('keeps a dropped tier out when the menu closes and the row grows back', () => {
+		const view = header(520, [[2, 80], [2, 80], [1, 70]]);
+		expect(view.shown()).toEqual(['1']);
+		view.row.classList.add('nav-collapsible');
+		view.update({ paused: true });
+		view.row.classList.add('nav-collapsed');
+		// The menu closes: the action resumes while the row is still folded.
+		view.update({ paused: false });
+		expect(view.shown()).toEqual(['1']);
+		view.row.classList.remove('nav-collapsed');
+		const end = new Event('transitionend', { bubbles: true });
+		Object.defineProperty(end, 'propertyName', { value: 'max-width' });
+		view.row.dispatchEvent(end);
+		expect(view.shown()).toEqual(['1']);
+		expect(view.pill.getBoundingClientRect().width).toBeLessThanOrEqual(512);
+		view.destroy();
 	});
 
 	it('brings links back by tier when the header grows', () => {

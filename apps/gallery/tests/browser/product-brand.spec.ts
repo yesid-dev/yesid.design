@@ -69,6 +69,17 @@ for (const lang of PRODUCT_LANGS) {
 	});
 }
 
+test('a two-letter product name keeps a 44 by 44px target in the header and footer', async ({ page }) => {
+	await open(page, 'en');
+	for (const [id, name] of [['header-brand', 'Login'], ['footer-brand', 'Transit']] as const) {
+		const link = page.getByTestId(id).getByRole('link', { name, exact: true });
+		await link.evaluate((node) => { node.textContent = 'AI'; });
+		const box = (await page.getByTestId(id).getByRole('link', { name: 'AI', exact: true }).boundingBox())!;
+		expect(box.width, `${id} width`).toBeGreaterThanOrEqual(44);
+		expect(box.height, `${id} height`).toBeGreaterThanOrEqual(44);
+	}
+});
+
 test('keyboard order is house, product, theme, language, with a visible focus ring on each link', async ({ page }, testInfo) => {
 	test.skip(testInfo.project.name === 'phone', 'Keyboard order on tablet and desktop');
 	await open(page, 'fr');
