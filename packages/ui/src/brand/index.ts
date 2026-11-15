@@ -43,6 +43,9 @@ export type { MetricDisplayProps } from './MetricDisplay.svelte';
 export { default as MetroStation } from './MetroStation.svelte';
 export type { MetroStationProps } from './MetroStation.svelte';
 
+export { default as ProductBrand } from './ProductBrand.svelte';
+export type { ProductBrandProps } from './ProductBrand.svelte';
+
 export { default as SectionsToggle } from './SectionsToggle.svelte';
 export type {
 	SectionsToggleActiveEffect,

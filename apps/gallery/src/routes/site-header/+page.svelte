@@ -67,10 +67,18 @@
 <main id="main" class="mx-auto max-w-5xl px-6 pb-10" style="padding-top: var(--nav-clearance);">
 	<h1 class="font-heading text-display font-bold">Site header</h1>
 	<p class="mt-4 max-w-prose text-reading lg:text-reading-desktop leading-[1.7] text-muted-foreground">
-		Priority 2 links show from 500px of header width, priority 3 links and search from 1024px. The
-		menu holds every destination, like the <a href="/listing-frame">listing frame</a>; a language
-		switch from the open menu keeps it open.
+		Priority 2 links show from 600px of header width, priority 3 links and search from 1024px, and
+		links that do not fit leave the pill a whole priority at a time. The theme and language toggles
+		stay in the pill at every width. The menu holds every destination, like the
+		<a href="/listing-frame">listing frame</a>; a language switch from the open menu keeps it open.
 	</p>
+	{#if compact}
+		<p class="mt-4 max-w-prose text-reading leading-[1.7]" data-testid="compact-deprecated">
+			<strong>Deprecated since v0.44.0, not a pattern to copy.</strong> <code>compactControls</code>
+			moves the toggles into the menu below 600px. The toggles belong in the pill at every width
+			(DECISIONS.md D19): omit the prop. This page keeps it only to prove it still works until removal.
+		</p>
+	{/if}
 	{#if compact}<input id="fixture-search" type="search" aria-label="Search destinations" class="mt-6 h-11 border border-border-subtle px-4" />{/if}
 </main>
 {#if compact}

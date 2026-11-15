@@ -43,9 +43,10 @@ must explain retry or an alternate contact and preserve the draft.
 ## Boundary and text
 
 The fix is a documented product class using the existing **input** token, not a token value
-change. The audited yesid.dev contact form uses `--border` before submit and measured only
-1.62:1 dark and 1.73:1 light (13 November audit). Those are consumer measurements, not
-measurements of `--input`. Replace that field boundary class with `border-color: var(--input)`.
+change. The 13 November audit found yesid.dev's contact form using `--border` before submit,
+at only 1.62:1 dark and 1.73:1 light. yesid.dev has used `--input` there since its PR 703,
+measured at 3.31:1 dark and 3.17:1 light. Those are consumer measurements. A product field
+that still uses a weaker boundary class replaces it with `border-color: var(--input)`.
 The Gallery browser spec measures this token against page and card in both themes with a
 3:1 floor. No token value change is proposed or included; any future value proposal needs
 owner approval and a separate contrast review.
@@ -73,7 +74,7 @@ visible together so every case can be exercised without changing the identity to
 
 | Consumer | Adoption checks |
 | --- | --- |
-| yesid.dev DEV-2 / DEV-9 | Contact labels, autocomplete, hints, required guidance, summary focus and links, server failure with retained draft, busy text; replace the weak border class |
+| yesid.dev DEV-2 / DEV-9 | Contact labels, autocomplete, hints, required guidance, summary focus and links, server failure with retained draft, busy text; the boundary already uses `--input` (PR 703) |
 | yesid.login LOG-1 / LOG-2 / LOG-5 | Sign-in, invitation and account fields; preserve product OTP semantics and document navigation; verify errors and request-accepted wording |
 | Transit search | Visible search label and hint, purpose where applicable; search need not invent required fields or a submit-error summary |
 

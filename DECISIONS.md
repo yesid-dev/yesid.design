@@ -169,3 +169,13 @@ on 2026-11-13 that the system owns the language order: English, French, Spanish,
 again. `@yesid/ui` exports `LANGUAGE_ORDER` and orders supported known locales accordingly;
 other locales follow in the order the product supplies. Products choose their supported languages,
 default and copy. D8 and D16 otherwise remain unchanged.
+
+## D19: The toggles always sit in the navbar pill
+
+The owner decided on 2026-11-14 that the theme toggle and the language toggle sit in the navbar
+pill at every width, in every product, and never move into the menu. They show no visible label;
+their accessible names keep the theme wording and the language name. SiteHeader therefore keeps
+both controls in the pill, its link priorities leave room for them (priority 2 from a 600px
+header), and links that do not fit leave a whole priority at a time so the toggles stay put.
+`compactControls`, which moved them into the menu below 600px, is deprecated from v0.44.0 and
+stays functional until removal. D18 still governs the toggles' look, behaviour and order.

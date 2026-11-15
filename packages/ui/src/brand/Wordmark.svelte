@@ -62,4 +62,10 @@
 		outline: 2px solid var(--ring);
 		outline-offset: 2px;
 	}
+	/* The hover effects split the letters into separate boxes, which drops kerning and ligatures.
+	   Render them that way from the first paint, so hydration never changes the wordmark's width. */
+	[data-slot='wordmark-letters'] {
+		font-kerning: none;
+		font-variant-ligatures: none;
+	}
 </style>

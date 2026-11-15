@@ -1,7 +1,16 @@
+<!--
+  @component
+  @deprecated Since v0.44.0 (no product use); see docs/migrations/decorative-vocabulary.md.
+  A zero-padded station number in a signage roundel.
+-->
 <script lang="ts">
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '../cn/index.js';
 
+	/**
+	 * @deprecated Since v0.44.0: no product uses the station roundel. Use a plain number or
+	 * StopLabel. See docs/migrations/decorative-vocabulary.md.
+	 */
 	export type MetroStationProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & {
 		index: number;
 		showLine?: boolean;

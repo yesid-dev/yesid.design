@@ -342,7 +342,10 @@ No product locale type or copy table enters the package.
 
 ### MetroStation
 
-Renders the zero-padded station number in a still 2rem signage roundel.
+Deprecated since v0.44.0: no product uses it. It stays functional until removal (90 days after
+publication and an intervening minor). Use a plain number or `StopLabel`; see
+[decorative vocabulary](../../docs/migrations/decorative-vocabulary.md). Renders the zero-padded
+station number in a still 2rem signage roundel.
 
 ### TocBadge
 
@@ -531,7 +534,8 @@ replaces an empty value and `info` follows the label, so absence text and toolti
 caller. `SectionHeading` takes `heading` or `overline`, plus `number`, `headingAccent`, and an
 `explainer` snippet. `overline` is signage only: a short board, platform or route name in tracked
 mono uppercase, never a label above a heading. Start a section with `heading`; label data with the
-`.label-reading` role. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
+`.label-reading` role. The Gallery no longer demonstrates the overline as a section label; it stays
+accepted for existing callers. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
 
 ### FilterGroup, FilterSection, FilterSummary, and SearchInput
 
@@ -544,9 +548,11 @@ panel with the dashed rule. `FilterSummary` shows `countLabel.singular` or `coun
 
 ### CornerMeta, SegmentedChoice, and ToggleChip
 
-`CornerMeta` puts decorative mono notes in the four corners of its positioned parent (snippets
-`topLeft` to `bottomRight`, `crosshair` adds `CornerMarks`); it is `aria-hidden` and hidden below
-768px. `SegmentedChoice` is a single choice with radio-group semantics: `label` names the group,
+`CornerMeta` is deprecated since v0.44.0 (no product use) and stays functional until removal;
+put essential text in the content and drop the corner notes (see
+[decorative vocabulary](../../docs/migrations/decorative-vocabulary.md)). It puts decorative mono
+notes in the four corners of its positioned parent (snippets `topLeft` to `bottomRight`,
+`crosshair` adds `CornerMarks`); it is `aria-hidden` and hidden below 768px. `SegmentedChoice` is a single choice with radio-group semantics: `label` names the group,
 arrow keys move and select, and disabled options are skipped. It is controlled: every pick,
 the current option included, calls `onSelect`, and the caller sets `value`. `compactLabel` shows
 a short label and keeps `label` as the name, and `variant="joined-grid"` lays options out two per
@@ -731,8 +737,11 @@ stop and leaving input available if navigation is canceled.
 
 Nav text keeps one size at every width: links at `--text-nav-link-*` (16px) and the wordmark at
 `--text-nav-brand-*` (18px). Links that don't fit move to the menu instead of shrinking: links show
-from 375px of header width (the default `priority: 1`), `priority: 2` from 500px and
-`priority: 3` from 1024px, and only while the pill fits its header with 4px to spare. The header
+from 375px of header width (the default `priority: 1`), `priority: 2` from 600px and
+`priority: 3` from 1024px, and only while the pill fits its header with 4px to spare. The 600px
+step leaves room for the theme and language toggles, which stay in the pill at every width. When
+the links do not fit, a whole priority leaves at a time, 3 first, then 2; priority 1 leaves only
+when it cannot fit alone, so a product's main call to action stays beside the toggles. The header
 measures its real labels, so a longer language moves its links to the menu on a wider screen than a
 shorter one. Before the app script runs, only the width thresholds apply. Keep every header link in
 `menuItems` too. The
@@ -753,7 +762,10 @@ Each group has `{ label, items }`. When supplied, groups replace `menuItems`, in
 array. `menuItems` is now optional and defaults to an empty array; existing flat menus are unchanged.
 Keep every header destination in the selected menu source. Headings use the supplied case and copy.
 
-`compactControls` defaults to `false`. When enabled, below 600px of header container width the
+`compactControls` is deprecated since v0.44.0: the theme and language toggles stay in the pill
+at every width in every product (owner decision of 14 November 2026, `DECISIONS.md` D19). Omit
+the prop; see [compact controls](../../docs/migrations/compact-controls.md). It stays functional
+until removal. `compactControls` defaults to `false`. When enabled, below 600px of header container width the
 pill hides theme and language controls and the open menu shows them with `labels.theme`,
 `language.label` and the supplied language names. At 600px and wider the controls stay in the pill.
 Only one copy is rendered. The language control retains `preserveState` and lifecycle focus handling.
@@ -763,7 +775,8 @@ Before hydration, the menu button opens the existing controls with a native HTML
 including when JavaScript is delayed or disabled. Language remains a real navigation link;
 the theme switch is reachable and retains its existing JavaScript-dependent behavior.
 Hydration hands off to the dialog without changing the pill's layout. Compact mode also keeps
-priority-1 links eligible below 375px when they fit; priorities 2 and 3 still fold away.
+priority-1 links eligible below 375px when they fit, and keeps priority 2 from 500px because
+its controls are in the menu; priority 3 still folds away below 1024px.
 Callers without `compactControls` retain the existing below-375px link folding.
 
 `Wordmark` is the name plus accent dot with the `wordmarkHover` effects (`autoPlay` plays one on
@@ -950,12 +963,40 @@ reading "login". ThemeToggle and LanguageToggle keep their existing look and beh
 `wordmarkAutoPlay` defaults to `true`; pass `false` to stop the default Wordmark's mount animation
 while preserving its hover effect. It has no effect on a supplied `brand` snippet.
 
+For the house-plus-product identity, pass `ProductBrand` (below) through this snippet.
+
 When the effective menu has no items, the menu button is omitted. `menuGroups` takes precedence
 when supplied, including empty groups. With no menu, `compactControls` keeps the controls in the
 pill so they stay reachable. Existing menus retain their controls and behavior.
 The native compact popover before hydration has an 8px gap below the pill and the same visible
 control labels as the hydrated menu. Its toggle artwork remains unchanged. The menu button's
 focus outline follows its round corner shape.
+
+### ProductBrand (Experimental)
+
+`ProductBrand` is the product-brand cluster: the still house `Wordmark`, a 2px divider and the
+product name as a link, as in "yesid. | Login". It is Experimental in its first release: an
+incompatible change waits for a minor with migration notes. Pass it through SiteHeader's `brand`
+snippet for a narrow product navbar, and through SiteFooter's `brand` snippet.
+
+```svelte
+<SiteHeader {navigation} {home} links={[]} {labels} {language}>
+  {#snippet brand()}
+    <ProductBrand product="Login" href={home} houseHref="https://yesid.dev" houseExternal
+      houseLabel="yesid.dev (opens in a new tab)" />
+  {/snippet}
+</SiteHeader>
+```
+
+`product`, `href` and `houseHref` are required; the product owns every word, so the name keeps
+the case it is written in. `houseExternal` (default `false`) opens the house link in a new tab
+with `rel="noopener noreferrer"`; say so in `houseLabel`, the house link's accessible name.
+`current` marks the product link with `aria-current="page"`. Both links keep a 44px target and
+the shared 2px focus ring; the product name is the foreground colour at rest and the clickable
+orange on hover, without an underline. The divider is `aria-hidden`. The cluster takes
+`--text-nav-brand-desktop` (18px) unless a caller class sets another size, and a long name wraps
+between words beside the house mark instead of overflowing. The theme and language toggles stay
+unchanged beside it.
 
 ## Base stylesheet
 

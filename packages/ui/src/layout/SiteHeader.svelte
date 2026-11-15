@@ -15,7 +15,10 @@
 		href: string;
 		label: string;
 		current?: boolean;
-		/** 1 shows from a 375px header, 2 from 500px, 3 from 1024px, and only while the links fit. */
+		/**
+		 * 1 shows from a 375px header, 2 from 600px, 3 from 1024px, and only while the links fit; links
+		 * that do not fit leave the pill a whole priority at a time, 3 first.
+		 */
 		priority?: 1 | 2 | 3;
 	}
 
@@ -63,7 +66,11 @@
 		menuItems?: readonly SiteHeaderMenuItem[];
 		/** When supplied, replaces menuItems, including when empty. */
 		menuGroups?: readonly SiteHeaderMenuGroup[];
-		/** Moves theme and language controls into the menu below a 600px header width. */
+		/**
+		 * Moves theme and language controls into the menu below a 600px header width.
+		 * @deprecated Since v0.44.0. The theme and language toggles stay in the pill at every width
+		 * (owner decision of 14 November 2026, DECISIONS.md D19). Omit this prop.
+		 */
 		compactControls?: boolean;
 		labels: SiteHeaderLabels;
 		language?: Omit<LanguageToggleProps, 'ref' | 'class'>;
@@ -296,7 +303,8 @@
 						class="nav-pill pointer-events-auto flex items-center"
 						class:nav-pill-compact={active}
 						class:nav-pill-compact-controls={compactMenuControls}
-						use:linksFit={{ paused: active }}
+						class:nav-hydrated={hydrated}
+						use:linksFit={{ paused: active, links }}
 					>
 						{#if brand}{@render brand()}{:else}
 							<Wordmark href={home} text={wordmark} autoPlay={wordmarkAutoPlay} class="nav-wordmark" />
@@ -310,7 +318,7 @@
 									<span data-priority={link.priority ?? 1} use:magnetic={{ strength: 6, radius: 50 }}>
 										<a
 											href={link.href}
-											class="nav-pill-link inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-all {link.current
+											class="nav-pill-link inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-[color,text-shadow] {link.current
 												? 'nav-link-active text-primary'
 												: 'text-secondary-foreground hover:text-primary active:text-primary'}"
 											aria-current={link.current ? 'page' : undefined}>{link.label}</a
@@ -479,6 +487,10 @@
 		border-radius: var(--radius-pill);
 		box-shadow: var(--shadow-nav);
 		padding: var(--nav-padding-y) 28px;
+	}
+	/* Layout transitions serve the menu's fold, which needs the app script. Before hydration they
+	   would animate the pill whenever its styles apply late, moving the toggles. */
+	.nav-pill.nav-hydrated {
 		transition:
 			padding var(--duration-normal) var(--ease-default),
 			box-shadow var(--duration-normal) var(--ease-default);
@@ -554,6 +566,12 @@
 			display: none;
 		}
 	}
+	/* The theme and language controls sit in the pill, so priority 2 waits for room beside them. */
+	@container site-header (width < 600px) {
+		.nav-pill:not(.nav-pill-compact-controls) .nav-links [data-priority='2'] {
+			display: none;
+		}
+	}
 	@container site-header (width < 1024px) {
 		.nav-links [data-priority='3'],
 		.nav-pill[data-links-from='3'] .nav-links-part,
@@ -626,6 +644,8 @@
 		overflow: visible;
 		max-width: 300px;
 		opacity: 1;
+	}
+	.nav-hydrated .nav-collapsible {
 		transition:
 			max-width var(--duration-slow) var(--ease-default),
 			opacity var(--duration-normal) var(--ease-default),
@@ -916,8 +936,8 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.nav-root,
-		.nav-pill,
-		.nav-collapsible,
+		.nav-pill.nav-hydrated,
+		.nav-hydrated .nav-collapsible,
 		.menu-toggle-line,
 		.menu-overlay,
 		.menu-item,

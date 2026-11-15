@@ -180,6 +180,9 @@ Section spacing scales via \`--space-section-y\`. Consumer integration guidance 
 docs/BUILD-A-YESID-PRODUCT.md.
 SiteHeader accepts a caller-owned \`brand\` snippet and \`wordmarkAutoPlay={false}\` for its default
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
+The theme and language toggles stay in the pill at every width (D19); priority 2 links show from a
+600px header and links that do not fit leave a whole priority at a time. The Experimental
+\`ProductBrand\` composes the house wordmark, a divider and the product name for header and footer.
 Button \`wrap\` opts into multiline labels and content-driven height. Table cells preserve whole
 words, wrapping a single word only when it exceeds the cell width.
 \`.chrome-clearance\` on the scrolling element keeps focus and fragment jumps clear of the fixed

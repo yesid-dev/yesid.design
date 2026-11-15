@@ -131,6 +131,7 @@ components:
   ManifestoCanvas: {}
   MetricDisplay: {}
   MetroStation: {}
+  ProductBrand: {}
   SectionsToggle: {}
   SearchInput: {}
   SectionHeading: {}
@@ -209,6 +210,9 @@ Section spacing scales via `--space-section-y`. Consumer integration guidance li
 docs/BUILD-A-YESID-PRODUCT.md.
 SiteHeader accepts a caller-owned `brand` snippet and `wordmarkAutoPlay={false}` for its default
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
+The theme and language toggles stay in the pill at every width (D19); priority 2 links show from a
+600px header and links that do not fit leave a whole priority at a time. The Experimental
+`ProductBrand` composes the house wordmark, a divider and the product name for header and footer.
 Button `wrap` opts into multiline labels and content-driven height. Table cells preserve whole
 words, wrapping a single word only when it exceeds the cell width.
 `.chrome-clearance` on the scrolling element keeps focus and fragment jumps clear of the fixed
@@ -246,7 +250,7 @@ Borders use semantic tokens (`border`, `border-subtle`, `border-strong`).
 
 ## Components
 
-See `@yesid/ui/brand` (33 components: `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `LanguageToggle`) and
+See `@yesid/ui/brand` (34 components: `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `ProductBrand`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `LanguageToggle`) and
 12 primitive subpaths (`@yesid/ui/badge`, `@yesid/ui/button`, `@yesid/ui/card`, `@yesid/ui/collapsible`, `@yesid/ui/combobox`, `@yesid/ui/footer`, `@yesid/ui/resizable`, `@yesid/ui/scroll-area`, `@yesid/ui/separator`, `@yesid/ui/sheet`, `@yesid/ui/skeleton`, `@yesid/ui/tabs`). Design-system documentation:
 the public `@yesid/ui` package documentation and the living Gallery.
 

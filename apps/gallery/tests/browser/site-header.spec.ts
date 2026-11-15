@@ -13,7 +13,7 @@ import {
 } from '../../src/lib/gallery/site-header-fixture.js';
 
 // The header width each link priority needs before it shows (the package's contract).
-const SHOWN_FROM = { 1: 375, 2: 500, 3: 1024 } as const;
+const SHOWN_FROM = { 1: 375, 2: 600, 3: 1024 } as const;
 const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const header = (page: Page) => page.getByRole('navigation', { name: LABELS.nav });
 const toggle = (page: Page) =>

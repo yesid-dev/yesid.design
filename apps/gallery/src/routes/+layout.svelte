@@ -25,7 +25,7 @@
 
 <SiteRoot smoothScroll={false}>
 <div class="min-h-screen bg-background text-foreground font-body">
-	{#if page.route.id === '/site-header' || page.route.id === '/header-seams'}
+	{#if page.route.id === '/site-header' || page.route.id === '/header-seams' || page.route.id?.startsWith('/site-header-pill') || page.route.id?.startsWith('/product-brand')}
 		{@render children()}
 	{:else}
 	<header

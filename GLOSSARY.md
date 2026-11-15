@@ -64,3 +64,7 @@ Light and dark are a separate axis. An undeclared page is reading.
 It needs a source, subject and time.
 
 **Demonstration**: Simulated content shown on purpose, labelled beside the figures it explains.
+
+**Product brand**: The house wordmark, a divider and the product name, as in "yesid. | Login",
+shown by `ProductBrand` in a product's header and footer. The product owns the name and links.
+_Avoid_: brand cluster (Transit's local component name)

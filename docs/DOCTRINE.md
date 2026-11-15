@@ -264,16 +264,16 @@ Don't: "-" where a weather value failed; "Email sent" when the service only acce
 
 ### Rule 11. Leave the identity controls alone
 
-The theme toggle and the language toggle are the standard yesid.design ones on every page of every product: same look, same behaviour, same place in the header (or in the phone menu by U1's opt-in). The language signpost cycles in the brand order. No product relabels, restyles or replaces them, and no mockup shows a substitute.
+The theme toggle and the language toggle are the standard yesid.design ones on every page of every product: same look, same behaviour, same place: in the navbar pill at every width, never in the menu, with no visible label (owner decision of 14 November 2026, `DECISIONS.md` D19). Their accessible names keep the theme wording and the language name. The language signpost cycles in the brand order. No product relabels, restyles, moves or replaces them, and no mockup shows a substitute.
 
-**Why.** The owner kept the theme and language toggles as core identity. A shared language order prevents products from giving the same control a different next step.
+**Why.** The owner kept the theme and language toggles as core identity, always reachable from the navbar. A shared language order prevents products from giving the same control a different next step.
 
-**Gallery:** [`/site-header`](../apps/gallery/src/routes/site-header/+page.svelte), [`/site-header-compact`](../apps/gallery/src/routes/site-header-compact/+page.svelte).
+**Gallery:** [`/site-header`](../apps/gallery/src/routes/site-header/+page.svelte), [`/site-header-pill`](../apps/gallery/src/routes/site-header-pill/[lang]/+page.svelte) in English, French and Spanish, [`/product-brand`](../apps/gallery/src/routes/product-brand/[lang]/+page.svelte).
 
 | Do | Don't |
 | --- | --- |
 | Pass the published languages and their names; the toggle orders them English, French, Spanish | Pass a product-specific order, or draw a separate language menu |
-| Let `compactControls` move both toggles into the phone menu | Swap the signal lamp for a text switch |
+| Leave both toggles in the pill; let lower-priority links move to the menu | Pass the deprecated `compactControls`, or swap the signal lamp for a text switch |
 
 Carried by: U1 (v0.42.0); the brand language order (Y-27, v0.42.0).
 
