@@ -1,9 +1,10 @@
 import type { SiteHeaderLink } from '@yesid/ui/layout';
 
 /**
- * A Transit-shaped header for /site-header-wide: a "yesid. | Transit" brand, priority 3 links, a
- * search field, a refresh button and a provider choice. Its full pill fits from about 1230px (EN) or 1250px (FR), so
- * it raises priority 3 to 1280px with `linkTiers`.
+ * A Transit-shaped header for /site-header-wide, after Transit's NavPill: a "yesid. | Transit"
+ * brand, three priority 3 links, search at clamp(11rem, 22cqi, 20rem) from 1024px, a compact
+ * search link below that, refresh at every width and a provider choice that moves under the pill
+ * below 600px. It raises priority 3 to 1280px with `linkTiers`.
  */
 export const WIDE_LANGS = ['en', 'fr'] as const;
 export type WideLang = (typeof WIDE_LANGS)[number];

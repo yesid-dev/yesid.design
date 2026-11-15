@@ -783,13 +783,21 @@ than its header at a width where the default thresholds already show a priority.
 looks right before the app script runs and drops that priority once it measures, moving the
 toggles. Raise the thresholds with `linkTiers` so both states agree:
 `linkTiers={{ priority3: 1280 }}` shows priority 3 from 1280px. `priority2` takes 768, 1024 or
-1280 and `priority3` takes 1280, 1440 or 1600; omitted, the defaults above apply. The widths are
-static container-query rules, so they hold before hydration and without JavaScript. Pick the
-smallest width at which the full pill fits in every language you publish, with 4px to spare on
-each side. links-fit never brings back a priority these widths hide. A priority whose links are
-all hidden also hides the divider before the links. The
+1280 and `priority3` takes 1280, 1440 or 1600; omitted, the defaults above apply.
 
-optional `search` snippet shows from 1024px and folds away with the links while the menu is open;
+The link tiers, defaults and `linkTiers` alike, are static container-query rules written in em
+and named here in px at the default 16px font size (1280 is 80em). They decide the same before
+hydration, after it and without JavaScript, and they scale with the reader's font size: a
+1280px tier is 1600px at a 20px default, where rem-sized brands and controls are wider too.
+links-fit never brings back a priority these widths hide. Pick the smallest width at which the
+full pill fits in every language you publish, with 4px to spare on each side; the Gallery proves
+a still header through hydration at 16px and 20px for its wide fixture, and other compositions
+need the same check in the product. Each priority hides below its own width, and the links row
+with its divider hides only below the lowest width among the priorities present, so raising
+priority 2 never hides priority 3 at its own width. The `search` snippet keeps its 1024px step
+in px, because products pair their own compact search with it.
+
+The optional `search` snippet shows from 1024px and folds away with the links while the menu is open;
 `actions` render before the theme, language and menu controls. The app marks `current` links and
 items; snippets can query the header's width with `@container site-header`. A menu item's `icon`
 (any Lucide icon component, such as `@lucide/svelte/icons/map`) replaces its stop and lights up on

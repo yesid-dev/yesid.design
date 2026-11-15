@@ -34,3 +34,16 @@ it('marks caller link tiers on the pill and leaves the defaults unmarked', () =>
  const defaults = plain.getByTestId('nav-pill');
  expect([defaults.hasAttribute('data-priority2-from'), defaults.hasAttribute('data-priority3-from')]).toEqual([false, false]);
 });
+it.each([
+ { priorities: [1, 2, 3], tiers: undefined, rowFrom: '375' },
+ { priorities: [3], tiers: undefined, rowFrom: '1024' },
+ { priorities: [3], tiers: { priority3: 1280 }, rowFrom: '1280' },
+ { priorities: [2, 3], tiers: { priority2: 1280 }, rowFrom: '1024' },
+ { priorities: [2, 3], tiers: { priority2: 1024, priority3: 1600 }, rowFrom: '1024' },
+ { priorities: [2], tiers: undefined, rowFrom: '600' },
+] as const)('hides the links row only below the lowest tier present: $priorities $tiers', ({ priorities, tiers, rowFrom }) => {
+ const navigation = mountLifecycle(fakeRouter().router).lifecycle;
+ const links = priorities.map((priority) => ({ href: `/${priority}`, label: `P${priority}`, priority }));
+ const view = render(SiteHeader, { navigation, home: '/', links, labels, linkTiers: tiers });
+ expect(view.getByTestId('nav-pill').dataset.rowFrom).toBe(rowFrom);
+});
