@@ -21,8 +21,8 @@ New options:
   section the kit's edge rules (Masthead's and ErrorPage's tape, DetailFrame's rule without a
   header, now marked `data-edge-rule`) are hidden, so the stroke is never doubled.
 - `DetailFrame` `rule="dimension"`; `ListingFrame` `rule` (`hazard`, `line` or `dimension`;
-  without it each presentation keeps its rule, and `dimension` also replaces the dashed rule above
-  the desktop search); `TerminalPanel` and `CodeBlock` `rule` (`hazard` default or `dimension`);
+  without it each presentation keeps its rule; it is the one line between the header and the list,
+  and the search draws no rule of its own); `TerminalPanel` and `CodeBlock` `rule` (`hazard` default or `dimension`);
   `Masthead` and `ErrorPage` `tape="dimension"`. Hazard tape stays every default.
 
 Behaviour change for existing callers (owner-approved, see DEPRECATION.md):

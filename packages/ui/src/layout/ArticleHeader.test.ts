@@ -99,7 +99,7 @@ describe('meta', () => {
 });
 
 describe('actions and controls', () => {
-	it('renders actions before controls, with controls last in the content column', () => {
+	it('renders actions before controls in one row group, last in the content column', () => {
 		const view = header({
 			actions: html('<a href="/map" data-testid="action">Map</a>'),
 			controls: html('<button type="button" data-testid="control">Collapse</button>'),
@@ -109,8 +109,11 @@ describe('actions and controls', () => {
 		expect(actionRow.contains(view.getByTestId('action'))).toBe(true);
 		expect(controlRow.contains(view.getByTestId('control'))).toBe(true);
 		expect(precedes(actionRow, controlRow)).toBe(true);
-		expect(controlRow.parentElement!.lastElementChild).toBe(controlRow);
-		expect(controlRow.parentElement).toBe(title(view).parentElement);
+		const acts = view.container.querySelector('[data-slot="article-header-acts"]')!;
+		expect(actionRow.parentElement).toBe(acts);
+		expect(acts.lastElementChild).toBe(controlRow);
+		expect(acts.parentElement!.lastElementChild).toBe(acts);
+		expect(acts.parentElement).toBe(title(view).parentElement);
 	});
 });
 
@@ -254,13 +257,15 @@ describe('reading presentation', () => {
 		expect(pending.querySelectorAll('[aria-hidden="true"]')).toHaveLength(1);
 	});
 
-	it('keeps actions and controls in the content column', () => {
+	it('keeps actions and controls in one row group in the content column', () => {
 		const view = reading({
 			actions: html('<a href="/map" data-testid="action">Map</a>'),
 			controls: html('<button type="button" data-testid="control">Collapse</button>'),
 		});
 		const controlRow = view.container.querySelector('[data-slot="article-header-controls"]')!;
-		expect(controlRow.parentElement).toBe(title(view).parentElement);
+		const acts = view.container.querySelector('[data-slot="article-header-acts"]')!;
+		expect(controlRow.parentElement).toBe(acts);
+		expect(acts.parentElement).toBe(title(view).parentElement);
 		expect(precedes(view.getByTestId('action'), view.getByTestId('control'))).toBe(true);
 	});
 });

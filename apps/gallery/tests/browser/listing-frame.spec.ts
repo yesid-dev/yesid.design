@@ -160,3 +160,64 @@ test('edge title fits the viewport', async ({ page }) => {
 	const box = await page.locator('[data-slot="listing-edge-title"] .edge-title').boundingBox();
 	expect(box!.height).toBeLessThanOrEqual(viewport.height);
 });
+
+const ring = (locator: Locator) =>
+	locator.evaluate((element) => {
+		const style = getComputedStyle(element);
+		const probe = document.createElement('span');
+		probe.style.color = 'var(--primary)';
+		document.body.append(probe);
+		const primary = getComputedStyle(probe).color;
+		probe.remove();
+		return { style: style.outlineStyle, width: style.outlineWidth, color: style.outlineColor, shadow: style.boxShadow, primary };
+	});
+
+test('the search field shows the standard 2px focus ring, with no glow', async ({ page }) => {
+	await page.goto('/listing-frame');
+	const { search } = listing(page);
+	await search.focus();
+	await expect(search).toBeFocused();
+	// The field's colour transition also eases the ring's colour in.
+	await expect.poll(async () => { const focus = await ring(search); return focus.color === focus.primary; }).toBe(true);
+	const focus = await ring(search);
+	expect(focus.style).toBe('solid');
+	expect(focus.width).toBe('2px');
+	expect(focus.shadow).toBe('none');
+});
+
+test('one line parts the header from the list: no dashed rule above the search', async ({ page }) => {
+	test.skip(page.viewportSize()!.width < DESKTOP_MIN_WIDTH, 'The desktop filter column drew the dashed rule');
+	await page.goto('/listing-frame');
+	await expect(page.locator('[data-slot="listing-filter-search"]')).toHaveCSS('border-top-width', '0px');
+});
+
+test('the phone Filters button keeps its focus ring', async ({ page }) => {
+	test.skip(page.viewportSize()!.width >= DESKTOP_MIN_WIDTH, 'The Filters button shows below 1024px');
+	await page.goto('/listing-frame');
+	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+	const { search, toggle } = listing(page);
+	await search.focus();
+	await expectTabTo(page, toggle);
+	await expect.poll(async () => { const focus = await ring(toggle); return focus.color === focus.primary; }).toBe(true);
+	const focus = await ring(toggle);
+	expect(focus.style).toBe('solid');
+	expect(focus.width).toBe('2px');
+});
+
+test('the result count is announced politely when the search or a filter changes it', async ({ page }) => {
+	await page.goto('/listing-frame');
+	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+	const status = page.locator('[data-slot="listing-result-status"]');
+	await expect(status).toHaveAttribute('role', 'status');
+	await expect(status).toHaveText('3 résultats');
+	const { search, toggle } = listing(page);
+	await search.fill('audit');
+	await expect(status).toHaveText('1 résultat');
+	await search.fill('');
+	await expect(status).toHaveText('3 résultats');
+	if (page.viewportSize()!.width < DESKTOP_MIN_WIDTH) await toggle.click();
+	await page.locator('[data-slot="listing-filter-panel"]').getByRole('radio', { name: 'Recherches' }).click();
+	await expect(status).toHaveText('2 résultats');
+	// Present before any filter, so a reader hears every change, not only the first one.
+	await expect(page.getByRole('status').filter({ hasText: '2 résultats' })).toHaveCount(1);
+});

@@ -36,6 +36,7 @@ import {
 	FilterSection,
 	FilterSummary,
 	MetricDisplay,
+	RailTitle,
 	SectionsToggle,
 	SearchInput,
 	SectionHeading,
@@ -46,12 +47,14 @@ import {
 	TerminalCursor,
 	TocNav,
 	TocPill,
+	filterCountText,
 	type CollapsibleSectionProps,
 	type ErrorIllustrationProps,
 	type FilterGroupProps,
 	type FilterSectionProps,
 	type FilterSummaryProps,
 	type MetricDisplayProps,
+	type RailTitleProps,
 	type SectionsToggleProps,
 	type SearchInputProps,
 	type StopLabelProps,
@@ -221,6 +224,14 @@ const filterSummaryProps: FilterSummaryProps = {
 };
 // @ts-expect-error the plural rule needs the caller's locale
 const invalidFilterSummary: FilterSummaryProps = { ...filterSummaryProps, locale: undefined };
+const countText: string = filterCountText(2, filterSummaryProps.countLabel, 'en');
+const railTitleProps: RailTitleProps = { heading: 'Selected work', side: 'right', level: 2, titleId: 'work', dot: true, size: '4rem' };
+const railSectionProps: RailTitleProps = { heading: 'About', children: ignoredChildren };
+const decorativeRailTitle: RailTitleProps = { heading: 'Catalogue', decorative: true };
+// @ts-expect-error the heading is the caller's
+const invalidRailTitle: RailTitleProps = { side: 'left' };
+// @ts-expect-error a rail title sits on the left or right rail
+const invalidRailSide: RailTitleProps = { heading: 'About', side: 'top' };
 const searchInputProps: SearchInputProps = { value: '', label: 'Search', placeholder: 'Search' };
 // @ts-expect-error the accessible name is the caller's
 const invalidSearchLabel: SearchInputProps = { placeholder: 'Search' };
@@ -375,6 +386,8 @@ describe('public UI prop contracts', () => {
 		expectTypeOf<BindingsOf<typeof FilterSection>>().toEqualTypeOf<''>();
 		expectTypeOf<BindingsOf<typeof FilterSummary>>().toEqualTypeOf<''>();
 		expectTypeOf<BindingsOf<typeof ListingFrame>>().toEqualTypeOf<''>();
+		expectTypeOf<BindingsOf<typeof RailTitle>>().toEqualTypeOf<''>();
+		expectTypeOf<ListingFrameProps['resultCountText']>().toEqualTypeOf<string | undefined>();
 		expectTypeOf<BindingsOf<typeof ArticleHeader>>().toEqualTypeOf<''>();
 		expectTypeOf<BindingsOf<typeof DetailFrame>>().toEqualTypeOf<'activeId'>();
 		expectTypeOf<BindingsOf<typeof ErrorPage>>().toEqualTypeOf<''>();

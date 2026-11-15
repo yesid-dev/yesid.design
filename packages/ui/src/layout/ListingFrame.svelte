@@ -1,10 +1,11 @@
 <!--
-  Listing page frame. Expressive (default): on desktop a vertical edge title and accent rail beside
-  the page, a blueprint header and the hazard rule. Reading: the visible horizontal h1 at every
-  width, sentence-case subtitle, no artwork, edge title or rail, and a neutral line. `rule` picks
-  the rule under the header in either presentation; `dimension` (THE divider, D22) also draws the
-  dimension line in place of the dashed rule above the desktop search. Both: a filter
-  column (search plus a filter panel that collapses below 1024px) and the results.
+  Listing page frame. Expressive (default): on desktop a vertical edge title (a decorative
+  RailTitle) and accent rail beside the page, a blueprint header and the hazard rule. Reading: the
+  visible horizontal h1 at every width, sentence-case subtitle, no artwork, edge title or rail, and
+  a neutral line. `rule` picks the rule under the header in either presentation (`dimension` is
+  THE divider, D22); it is the one line between the header and the list. Both: a filter column
+  (search plus a filter panel that collapses below 1024px) and the results. With
+  `resultCountText`, a visually hidden polite status announces the result count when it changes.
 
   CSS shows the panel from 1024px in every state, so desktop filters work before hydration and
   without JavaScript. Below 1024px a closed panel is `visibility: hidden`, never `inert`.
@@ -20,8 +21,8 @@
 		presentation?: 'expressive' | 'reading';
 		/**
 		 * The rule under the header: `hazard` tape (the expressive default), a neutral `line` (the
-		 * reading default) or the `dimension` line (THE divider, D22), which also replaces the dashed
-		 * rule above the search in the desktop filter column.
+		 * reading default) or the `dimension` line (THE divider, D22). It is the one line between
+		 * the header and the list: the search has no rule of its own.
 		 */
 		rule?: 'hazard' | 'line' | 'dimension';
 		/** The page h1; in the expressive presentation visually hidden from 1024px, where the edge title shows. */
@@ -38,6 +39,12 @@
 		onHeaderMount?: (header: HTMLElement, frame: HTMLElement) => (() => void) | void;
 		/** Text of the button that opens the filter panel below 1024px. */
 		filterLabel: string;
+		/**
+		 * The result count in words, for example from `filterCountText`. A visually hidden polite
+		 * status that is always present announces it whenever it changes (after a search or filter),
+		 * even when the visible FilterSummary only shows while filters are active.
+		 */
+		resultCountText?: string;
 		search?: Snippet;
 		filters: Snippet;
 		children: Snippet;
@@ -48,6 +55,7 @@
 	import { onMount } from 'svelte';
 	import { scrollChain } from '@yesid/motion/actions';
 	import ChevronToggle from '../brand/ChevronToggle.svelte';
+	import RailTitle from '../brand/RailTitle.svelte';
 	import { Separator } from '../primitives/separator/index.js';
 
 	let {
@@ -61,6 +69,7 @@
 		aside,
 		onHeaderMount,
 		filterLabel,
+		resultCountText,
 		search,
 		filters,
 		children,
@@ -91,7 +100,7 @@
 >
 	{#if !reading}
 		<div class="edge-title-column" data-slot="listing-edge-title" aria-hidden="true">
-			<div class="edge-title">{edgeTitle ?? heading}<span class="edge-dot">.</span></div>
+			<RailTitle heading={edgeTitle ?? heading} decorative size="clamp(3rem, 4vw, 3.5rem)" class="edge-title" />
 			<div class="metro-dots metro-dots-top">
 				<div class="metro-line"></div>
 				<div class="metro-dot metro-dot-sm"></div>
@@ -159,9 +168,6 @@
 				<div class="listing-filter-sticky" use:scrollChain>
 					{#if search}
 						<div class="listing-filter-search" data-slot="listing-filter-search">
-							{#if drawnRule === 'dimension'}
-								<Separator variant="dimension" class="listing-filter-rule" data-testid="listing-filter-rule" />
-							{/if}
 							{@render search()}
 						</div>
 					{/if}
@@ -196,6 +202,9 @@
 			</aside>
 
 			<div class="listing-content" data-slot="listing-content">
+				{#if resultCountText !== undefined}
+					<p class="sr-only" role="status" data-slot="listing-result-status">{resultCountText}</p>
+				{/if}
 				{@render children()}
 			</div>
 		</div>
@@ -282,8 +291,7 @@
 		line-height: 1;
 	}
 
-	.listing-heading-dot,
-	.edge-dot {
+	.listing-heading-dot {
 		color: var(--primary);
 	}
 
@@ -322,11 +330,6 @@
 		margin-bottom: 1rem;
 	}
 
-	/* The search's own dimension line shows only where the dashed rule did: the desktop column. */
-	.listing-filter-search :global(.listing-filter-rule) {
-		display: none;
-	}
-
 	.listing-content {
 		padding: 0 1rem 5.5rem;
 	}
@@ -355,11 +358,11 @@
 			color var(--duration-normal) var(--ease-default);
 	}
 
+	/* Keyboard focus keeps the standard focus ring from base.css beside the colour change. */
 	.mobile-filter-toggle:hover,
 	.mobile-filter-toggle:focus-visible {
 		border-color: var(--primary);
 		color: var(--primary);
-		outline: none;
 	}
 
 	/* Hidden only once the close animation ends, so the content doesn't vanish mid-collapse. */
@@ -425,20 +428,20 @@
 			position: sticky;
 			top: 0;
 			height: 100dvh;
-			writing-mode: vertical-rl;
-			transform: rotate(180deg);
 			padding: 1rem 1.5rem;
 		}
 
-		.edge-title {
-			font-family: var(--font-heading);
-			font-size: clamp(3rem, 4vw, 3.5rem);
-			font-weight: 900;
-			color: var(--foreground);
+		/* The column itself stays in view and centres the rail title, which may wrap onto a second
+		   vertical line to keep clear of the header pill and the column's metro dots. */
+		.edge-title-column :global([data-slot='rail-title'].rail-title) {
+			position: static;
+			align-self: center;
+		}
+
+		.edge-title-column :global([data-slot='rail-title'] .rail-title-text) {
 			max-height: calc(100dvh - 16rem);
+			white-space: normal;
 			overflow-wrap: anywhere;
-			line-height: 1;
-			letter-spacing: -0.04em;
 		}
 
 		.accent-rail {
@@ -484,20 +487,10 @@
 			padding: 1rem;
 		}
 
+		/* One line parts the header from the list: the rule under the header, no dashed rule here. */
 		.listing-filter-search {
 			margin-bottom: 1.5rem;
 			padding: 0.75rem 0 1.25rem;
-			border-top: 2px dashed var(--border-rule);
-		}
-
-		.listing-layout[data-rule='dimension'] .listing-filter-search {
-			padding-top: 0;
-			border-top: 0;
-		}
-
-		.listing-layout[data-rule='dimension'] .listing-filter-search :global(.listing-filter-rule) {
-			display: block;
-			margin-bottom: 0.75rem;
 		}
 
 		.mobile-filter-toggle {

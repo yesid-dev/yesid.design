@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
-import FilterSummary from './FilterSummary.svelte';
+import FilterSummary, { filterCountText } from './FilterSummary.svelte';
 
 const labels = {
 	en: { singular: '{count} alert', plural: '{count} alerts' },
@@ -20,8 +20,9 @@ describe('FilterSummary', () => {
 		['fr', 0, '0 résultat'],
 		['fr', 1, '1 résultat'],
 		['fr', 2, '2 résultats'],
-	] as const)('counts %s %i as %j', (locale, count, text) => {
+	] as const)('counts %s %i as %j, the same words filterCountText gives', (locale, count, text) => {
 		expect(countText(summary(locale, count))).toBe(text);
+		expect(filterCountText(count, labels[locale], locale)).toBe(text);
 	});
 
 	it('shows the clear label and calls onClear when it is clicked', async () => {

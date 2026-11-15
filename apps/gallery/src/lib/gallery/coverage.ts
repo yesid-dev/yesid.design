@@ -29,6 +29,7 @@ export const GALLERY_COVERAGE = {
 		'ManifestoCanvas',
 		'MetricDisplay',
 		'ProductBrand',
+		'RailTitle',
 		'SectionsToggle',
 		'SearchInput',
 		'SectionHeading',

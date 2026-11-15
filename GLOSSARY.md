@@ -100,3 +100,7 @@ It needs a source, subject and time.
 **Product brand**: The house wordmark, a divider and the product name, as in "yesid. | Login",
 shown by `ProductBrand` in a product's header and footer. The product owns the name and links.
 _Avoid_: brand cluster (Transit's local component name)
+
+**Rail title**: A section's heading set rotated on the side rail outside the centred content,
+sticky while its section scrolls and horizontal below 1024px, drawn by `RailTitle` (D23).
+_Avoid_: edge label, vertical title (for a page title, which stays horizontal)

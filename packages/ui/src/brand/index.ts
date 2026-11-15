@@ -32,6 +32,7 @@ export { default as FilterSection } from './FilterSection.svelte';
 export type { FilterSectionProps } from './FilterSection.svelte';
 
 export { default as FilterSummary } from './FilterSummary.svelte';
+export { filterCountText } from './FilterSummary.svelte';
 export type { FilterSummaryProps } from './FilterSummary.svelte';
 
 export { default as ManifestoCanvas } from './ManifestoCanvas.svelte';
@@ -45,6 +46,9 @@ export type { MetroStationProps } from './MetroStation.svelte';
 
 export { default as ProductBrand } from './ProductBrand.svelte';
 export type { ProductBrandProps } from './ProductBrand.svelte';
+
+export { default as RailTitle } from './RailTitle.svelte';
+export type { RailTitleProps } from './RailTitle.svelte';
 
 export { default as SectionsToggle } from './SectionsToggle.svelte';
 export type {

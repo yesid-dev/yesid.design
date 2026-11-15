@@ -12,6 +12,8 @@
 		title?: string;
 		highlight?: string;
 		proof?: boolean;
+		/** Only the back link, the title, proof links and Collapse all, as a yesid.dev case study passes them. */
+		plain?: boolean;
 	};
 
 	const cases: Case[] = [
@@ -25,6 +27,9 @@
 		{ id: 'long-es-expressive', label: 'Expressive: long Spanish title', fixture: longTitles.es, presentation: 'expressive' },
 		{ id: 'long-es', label: 'Reading: long Spanish title', fixture: longTitles.es, presentation: 'reading' },
 		{ id: 'case-study', label: 'Reading: a case study with proof links and Collapse all', fixture: caseStudy, presentation: 'reading', proof: true },
+		{ id: 'case-study-expressive', label: 'Expressive: a case study with proof links and Collapse all', fixture: caseStudy, presentation: 'expressive', proof: true, plain: true },
+		{ id: 'case-study-expressive-fr', label: 'Expressive: long French title with proof links and Collapse all', fixture: longTitles.fr, presentation: 'expressive', proof: true, plain: true },
+		{ id: 'case-study-expressive-es', label: 'Expressive: long Spanish title with proof links and Collapse all', fixture: longTitles.es, presentation: 'expressive', proof: true, plain: true },
 	];
 
 	let params = $state(new URLSearchParams());
@@ -59,9 +64,9 @@
 				presentation={item.presentation}
 				title={item.title ?? item.fixture.title}
 				highlight={item.highlight ?? item.fixture.highlight}
-				category={item.fixture.category}
-				subtitle={item.fixture.subtitle}
-				meta={item.fixture.meta}
+				category={item.plain ? undefined : item.fixture.category}
+				subtitle={item.plain ? undefined : item.fixture.subtitle}
+				meta={item.plain ? [] : item.fixture.meta}
 				backHref="/"
 				backLabel={item.fixture.back}
 				watermark="Notes"
