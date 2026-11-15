@@ -2081,6 +2081,22 @@ declare namespace PrimitivesTabs {
     }
 }
 
+// @public
+const ProductBrand: Component<ProductBrandProps, {}, "">;
+
+// @public (undocumented)
+type ProductBrand = ReturnType<typeof ProductBrand>;
+
+// @public (undocumented)
+interface ProductBrandProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    current?: boolean;
+    houseExternal?: boolean;
+    houseHref: string;
+    houseLabel?: string;
+    href: string;
+    product: string;
+}
+
 // @public (undocumented)
 const ReadingFrame: Component<ReadingFrameProps, {}, "">;
 
@@ -2114,22 +2130,6 @@ interface ReadingFrameUpdated {
     datetime: string;
     label: string;
     text: string;
-}
-
-// @public
-const ProductBrand: Component<ProductBrandProps, {}, "">;
-
-// @public (undocumented)
-type ProductBrand = ReturnType<typeof ProductBrand>;
-
-// @public (undocumented)
-interface ProductBrandProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
-    current?: boolean;
-    houseExternal?: boolean;
-    houseHref: string;
-    houseLabel?: string;
-    href: string;
-    product: string;
 }
 
 // @public
