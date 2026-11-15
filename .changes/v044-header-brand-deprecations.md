@@ -23,6 +23,12 @@ and start three deprecations (Y-23, Y-26, owner decision of 14 November 2026, DE
   enough in CI to move a centred pill's toggles 1.8px). The letters now render without kerning or
   ligatures from the first paint, as they already did after hydration, so the width holds and the
   toggles stay put. Proof: the hydration case in `site-header-pill.spec.ts` fails before.
+- Defect fix, SiteHeader transitions: the pill's padding and the links' fold (max-width, margin,
+  opacity) transitioned at any time, and header links used `transition-all`. When the header's
+  stylesheet applied after a first layout, those transitions slid the pill and its toggles by up
+  to 11px before hydration. Layout transitions now run only after hydration, where the menu's fold
+  needs them, and links transition only colour and text shadow. Proof: the late-stylesheet cases
+  in `site-header-pill.spec.ts` fail before.
 - Deprecated, retained and functional: SiteHeader `compactControls` (omit it; the toggles stay in
   the pill at every width), `CornerMeta` and `MetroStation` with their props types (no product
   use; see docs/migrations/decorative-vocabulary.md and docs/migrations/compact-controls.md).

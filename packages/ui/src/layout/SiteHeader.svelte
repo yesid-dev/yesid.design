@@ -303,6 +303,7 @@
 						class="nav-pill pointer-events-auto flex items-center"
 						class:nav-pill-compact={active}
 						class:nav-pill-compact-controls={compactMenuControls}
+						class:nav-hydrated={hydrated}
 						use:linksFit={{ paused: active, links }}
 					>
 						{#if brand}{@render brand()}{:else}
@@ -317,7 +318,7 @@
 									<span data-priority={link.priority ?? 1} use:magnetic={{ strength: 6, radius: 50 }}>
 										<a
 											href={link.href}
-											class="nav-pill-link inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-all {link.current
+											class="nav-pill-link inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-[color,text-shadow] {link.current
 												? 'nav-link-active text-primary'
 												: 'text-secondary-foreground hover:text-primary active:text-primary'}"
 											aria-current={link.current ? 'page' : undefined}>{link.label}</a
@@ -486,6 +487,10 @@
 		border-radius: var(--radius-pill);
 		box-shadow: var(--shadow-nav);
 		padding: var(--nav-padding-y) 28px;
+	}
+	/* Layout transitions serve the menu's fold, which needs the app script. Before hydration they
+	   would animate the pill whenever its styles apply late, moving the toggles. */
+	.nav-pill.nav-hydrated {
 		transition:
 			padding var(--duration-normal) var(--ease-default),
 			box-shadow var(--duration-normal) var(--ease-default);
@@ -639,6 +644,8 @@
 		overflow: visible;
 		max-width: 300px;
 		opacity: 1;
+	}
+	.nav-hydrated .nav-collapsible {
 		transition:
 			max-width var(--duration-slow) var(--ease-default),
 			opacity var(--duration-normal) var(--ease-default),
@@ -929,8 +936,8 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		.nav-root,
-		.nav-pill,
-		.nav-collapsible,
+		.nav-pill.nav-hydrated,
+		.nav-hydrated .nav-collapsible,
 		.menu-toggle-line,
 		.menu-overlay,
 		.menu-item,

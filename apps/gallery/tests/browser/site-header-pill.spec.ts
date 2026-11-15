@@ -56,6 +56,11 @@ function expectFits(state: PillState, width: number, lang: ProductLang) {
 	expect(state.links, `links in the pill, ${where}`).toEqual(expected.map((link) => link.label));
 }
 
+// The pre-hydration render is the page with all its stylesheets; layout read earlier is not it.
+async function stylesheetsLoaded(page: Page) {
+	await page.waitForFunction(() => [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].every((link) => link.sheet));
+}
+
 async function settle(page: Page) {
 	await page.evaluate(() => new Promise<void>((resolve) => {
 		requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
@@ -94,7 +99,7 @@ for (const lang of PRODUCT_LANGS) {
 
 	test(`${lang}: the toggles keep their place through hydration`, async ({ browser, baseURL }, testInfo) => {
 		test.skip(testInfo.project.name !== 'desktop', 'One run covers the band');
-		for (const width of [500, 517, 527, 555, 560]) {
+		for (const width of [500, 517, 527, 555, 560, 580, 599, 600]) {
 			// With motion allowed, hydration splits the wordmark into letters for its hover effects.
 			const context = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'no-preference' });
 			let release!: () => void;
@@ -104,6 +109,7 @@ for (const lang of PRODUCT_LANGS) {
 				const page = await context.newPage();
 				await page.goto(`${baseURL}/site-header-pill/${lang}`, { waitUntil: 'commit' });
 				await expect(page.getByTestId('language-toggle')).toBeVisible();
+				await stylesheetsLoaded(page);
 				await page.evaluate(() => document.fonts.ready);
 				const before = await pillState(page);
 				expectFits(before, width, lang);
@@ -123,6 +129,37 @@ for (const lang of PRODUCT_LANGS) {
 				await context.unrouteAll({ behavior: 'wait' });
 				await context.close();
 			}
+		}
+	});
+}
+
+for (const [lang, width] of [['fr', 500], ['es', 560]] as const) {
+	test(`${lang}: a late header stylesheet does not animate the pill before hydration at ${width}px`, async ({ browser, baseURL }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run covers it');
+		// CI read layout before SiteHeader's stylesheet arrived; its transitions then slid the toggles.
+		const context = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'no-preference' });
+		await context.route('**/*.js', () => {});
+		await context.route('**/SiteHeader*.css', async (route) => {
+			await new Promise((resolve) => setTimeout(resolve, 300));
+			await route.continue();
+		});
+		try {
+			const page = await context.newPage();
+			await page.goto(`${baseURL}/site-header-pill/${lang}`, { waitUntil: 'commit' });
+			await expect(page.getByTestId('language-toggle')).toBeVisible();
+			await stylesheetsLoaded(page);
+			const first = await pillState(page);
+			// Longer than the header's slowest transition, so a running one would show.
+			await page.waitForTimeout(600);
+			const later = await pillState(page);
+			expectFits(later, width, lang);
+			expect(Math.abs(later.pill.left - first.pill.left), 'pill left edge').toBeLessThanOrEqual(0.1);
+			later.controls.forEach((control, i) => {
+				expect(Math.abs(control.left - first.controls[i].left), `toggle ${i}`).toBeLessThanOrEqual(0.1);
+			});
+		} finally {
+			await context.unrouteAll({ behavior: 'ignoreErrors' });
+			await context.close();
 		}
 	});
 }
