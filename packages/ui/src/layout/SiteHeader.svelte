@@ -16,10 +16,23 @@
 		label: string;
 		current?: boolean;
 		/**
-		 * 1 shows from a 375px header, 2 from 600px, 3 from 1024px, and only while the links fit; links
-		 * that do not fit leave the pill a whole priority at a time, 3 first.
+		 * 1 shows from a 375px header, 2 from 600px, 3 from 1024px (or the `linkTiers` widths), and only
+		 * while the links fit; links that do not fit leave the pill a whole priority at a time, 3 first.
 		 */
 		priority?: 1 | 2 | 3;
+	}
+
+	/**
+	 * Wider header widths from which priority 2 and 3 links show, for a wider brand or more controls.
+	 * Named in px at the default 16px font size; the CSS uses em, so they scale with the reader's
+	 * font size. The same static CSS applies before and after hydration, so pick a width at which the
+	 * full pill fits: links-fit only takes links out, never brings back a tier these widths hide.
+	 */
+	export interface SiteHeaderLinkTiers {
+		/** Defaults to 600px (500px with the deprecated `compactControls`). */
+		priority2?: 768 | 1024 | 1280;
+		/** Defaults to 1024px. */
+		priority3?: 1280 | 1440 | 1600;
 	}
 
 	export interface SiteHeaderMenuItem {
@@ -66,6 +79,8 @@
 		menuItems?: readonly SiteHeaderMenuItem[];
 		/** When supplied, replaces menuItems, including when empty. */
 		menuGroups?: readonly SiteHeaderMenuGroup[];
+		/** Raises the header width each link priority needs; omitted, the defaults apply. */
+		linkTiers?: SiteHeaderLinkTiers;
 		/**
 		 * Moves theme and language controls into the menu below a 600px header width.
 		 * @deprecated Since v0.44.0. The theme and language toggles stay in the pill at every width
@@ -93,7 +108,7 @@
 	import Wordmark from '../brand/Wordmark.svelte';
 	import { linksFit } from './links-fit.js';
 
-	let { navigation, home, wordmark, brand, wordmarkAutoPlay = true, links, menuItems = [], menuGroups, compactControls = false, labels, language, search, actions }: SiteHeaderProps =
+	let { navigation, home, wordmark, brand, wordmarkAutoPlay = true, links, menuItems = [], menuGroups, linkTiers, compactControls = false, labels, language, search, actions }: SiteHeaderProps =
 		$props();
 
 	const hasMenu = $derived(menuGroups !== undefined
@@ -101,6 +116,14 @@
 	const compactMenuControls = $derived(compactControls && hasMenu);
 	const contentId = $props.id();
 	const linksFrom = $derived(Math.min(...links.map((link) => link.priority ?? 1)));
+	// The header width (px at the default font size) from which each priority shows; the CSS tiers
+	// below use the same widths in em. Compact mode keeps priority 1 at every width.
+	const tierFloors = $derived({
+		1: compactMenuControls ? 0 : 375,
+		2: linkTiers?.priority2 ?? (compactMenuControls ? 500 : 600),
+		3: linkTiers?.priority3 ?? 1024,
+	});
+	const rowFrom = $derived(links.length ? Math.min(...links.map((link) => tierFloors[link.priority ?? 1])) : 0);
 	const menuFooter = $derived(labels.menuFooter);
 	const skipToContent = $derived(labels.skipToContent);
 
@@ -299,6 +322,9 @@
 					<nav
 						data-testid="nav-pill"
 						data-links-from={linksFrom}
+						data-priority2-from={linkTiers?.priority2}
+						data-priority3-from={linkTiers?.priority3}
+						data-row-from={rowFrom || undefined}
 						aria-label={labels.nav}
 						class="nav-pill pointer-events-auto flex items-center"
 						class:nav-pill-compact={active}
@@ -548,29 +574,103 @@
 		min-width: 0;
 	}
 
-	/* Links that don't fit move to the menu (links-fit); this holds until it measures them. */
-	@container site-header (width < 375px) {
-		.nav-pill:not(.nav-pill-compact-controls) .nav-links-part {
+	/* Link tiers. Widths are in em, so they follow the reader's font size: 64em is 1024px at the
+	   default 16px and 1280px at 20px. They are static rules, so they decide the same before
+	   hydration, after it and without JavaScript; links that do not fit then leave (links-fit). */
+	@container site-header (width < 23.4375em) {
+		.nav-links [data-priority='2'],
+		.nav-links [data-priority='3'] {
 			display: none;
 		}
-		.nav-links [data-priority='2'],
-		.nav-links [data-priority='3'] { display: none; }
 	}
-	@container site-header (width < 500px) {
+	@container site-header (width < 31.25em) {
 		.nav-links [data-priority='2'] {
 			display: none;
 		}
 	}
 	/* The theme and language controls sit in the pill, so priority 2 waits for room beside them. */
-	@container site-header (width < 600px) {
+	@container site-header (width < 37.5em) {
 		.nav-pill:not(.nav-pill-compact-controls) .nav-links [data-priority='2'] {
 			display: none;
 		}
 	}
+	@container site-header (width < 64em) {
+		.nav-links [data-priority='3'] {
+			display: none;
+		}
+	}
+	/* Search stays in px: products pair their own compact search with this 1024px step. */
 	@container site-header (width < 1024px) {
-		.nav-links [data-priority='3'],
-		.nav-pill[data-links-from='3'] .nav-links-part,
 		.nav-search {
+			display: none;
+		}
+	}
+	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */
+	@container site-header (width < 48em) {
+		.nav-pill[data-priority2-from='768'] .nav-links [data-priority='2'] {
+			display: none;
+		}
+	}
+	@container site-header (width < 64em) {
+		.nav-pill[data-priority2-from='1024'] .nav-links [data-priority='2'] {
+			display: none;
+		}
+	}
+	@container site-header (width < 80em) {
+		.nav-pill[data-priority2-from='1280'] .nav-links [data-priority='2'],
+		.nav-pill[data-priority3-from='1280'] .nav-links [data-priority='3'] {
+			display: none;
+		}
+	}
+	@container site-header (width < 90em) {
+		.nav-pill[data-priority3-from='1440'] .nav-links [data-priority='3'] {
+			display: none;
+		}
+	}
+	@container site-header (width < 100em) {
+		.nav-pill[data-priority3-from='1600'] .nav-links [data-priority='3'] {
+			display: none;
+		}
+	}
+	/* The links row and its divider leave only below the smallest width at which any of the
+	   supplied links shows (data-row-from), so a raised tier never hides a lower one. */
+	@container site-header (width < 23.4375em) {
+		.nav-pill[data-row-from='375'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 31.25em) {
+		.nav-pill[data-row-from='500'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 37.5em) {
+		.nav-pill[data-row-from='600'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 48em) {
+		.nav-pill[data-row-from='768'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 64em) {
+		.nav-pill[data-row-from='1024'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 80em) {
+		.nav-pill[data-row-from='1280'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 90em) {
+		.nav-pill[data-row-from='1440'] .nav-links-part {
+			display: none;
+		}
+	}
+	@container site-header (width < 100em) {
+		.nav-pill[data-row-from='1600'] .nav-links-part {
 			display: none;
 		}
 	}

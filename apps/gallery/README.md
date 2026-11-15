@@ -70,6 +70,13 @@ refitting on prop changes without a resize.
 `header-band.spec.ts` checks the compact ArticleHeader band on `/article-header` and that long
 French and Spanish titles stay uncropped at 320px and 200% text.
 `/site-header-compact` keeps the deprecated `compactControls` only to prove it still works.
+`/site-header-wide/[lang]` (`en`, `fr`) follows Transit's NavPill: "yesid. | Transit", three
+priority 3 links, search at clamp(11rem, 22cqi, 20rem) from 1024px with a compact search link below,
+refresh at every width and a provider choice that moves under the pill below 600px, with
+`linkTiers={{ priority3: 1280 }}`. `/site-header-mixed` raises priority 2 to 1280px beside a
+priority 3 link. `site-header-wide.spec.ts` holds hydration at 16px and at a 20px default font
+size and checks that the brand, links and toggles stay within 0.1px, and the mixed tiers with and
+without JavaScript.
 
 `/masthead` shows Masthead with its kicker (today) and heading first without one, with and without
 the dot, in EN and long FR and ES. `/error-page` renders today's page; `/error-page/[options]`

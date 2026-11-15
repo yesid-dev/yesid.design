@@ -1743,6 +1743,7 @@ declare namespace Layout {
         SiteHeader,
         SiteHeaderLabels,
         SiteHeaderLink,
+        SiteHeaderLinkTiers,
         SiteHeaderMenuItem,
         SiteHeaderMenuGroup,
         SiteHeaderProps,
@@ -2724,6 +2725,12 @@ interface SiteHeaderLink {
     priority?: 1 | 2 | 3;
 }
 
+// @public
+interface SiteHeaderLinkTiers {
+    priority2?: 768 | 1024 | 1280;
+    priority3?: 1280 | 1440 | 1600;
+}
+
 // @public (undocumented)
 interface SiteHeaderMenuGroup {
     // (undocumented)
@@ -2764,6 +2771,7 @@ interface SiteHeaderProps {
     language?: Omit<LanguageToggleProps, 'ref' | 'class'>;
     // (undocumented)
     links: readonly SiteHeaderLink[];
+    linkTiers?: SiteHeaderLinkTiers;
     menuGroups?: readonly SiteHeaderMenuGroup[];
     // (undocumented)
     menuItems?: readonly SiteHeaderMenuItem[];
