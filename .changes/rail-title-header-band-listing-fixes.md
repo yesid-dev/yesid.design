@@ -15,8 +15,12 @@ New:
   section scrolls, then the next section's title takes over; below 1024px it reads horizontally
   above the content. With `children` it lays out both rails (`--rail-title-rail`) so the content
   stays centred and the title never covers it. `size` sets one rotated size for every title on a
-  page; a title longer than the room under the pill shrinks to fit. `decorative` draws hidden
-  decoration instead of a heading, for a frame whose real heading is elsewhere.
+  page. A title longer than the room in its actual scrollport (the nearest scrolling ancestor,
+  else the viewport) shrinks to fit, never below 12px; below that it reads horizontally above the
+  content. It refits when its words, `dot`, `size`, the scrollport or its own size change, and a
+  departing title is clipped at the clearance line, so it never paints under the header pill.
+  `decorative` draws hidden decoration instead of a heading, for a frame whose real heading is
+  elsewhere.
 - `filterCountText(count, countLabel, locale)` from `@yesid/ui/brand`: the words FilterSummary
   shows for a count.
 - `ListingFrame` `resultCountText`: an always-present, visually hidden polite status that announces

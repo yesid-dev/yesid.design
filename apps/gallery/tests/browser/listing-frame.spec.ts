@@ -191,6 +191,22 @@ test('one line parts the header from the list: no dashed rule above the search',
 	await expect(page.locator('[data-slot="listing-filter-search"]')).toHaveCSS('border-top-width', '0px');
 });
 
+test('with rule="dimension" one line parts the header from the list, in both presentations', async ({ page }) => {
+	test.skip(page.viewportSize()!.width < DESKTOP_MIN_WIDTH, 'The desktop filter column drew a second rule');
+	for (const presentation of ['expressive', 'reading']) {
+		await page.goto(`/listing-frame?rule=dimension&presentation=${presentation}`);
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		const frame = page.locator('[data-slot="listing-frame"]');
+		await expect(frame).toHaveAttribute('data-rule', 'dimension');
+		const rules = frame.locator('[data-slot="separator"], .listing-line');
+		await expect(rules, presentation).toHaveCount(1);
+		await expect(rules.first()).toHaveAttribute('data-testid', 'listing-page-separator');
+		const search = page.locator('[data-slot="listing-filter-search"]');
+		await expect(search.locator('[data-slot="separator"]'), presentation).toHaveCount(0);
+		await expect(search).toHaveCSS('border-top-width', '0px');
+	}
+});
+
 test('the phone Filters button keeps its focus ring', async ({ page }) => {
 	test.skip(page.viewportSize()!.width >= DESKTOP_MIN_WIDTH, 'The Filters button shows below 1024px');
 	await page.goto('/listing-frame');

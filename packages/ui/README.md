@@ -1067,7 +1067,12 @@ content between them; the title sits on its `side` rail (`left`, the default, re
 top (default `--chrome-offset`, else `--nav-clearance`, plus 1rem, clear of the header pill) while
 its section scrolls, then leaves with the section's end as the next section's title takes over.
 It never overlaps the content, which keeps its own column, and it is never wider than the rail.
-A title longer than the room under the pill shrinks to fit after hydration. Below 1024px it reads
+After hydration the title fits the room between the clearance and the bottom of the scrollport it
+sticks in (the nearest scrolling ancestor, else the viewport): a longer title shrinks, never below
+12px; one that would need less reads horizontally above the content instead. It refits when its
+words, `dot`, `size` or `level` change, when the scrollport or the title resizes, at the breakpoint
+and when the web font loads. As its section scrolls away, the part of the title above the
+clearance line is clipped, so it never paints under the header pill. Below 1024px it reads
 horizontally above the content, in SectionHeading's display type, inset by `--space-page-x`.
 
 It is the section's real heading, first in the section's DOM order: `level` (default 2) picks the

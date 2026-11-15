@@ -143,8 +143,10 @@ describe('rule option (D22)', () => {
 		expect(separator.getAttribute('data-variant')).toBe(drawn === 'dimension' ? 'dimension' : null);
 		expect(separator.classList.contains('listing-line')).toBe(drawn === 'line');
 		// One rule between the header and the list: the search never draws its own.
-		expect(view.container.querySelectorAll('.dimension-line, .listing-line, [data-variant="hazard"]')).toHaveLength(1);
-		expect(slot(view, 'listing-filter-search').querySelector('[data-slot="separator"], .dimension-line')).toBeNull();
+		const rules = view.container.querySelectorAll('[data-slot="separator"], .listing-line');
+		expect(rules).toHaveLength(1);
+		expect(rules[0]).toBe(separator);
+		expect(slot(view, 'listing-filter-search').querySelector('[data-slot="separator"], .listing-line')).toBeNull();
 	});
 });
 

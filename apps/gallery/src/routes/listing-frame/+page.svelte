@@ -31,6 +31,7 @@
 	onMount(() => (params = new URLSearchParams(page.url.searchParams.toString())));
 	const reading = $derived(params.get('presentation') === 'reading');
 	const spanish = $derived(params.get('lang') === 'es');
+	const rule = $derived(params.get('rule') === 'dimension' ? 'dimension' : undefined);
 
 	let query = $state('');
 	let mode = $state<string | null>(null);
@@ -85,6 +86,7 @@
 <div class="contents" lang={spanish ? 'es' : 'fr'}>
 <ListingFrame
 	presentation={reading ? 'reading' : 'expressive'}
+	{rule}
 	heading={spanish ? 'Responsabilidades e internacionalización: trabajos e investigaciones' : 'Catalogue'}
 	edgeTitle="Un catalogue de travaux et de recherches"
 	subtitle={spanish ? 'Trabajos e investigaciones' : 'Travaux et recherches'}
