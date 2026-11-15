@@ -143,7 +143,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `4608dc376a9a692d0913e504fe5c122e6d07f591156d1c35ab61eca908cc66e4`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `1cc369d72fe470265996ac19b3c85a0267b06d065fdb89decfaee8cb7dbfe10c`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `40450a648e4a461734946514b529ca42bc67cd38a813f0c51babd335e5409683`
 
 ## Declaration namespaces
@@ -1752,7 +1752,11 @@ declare namespace Layout {
         ReadingFrame,
         ReadingFrameProps,
         ReadingFrameSection,
-        ReadingFrameUpdated
+        ReadingFrameUpdated,
+        PageSections,
+        PageSectionsProps,
+        PageSection,
+        PageSectionProps
     }
 }
 
@@ -1922,6 +1926,30 @@ type OnNavigate = (callback: (navigation: NavigationEvent) => NavigationResult) 
 
 // @public
 function openSection(id: string, root?: Element | Document): boolean;
+
+// @public (undocumented)
+const PageSection: Component<PageSectionProps, {}, "">;
+
+// @public (undocumented)
+type PageSection = ReturnType<typeof PageSection>;
+
+// @public (undocumented)
+interface PageSectionProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    // (undocumented)
+    children: Snippet;
+}
+
+// @public (undocumented)
+const PageSections: Component<PageSectionsProps, {}, "">;
+
+// @public (undocumented)
+type PageSections = ReturnType<typeof PageSections>;
+
+// @public (undocumented)
+interface PageSectionsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    // (undocumented)
+    children: Snippet;
+}
 
 // @public
 interface Persisted<T extends LocaleFree> {

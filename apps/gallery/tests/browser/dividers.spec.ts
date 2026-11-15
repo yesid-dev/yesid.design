@@ -1,9 +1,11 @@
 import { expectAccessible } from '@yesid/config/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { DIVIDER_COPY, DIVIDER_LANGS } from '../../src/lib/gallery/dividers-fixture.js';
+import { column, strokes } from './pixels.js';
 
-// D22: THE divider is the dimension line; every section but the last ends with it; the footer's
-// top edge is the street edge, one dashed line of alternating yellow and white dashes.
+// D22: THE divider is the dimension line; PageSections ends every section but the last with it
+// (the last one sits in a product wrapper); the footer's top edge is the street edge, one dashed
+// line of alternating yellow and white dashes.
 const WIDTHS = [320, 390, 768, 1440, 1920];
 const THEMES = ['dark', 'light'] as const;
 
@@ -26,30 +28,43 @@ const resolve = (page: Page, value: string) =>
 		return color;
 	}, value);
 
-/** What each section of the page draws at its bottom edge, read from its ::after. */
-const sectionEnds = (page: Page) =>
-	page.getByTestId('divider-sections').evaluate((root) =>
-		[...root.children].map((section) => {
-			const rect = section.getBoundingClientRect();
-			const after = getComputedStyle(section, '::after');
-			return {
-				id: section.id,
-				tag: section.tagName,
-				content: after.content,
-				position: after.position,
-				height: after.height,
-				bottom: after.bottom,
-				width: parseFloat(after.width),
-				sectionWidth: rect.width,
-				sectionLeft: rect.left,
-				border: `${after.borderLeftWidth} ${after.borderLeftStyle} ${after.borderLeftColor}`,
-				background: after.backgroundImage,
-				backgroundSize: after.backgroundSize,
-				backgroundPosition: after.backgroundPosition,
-				animation: after.animationName,
-			};
-		}),
-	);
+/** The page sections in order, each with the boundary row that follows it, if any. */
+const layout = (page: Page) =>
+	page.getByTestId('divider-sections').evaluate((root) => {
+		const sections = [...root.querySelectorAll<HTMLElement>('[data-slot="page-section"]')];
+		const lines = [...root.querySelectorAll<HTMLElement>('[data-slot="page-section-boundary"]')];
+		const follows = (a: Node, b: Node) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+		return {
+			client: document.documentElement.clientWidth,
+			sections: sections.map((section, index) => {
+				const next = sections[index + 1];
+				const after = lines.filter((line) => follows(section, line) && (!next || follows(line, next)));
+				const rect = section.getBoundingClientRect();
+				return {
+					id: section.id,
+					bottom: rect.bottom,
+					lines: after.map((line) => {
+						const box = line.getBoundingClientRect();
+						const style = getComputedStyle(line);
+						return {
+							top: box.top,
+							left: box.left,
+							width: box.width,
+							height: style.height,
+							border: `${style.borderLeftWidth} ${style.borderLeftStyle} ${style.borderLeftColor}`,
+							background: style.backgroundImage,
+							size: style.backgroundSize,
+							position: style.backgroundPosition,
+							animation: style.animationName,
+							ariaHidden: line.getAttribute('aria-hidden'),
+							role: line.getAttribute('role'),
+							nextTop: next?.getBoundingClientRect().top,
+						};
+					}),
+				};
+			}),
+		};
+	});
 
 for (const theme of THEMES) {
 	for (const lang of DIVIDER_LANGS) {
@@ -57,45 +72,35 @@ for (const theme of THEMES) {
 			test.skip(testInfo.project.name !== 'desktop', 'One run covers both themes and every width');
 			await open(page, lang, theme);
 			const ink = await resolve(page, 'color-mix(in srgb, var(--primary) 70%, transparent)');
-			const ends = await sectionEnds(page);
-			const client = await page.evaluate(() => document.documentElement.clientWidth);
-			expect(ends.map(({ id }) => id)).toEqual(DIVIDER_COPY[lang].sections.map(({ id }) => id));
-			expect(ends.every(({ tag }) => tag === 'SECTION')).toBe(true);
+			const { client, sections } = await layout(page);
+			expect(sections.map(({ id }) => id)).toEqual(DIVIDER_COPY[lang].sections.map(({ id }) => id));
+			// The last section sits in a wrapper and is still the last page section.
+			await expect(page.getByTestId('last-wrapper').locator('[data-slot="page-section"]')).toHaveCount(1);
 
-			for (const end of ends.slice(0, -1)) {
-				expect(end.content, end.id).toBe('""');
-				expect(end.position, end.id).toBe('absolute');
-				expect(end.bottom, end.id).toBe('0px');
-				expect(end.height, end.id).toBe('9px');
-				expect(end.width, `${end.id} runs edge to edge`).toBe(end.sectionWidth);
-				expect(end.sectionWidth, `${end.id} is full-bleed`).toBe(client);
-				expect(end.border, end.id).toBe(`1px solid ${ink}`);
-				expect(end.background, end.id).toContain('repeating-linear-gradient');
-				expect(end.backgroundSize, end.id).toBe('100% 1px, 100% 5px');
-				expect(end.backgroundPosition, end.id).toBe('0px 4px, 79px 2px');
-				expect(end.animation, `${end.id} is static`).toBe('none');
+			for (const section of sections.slice(0, -1)) {
+				expect(section.lines, section.id).toHaveLength(1);
+				const [line] = section.lines;
+				expect(line!.top, `${section.id}: the line starts where the section ends`).toBeCloseTo(section.bottom, 0);
+				expect(line!.nextTop! - (line!.top + 9), `${section.id}: the next section starts after the line`).toBeGreaterThanOrEqual(-0.5);
+				expect(line!.left, section.id).toBe(0);
+				expect(line!.width, `${section.id} runs edge to edge`).toBe(client);
+				expect(line!.height, section.id).toBe('9px');
+				expect(line!.border, section.id).toBe(`1px solid ${ink}`);
+				expect(line!.background, section.id).toContain('repeating-linear-gradient');
+				expect(line!.size, section.id).toBe('100% 1px, 100% 5px');
+				expect(line!.position, section.id).toBe('0px 4px, 79px 2px');
+				expect(line!.animation, `${section.id} is static`).toBe('none');
+				expect([line!.ariaHidden, line!.role], section.id).toEqual(['true', 'none']);
 			}
-			const last = ends.at(-1)!;
-			expect(last.content, 'the last section draws no divider').toBe('none');
+			expect(sections.at(-1)!.lines, 'the last section draws no divider').toHaveLength(0);
 
-			// Nothing between the last section and the footer draws a divider.
-			const between = await page.evaluate(() => {
-				const footer = document.querySelector('[data-slot="footer"]')!;
-				const last = document.querySelector('[data-testid="divider-sections"] > section:last-of-type')!;
-				return [...document.querySelectorAll('.dimension-line, [data-slot="separator"]')].filter(
-					(node) =>
-						last.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING &&
-						!last.contains(node) &&
-						node.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING,
-				).length;
-			});
-			expect(between).toBe(0);
-			const gap = await page.evaluate(() => {
-				const footer = document.querySelector('[data-slot="footer"]')!.getBoundingClientRect();
-				const last = document.querySelector('[data-testid="divider-sections"] > section:last-of-type')!.getBoundingClientRect();
-				return footer.top - last.bottom;
-			});
-			expect(gap, 'the footer follows the last section directly').toBeLessThan(1);
+			// Painted: nothing between the last section's text and the footer.
+			const footer = page.getByRole('contentinfo');
+			await footer.scrollIntoViewIfNeeded();
+			const lastText = (await page.locator(`#${sections.at(-1)!.id} p`).last().boundingBox())!;
+			const footerBox = (await footer.boundingBox())!;
+			const rows = await column(page, lastText.x + 10, lastText.y + lastText.height + 2, footerBox.y - 1);
+			expect(strokes(rows), 'no stroke before the footer').toBe(0);
 
 			// The manual Separator and the panel's rule are the same line.
 			for (const id of ['manual-dimension', 'dimension-terminal']) {
@@ -117,14 +122,16 @@ for (const theme of THEMES) {
 			await expect(edge).toHaveAttribute('aria-hidden', 'true');
 			await expect(edge).toHaveAttribute('role', 'none');
 			expect(await footer.evaluate((node) => node.firstElementChild?.getAttribute('data-slot'))).toBe('footer-street-edge');
-			const [yellow, white, footerBg] = await Promise.all([
+			const [yellow, white, footerBg, hairline] = await Promise.all([
 				resolve(page, 'var(--hazard-a)'),
 				resolve(page, 'var(--reflective)'),
 				footer.evaluate((node) => getComputedStyle(node).backgroundColor),
+				resolve(page, 'color-mix(in srgb, var(--foreground) 35%, transparent)'),
 			]);
 			expect(yellow).toBe('rgb(255, 182, 39)');
 			expect(white).toBe('rgb(245, 245, 240)');
 			expect(footerBg).toBe(await resolve(page, 'var(--muted)'));
+			expect(hairline).not.toBe('rgba(0, 0, 0, 0)');
 			const style = await edge.evaluate((node) => {
 				const computed = getComputedStyle(node);
 				const rect = node.getBoundingClientRect();
@@ -148,12 +155,9 @@ for (const theme of THEMES) {
 			// hairline so it reads on the light footer.
 			expect(style.image).toContain(`${white} 41px, ${white} 59px`);
 			expect(style.image).toContain(`${yellow} 0px, ${yellow} 20px`);
-			const hairline = await resolve(page, 'color-mix(in srgb, var(--foreground) 35%, transparent)');
-			expect(hairline).not.toBe('rgba(0, 0, 0, 0)');
 			expect(style.image).toContain(`${hairline} 40px, ${hairline} 60px`);
 			expect(style.size).toBe('100% 2px, 100% 4px');
 			expect(style.position).toBe('0px 1px, 0px 0px');
-			// The hazard strip it replaces is gone.
 			await expect(footer.locator('.footer-gradient-sep')).toHaveCount(0);
 		});
 
@@ -162,16 +166,14 @@ for (const theme of THEMES) {
 			await open(page, lang, theme);
 			for (const width of WIDTHS) {
 				await page.setViewportSize({ width, height: 900 });
-				const fit = await page.evaluate(() => ({
-					scroll: document.documentElement.scrollWidth,
-					client: document.documentElement.clientWidth,
-				}));
-				expect(fit.scroll, `${lang} ${theme} at ${width}px`).toBeLessThanOrEqual(fit.client);
-				const ends = await sectionEnds(page);
-				for (const end of ends.slice(0, -1)) {
-					expect(end.width, `${end.id} at ${width}px`).toBe(fit.client);
+				const { client, sections } = await layout(page);
+				const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
+				expect(scroll, `${lang} ${theme} at ${width}px`).toBeLessThanOrEqual(client);
+				for (const section of sections.slice(0, -1)) {
+					expect(section.lines, `${section.id} at ${width}px`).toHaveLength(1);
+					expect(section.lines[0]!.width, `${section.id} at ${width}px`).toBe(client);
 				}
-				expect(ends.at(-1)!.content).toBe('none');
+				expect(sections.at(-1)!.lines).toHaveLength(0);
 			}
 			await expectAccessible(page);
 		});

@@ -21,7 +21,8 @@
 		children?: Snippet;
 		/**
 		 * The rule under the masthead: `true` (default) draws hazard tape, `'dimension'` the dimension
-		 * line (THE divider, D22), `false` nothing.
+		 * line (THE divider, D22), `false` nothing. Inside a `PageSection` within `PageSections` the
+		 * tape is hidden: the section boundary owns the edge.
 		 */
 		tape?: boolean | 'dimension';
 		/** The brand dot after the heading. Defaults to `true`. */
@@ -72,10 +73,11 @@
 		<div class="masthead-body" data-slot="masthead-body">{@render children()}</div>
 	{/if}
 
+	<!-- `data-edge-rule`: inside a PageSection the section boundary owns this edge (D22, base.css). -->
 	{#if tape === 'dimension'}
-		<Separator variant="dimension" />
+		<Separator variant="dimension" data-edge-rule />
 	{:else if tape}
-		<Separator variant="hazard" />
+		<Separator variant="hazard" data-edge-rule />
 	{/if}
 </div>
 

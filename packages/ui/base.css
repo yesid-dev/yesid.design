@@ -468,10 +468,9 @@ pre, code, table {
    A 1px hairline with 9px end ticks and 5px scale ticks every 80px (the grid's major step), in the
    blueprint ink (`--primary` at 70%, as BlueprintShell's labels). CSS only, decorative and static;
    identical in every product and theme. `Separator variant="dimension"` and the frames' `rule` and
-   `tape` options draw it; `.section-dividers` draws it at the bottom of every section but the last. */
+   `tape` options draw it; `PageSections` and `PageSection` draw it between a page's sections. */
 @layer components {
-	.dimension-line,
-	.section-dividers > section:not(:last-of-type)::after {
+	.dimension-line {
 		--dimension-ink: color-mix(in srgb, var(--primary) 70%, transparent);
 		box-sizing: border-box;
 		display: block;
@@ -493,19 +492,10 @@ pre, code, table {
 		pointer-events: none;
 	}
 
-	/* Placement rule: put `.section-dividers` on the element whose direct children are the page's
-	   `<section>`s (the route's top element). Every section but the last ends with the line at its
-	   bottom edge, edge to edge of the section; the last section never draws one, so nothing sits
-	   before the footer. The section becomes a positioning context only where no product rule says
-	   otherwise (zero specificity). */
-	:where(.section-dividers > section:not(:last-of-type)) {
-		position: relative;
-	}
-	.section-dividers > section:not(:last-of-type)::after {
-		content: '';
-		position: absolute;
-		inset-inline: 0;
-		bottom: 0;
-		width: auto;
+	/* Inside a PageSection that belongs to PageSections the section boundary owns the section's
+	   edges, so a kit rule that would sit on an edge (Masthead's and ErrorPage's tape, DetailFrame's
+	   rule without a header) is not drawn: never a doubled stroke, never a line before the footer. */
+	[data-page-section-edges] [data-edge-rule] {
+		display: none;
 	}
 }

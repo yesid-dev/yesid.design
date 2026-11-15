@@ -40,7 +40,8 @@
 		header?: Snippet;
 		/**
 		 * Below the header: `hazard` tape (default), the `dimension` line (THE divider, D22), a
-		 * neutral `line`, or `none`.
+		 * neutral `line`, or `none`. Without a `header`, inside a `PageSection` within `PageSections`,
+		 * the rule would sit on the section's edge, so it is hidden: the section boundary owns it.
 		 */
 		rule?: 'hazard' | 'dimension' | 'line' | 'none';
 		toolbar?: Snippet;
@@ -74,6 +75,7 @@
 	import { cn } from '../cn/index.js';
 	import { Separator } from '../primitives/separator/index.js';
 	import TocPill from '../brand/TocPill.svelte';
+
 	import { createSectionJump } from '../brand/section-jump.js';
 
 	let {
@@ -98,6 +100,9 @@
 		...rest
 	}: DetailFrameProps = $props();
 
+	// Without a header the rule is the frame's top edge; inside a PageSection the section boundary
+	// owns that edge (D22, `data-edge-rule` in base.css).
+	const edgeRule = $derived(header ? undefined : true);
 	const ownNavigation = createSectionJump();
 	let frame = $state<HTMLElement>();
 	$effect(() => {
@@ -132,11 +137,11 @@
 	{@render header?.()}
 
 	{#if rule === 'hazard'}
-		<Separator variant="hazard" class="detail-shell-tape" />
+		<Separator variant="hazard" class="detail-shell-tape" data-edge-rule={edgeRule} />
 	{:else if rule === 'dimension'}
-		<Separator variant="dimension" class="detail-shell-dimension" />
+		<Separator variant="dimension" class="detail-shell-dimension" data-edge-rule={edgeRule} />
 	{:else if rule === 'line'}
-		<div class="detail-shell-line" data-slot="detail-shell-line" aria-hidden="true"></div>
+		<div class="detail-shell-line" data-slot="detail-shell-line" data-edge-rule={edgeRule} aria-hidden="true"></div>
 	{/if}
 
 	{#if toolbar}

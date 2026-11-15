@@ -97,7 +97,7 @@ consumer or clean-room verification.
   export changes. Every product that renders `SiteFooter` (yesid.dev, yesid.login, Transit) shows
   the new edge with no code change. Migration: drop product CSS or tests that target
   `.footer-gradient-sep` (none found in the three products on 15 November 2026), and never draw a
-  divider just above the footer (see `.section-dividers`). Proof: `SiteFooter.test.ts` and the
+  divider just above the footer (see `PageSections`). Proof: `SiteFooter.test.ts` and the
   Gallery `/dividers` spec fail on the previous source. Rehearse in all three products.
 
 - **Hover halos, owner ruling, 2026-11-15 03:57 UTC, planned v0.44.0:** "The only thing that I

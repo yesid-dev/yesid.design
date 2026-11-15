@@ -101,7 +101,7 @@ ticks and 5px scale ticks every 80px (the grid's major step), full width, the sa
 product and theme. It is horizontal only, has no size, width cap or label, never moves, and is
 hidden from assistive technology (`aria-hidden="true"`, `role="none"`). The `.dimension-line` class
 in `base.css` draws it, so it needs `@yesid/ui/base.css`. Use it by hand for a break inside a
-section; between sections, let `.section-dividers` draw it (see [Base stylesheet](#base-stylesheet)).
+section; between sections, let `PageSections` draw it (see [Page sections](#page-sections)).
 
 ### Sheet
 
@@ -811,6 +811,46 @@ standalone links pass their `bind:ref` to the lifecycle's optional `languageLink
 The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.44.0/docs/migrations/navigation-lifecycle.md)
 records the v0.33.0 copy and integration migration for Transit and yesid.dev.
 
+## Page sections
+
+`PageSections` and `PageSection` carry the owner's placement rule
+([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)): every section ends with the
+dimension line at its bottom, except the last section of the page, so a divider never sits before
+the footer. A page composes its sections with them and draws no divider itself.
+
+```svelte
+<script>
+	import { PageSection, PageSections, SiteFooter } from '@yesid/ui/layout';
+</script>
+
+<main id="main">
+	<PageSections data-register="expressive">
+		<PageSection aria-labelledby="work">...</PageSection>          <!-- ends with the line -->
+		<div class="product-wrapper">
+			<PageSection aria-labelledby="services">...</PageSection>  <!-- ends with the line -->
+		</div>
+		<PageSection aria-labelledby="contact">...</PageSection>       <!-- last: no line -->
+	</PageSections>
+</main>
+<SiteFooter {...footer} />                                         <!-- its street edge -->
+```
+
+`PageSections` renders a `<div>` and `PageSection` a `<section>`; both forward their attributes.
+Each `PageSection` registers with the nearest `PageSections` at any depth, so product wrappers do
+not matter, and every registered section after the first is preceded by a boundary row (a
+`Separator variant="dimension"` with `data-slot="page-section-boundary"`). The row is in the flow,
+outside both sections' boxes and as wide as `PageSections` (make that full-bleed for an
+edge-to-edge line), so a section's own backgrounds and positioned children cannot paint over it.
+Order is document order, on the server too; a section that mounts later takes its place. Plain
+`<section>`s do not register, and a `PageSection` inside another, or outside `PageSections`, is a
+plain section.
+
+A registered section carries `data-page-section-edges`, and `base.css` hides the kit's edge rules
+inside it (`data-edge-rule`): Masthead's and ErrorPage's tape and DetailFrame's rule without a
+header. The boundary owns the section's edges, so a Masthead that is a whole section gives one
+stroke, and the final section leaves nothing before the footer. Internal rules (DetailFrame and
+ListingFrame under their header, TerminalPanel and CodeBlock under their title bar) stay.
+
 ## Site footer and error page
 
 `SiteFooter` renders the street edge along its top edge (D22: one dashed road marking whose 20px
@@ -1023,7 +1063,7 @@ focus ring, text links (a link without a class is underlined in `--primary`; com
 style their own), scrollbar, circuit grid, shared keyframes, label styles, `.glass-chrome`, the
 `TerminalPanel` and `CodeBlock` classes (`.terminal-*` and `.syn-*`, in the components layer), the
 `SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), the dimension line
-(`.dimension-line`) and its placement rule (`.section-dividers`), a focus outline under forced
+(`.dimension-line`) and the rule that hides kit edge rules inside a page section, a focus outline under forced
 colors and the
 View Transitions route crossfade (off under reduced motion; pair it with `onNavigate(viewTransition)`
 from `@yesid/motion/utils/viewTransition`). It imports
@@ -1038,32 +1078,6 @@ from the app stylesheet after Tailwind:
 ```
 
 Like every package stylesheet, it is opt-in; no JavaScript import loads it.
-
-### Section dividers
-
-The owner's placement rule ([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)): every
-section ends with the dimension line at its bottom, except the last section of the page, so a
-divider never sits before the footer. A page gets it without its own CSS: put `.section-dividers`
-on the element whose direct children are the page's `<section>` elements, normally the route's top
-element inside `<main id="main">`.
-
-```svelte
-<main id="main">
-	<div class="section-dividers" data-register="expressive">
-		<section aria-labelledby="work">…</section>      <!-- ends with the line -->
-		<section aria-labelledby="services">…</section>  <!-- ends with the line -->
-		<section aria-labelledby="contact">…</section>   <!-- last: no line -->
-	</div>
-</main>
-<SiteFooter …/>                                          <!-- its street edge, never a divider -->
-```
-
-Each direct `<section>` child but the last `<section>` draws the line in its `::after`, at its
-bottom edge and across its full width, so a full-bleed section draws it edge to edge. Elements
-that are not sections (a scene anchor, the construction floor) neither draw it nor count as the
-last section. A section that has no positioning context of its own becomes `position: relative`
-(at zero specificity, so a product rule still wins); a section that already uses `::after` for
-something else should be wrapped instead. Do not also place a `Separator` between sections.
 
 ### Label roles
 

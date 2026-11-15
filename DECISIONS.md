@@ -259,8 +259,12 @@ by a page (products always use yesid.design components):
   it; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and
   `Masthead` and `ErrorPage` take `tape="dimension"`, wherever they drew hazard tape as a divider.
 - **Placement:** every section ends with the divider at its bottom, except the last section of
-  the page; never a divider before the footer. `.section-dividers` in `@yesid/ui/base.css`, on the
-  element that holds the page's sections, draws it that way without page CSS.
+  the page; never a divider before the footer. `PageSections` and `PageSection`
+  (`@yesid/ui/layout`) draw it that way without page CSS: every registered section after the first
+  is preceded by a real boundary row, outside both sections' boxes, so nothing a section paints can
+  cover it; wrappers do not matter, and plain or nested sections do not register. Inside a
+  registered section the kit's edge rules (Masthead's and ErrorPage's tape, DetailFrame's rule
+  without a header) are not drawn, so the stroke is never doubled or left before the footer.
 - **The street edge:** `SiteFooter`'s top edge is a road marking: one dashed line whose dashes
   alternate yellow and white, edge to edge, on the footer's own colours in dark and light. It
   replaces the footer's hazard strip by default.

@@ -49,3 +49,9 @@ export type {
 
 export { default as ReadingFrame } from './ReadingFrame.svelte';
 export type { ReadingFrameProps, ReadingFrameSection, ReadingFrameUpdated } from './ReadingFrame.svelte';
+
+export { default as PageSections } from './PageSections.svelte';
+export type { PageSectionsProps } from './PageSections.svelte';
+
+export { default as PageSection } from './PageSection.svelte';
+export type { PageSectionProps } from './PageSection.svelte';

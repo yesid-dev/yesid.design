@@ -25,7 +25,8 @@
 		body: string;
 		/**
 		 * The rule above the page: `true` (default) draws hazard tape, `'dimension'` the dimension
-		 * line (THE divider, D22), `false` nothing.
+		 * line (THE divider, D22), `false` nothing. Inside a `PageSection` within `PageSections` the
+		 * tape is hidden: the section boundary owns the edge.
 		 */
 		tape?: boolean | 'dimension';
 		/** Placement and size of the construction scene. Defaults to `'large-first'`. */
@@ -77,12 +78,13 @@
 {/snippet}
 
 <section class="error-page" data-slot="error-page">
+	<!-- `data-edge-rule`: inside a PageSection the section boundary owns this edge (D22, base.css). -->
 	{#if tape === 'dimension'}
-		<div data-testid="dimension-rule">
+		<div data-testid="dimension-rule" data-edge-rule>
 			<Separator variant="dimension" />
 		</div>
 	{:else if tape}
-		<div data-testid="hazard-tape">
+		<div data-testid="hazard-tape" data-edge-rule>
 			<Separator variant="hazard" />
 		</div>
 	{/if}
