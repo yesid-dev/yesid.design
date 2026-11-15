@@ -9,6 +9,7 @@ const WIDER = [599, 600, 640, 768];
 
 interface PillState {
 	pill: { left: number; right: number };
+	wordmark: { width: number; split: boolean };
 	controls: { left: number; right: number; width: number; height: number; visible: boolean }[];
 	links: string[];
 	pageWidth: number;
@@ -21,6 +22,10 @@ function pillState(page: Page): Promise<PillState> {
 		const language = nav.querySelector('[data-testid="language-toggle"]')!;
 		return {
 			pill: { left: box(nav).left, right: box(nav).right },
+			wordmark: {
+				width: box(nav.querySelector('.nav-wordmark')!).width,
+				split: nav.querySelector('[data-slot="wordmark-letters"]')!.children.length > 0,
+			},
 			controls: [theme, language].map((el) => ({
 				left: box(el).left,
 				right: box(el).right,
@@ -90,7 +95,8 @@ for (const lang of PRODUCT_LANGS) {
 	test(`${lang}: the toggles keep their place through hydration`, async ({ browser, baseURL }, testInfo) => {
 		test.skip(testInfo.project.name !== 'desktop', 'One run covers the band');
 		for (const width of [500, 517, 527, 555, 560]) {
-			const context = await browser.newContext({ viewport: { width, height: 800 } });
+			// With motion allowed, hydration splits the wordmark into letters for its hover effects.
+			const context = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'no-preference' });
 			let release!: () => void;
 			const gate = new Promise<void>((resolve) => { release = resolve; });
 			await context.route('**/*.js', async (route) => { await gate; await route.continue(); });
@@ -106,8 +112,11 @@ for (const lang of PRODUCT_LANGS) {
 				await settle(page);
 				const after = await pillState(page);
 				expectFits(after, width, lang);
+				expect(before.wordmark.split, 'the wordmark is whole before hydration').toBe(false);
+				expect(after.wordmark.split, 'hydration splits the wordmark').toBe(true);
+				expect(Math.abs(after.wordmark.width - before.wordmark.width), `${lang} wordmark width changed at ${width}px`).toBeLessThanOrEqual(0.1);
 				after.controls.forEach((control, i) => {
-					expect(Math.abs(control.left - before.controls[i].left), `${lang} toggle ${i} moved at ${width}px`).toBeLessThanOrEqual(1.5);
+					expect(Math.abs(control.left - before.controls[i].left), `${lang} toggle ${i} moved at ${width}px`).toBeLessThanOrEqual(0.1);
 				});
 			} finally {
 				release();

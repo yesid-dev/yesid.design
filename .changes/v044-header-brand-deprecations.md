@@ -18,6 +18,11 @@ and start three deprecations (Y-23, Y-26, owner decision of 14 November 2026, DE
   599px, priority 2 links no longer show beside the toggles. Callers still passing the deprecated
   `compactControls` keep the 500px step below 600px, where their toggles are in the menu.
   Proof: `site-header-pill.spec.ts` and `links-fit.test.ts` fail on the previous source.
+- Defect fix, Wordmark: with motion allowed, hydration splits the letters into separate boxes for
+  the hover effects, which dropped kerning and ligatures and widened the wordmark (0.375px locally,
+  enough in CI to move a centred pill's toggles 1.8px). The letters now render without kerning or
+  ligatures from the first paint, as they already did after hydration, so the width holds and the
+  toggles stay put. Proof: the hydration case in `site-header-pill.spec.ts` fails before.
 - Deprecated, retained and functional: SiteHeader `compactControls` (omit it; the toggles stay in
   the pill at every width), `CornerMeta` and `MetroStation` with their props types (no product
   use; see docs/migrations/decorative-vocabulary.md and docs/migrations/compact-controls.md).
