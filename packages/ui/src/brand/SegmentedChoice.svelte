@@ -22,7 +22,7 @@
 		readonly value: K;
 		readonly label: string;
 		readonly onSelect: (key: K) => void;
-		readonly variant?: 'default' | 'joined-grid';
+		readonly variant?: 'default' | 'joined-grid' | 'fit-row';
 		readonly class?: string;
 	}
 </script>
@@ -87,6 +87,7 @@
 	class={cn(
 		'segmented-choice',
 		variant === 'joined-grid' && 'segmented-choice--joined-grid',
+		variant === 'fit-row' && 'segmented-choice--fit-row',
 		className,
 	)}
 	data-slot="segmented-choice"
@@ -131,6 +132,8 @@
 		border-radius: var(--radius-lg);
 		background-color: var(--card);
 	}
+	.segmented-choice--fit-row { width: 100%; }
+	.segmented-choice--fit-row .segmented-choice-segment { flex: 1 1 auto; overflow-wrap: anywhere; }
 	.segmented-choice--joined-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));

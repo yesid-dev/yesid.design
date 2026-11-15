@@ -935,3 +935,29 @@ its own tests, build and browser checks when it takes a release; a pass here doe
 Compose native labelled fields using the [recipe](../../docs/recipes/labelled-field.md).
 The Gallery route /labelled-field demonstrates EN, FR and ES error recovery, busy text
 and the existing input-token boundary. This adds no Field component or token value change.
+
+### Reading data and search controls
+
+All reading options are additive. MetricDisplay keeps `tone="accent"` (yellow) and
+`layout="stacked"`. Products pass `tone="reading"` for ordinary figures, reserving accent
+for the screen's one highlight. Figures use tabular numerals. `layout="phone-row"` places
+the label beside the value below 640px; larger screens retain the stack. `labelBelow`
+continues to control source order.
+
+Context recipe: put the unit, full period and comparison in `sublabel`; supply an `info`
+snippet linking to visible evidence and a method, and `absent` with explicit absence words.
+A measured zero stays `value="0"`. Do not substitute zero for missing data. Published
+service metrics keep their approved content without adding a date, source or tooltip.
+
+SearchInput forwards native input attributes and events to the input, accepts `bind:ref`
+for focus, and composes caller `aria-describedby` with its optional `description`.
+`visibleLabel` associates a visible native label; `textSize="body"` opts into body text.
+The default hidden accessible label and small mono text remain for existing callers.
+`label` owns the accessible name. Placeholder remains a hint, never the label.
+
+SegmentedChoice `variant="fit-row"` shares available width among choices and wraps whole
+segments when they no longer fit. Default and joined-grid layouts stay unchanged.
+FilterGroup `selectedStyle="consistent"` gives choices and the All reset the same filled
+orange selection, with radio semantics as the non-colour cue. `legacy` remains the default.
+Gallery `/reading-record` composes these contracts with comparison, definition-list and
+25-person in-row confirmation recipes. This fixture never establishes consumer acceptance.

@@ -181,6 +181,11 @@ wordmark. Empty menus omit the menu button and keep the identity controls reacha
 Button \`wrap\` opts into multiline labels and content-driven height. Table cells preserve whole
 words, wrapping a single word only when it exceeds the cell width.
 
+MetricDisplay keeps yellow by default; reading pages pass \`tone="reading"\` explicitly.
+Figures use tabular numerals. Put period, unit and comparison in \`sublabel\`, evidence in
+\`info\`, and explicit absence words in \`absent\`. The Gallery reading record demonstrates
+phone rows, scoped comparison scrolling, narrative facts and in-row confirmation.
+
 ## Elevation & Depth
 
 Shadow tokens use \`color-mix(in srgb, var(--primary) N%, transparent)\` for brand-connected

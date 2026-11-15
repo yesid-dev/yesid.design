@@ -365,7 +365,7 @@ describe('public UI prop contracts', () => {
 	it('keeps component bindings and named exports explicit', () => {
 		expectTypeOf<BindingsOf<typeof Button>>().toEqualTypeOf<'ref'>();
 		expectTypeOf<BindingsOf<typeof Badge>>().toEqualTypeOf<'ref'>();
-		expectTypeOf<BindingsOf<typeof SearchInput>>().toEqualTypeOf<'value'>();
+		expectTypeOf<BindingsOf<typeof SearchInput>>().toEqualTypeOf<'value' | 'ref'>();
 		expectTypeOf<BindingsOf<typeof FilterGroup>>().toEqualTypeOf<''>();
 		expectTypeOf<BindingsOf<typeof FilterSection>>().toEqualTypeOf<''>();
 		expectTypeOf<BindingsOf<typeof FilterSummary>>().toEqualTypeOf<''>();

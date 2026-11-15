@@ -56,3 +56,10 @@ describe('MetricDisplay', () => {
 		expect([root?.classList.contains('consumer'), root?.getAttribute('data-testid')]).toEqual([true, 'metric']);
 	});
 });
+
+it('supports reading ink and phone rows while keeping zero and context', () => {
+	const view = show({ tone: 'reading', layout: 'phone-row', value: '0', sublabel: 'Trips, 1 November 2026', info });
+	expect(valueOf(view)?.textContent).toBe('0');
+	expect(view.getByText('Trips, 1 November 2026')).toBeInTheDocument();
+	expect(view.getByTestId('info')).toBeInTheDocument();
+});

@@ -150,3 +150,15 @@ describe('FilterSection', () => {
 		expect(section.contains(view.getByTestId('filter-groups'))).toBe(true);
 	});
 });
+
+it('keeps choice and reset selection controlled in consistent mode', async () => {
+ const onSelect = vi.fn();
+ const view = group({selectedStyle:'consistent',activeKey:null,onSelect});
+ expect(checked(view,'All')).toBe('true');
+ await click(radio(view,'Lines'));
+ expect(onSelect).toHaveBeenLastCalledWith('lines');
+ await view.rerender({activeKey:'lines'});
+ expect(checked(view,'Lines')).toBe('true');
+ await click(radio(view,'All'));
+ expect(onSelect).toHaveBeenLastCalledWith(null);
+});

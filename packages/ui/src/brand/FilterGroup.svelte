@@ -18,6 +18,8 @@
 		allowDeselect?: boolean;
 		collapsible?: boolean;
 		startOpen?: boolean;
+		/** Filled orange selection for both a choice and its reset. Legacy stays the default. */
+		selectedStyle?: 'legacy' | 'consistent';
 		density?: 'compact' | 'spacious';
 		onSelect: (key: string | null) => void;
 		/** Each item button gets `data-testid="{testIdPrefix}-{key}"`. */
@@ -39,6 +41,7 @@
 		collapsible = false,
 		startOpen = true,
 		density = 'compact',
+		selectedStyle = 'legacy',
 		onSelect,
 		testIdPrefix,
 	}: FilterGroupProps = $props();
@@ -60,7 +63,7 @@
 	}
 </script>
 
-<div data-density={density}>
+<div data-density={density} data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}>
 	{#if collapsible}
 		<button
 			type="button"
@@ -110,6 +113,7 @@
 					{#snippet child({ props })}
 						<button
 							{...props}
+							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 							class="tap-press filter-btn w-full rounded py-3 min-h-11 text-left transition-colors"
 							class:px-2={density === 'compact'}
 							class:text-sm={density === 'compact'}
@@ -133,6 +137,7 @@
 						{#snippet child({ props })}
 							<button
 								{...props}
+							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 								class="tap-press filter-btn w-full rounded border border-border py-3 min-h-11 text-left text-[var(--muted-foreground)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] active:border-[var(--primary)] active:text-[var(--primary)]"
 								class:px-2={density === 'compact'}
 								class:text-sm={density === 'compact'}
@@ -182,6 +187,11 @@
 		border-radius: 50%;
 		background: var(--accent);
 	}
+
+	.filter-btn[data-selected-style='consistent'][aria-checked='true'] {
+		background: var(--primary); border-color: var(--primary); color: var(--primary-foreground);
+	}
+	.filter-btn[data-selected-style='consistent']::after { display: none; }
 
 	.filter-collapse {
 		display: grid;
