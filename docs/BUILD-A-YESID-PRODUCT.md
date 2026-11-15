@@ -677,6 +677,18 @@ use the Tailwind font utility:
 body { font-family: 'Inter Variable', sans-serif; background: var(--background); color: var(--foreground); }
 ```
 
+## Classify each route by page type
+
+Give every route a page type before you compose it ([D20](../DECISIONS.md#d20-page-types)):
+editorial (an entry of a collection), listing (a page that lists a collection), marketing (home,
+services, About), contact, dashboard (live maps and data views) or task. Reuse the shared editorial
+and listing designs as they are, rather than drawing your own, so an article or a list looks the
+same in every product; a change to either design belongs in yesid.design. Declare the page's
+register with `data-register`, starting from the default the
+[doctrine](DOCTRINE.md#page-types-and-their-registers-d20) gives its type, and build marketing, contact,
+dashboard and task pages from the shared brand pieces: the header and its toggles, cards and their
+hover, the section dividers, buttons and links.
+
 ## Labelled fields
 
 Follow the [labelled field recipe](recipes/labelled-field.md) for native labels, hints,

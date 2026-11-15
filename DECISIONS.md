@@ -179,3 +179,70 @@ both controls in the pill, its link priorities leave room for them (priority 2 f
 header), and links that do not fit leave a whole priority at a time so the toggles stay put.
 `compactControls`, which moved them into the menu below 600px, is deprecated from v0.44.0 and
 stays functional until removal. D18 still governs the toggles' look, behaviour and order.
+
+## D20: Page types
+
+The owner ruled on 2026-11-15 that every product classifies each page by type, a separate axis
+from register:
+
+- **Editorial pages** are the entries of a collection: on yesid.dev, a project case study and a
+  blog article. All editorial pages share one design.
+- **Listing pages** list a collection, such as projects or the blog. All listing pages share one
+  design: the listing design the owner built.
+- **Marketing pages** are home, services (with their detail pages) and About: a canvas for unique
+  layouts, built only from yesid.design components; never overrides their styles. "Free for all"
+  means free composition, not free styling (owner, 05:58 UTC): each page uses the components and
+  their options as they are, such as the static surface for something static and the interactive
+  surface for something that acts.
+- **The contact page** is its own type, the same in every product and domain.
+- **A dashboard** is a live map or data view, such as Transit's, with its own patterns.
+- **Task pages** are yesid.login's sign-in and account screens (assumed, owner to confirm).
+
+Across products, an editorial page uses yesid.dev's editorial design and a listing page uses
+yesid.dev's listing design; Transit likely has one editorial page, and everything else in Transit
+is the dashboard. Every product shares the brand pieces: the header and its toggles, cards and
+their hover, the section dividers, buttons and links.
+
+The type sets a page's default register (`docs/DOCTRINE.md`, section 4): editorial and listing
+are reading; marketing is expressive within the doctrine, and a long-text region on a marketing
+page may declare reading; contact, dashboard and task pages are task. A page or region that needs
+another register declares it with `data-register`, as before.
+
+**Why.** In the owner's words, "we have to start using the right vocabulary and putting things in
+the correct place." Named types give each shared design one home, so pages of one type stop
+drifting apart and Transit reuses yesid.dev's designs instead of copying them.
+
+**Consequences.** A change to the editorial or listing design changes every page of that type in
+every product. Marketing pages compose freely, but only from yesid.design components, their
+options and the signatures listed in the doctrine, never overriding their styles. Dashboard patterns stay product-owned until two products need
+the same contract (D14).
+
+Legal pages and page not found or error pages: type to be given by the owner.
+
+## D21: Interactive and static surfaces
+
+The owner decided on 2026-11-15 that every product has two kinds of card or surface, so all
+products feel the same under the pointer:
+
+- **Interactive**: the card is a link or control, or contains them, such as a project card with
+  Case study, Website and Repo links. It reacts on hover and on keyboard focus, whether on the card
+  itself or on a link or control inside it, with a slight lift (none under reduced motion) and its
+  edge lighting up and firming. The reaction is identical in light
+  and dark, with no glow and no shadow. A card's own links stay the real targets: no whole-card
+  link wrapping other links, and no interactive element nested inside another (owner, 06:20 UTC).
+- **Static**: nothing to click. It never reacts to the pointer.
+
+PR 239 delivers this. `Card interactive` lifts 1px (not under reduced motion) and firms its edge
+on hover, on keyboard focus of the card or of a whole-card link that wraps it, and on keyboard focus
+of a link or control inside it (`:has(:focus-visible)`), the same in light and dark with no glow
+and no shadow. A `Card` without `interactive` stays still. Section cards (`SectionCard`, used by
+`CollapsibleSection`) are static: only their heading button reacts, firming the card's edge on
+hover and keyboard focus, with no shadow in either theme.
+
+**Why.** Hover is a promise that something acts. One rule for every surface keeps that promise
+the same in every product and theme.
+
+**Consequences.** A product passes `interactive` to every card that is or contains a link or
+control, and to no other card. A card with several links keeps them as separate targets inside a
+plain `Card interactive`, never inside a whole-card link. Hover effects stay on the shared
+components; a product adds no hover shadow or glow of its own.

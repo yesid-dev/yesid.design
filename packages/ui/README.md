@@ -181,14 +181,16 @@ Button transitions name color, background-color, border-color, box-shadow and tr
 
 ### Card
 
-A solid panel with a lit top bevel (`edge-highlight`). Only a card that acts reacts to hover: pass
-`interactive` on a whole-card link or button, and hover firms the border, adds `shadow-section` and
-rises one pixel (no rise under reduced motion). A static card stays still under the pointer
-(Y-6 defect fix in v0.44.0; before it, every card took the border and shadow on hover).
+A solid panel with a lit top bevel (`edge-highlight`). Only a card that acts reacts (D21): pass
+`interactive` on a card that is a link or control, or contains them. Hover, keyboard focus on the
+card or a whole-card link that wraps it, and keyboard focus on a link or control inside it firm the
+border and raise the card one pixel (no rise under reduced motion), the same in light and dark,
+with no glow and no shadow. A static card stays still under the pointer. A card with several links
+keeps them as separate targets; never wrap them in a whole-card link.
 
 - `edge="neutral"` draws the edge in `--border` instead of the orange `--border-brand`: the calm
-  surface for static reading and task cards. An interactive neutral card firms its border on hover
-  without the orange glow.
+  surface for static reading and task cards. An interactive neutral card firms its border the
+  same way.
 - `textSize="inherit"` drops the card's 14px base (`text-sm`), so text and form fields inside keep
   the page size (16px or more). The default `small` keeps today's output.
 

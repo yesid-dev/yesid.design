@@ -28,7 +28,7 @@ These are yesid.design itself. No rule below overrides them, and no product rest
 - **The four colours** and their roles (Rule 3).
 - **Inter and JetBrains Mono** in their roles (Rule 4).
 - **Cards and collapsible cards**, with D15's remembered choice and the 5A opt-in (Rule 7).
-- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). U1's opt-in `compactControls` may move both, unchanged, into the phone menu below a 600 px header (answer 8A). The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
+- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). Both toggles always stay in the navbar pill at every width (D19); `compactControls`, which moved them into the phone menu, is deprecated since v0.44.0. The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
 
 The owner kept the standard controls. The system-owned language order prevents product-specific cycling.
 
@@ -38,7 +38,7 @@ A signature is an expressive element the owner has approved, with its job and it
 
 | Signature | Where | Its job | Conditions |
 | --- | --- | --- | --- |
-| Theme and language toggles | Every product's header (or its phone menu, by opt-in) | Identity and the visitor's choices | Unchanged (section 2) |
+| Theme and language toggles | Every product's header pill (D19) | Identity and the visitor's choices | Unchanged (section 2) |
 | The wordmark and its dot | Every header and footer | Identity | The header's one-time wordmark play may be turned off on task pages (roadmap Y-18) |
 | The construction scene and its sliding props | yesid.dev home closing; Transit home and footer (4A); below yesid.login's sign-in task | The brand's closing gesture | Where a page passes the reveal marker (`ConstructionProps` `revealAt`, as yesid.dev and Transit do), the props slide up out of the ground only as the visitor scrolls to the scene, exactly as today; under reduced motion they appear whole without moving. yesid.login passes no marker, so its scene is still today and stays so. The scene sits at the end of a page or below a task, never between the reader and the answer |
 | The closing departure board | yesid.dev home closing | Real destinations (contact, GitHub, blog, About) as signage | Rows stay real links; no blinking cursor or invented readouts |
@@ -57,7 +57,7 @@ One brand, three registers. They share every contract that makes the family reco
 | | Expressive | Reading | Task |
 | --- | --- | --- | --- |
 | Job | Say who this is and why it matters, at the door | Understand and check, at the reader's pace | Finish a short action correctly |
-| yesid.dev | Home; page not found | Case studies, articles, blog lists, services and service details, About, projects, legal | Contact |
+| yesid.dev | Marketing pages (D20): home, services and service details, About; page not found | Case studies, articles, blog and project lists, legal | Contact |
 | yesid.login | Page not found | Privacy and terms | Sign-in, code, site choice, site switch, editor hand-off, Account, People |
 | Transit | The home closing scene and footer (4A) | Records, lines, stops, rankings, method, data health, legal | Search, map controls, filters |
 | Title | Display type, one lead treatment | Title size, sentence case | Compact task heading, about 28 to 32 px |
@@ -75,6 +75,37 @@ One brand, three registers. They share every contract that makes the family reco
 **How a page declares its register:** set `data-register="expressive"`, `"reading"` or `"task"` on the route's top element (the first element inside `<main id="main">`); an undeclared page is reading. A signature region may declare its own register: the section or container that holds a closing scene carries `data-register="expressive"` even on a reading or task page, and a layout-owned footer scene (Transit's) carries it on the layout's scene container. The attribute is a declaration for reviewers, mockups, Gallery fixtures and product tests (a product may fail a test when a scene renders outside an expressive region; that policy stays with the product, per D7). No component reads it, and it is neither a theme nor a visitor setting: light and dark are a separate axis, and no "quiet mode" returns. Calm arrives through component options that pages choose, and default changes happen only where the owner approves them as named exceptions.
 
 Reading and task share calm rules but differ in width, density and what comes first.
+
+### Page types and their registers (D20)
+
+A page's type says what it is for; its register says how much expression it spends. The owner named the types on 15 November 2026 ([D20](../DECISIONS.md#d20-page-types)). Each type sets a default register, which the page still declares with `data-register`, and a region may declare another (a closing scene stays expressive). Editorial and listing designs are shared: Transit's editorial and listing pages use yesid.dev's designs, not their own. Every type uses the brand pieces listed below.
+
+| Type | Pages | Default register | Kit pieces that serve it |
+| --- | --- | --- | --- |
+| Editorial | Collection entries: yesid.dev case studies and articles; Transit's editorial page, if it has one | Reading | `ArticleHeader` with `presentation="reading"`, `DetailFrame`, `CollapsibleSection` and `TocNav`; `ReadingFrame` (Experimental) for long prose |
+| Listing | Pages that list a collection: projects, blog; Transit's listing pages | Reading | `ListingFrame` with `SearchInput`, `FilterGroup` and `FilterSection`; one `Card interactive` per entry |
+| Marketing | Home, services and service details, About | Expressive, within this doctrine; a long-text region may declare reading | A canvas for unique layouts, built only from yesid.design components; never overrides their styles. Free composition, not free styling: `Card` (static, or `interactive` for a card that is or contains a link or control), `Button`, the brand pieces below and the signatures in section 3 |
+| Contact | The contact page, the same in every product and domain | Task | The [labelled field recipe](recipes/labelled-field.md), `Card edge="neutral" textSize="inherit"`, `Button`, `StateNotice`; the weather signature beside or after the form (section 3) |
+| Dashboard | Transit's live map and data views | Task | Product-owned patterns, with the shared brand pieces; `Surface`, `Masthead` and `DataTable` where they fit. Editorial reading rules do not apply |
+| Task | yesid.login's sign-in and account screens (assumed, owner to confirm) | Task | `Card edge="neutral" textSize="inherit"`, the labelled field recipe, `Masthead` without a kicker or tape, `Button` |
+
+Legal pages and page not found or error pages: type to be given by the owner.
+
+### Brand pieces every product shares
+
+The owner wants every product to feel like one family (15 November 2026). These pieces are the standard, and each lives in one place:
+
+- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19; `compactControls` is deprecated).
+- **The product brand** "yesid. | Product": `ProductBrand` (Experimental), through the `brand` snippet of `SiteHeader` and `SiteFooter`.
+- **Headings that end on the orange dot**, where the design uses it: `SectionHeading` and `Masthead`, whose `dot` prop (default `true`) draws it.
+- **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
+- **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
+- **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
+- **Section dividers and the footer edge** (owner rulings since 06:35 UTC, 15 November 2026). Gap: these arrive in the next release (v0.45.0 packet 1, in progress) as D22; `Separator` on `main` offers only `default`, `hazard` and `gradient`.
+  - The divider is a drafting dimension line: a hairline with scale ticks at the 80 px grid step, in the orange blueprint ink, edge to edge, at the bottom of every section except the last.
+  - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking.
+  - Every rotated title is sticky.
+- **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
 
 ## 5. Rules
 
@@ -161,7 +192,7 @@ Carried by: Y-22 optional Masthead kicker and Y-4 calm article header (v0.43.0);
 
 ### Rule 5. One surface per question; hover only on things that act
 
-Cards hold one subject; comparisons are aligned rows inside one card; no card inside a card inside a section. Static cards use the neutral border; orange edges mark interaction or selection. Hover, press and lift effects appear only on whole-card links, buttons and section headings. No glow on reading or task surfaces, with two exceptions: the bulk control's orange active state (D15) and lit artwork in a signature region; the glow tokens otherwise serve the conversion button on expressive pages.
+Cards hold one subject; comparisons are aligned rows inside one card; no card inside a card inside a section. Static cards use the neutral border; orange edges mark interaction or selection. Hover, press and lift effects appear only on interactive surfaces ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): a card that is a link or control or contains them, buttons and section headings. No glow on reading or task surfaces, with two exceptions: the bulk control's orange active state (D15) and lit artwork in a signature region; the glow tokens otherwise serve the conversion button on expressive pages.
 
 **Why.** Repeated frames compete with the content and hide which items belong together. Hover effects on static cards suggest an action that the surface cannot perform.
 
