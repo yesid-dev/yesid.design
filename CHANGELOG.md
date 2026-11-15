@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.43.0-rc.1
+## 0.43.0
 
 <!-- release-fragment: calm-article-header -->
 - `@yesid/ui` (minor): Add a calm reading presentation for article, case-study and data pages. The expressive
