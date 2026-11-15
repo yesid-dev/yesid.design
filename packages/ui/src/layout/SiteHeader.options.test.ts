@@ -23,3 +23,14 @@ it('retains wordmark autoplay by default', () => {
  render(SiteHeader, { navigation, home: '/', links: [], labels });
  expect(calls).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ autoPlay: true }));
 });
+it('marks caller link tiers on the pill and leaves the defaults unmarked', () => {
+ const navigation = mountLifecycle(fakeRouter().router).lifecycle;
+ const links = [{ href: '/a', label: 'A', priority: 3 as const }];
+ const tiered = render(SiteHeader, { navigation, home: '/', links, labels, linkTiers: { priority2: 768, priority3: 1280 } });
+ const pill = tiered.getByTestId('nav-pill');
+ expect([pill.dataset.priority2From, pill.dataset.priority3From, pill.dataset.linksFrom]).toEqual(['768', '1280', '3']);
+ cleanup();
+ const plain = render(SiteHeader, { navigation: mountLifecycle(fakeRouter().router).lifecycle, home: '/', links, labels });
+ const defaults = plain.getByTestId('nav-pill');
+ expect([defaults.hasAttribute('data-priority2-from'), defaults.hasAttribute('data-priority3-from')]).toEqual([false, false]);
+});

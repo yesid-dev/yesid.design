@@ -776,7 +776,19 @@ the links do not fit, a whole priority leaves at a time, 3 first, then 2; priori
 when it cannot fit alone, so a product's main call to action stays beside the toggles. The header
 measures its real labels, so a longer language moves its links to the menu on a wider screen than a
 shorter one. Before the app script runs, only the width thresholds apply. Keep every header link in
-`menuItems` too. The
+`menuItems` too.
+
+A wider brand or more controls (a product brand, search, actions) can make the full pill wider
+than its header at a width where the default thresholds already show a priority. The header then
+looks right before the app script runs and drops that priority once it measures, moving the
+toggles. Raise the thresholds with `linkTiers` so both states agree:
+`linkTiers={{ priority3: 1280 }}` shows priority 3 from 1280px. `priority2` takes 768, 1024 or
+1280 and `priority3` takes 1280, 1440 or 1600; omitted, the defaults above apply. The widths are
+static container-query rules, so they hold before hydration and without JavaScript. Pick the
+smallest width at which the full pill fits in every language you publish, with 4px to spare on
+each side. links-fit never brings back a priority these widths hide. A priority whose links are
+all hidden also hides the divider before the links. The
+
 optional `search` snippet shows from 1024px and folds away with the links while the menu is open;
 `actions` render before the theme, language and menu controls. The app marks `current` links and
 items; snippets can query the header's width with `@container site-header`. A menu item's `icon`

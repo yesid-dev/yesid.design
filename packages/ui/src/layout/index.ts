@@ -20,6 +20,7 @@ export { default as SiteHeader } from './SiteHeader.svelte';
 export type {
 	SiteHeaderLabels,
 	SiteHeaderLink,
+	SiteHeaderLinkTiers,
 	SiteHeaderMenuItem,
 	SiteHeaderMenuGroup,
 	SiteHeaderProps,
