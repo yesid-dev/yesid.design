@@ -198,6 +198,8 @@ Self-hosted (no Google Fonts CDN). Type scale uses `clamp()` for fluid sizing ac
 Hard floors: body ≥ 16px, mono ≥ 13px, labels ≥ 12px, micro for chrome only.
 
 Sentence case. Uppercase only for short signage. A section starts with its heading, never with a label above it.
+Data and form labels use `.label-reading` (Inter, sentence case, muted, 15px); `.label-station` and
+SectionHeading's `overline` are for real signage only. Numbering marks a real sequence.
 
 ## Layout
 
@@ -209,6 +211,9 @@ SiteHeader accepts a caller-owned `brand` snippet and `wordmarkAutoPlay={false}`
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
 Button `wrap` opts into multiline labels and content-driven height. Table cells preserve whole
 words, wrapping a single word only when it exceeds the cell width.
+`.chrome-clearance` on the scrolling element keeps focus and fragment jumps clear of the fixed
+header and the floating pills; a contents pill stacks above a SurfaceRail pill.
+ReadingFrame (Experimental) holds legal pages and long prose on a 65 to 70 character measure.
 
 MetricDisplay keeps yellow by default; reading pages pass `tone="reading"` explicitly.
 Figures use tabular numerals. Put period, unit and comparison in `sublabel`, evidence in
@@ -222,6 +227,8 @@ glows. Six tiers: `glow-sm`, `glow-md`, `glow-lg`, `card`, `section`, `nav`. No 
 `box-shadow` in components except the existing Card, SiteHeader, TocNav and StopLabel surface,
 chrome and signage shadows. These exceptions do not authorize new glow on reading or task
 surfaces. Only the D15 bulk control and lit artwork in a signature region may glow there.
+Only an `interactive` Card reacts to hover; `edge="neutral"` draws a static card's edge in
+`border` and never glows.
 
 ## Motion
 

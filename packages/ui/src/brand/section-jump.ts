@@ -71,9 +71,21 @@ function targetId(element: Element): string {
 	return index !== null ? 'section-' + index : element.getAttribute('data-toc') || element.id;
 }
 
+function scrollerOf(target: HTMLElement): Element {
+	for (let node = target.parentElement; node; node = node.parentElement) {
+		if (['auto', 'scroll'].includes(getComputedStyle(node).overflowY)) return node;
+	}
+	return document.scrollingElement ?? document.documentElement;
+}
+
 function land(target: HTMLElement, behavior: ScrollBehavior): void {
 	const previous = target.style.scrollMarginTop;
-	target.style.scrollMarginTop = LANDING_LINE * 100 + 'vh';
+	// A scroller's scroll-padding-top (the chrome clearance pattern) adds to this margin; subtract
+	// it so the target still lands on the line the active-section observer reads.
+	const padding = parseFloat(getComputedStyle(scrollerOf(target)).scrollPaddingTop) || 0;
+	target.style.scrollMarginTop = padding > 0
+		? 'calc(' + LANDING_LINE * 100 + 'vh - ' + padding + 'px)'
+		: LANDING_LINE * 100 + 'vh';
 	try {
 		target.scrollIntoView({ behavior, block: 'start' });
 	} finally {
@@ -83,14 +95,7 @@ function land(target: HTMLElement, behavior: ScrollBehavior): void {
 
 function settle(target: HTMLElement, signal: AbortSignal): Promise<void> {
 	if (signal.aborted || typeof requestAnimationFrame !== 'function') return Promise.resolve();
-	let scroller: Element | null = null;
-	for (let node = target.parentElement; node; node = node.parentElement) {
-		if (['auto', 'scroll'].includes(getComputedStyle(node).overflowY)) {
-			scroller = node;
-			break;
-		}
-	}
-	const measured = scroller ?? document.scrollingElement ?? document.documentElement;
+	const measured = scrollerOf(target);
 	const grace = reducedMotion() ? 0 : 100;
 	return new Promise((resolve) => {
 		const started = performance.now();

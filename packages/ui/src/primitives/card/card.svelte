@@ -8,11 +8,17 @@
 		children,
 		size = 'default',
 		interactive = false,
+		edge = 'brand',
+		textSize = 'small',
 		...restProps
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
 		size?: 'default' | 'sm';
-		/** Navigable or activatable cards lift by 1px on hover. */
+		/** Marks a card that acts (a whole-card link or button): only these react to hover. */
 		interactive?: boolean;
+		/** `neutral` draws the static edge in `--border` and never adds the orange hover glow. */
+		edge?: 'brand' | 'neutral';
+		/** `inherit` drops the 14px base so text and fields inside keep the page size (16px or more). */
+		textSize?: 'small' | 'inherit';
 	} = $props();
 </script>
 
@@ -21,8 +27,11 @@
 	data-slot="card"
 	data-size={size}
 	data-interactive={interactive ? 'true' : undefined}
+	data-edge={edge === 'neutral' ? 'neutral' : undefined}
 	class={cn(
-		'card-surface text-card-foreground gap-4 overflow-hidden py-4 text-sm has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col',
+		'card-surface text-card-foreground gap-4 overflow-hidden py-4',
+		textSize === 'small' && 'text-sm',
+		'has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col',
 		className,
 	)}
 	{...restProps}
@@ -32,7 +41,8 @@
 
 <style>
 	/* A solid panel one step above the page (never alpha, so the grid can't bleed through) with a
-	   lit top bevel. Hover firms the border and adds the section shadow. */
+	   lit top bevel. Only a card that acts reacts to hover: the border firms and, on the brand
+	   edge, the section shadow appears. A static card never suggests an action. */
 	.card-surface {
 		background: var(--surface-2);
 		border: 2px solid var(--border-brand);
@@ -43,14 +53,18 @@
 			box-shadow var(--duration-normal) var(--ease-default),
 			transform var(--duration-normal) var(--ease-default);
 	}
-	.card-surface:hover {
+	.card-surface[data-edge='neutral'] {
+		border-color: var(--border);
+	}
+	.card-surface[data-interactive='true']:hover {
 		border-color: var(--border-brand-active);
 		box-shadow:
 			var(--shadow-section),
 			inset 0 1px 0 var(--edge-highlight);
-	}
-	.card-surface[data-interactive='true']:hover {
 		transform: translateY(-1px);
+	}
+	.card-surface[data-interactive='true'][data-edge='neutral']:hover {
+		box-shadow: inset 0 1px 0 var(--edge-highlight);
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.card-surface[data-interactive='true']:hover {

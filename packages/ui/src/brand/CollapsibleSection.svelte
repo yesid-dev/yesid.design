@@ -25,6 +25,12 @@
 		icon?: Snippet;
 		headerActions?: Snippet;
 		children?: Snippet;
+		/** `neutral` draws the static edge in `--border`; the heading hover firms it without glow. */
+		edge?: 'brand' | 'neutral';
+		/** Border weight: `heavy` (3px, default), `regular` (2px) or `thin` (1px). */
+		edgeWeight?: 'heavy' | 'regular' | 'thin';
+		/** `inherit` drops the card's 14px base so body text and fields keep the page size. */
+		textSize?: 'small' | 'inherit';
 	}
 </script>
 

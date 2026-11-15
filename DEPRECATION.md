@@ -66,6 +66,15 @@ consumer or clean-room verification.
 
 ### Owner-approved behavior changes
 
+- **Section title hover, owner answer B1 2A, 2026-11-14, planned v0.44.0:** the colour rule
+  says yellow is never interactive, so a hovered collapsible section heading no longer turns its
+  title yellow (`--accent-text`); it turns orange (`--primary`), the clickable hue. This covers
+  `CollapsibleSection`, `SectionCard` and the TocNav card heading. The heading hover still sets the
+  border to the section accent. No prop, type or export changes. Migration: remove product rules
+  that recolour `.section-title` on hover to imitate the yellow; a product that wants another hover
+  colour styles its own heading. Proof: `SectionCard.reading.test.ts` and the Gallery
+  `/reading-surfaces` spec fail on the previous source. Rehearse in all three products.
+
 - **Y-28, answer 9A, 2026-11-13, planned v0.43.0:** the owner approved orange
   underlined text links as a named default look change. Text links (a link without a class)
   now use `--primary`. Remove product rules that colour links yellow; a component that needs

@@ -181,8 +181,21 @@ Button transitions name color, background-color, border-color, box-shadow and tr
 
 ### Card
 
-A solid panel with a lit top bevel (`edge-highlight`); hover firms the border and adds
-`shadow-section`. `interactive` adds a one-pixel rise, removed under reduced motion.
+A solid panel with a lit top bevel (`edge-highlight`). Only a card that acts reacts to hover: pass
+`interactive` on a whole-card link or button, and hover firms the border, adds `shadow-section` and
+rises one pixel (no rise under reduced motion). A static card stays still under the pointer
+(Y-6 defect fix in v0.44.0; before it, every card took the border and shadow on hover).
+
+- `edge="neutral"` draws the edge in `--border` instead of the orange `--border-brand`: the calm
+  surface for static reading and task cards. An interactive neutral card firms its border on hover
+  without the orange glow.
+- `textSize="inherit"` drops the card's 14px base (`text-sm`), so text and form fields inside keep
+  the page size (16px or more). The default `small` keeps today's output.
+
+```svelte
+<Card edge="neutral" textSize="inherit">…</Card>
+<a href="/projects/transit"><Card interactive>…</Card></a>
+```
 
 ### Collapsible
 
@@ -460,6 +473,13 @@ button without becoming part of its name. Use it for the finding, period and mat
 Use `subtitle` for a short label; its existing header placement and article-summary closed clamp
 are unchanged. `SectionCard` owns these rendered mechanics; `CollapsibleSection` owns registration.
 
+Reading surfaces: `edge="neutral"` draws the static edge in `--border`; `edgeWeight` is `heavy`
+(3px, default), `regular` (2px) or `thin` (1px); `textSize="inherit"` keeps body text and fields at
+the page size. Only the heading button reacts to hover: the border takes the accent and the title
+turns orange (`--primary`), the clickable hue; a neutral edge takes no glow. Before v0.44.0 the
+hovered title turned yellow (`--accent-text`); the owner changed it (answer B1 2A), see
+[DEPRECATION.md](../../DEPRECATION.md#owner-approved-behavior-changes).
+
 ```svelte
 <CollapsibleSection title="Service observations" subtitle="Completed week">
   {#snippet summary()}
@@ -474,6 +494,11 @@ are unchanged. `SectionCard` owns these rendered mechanics; `CollapsibleSection`
 
 TocNav is a desktop contents card; it skips rail entries and keeps its own independent toggle.
 TocPill is the mobile contents drawer and retains consumer-owned openAria and closeAria copy.
+Both show a position (`SEC n / total` in TocNav, `n/total` in TocPill and its accessible name) by
+default; pass `counter={false}`, or `toc.counter: false` on DetailFrame, on a reading page where the
+position carries no meaning. Below 1024px, when a SurfaceRail pill is on the same page, TocPill
+stacks 8px above it and steps aside while the rail sheet is open (Y-10 fix: the two pills used to
+share one spot, so one hid the other).
 TocBadge is a stateless rendering adapter for numeric and icon badges. Both navigation views
 accept a SectionJump controller through navigation; activeId and onNavigate can still be
 explicitly controlled. Without activeId, they read the controller's reactive active id.
@@ -504,7 +529,9 @@ takes a signal aspect (`orange` to `lunar`) or a data status (`early` to `unknow
 optional `pulse` and `ring`. `pulse` remains accepted for compatibility and produces no visual pulse. `MetricDisplay` renders `value` and `label`; the `absent` snippet
 replaces an empty value and `info` follows the label, so absence text and tooltips stay with the
 caller. `SectionHeading` takes `heading` or `overline`, plus `number`, `headingAccent`, and an
-`explainer` snippet. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
+`explainer` snippet. `overline` is signage only: a short board, platform or route name in tracked
+mono uppercase, never a label above a heading. Start a section with `heading`; label data with the
+`.label-reading` role. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
 
 ### FilterGroup, FilterSection, FilterSummary, and SearchInput
 
@@ -617,6 +644,42 @@ ignored, so a page can switch presentation without changing its other props. The
 above the title: `category` becomes the first meta entry below it, at the meta size (15px), and a
 wrapped meta line never starts with a separator. Pair it with `DetailFrame`'s `rule="line"` and
 `measure`, and put an opening in the `header` snippet after it.
+
+## Reading frame (Experimental)
+
+`ReadingFrame` from `@yesid/ui/layout` is the calm frame for legal pages and long prose. It is
+**Experimental** in its first release (v0.44.0): its shape may change in a minor release, with
+migration notes. It renders an `article` with an Inter `h1` in sentence case as written, the real
+date of the last change, an optional `summary`, the contents and the body (`children`), on a measure
+of about 65 to 70 characters (`--reading-measure`, default `34em` of the reading size) with
+`--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels, numbering or glow;
+the contents are an unnumbered list (`role="list"`) of orange underlined links, each a 44px
+target (`--size-tap-min`).
+
+- `updated` is `{ datetime, label, text }`: an ISO 8601 date (`2026-11-02`, optionally with a
+  time and offset) from the text's real revision history, the product's label ("Last updated") and
+  the date as the product formats it. A malformed or impossible date or time (`2026-02-31`,
+  `T24:00`) throws during rendering, on the server too, whatever renders the contents.
+- `sections` (`{ id, title }[]`) with `contentsLabel` renders the built-in contents list under a
+  visible heading. Ids are lowercase ASCII slugs from language-independent keys, unique on the page,
+  so `#contact` reaches the same section in English, French and Spanish; a translated, spaced,
+  uppercase or repeated id throws. The body's sections carry the same ids.
+- `contents` (snippet) replaces the built-in list for a product that renders its own navigation.
+- `titleId` names the title for a landmark labelled by it.
+
+Products keep the legal copy, the schema and server rendering.
+
+```svelte
+<ReadingFrame
+  title={copy.title}
+  updated={{ datetime: page.updatedAt, label: copy.updatedLabel, text: formatDate(page.updatedAt, lang) }}
+  sections={keys.map((id) => ({ id, title: copy.sections[id].title }))}
+  contentsLabel={copy.contents}
+>
+  {#snippet summary()}<p>{copy.summary}</p>{/snippet}
+  {#each keys as id (id)}<section aria-labelledby={id}><h2 {id}>{copy.sections[id].title}</h2>…</section>{/each}
+</ReadingFrame>
+```
 
 ## Site header
 
@@ -761,7 +824,8 @@ the width allows; with `label` (and not `as="ul"` or `as="ol"`) it is a named re
 `SurfaceRail` is a page's controls rail: a landmark that sticks below `--chrome-offset` from 1024px, and below that a pill
 (`label`, `summary`, `openAria`, `closeAria`) that opens the same rail in a bottom sheet. The
 `rail` snippet receives `closeSheet` and the current `presentation`; pass the rail to
-`DetailFrame`'s `rail`.
+`DetailFrame`'s `rail`. With a TocPill on the same page the two pills stack (see TocPill); put
+`.chrome-clearance` on the scrolling element so focused controls stay clear of both.
 
 `@yesid/ui/table` exports `DataTable`. Columns give a `header`, a `cell` snippet and optional
 `align`, `numeric` (right-aligned tabular figures), `width` and `rowHeader`. `caption` is
@@ -914,6 +978,35 @@ from the app stylesheet after Tailwind:
 ```
 
 Like every package stylesheet, it is opt-in; no JavaScript import loads it.
+
+### Label roles
+
+- `.label-reading`: data and form labels. Inter, sentence case as written, no tracking, 15px,
+  weight 600, muted reading ink. "Observation period", "Email address", "Last updated".
+- `.label-station`: real signage only (route plates, sign codes, departure boards). Mono, tracked
+  uppercase, yellow.
+- `.label-section` and `.label-metric` stay for existing callers; prefer `.label-reading` for new
+  reading and task pages.
+
+Numbering, hazard tape and artwork carry meaning only when the content has it: number a real
+sequence (steps, ordered procedures), use hazard tape for a real caution or the page's signature,
+and keep artwork to a signature region. A section starts with its heading, never a label above it.
+
+### Chrome clearance
+
+Opt-in. Put `.chrome-clearance` on the element that scrolls (normally `<html>` in `app.html`):
+
+- `scroll-padding-top` is `--chrome-clearance-top`, else SiteHeader's `--nav-clearance`, so
+  backward Tab, fragment links and `scrollIntoView` land below the floating header. Set
+  `--chrome-clearance-top` on `:root` when the app's header has another height.
+- Below 1024px, with a TocPill or a SurfaceRail pill on the page, `scroll-padding-bottom` is
+  `--floating-pill-clearance` (one pill: 20px from the edge, 44px tall, plus 1rem), or
+  `--floating-pill-stack-clearance` with both pills, so forward Tab keeps focus above them.
+- The section-jump controller subtracts the scroller's `scroll-padding-top`, so contents jumps still
+  land on the 25% line the active-section observer reads.
+
+With an element scroller (`SiteRoot` `scroller`), put the class on that wrapper; the pill rules
+look for the pills inside it, so set `scroll-padding-bottom` yourself when the pills render outside.
 
 Table headers and cells use `word-break: normal` and `overflow-wrap: break-word`: ordinary
 words stay whole, while a single word wider than its cell can wrap. Products with custom table

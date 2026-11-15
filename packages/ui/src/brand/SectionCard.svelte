@@ -30,6 +30,9 @@
 		bulk = false,
 		initialized: initializedProp,
 		onChoose,
+		edge = 'brand',
+		edgeWeight = 'heavy',
+		textSize = 'small',
 	}: CollapsibleSectionProps & { ref?: HTMLDivElement | null; bulk?: boolean; initialized?: boolean; onChoose?: () => void } = $props();
 	let mounted = $state(false);
 	$effect.pre(() => {
@@ -118,6 +121,8 @@
 
 <Card
 	bind:ref
+	{edge}
+	{textSize}
 	class="section-card {collapsible ? 'section-card--toggleable' : ''} {usesArticleSummary
 		? 'section-card--article-summary'
 		: ''}"
@@ -128,6 +133,7 @@
 	data-section-ready={initialized ? '' : undefined}
 	data-section-default={!collapsible || open ? 'open' : 'closed'}
 	data-header-variant={usesArticleSummary ? 'article-summary' : undefined}
+	data-edge-weight={edgeWeight === 'heavy' ? undefined : edgeWeight}
 >
 	<div
 		data-slot="collapsible"
@@ -225,6 +231,12 @@
 		--collapsible-pad-x: 1.5rem;
 		border-width: 3px;
 	}
+	:global([data-slot='card'].section-card[data-edge-weight='regular']) {
+		border-width: 2px;
+	}
+	:global([data-slot='card'].section-card[data-edge-weight='thin']) {
+		border-width: 1px;
+	}
 
 	@media (max-width: 767px) {
 		:global([data-slot='card'].section-card) {
@@ -240,12 +252,7 @@
 		padding-block: 0;
 	}
 
-	/* The shared Card hover stays neutral while readers interact with section content. */
-	:global([data-slot='card'].section-card:hover) {
-		border-color: var(--border-brand);
-		box-shadow: inset 0 1px 0 var(--edge-highlight);
-	}
-
+	/* A section card is static: only its heading button reacts to hover. */
 	:global([data-slot='card'].section-card):has(
 		> [data-slot='collapsible'] > .section-header:hover,
 		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover
@@ -254,6 +261,14 @@
 		box-shadow:
 			var(--shadow-section),
 			inset 0 1px 0 var(--edge-highlight);
+	}
+
+	/* The neutral edge is the calm reading surface: the heading still firms the border, without glow. */
+	:global([data-slot='card'].section-card[data-edge='neutral']):has(
+		> [data-slot='collapsible'] > .section-header:hover,
+		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover
+	) {
+		box-shadow: inset 0 1px 0 var(--edge-highlight);
 	}
 
 	.section-header {
@@ -330,8 +345,9 @@
 		text-wrap: balance;
 	}
 
+	/* Orange is the clickable hue; yellow is never interactive (owner answer B1 2A, 14 Nov 2026). */
 	.section-header:hover .section-title {
-		color: var(--accent-text);
+		color: var(--primary);
 	}
 
 	:global(.section-title) {

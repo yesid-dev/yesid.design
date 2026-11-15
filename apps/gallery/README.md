@@ -43,6 +43,16 @@ and ES copy. The focused `text-links.spec.ts` checks cues, forced colours and 32
 focus and links, aria descriptions and simulated sending. labelled-field.spec.ts checks
 axe in both themes, 320 to 1440px reflow, reduced motion, boundaries and 44px targets.
 
+`/reading-surfaces` shows static and interactive cards on the brand and neutral edges, section
+cards at three edge weights with long FR and ES titles, fields that keep 16px, the reading label
+beside signage, and TocNav with and without its counter. `reading-surfaces.spec.ts` checks that
+static cards ignore hover, hovered section titles turn orange, both themes and 320 to 1440px.
+`/reading-frame/[lang]` (`en`, `fr`, `es`) renders the Experimental ReadingFrame with section ids
+shared by every language; `reading-frame.spec.ts` checks the ids, the measure and reflow.
+`/chrome-clearance` puts `.chrome-clearance` on `<html>` with a TocPill and a SurfaceRail pill;
+`chrome-clearance.spec.ts` checks that the pills never overlap, forward and backward Tab keep focus
+clear, and contents jumps keep the 25% landing line.
+
 `/masthead` shows Masthead with its kicker (today) and heading first without one, with and without
 the dot, in EN and long FR and ES. `/error-page` renders today's page; `/error-page/[options]`
 prerenders option sets so the chosen props are in the first markup. The segment joins an

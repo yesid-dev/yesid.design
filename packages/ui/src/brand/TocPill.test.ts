@@ -79,4 +79,10 @@ describe('TocPill', () => {
 		await fireEvent.click(view.getByRole('button', { name: 'Close' }));
 		expect([items(view).length, document.activeElement]).toEqual([0, pill]);
 	});
+
+	it('drops the position from the pill and its name with counter={false}', () => {
+		const pill = pillOf(show({ counter: false }));
+		expect(pill.textContent?.replace(/\s+/g, ' ').trim()).toBe('Overview');
+		expect(pill.getAttribute('aria-label')).toBe('Overview · Table of contents');
+	});
 });
