@@ -6,7 +6,6 @@
 		CodeBlock,
 		CollapsibleSection,
 		CornerMarks,
-		CornerMeta,
 		ConstructionProps,
 		ConstructionFloodlight,
 		ErrorIllustration,
@@ -16,7 +15,6 @@
 		LanguageToggle,
 		ManifestoCanvas,
 		MetricDisplay,
-		MetroStation,
 		SectionsToggle,
 		SearchInput,
 		SectionHeading,
@@ -34,6 +32,7 @@
 		TocPill,
 		ToggleChip,
 		Wordmark,
+		ProductBrand,
 		type SectionIconName,
 		type StatusDotColor,
 		type TocEntry,
@@ -196,16 +195,6 @@
 			</Card.Content>
 		</Card.Root>
 
-		<Card.Root data-gallery-family="brand:MetroStation">
-			<Card.Header>
-				<Card.Title>MetroStation</Card.Title>
-				<Card.Description>A zero-padded station number in a signage roundel.</Card.Description>
-			</Card.Header>
-			<Card.Content class="flex justify-center">
-				<MetroStation index={3} showLine class="h-24" />
-			</Card.Content>
-		</Card.Root>
-
 
 		<Card.Root data-gallery-family="brand:ThemeToggle">
 			<Card.Header>
@@ -224,6 +213,17 @@
 			<Card.Content class="flex items-center gap-6">
 				<Wordmark href="/" class="text-2xl" />
 				<Wordmark href="/" text="transit" animate={false} class="text-2xl" />
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:ProductBrand">
+			<Card.Header>
+				<Card.Title>ProductBrand</Card.Title>
+				<Card.Description>Experimental. The still house wordmark, a divider and the product name, for a header or footer.</Card.Description>
+			</Card.Header>
+			<Card.Content class="flex flex-wrap items-center gap-6">
+				<ProductBrand product="Login" href="/product-brand/en" houseHref="https://yesid.dev" />
+				<ProductBrand product="Transit" href="/product-brand/en" houseHref="https://yesid.dev" class="text-2xl" />
 			</Card.Content>
 		</Card.Root>
 
@@ -401,20 +401,6 @@
 			</Card.Content>
 		</Card.Root>
 
-		<Card.Root data-gallery-family="brand:CornerMeta">
-			<Card.Header>
-				<Card.Title>CornerMeta</Card.Title>
-				<Card.Description>Decorative corner notes from 768px, with crosshair marks.</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<div class="relative h-28 rounded-md bg-muted">
-					{#snippet topLeft()}LINE 24{/snippet}
-					{#snippet bottomRight()}GENERATED 08:40{/snippet}
-					<CornerMeta crosshair {topLeft} {bottomRight} />
-				</div>
-			</Card.Content>
-		</Card.Root>
-
 		<Card.Root data-gallery-family="brand:ErrorIllustration">
 			<Card.Header>
 				<Card.Title>ErrorIllustration</Card.Title>
@@ -455,7 +441,7 @@
 		<Card.Root data-gallery-family="brand:SectionHeading">
 			<Card.Header>
 				<Card.Title>SectionHeading</Card.Title>
-				<Card.Description>Numbered display heading beside the mono overline style.</Card.Description>
+				<Card.Description>A numbered display heading; a section starts with its heading, never a label above it.</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-4">
 				<SectionHeading
@@ -465,7 +451,6 @@
 					headingAccent="by line"
 					subheading="Rolling 30 days"
 				/>
-				<SectionHeading level={3} overline="NETWORK STATUS" />
 			</Card.Content>
 		</Card.Root>
 

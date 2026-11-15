@@ -15,7 +15,10 @@
 		href: string;
 		label: string;
 		current?: boolean;
-		/** 1 shows from a 375px header, 2 from 500px, 3 from 1024px, and only while the links fit. */
+		/**
+		 * 1 shows from a 375px header, 2 from 600px, 3 from 1024px, and only while the links fit; links
+		 * that do not fit leave the pill a whole priority at a time, 3 first.
+		 */
 		priority?: 1 | 2 | 3;
 	}
 
@@ -63,7 +66,11 @@
 		menuItems?: readonly SiteHeaderMenuItem[];
 		/** When supplied, replaces menuItems, including when empty. */
 		menuGroups?: readonly SiteHeaderMenuGroup[];
-		/** Moves theme and language controls into the menu below a 600px header width. */
+		/**
+		 * Moves theme and language controls into the menu below a 600px header width.
+		 * @deprecated Since v0.44.0. The theme and language toggles stay in the pill at every width
+		 * (owner decision of 14 November 2026, DECISIONS.md D19). Omit this prop.
+		 */
 		compactControls?: boolean;
 		labels: SiteHeaderLabels;
 		language?: Omit<LanguageToggleProps, 'ref' | 'class'>;
@@ -296,7 +303,7 @@
 						class="nav-pill pointer-events-auto flex items-center"
 						class:nav-pill-compact={active}
 						class:nav-pill-compact-controls={compactMenuControls}
-						use:linksFit={{ paused: active }}
+						use:linksFit={{ paused: active, links }}
 					>
 						{#if brand}{@render brand()}{:else}
 							<Wordmark href={home} text={wordmark} autoPlay={wordmarkAutoPlay} class="nav-wordmark" />
@@ -551,6 +558,12 @@
 	}
 	@container site-header (width < 500px) {
 		.nav-links [data-priority='2'] {
+			display: none;
+		}
+	}
+	/* The theme and language controls sit in the pill, so priority 2 waits for room beside them. */
+	@container site-header (width < 600px) {
+		.nav-pill:not(.nav-pill-compact-controls) .nav-links [data-priority='2'] {
 			display: none;
 		}
 	}

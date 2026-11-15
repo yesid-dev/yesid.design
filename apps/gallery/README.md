@@ -53,6 +53,13 @@ shared by every language; `reading-frame.spec.ts` checks the ids, the measure an
 `chrome-clearance.spec.ts` checks that the pills never overlap, forward and backward Tab keep focus
 clear, and contents jumps keep the 25% landing line.
 
+`/site-header-pill/[lang]` (`en`, `fr`, `es`) is a three-link product header with both toggles in
+the pill; `site-header-pill.spec.ts` checks 500 to 768px with and without JavaScript, the toggles'
+place through hydration, and links leaving by priority. `/product-brand/[lang]` shows the
+Experimental `ProductBrand` in a narrow navbar ("yesid. | Login") and footer; `product-brand.spec.ts`
+checks 320 to 1920px in both themes, long names, keyboard order, focus rings and hover colour.
+`/site-header-compact` keeps the deprecated `compactControls` only to prove it still works.
+
 `/masthead` shows Masthead with its kicker (today) and heading first without one, with and without
 the dot, in EN and long FR and ES. `/error-page` renders today's page; `/error-page/[options]`
 prerenders option sets so the chosen props are in the first markup. The segment joins an

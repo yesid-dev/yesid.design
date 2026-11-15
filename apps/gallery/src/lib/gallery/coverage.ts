@@ -19,7 +19,6 @@ export const GALLERY_COVERAGE = {
 		'CodeBlock',
 		'CollapsibleSection',
 		'CornerMarks',
-		'CornerMeta',
 		'ConstructionProps',
 		'ConstructionFloodlight',
 		'ErrorIllustration',
@@ -29,7 +28,7 @@ export const GALLERY_COVERAGE = {
 		'LanguageToggle',
 		'ManifestoCanvas',
 		'MetricDisplay',
-		'MetroStation',
+		'ProductBrand',
 		'SectionsToggle',
 		'SearchInput',
 		'SectionHeading',
@@ -59,4 +58,6 @@ export const GALLERY_COVERAGE = {
 		'scrollChain',
 	],
 	states: ['disabled', 'error', 'loading', 'overflow', 'localized-copy'],
+	/** Deprecated brand exports: still public and unit tested, no longer demonstrated. */
+	deprecatedBrand: ['CornerMeta', 'MetroStation'],
 } as const;

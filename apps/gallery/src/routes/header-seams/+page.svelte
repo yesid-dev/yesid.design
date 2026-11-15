@@ -11,7 +11,7 @@
  <title>yesid.design | Header seams and wrapping</title>
 </svelte:head>
 
-<SiteHeader {navigation} home="/header-seams" links={[]} menuItems={[]} compactControls wordmarkAutoPlay={false}
+<SiteHeader {navigation} home="/header-seams" links={[]} menuItems={[]} wordmarkAutoPlay={false}
  labels={LABELS} language={{ locale: 'en', locales: ['en', 'fr', 'es'], href: next => `/header-seams?lang=${next}`, label: 'Language', names: LANGUAGE_NAMES }}>
  {#snippet brand()}
   <span class="brand-cluster"><Wordmark href="https://yesid.dev" external animate={false} /><a href="/header-seams" class="product-link">login</a></span>

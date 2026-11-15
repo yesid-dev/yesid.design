@@ -26,7 +26,8 @@ describe('Gallery coverage authority', () => {
 		const components = Object.entries(brand)
 			.filter(([name, value]) => /^[A-Z]/.test(name) && typeof value === 'function')
 			.map(([name]) => name);
-		expect([...GALLERY_COVERAGE.brand].sort()).toEqual(components.sort());
+		expect([...GALLERY_COVERAGE.brand, ...GALLERY_COVERAGE.deprecatedBrand].sort()).toEqual(components.sort());
+		expect(GALLERY_COVERAGE.brand.filter((name) => (GALLERY_COVERAGE.deprecatedBrand as readonly string[]).includes(name))).toEqual([]);
 		expect([...GALLERY_COVERAGE.motion].sort()).toEqual(Object.keys(motionActions).sort());
 	});
 });

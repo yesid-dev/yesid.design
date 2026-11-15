@@ -61,6 +61,19 @@ consumer or clean-room verification.
   time. The former pulse is already still. See [footer status](docs/migrations/footer-status.md).
   Earliest removal: publication date plus 90 days and an intervening minor (earliest v0.45.0
   when v0.44.0 retains it), unless the owner waives the gates. Publication has not occurred.
+- **SiteHeader `compactControls`, starting v0.44.0:** Deprecated, retained and functional. The
+  owner decided on 2026-11-14 that the theme and language toggles sit in the navbar pill at every
+  width in every product (`DECISIONS.md` D19). Migration: omit the prop. No replacement API. See
+  [compact controls](docs/migrations/compact-controls.md). Earliest removal: publication date
+  plus 90 days and an intervening minor (earliest v0.46.0 when v0.45.0 retains it), unless the
+  owner waives the gates. Publication has not occurred.
+- **`CornerMeta` and `MetroStation` (with `CornerMetaProps` and `MetroStationProps`), starting
+  v0.44.0:** Deprecated, retained and functional, from `@yesid/ui` and `@yesid/ui/brand`. No
+  product uses them (Y-26). Migration: put essential corner text in the content and drop the
+  decoration; use a plain number or `StopLabel` instead of the roundel. No replacement API. See
+  [decorative vocabulary](docs/migrations/decorative-vocabulary.md). Earliest removal:
+  publication date plus 90 days and an intervening minor (earliest v0.46.0 when v0.45.0 retains
+  them), unless the owner waives the gates. Publication has not occurred.
 
 ## Removals
 

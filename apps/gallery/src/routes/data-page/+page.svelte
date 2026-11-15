@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createRawSnippet } from 'svelte';
 	import { Badge } from '@yesid/ui/badge';
-	import { CornerMeta, SegmentedChoice, ToggleChip } from '@yesid/ui/brand';
+	import { SegmentedChoice, ToggleChip } from '@yesid/ui/brand';
 	import * as Card from '#lib/card/index.js';
 	import { StateNotice } from '@yesid/ui/feedback';
 	import {
@@ -57,12 +57,6 @@
 {#snippet headwayCell(row: StopRow)}{row.headway}{/snippet}
 {#snippet routeCell(row: HourRow)}{row.id}{/snippet}
 
-{#snippet cornerMeta()}
-	{#snippet topLeft()}LINE 24{/snippet}
-	{#snippet topRight()}STM{/snippet}
-	<CornerMeta crosshair {topLeft} {topRight} />
-{/snippet}
-
 {#snippet railBody()}
 	<label class="grid gap-1 text-small">
 		{copy.search}
@@ -88,7 +82,6 @@
 		kicker="Line 24"
 		heading="Waits along line 24"
 		lede="Every new data-page part from @yesid/ui in one place."
-		{cornerMeta}
 	/>
 
 	<DetailFrame {rail}>

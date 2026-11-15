@@ -791,6 +791,8 @@ declare namespace Brand {
         MetricDisplayProps,
         MetroStation,
         MetroStationProps,
+        ProductBrand,
+        ProductBrandProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -1192,13 +1194,13 @@ interface CornerMarksProps extends HTMLAttributes<HTMLDivElement> {
     size?: 'sm' | 'md';
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 const CornerMeta: Component<CornerMetaProps, {}, "">;
 
 // @public (undocumented)
 type CornerMeta = ReturnType<typeof CornerMeta>;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 interface CornerMetaProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
     // (undocumented)
     bottomLeft?: Snippet;
@@ -1616,6 +1618,8 @@ declare namespace Index {
         MetricDisplayProps,
         MetroStation,
         MetroStationProps,
+        ProductBrand,
+        ProductBrandProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -1858,13 +1862,13 @@ interface MetricDisplayProps extends HTMLAttributes<HTMLDivElement> {
     value: string | null | undefined;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 const MetroStation: Component<MetroStationProps, {}, "">;
 
 // @public (undocumented)
 type MetroStation = ReturnType<typeof MetroStation>;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 type MetroStationProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & {
     index: number;
     showLine?: boolean;
@@ -2110,6 +2114,22 @@ interface ReadingFrameUpdated {
     datetime: string;
     label: string;
     text: string;
+}
+
+// @public
+const ProductBrand: Component<ProductBrandProps, {}, "">;
+
+// @public (undocumented)
+type ProductBrand = ReturnType<typeof ProductBrand>;
+
+// @public (undocumented)
+interface ProductBrandProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    current?: boolean;
+    houseExternal?: boolean;
+    houseHref: string;
+    houseLabel?: string;
+    href: string;
+    product: string;
 }
 
 // @public
@@ -2658,6 +2678,7 @@ interface SiteHeaderMenuItem {
 interface SiteHeaderProps {
     actions?: Snippet;
     brand?: Snippet;
+    // @deprecated
     compactControls?: boolean;
     // (undocumented)
     home: string;

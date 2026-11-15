@@ -1,4 +1,6 @@
 <!--
+  @component
+  @deprecated Since v0.44.0 (no product use); see docs/migrations/decorative-vocabulary.md.
   Decorative mono annotations in the four corners of the nearest positioned ancestor, with optional
   crosshair marks. Hidden from assistive tech and below 768px; repeat anything essential in the
   content.
@@ -7,6 +9,10 @@
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
+	/**
+	 * @deprecated Since v0.44.0: no product uses corner notes. Put essential text in the content
+	 * and drop the decoration. See docs/migrations/decorative-vocabulary.md.
+	 */
 	export interface CornerMetaProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 		topLeft?: Snippet;
 		topRight?: Snippet;
