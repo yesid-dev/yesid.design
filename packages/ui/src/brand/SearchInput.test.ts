@@ -66,3 +66,26 @@ it('exposes the input through the bindable ref for programmatic focus', async ()
 	await fireEvent.click(view.getByRole('button', { name: 'Focus search' }));
 	expect(document.activeElement).toBe(view.getByRole('textbox', { name: 'Routes' }));
 });
+
+it('keeps the default field as the single markup root', () => {
+	const view = field();
+	const root = view.container.firstElementChild;
+	expect(view.container.children).toHaveLength(1);
+	expect(root?.tagName).toBe('DIV');
+	expect(root?.getAttribute('class')).toBe('relative');
+	expect(root?.getAttribute('data-slot')).toBe('listing-search-field');
+	expect(input(view).parentElement).toBe(root);
+});
+
+it.each([
+	{ visibleLabel: true },
+	{ description: 'Narrow the routes' },
+])('wraps the field only for contextual content %j', (props) => {
+	const view = field(props);
+	const root = view.container.firstElementChild;
+	const control = input(view).parentElement;
+	expect(control?.getAttribute('data-slot')).toBe('listing-search-field');
+	expect(control?.parentElement).toBe(root);
+	if (props.visibleLabel) expect(view.getByLabelText('Search lines')).toBe(input(view));
+	if (props.description) expect(view.getByText(props.description).parentElement).toBe(root);
+});

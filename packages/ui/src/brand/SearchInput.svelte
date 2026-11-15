@@ -38,8 +38,7 @@
 	}: SearchInputProps = $props();
 </script>
 
-<div>
-{#if visibleLabel}<label for={id} class="block mb-2">{label}</label>{/if}
+{#snippet searchField()}
 <div class="relative" data-slot="listing-search-field">
 	<input
 		{...restProps}
@@ -62,5 +61,14 @@
 	/>
 </div>
 
-{#if description}<p id={`${id}-description`} class="mt-2 text-body">{description}</p>{/if}
-</div>
+{/snippet}
+
+{#if visibleLabel || description}
+	<div>
+		{#if visibleLabel}<label for={id} class="block mb-2">{label}</label>{/if}
+		{@render searchField()}
+		{#if description}<p id={`${id}-description`} class="mt-2 text-body">{description}</p>{/if}
+	</div>
+{:else}
+	{@render searchField()}
+{/if}
