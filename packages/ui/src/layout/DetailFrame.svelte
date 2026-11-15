@@ -1,5 +1,6 @@
 <!--
-  Detail and article page frame: header, a rule (hazard tape by default, a neutral line, or none),
+  Detail and article page frame: header, a rule (hazard tape by default, the dimension line, a
+  neutral line, or none),
   optional toolbar band, then a grid of an optional left rail, the center and an optional right
   rail, then `after`. `header` renders before the grid, so an opening placed there precedes both
   rails in the DOM and on phones; `summary` is the top of the center column, after the left rail.
@@ -37,8 +38,11 @@
 		 * opening that must come before both rails in the DOM and on phones.
 		 */
 		header?: Snippet;
-		/** Below the header: `hazard` tape (default), a neutral `line`, or `none`. */
-		rule?: 'hazard' | 'line' | 'none';
+		/**
+		 * Below the header: `hazard` tape (default), the `dimension` line (THE divider, D22), a
+		 * neutral `line`, or `none`.
+		 */
+		rule?: 'hazard' | 'dimension' | 'line' | 'none';
 		toolbar?: Snippet;
 		/**
 		 * Top of the center column, inside the grid: after the left rail in the DOM, and below it on
@@ -129,6 +133,8 @@
 
 	{#if rule === 'hazard'}
 		<Separator variant="hazard" class="detail-shell-tape" />
+	{:else if rule === 'dimension'}
+		<Separator variant="dimension" class="detail-shell-dimension" />
 	{:else if rule === 'line'}
 		<div class="detail-shell-line" data-slot="detail-shell-line" aria-hidden="true"></div>
 	{/if}

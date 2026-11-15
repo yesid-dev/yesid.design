@@ -84,6 +84,22 @@ describe('brand', () => {
 	});
 });
 
+describe('street edge (D22)', () => {
+	it('opens with one decorative street edge as its first child and no hazard strip', () => {
+		const view = footer();
+		const edge = root(view).querySelector<HTMLElement>('[data-slot="footer-street-edge"]');
+
+		expect(edge).not.toBeNull();
+		expect(root(view).firstElementChild).toBe(edge);
+		expect(root(view).querySelectorAll('[data-slot="footer-street-edge"]')).toHaveLength(1);
+		expect(edge!.classList.contains('footer-street-edge')).toBe(true);
+		expect(edge!.getAttribute('aria-hidden')).toBe('true');
+		expect(edge!.getAttribute('role')).toBe('none');
+		expect(edge!.childElementCount).toBe(0);
+		expect(root(view).querySelector('.footer-gradient-sep')).toBeNull();
+	});
+});
+
 describe('groups', () => {
 	it('gives each group its own labelled navigation, in order, with its links in order', () => {
 		const view = footer();

@@ -246,3 +246,34 @@ the same in every product and theme.
 control, and to no other card. A card with several links keeps them as separate targets inside a
 plain `Card interactive`, never inside a whole-card link. Hover effects stay on the shared
 components; a product adds no hover shadow or glow of its own.
+
+## D22: The divider and the street edge
+
+The owner ruled on 2026-11-15 that every product draws one divider, from yesid.design, never drawn
+by a page (products always use yesid.design components):
+
+- **The divider is a dimension line**, as if drawn on the blueprint paper: a 1px hairline with
+  9px end ticks and 5px scale ticks every 80px (the grid's major step), in the blueprint ink
+  (`--primary` at 70%, the colour BlueprintShell draws in), running edge to edge. It is identical
+  in every product and both themes, decorative and static. `Separator variant="dimension"` draws
+  it; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and
+  `Masthead` and `ErrorPage` take `tape="dimension"`, wherever they drew hazard tape as a divider.
+- **Placement:** every section ends with the divider at its bottom, except the last section of
+  the page; never a divider before the footer. `.section-dividers` in `@yesid/ui/base.css`, on the
+  element that holds the page's sections, draws it that way without page CSS.
+- **The street edge:** `SiteFooter`'s top edge is a road marking: one dashed line whose dashes
+  alternate yellow and white, edge to edge, on the footer's own colours in dark and light. It
+  replaces the footer's hazard strip by default.
+
+**Why.** The owner wants the products to read as one family and the divider to belong to the
+blueprint, not to construction caution. Earlier pages drew their own lines: hazard tape, a dashed
+rule, a solid yellow line, sometimes two at once. One part, owned by yesid.design, ends that
+drift. Hazard tape returns to its job, a real caution or a signature. The street edge closes the
+page as the ground the construction scene stands on.
+
+**Consequences.** Hazard tape stays the default of every existing option, so no page changes until
+it opts in; only the footer's edge changes for everyone (DEPRECATION.md, "Owner-approved behavior
+changes"). A product removes its own divider CSS and uses the kit's options as it adopts them.
+Divider ink is orange, the clickable hue, used here as faded drawing ink at 70%: it is never a
+link or a control. The open owner question is whether the remaining hazard defaults (DetailFrame,
+ListingFrame, TerminalPanel, Masthead, ErrorPage) flip to the dimension line in a later release.

@@ -69,6 +69,16 @@ describe('CodeBlock', () => {
 		expect(screen.getByRole('button', { name: 'Copy code' })).toBe(button);
 	});
 
+	it.each([
+		[undefined, false],
+		['dimension', true],
+	] as const)('passes rule %j to its panel', (rule, dimension) => {
+		const { container } = render(CodeBlock, { props: { code, title: 'Query', rule } });
+		const line = container.querySelector<HTMLElement>('.terminal-code .terminal-rule');
+		expect(line).not.toBeNull();
+		expect(line!.classList.contains('dimension-line')).toBe(dimension);
+	});
+
 	it('replaces the plain code with highlighted children', () => {
 		render(CodeBlock, { props: {
 			code, title: 'Query',

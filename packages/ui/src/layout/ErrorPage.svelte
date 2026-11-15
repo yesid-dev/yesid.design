@@ -23,8 +23,11 @@
 		label?: string;
 		heading: string;
 		body: string;
-		/** Hazard tape above the page. Defaults to `true`. */
-		tape?: boolean;
+		/**
+		 * The rule above the page: `true` (default) draws hazard tape, `'dimension'` the dimension
+		 * line (THE divider, D22), `false` nothing.
+		 */
+		tape?: boolean | 'dimension';
 		/** Placement and size of the construction scene. Defaults to `'large-first'`. */
 		illustration?: ErrorPageIllustration;
 		/** The first link is styled as the primary destination. */
@@ -74,7 +77,11 @@
 {/snippet}
 
 <section class="error-page" data-slot="error-page">
-	{#if tape}
+	{#if tape === 'dimension'}
+		<div data-testid="dimension-rule">
+			<Separator variant="dimension" />
+		</div>
+	{:else if tape}
 		<div data-testid="hazard-tape">
 			<Separator variant="hazard" />
 		</div>

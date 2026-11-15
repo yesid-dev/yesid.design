@@ -463,3 +463,49 @@ pre, code, table {
 		color: var(--foreground);
 	}
 }
+
+/* The dimension line (D22): THE divider, drawn as a drafting dimension line on the blueprint paper.
+   A 1px hairline with 9px end ticks and 5px scale ticks every 80px (the grid's major step), in the
+   blueprint ink (`--primary` at 70%, as BlueprintShell's labels). CSS only, decorative and static;
+   identical in every product and theme. `Separator variant="dimension"` and the frames' `rule` and
+   `tape` options draw it; `.section-dividers` draws it at the bottom of every section but the last. */
+@layer components {
+	.dimension-line,
+	.section-dividers > section:not(:last-of-type)::after {
+		--dimension-ink: color-mix(in srgb, var(--primary) 70%, transparent);
+		box-sizing: border-box;
+		display: block;
+		width: 100%;
+		height: 9px;
+		flex-shrink: 0;
+		border-inline: 1px solid var(--dimension-ink);
+		background-image:
+			linear-gradient(var(--dimension-ink), var(--dimension-ink)),
+			repeating-linear-gradient(90deg, var(--dimension-ink) 0 1px, transparent 1px 80px);
+		background-size:
+			100% 1px,
+			100% 5px;
+		background-position:
+			0 4px,
+			79px 2px;
+		background-repeat: no-repeat;
+		background-origin: content-box;
+		pointer-events: none;
+	}
+
+	/* Placement rule: put `.section-dividers` on the element whose direct children are the page's
+	   `<section>`s (the route's top element). Every section but the last ends with the line at its
+	   bottom edge, edge to edge of the section; the last section never draws one, so nothing sits
+	   before the footer. The section becomes a positioning context only where no product rule says
+	   otherwise (zero specificity). */
+	:where(.section-dividers > section:not(:last-of-type)) {
+		position: relative;
+	}
+	.section-dividers > section:not(:last-of-type)::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		bottom: 0;
+		width: auto;
+	}
+}

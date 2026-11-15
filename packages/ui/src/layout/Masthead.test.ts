@@ -33,6 +33,15 @@ describe('Masthead', () => {
 		expect(view.container.querySelector('[data-slot="separator"]')).toBeNull();
 	});
 
+	it('draws the dimension line instead of hazard tape with tape="dimension"', () => {
+		const view = masthead({ tape: 'dimension' });
+		const last = view.container.querySelector('[data-slot="masthead"]')!.lastElementChild as HTMLElement;
+		expect(last.getAttribute('data-variant')).toBe('dimension');
+		expect(last.classList.contains('dimension-line')).toBe(true);
+		expect(last.getAttribute('aria-hidden')).toBe('true');
+		expect(view.container.querySelectorAll('[data-slot="separator"]')).toHaveLength(1);
+	});
+
 	it('drops the brand dot with dot={false}', () => {
 		const view = masthead({ kicker: undefined, dot: false });
 		expect(dot(view)).toBeNull();

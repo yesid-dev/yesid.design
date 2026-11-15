@@ -143,7 +143,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `6b8133789829aa4ca9fd793ebc0e9c728c97a08c02890a2fd510c2eee6175c45`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `4608dc376a9a692d0913e504fe5c122e6d07f591156d1c35ab61eca908cc66e4`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `40450a648e4a461734946514b529ca42bc67cd38a813f0c51babd335e5409683`
 
 ## Declaration namespaces
@@ -1040,6 +1040,7 @@ interface CodeBlockProps {
     copy?: CodeBlockCopyLabels;
     // (undocumented)
     language?: string;
+    rule?: 'hazard' | 'dimension';
     // (undocumented)
     title: string;
 }
@@ -1364,7 +1365,7 @@ interface DetailFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'>
     railScroll?: boolean;
     // (undocumented)
     right?: Snippet;
-    rule?: 'hazard' | 'line' | 'none';
+    rule?: 'hazard' | 'dimension' | 'line' | 'none';
     summary?: Snippet;
     // (undocumented)
     toc?: DetailFrameToc;
@@ -1435,7 +1436,7 @@ interface ErrorPageProps {
     statusNote?: string;
     suggestions?: readonly ErrorPageLink[];
     suggestionsLabel?: string;
-    tape?: boolean;
+    tape?: boolean | 'dimension';
 }
 
 declare namespace Feedback {
@@ -1776,6 +1777,7 @@ interface ListingFrameProps {
     heading: string;
     onHeaderMount?: (header: HTMLElement, frame: HTMLElement) => (() => void) | void;
     presentation?: 'expressive' | 'reading';
+    rule?: 'hazard' | 'line' | 'dimension';
     // (undocumented)
     search?: Snippet;
     // (undocumented)
@@ -1833,7 +1835,7 @@ interface MastheadProps {
     meta?: Snippet;
     // (undocumented)
     subheading?: string;
-    tape?: boolean;
+    tape?: boolean | 'dimension';
 }
 
 // @public (undocumented)
@@ -2435,6 +2437,19 @@ type SeparatorDefaultProps = Separator.RootProps & {
     label?: never;
 };
 
+// @public
+type SeparatorDimensionProps = WithElementRef<Omit<HTMLAttributes<HTMLDivElement>, 'children'>, HTMLDivElement> & {
+    variant: 'dimension';
+    orientation?: never;
+    child?: never;
+    children?: never;
+    decorative?: never;
+    hazardSize?: never;
+    hazardAngle?: never;
+    maxWidth?: never;
+    label?: never;
+};
+
 // @public (undocumented)
 type SeparatorGradientProps = CustomSeparatorElementProps & {
     variant: 'gradient';
@@ -2454,10 +2469,10 @@ type SeparatorHazardProps = CustomSeparatorElementProps & {
 };
 
 // @public (undocumented)
-type SeparatorProps = SeparatorDefaultProps | SeparatorHazardProps | SeparatorGradientProps;
+type SeparatorProps = SeparatorDefaultProps | SeparatorHazardProps | SeparatorGradientProps | SeparatorDimensionProps;
 
 // @public (undocumented)
-type SeparatorVariant = 'default' | 'hazard' | 'gradient';
+type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension';
 
 // @public (undocumented)
 type SheetCloseProps = Dialog.CloseProps;
@@ -2987,6 +3002,7 @@ interface TerminalPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
     // (undocumented)
     footer?: readonly TerminalFooterItem[];
     noPadding?: boolean;
+    rule?: 'hazard' | 'dimension';
     signal?: {
         color: StatusDotColor;
         label: string;

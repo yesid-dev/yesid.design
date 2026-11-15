@@ -1,6 +1,6 @@
 <!--
   A surface masthead: optional station kicker, dotted heading, optional lede and meta row, then the
-  body and a hazard tape. Task pages start with the heading: omit `kicker`, and set `tape={false}`.
+  body and a hazard tape (`tape="dimension"` draws THE divider, the dimension line, D22). Task pages start with the heading: omit `kicker`, and set `tape={false}`.
   `cornerMeta` renders inside the header (pair it with `CornerMeta`). No fixed heights: long French
   and Spanish headings wrap.
 -->
@@ -19,8 +19,11 @@
 		cornerMeta?: Snippet;
 		meta?: Snippet;
 		children?: Snippet;
-		/** Hazard tape under the masthead. Defaults to `true`. */
-		tape?: boolean;
+		/**
+		 * The rule under the masthead: `true` (default) draws hazard tape, `'dimension'` the dimension
+		 * line (THE divider, D22), `false` nothing.
+		 */
+		tape?: boolean | 'dimension';
 		/** The brand dot after the heading. Defaults to `true`. */
 		dot?: boolean;
 		class?: string;
@@ -69,7 +72,9 @@
 		<div class="masthead-body" data-slot="masthead-body">{@render children()}</div>
 	{/if}
 
-	{#if tape}
+	{#if tape === 'dimension'}
+		<Separator variant="dimension" />
+	{:else if tape}
 		<Separator variant="hazard" />
 	{/if}
 </div>

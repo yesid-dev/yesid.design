@@ -101,9 +101,9 @@ The owner wants every product to feel like one family (15 November 2026). These 
 - **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
 - **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
 - **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
-- **Section dividers and the footer edge** (owner rulings since 06:35 UTC, 15 November 2026). Gap: these arrive in the next release (v0.45.0 packet 1, in progress) as D22; `Separator` on `main` offers only `default`, `hazard` and `gradient`.
-  - The divider is a drafting dimension line: a hairline with scale ticks at the 80 px grid step, in the orange blueprint ink, edge to edge, at the bottom of every section except the last.
-  - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking.
+- **Section dividers and the footer edge** ([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge), owner rulings since 06:35 UTC, 15 November 2026), from v0.45.0:
+  - The divider is a drafting dimension line: a hairline with scale ticks at the 80 px grid step, in the orange blueprint ink, edge to edge, at the bottom of every section except the last. `.section-dividers` in `@yesid/ui/base.css` draws it that way on a page's sections; `Separator variant="dimension"` draws it by hand; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and `Masthead` and `ErrorPage` take `tape="dimension"`.
+  - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking: `SiteFooter` draws it by default.
   - Every rotated title is sticky.
 - **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
 
@@ -149,6 +149,7 @@ Reading and task pages spend no boldness of their own: their identity comes from
 - **Text links** are underlined in the orange text ink (`primary`), like everything else that acts (owner answer 9A, 13 November 2026; Y-28). Yellow is never a link colour: on Transit's maps it already marks late buses, stops, the selected line and a button.
 - **White reflects:** reading ink for text and for ordinary numbers.
 - **Black structures:** rules, tape and the deep board.
+- **The divider** ([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge)) is one brand piece in every product, from yesid.design, never drawn by a page: a drafting dimension line in the blueprint ink (`primary` at 70%), edge to edge, with end ticks and a scale tick every 80px, decorative and still. It is drawing ink, not an action. Every section ends with it except the last, and nothing sits before the footer, whose top edge is the street edge: one dashed line of alternating yellow and white dashes. Hazard tape is not a divider; it stays for a real caution or a signature.
 - **Status colours** belong to named states only, always with a word and a shape (Transit: ▼ Early, ● On time, ▲ Late, ○ Delay unknown; yesid.login: a dot beside "Access confirmed"), never as decoration or a chart series. No status palette is verified colour-blind safe; tokens change only after the owner chooses from the rendered colour test (3A, item Y-7).
 - **Charts:** one neutral colour for a single series; a legend and direct labels for two to four series; values and labels in text colours, never a series colour; one axis per chart.
 
@@ -350,6 +351,7 @@ Additions to the generated Overview, Typography and Do's and Don'ts:
 | 3 Colour | Orange underlined text links (Y-28) | v0.43.0 |
 | 3 Colour | Neutral static Card and section borders (Y-6) | v0.44.0 |
 | 3 Colour | MetricDisplay reading-ink tone and tabular figures (Y-5) | v0.45.0 |
+| 3 Colour | The dimension-line divider, `.section-dividers` placement and the footer street edge (D22) | v0.45.0 |
 | 3 Colour | Status palette, after the rendered test and the owner's choice (Y-7) | Status tokens release |
 | 4 Type | Calm article header, whole-word emphasis only, readable category (Y-4); Masthead kicker optional (Y-22) | v0.43.0 |
 | 4 Type | Sentence-case label role, optional TOC counter (Y-8) | v0.44.0 |

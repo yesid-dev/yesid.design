@@ -153,6 +153,16 @@ describe('options', () => {
 		expect(page({ tape: false }).queryByTestId('hazard-tape')).toBeNull();
 	});
 
+	it('draws the dimension line instead of hazard tape with tape="dimension"', () => {
+		const view = page({ tape: 'dimension' });
+		expect(view.queryByTestId('hazard-tape')).toBeNull();
+		const rule = view.getByTestId('dimension-rule');
+		const line = rule.firstElementChild as HTMLElement;
+		expect(line.classList.contains('dimension-line')).toBe(true);
+		expect(line.getAttribute('aria-hidden')).toBe('true');
+		expect(view.container.querySelector('[data-slot="error-page"]')!.firstElementChild).toBe(rule);
+	});
+
 	it('starts with the heading when label is omitted', () => {
 		const view = page({ label: undefined, illustration: 'small-after', tape: false });
 		expect(view.queryByTestId('error-label')).toBeNull();

@@ -1,6 +1,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import SeparatorContractFixture from './test-fixtures/SeparatorContractFixture.svelte';
+import SeparatorDimensionFixture from './test-fixtures/SeparatorDimensionFixture.svelte';
 
 afterEach(() => cleanup());
 
@@ -20,3 +21,24 @@ describe('Separator variant contracts', () => {
 	});
 });
 
+
+describe('Separator dimension variant (D22)', () => {
+	it('draws the shared dimension line: decorative, static, horizontal and ref-capable', async () => {
+		render(SeparatorDimensionFixture);
+		const line = screen.getByTestId('dimension');
+
+		expect(line.tagName).toBe('DIV');
+		expect(line.classList.contains('dimension-line')).toBe(true);
+		expect(line.classList.contains('custom-rule')).toBe(true);
+		expect(line.getAttribute('data-variant')).toBe('dimension');
+		expect(line.getAttribute('data-slot')).toBe('separator');
+		expect(line.getAttribute('aria-hidden')).toBe('true');
+		expect(line.getAttribute('role')).toBe('none');
+		expect(line.hasAttribute('orientation')).toBe(false);
+		expect(line.hasAttribute('data-orientation')).toBe(false);
+		expect(line.getAttribute('style')).toBeNull();
+		expect(line.childElementCount).toBe(0);
+		expect(screen.getByTestId('dimension-slot').getAttribute('data-slot')).toBe('custom-dimension');
+		await waitFor(() => expect(screen.getByTestId('dimension-ref').textContent).toBe('DIV'));
+	});
+});

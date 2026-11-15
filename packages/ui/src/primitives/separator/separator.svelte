@@ -3,7 +3,7 @@
 	import type { Separator as SeparatorTypes } from 'bits-ui';
 	import type { WithElementRef } from '../../cn/index.js';
 
-	export type SeparatorVariant = 'default' | 'hazard' | 'gradient';
+	export type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension';
 	export type HazardSize = 'sm' | 'md' | 'lg';
 
 	type CustomSeparatorElementProps = WithElementRef<
@@ -40,10 +40,31 @@
 		label?: string;
 	};
 
+	/**
+	 * THE divider (D22): a drafting dimension line in the blueprint ink, 1px with end ticks and
+	 * scale ticks every 80px, full width, horizontal only, decorative and static. Drawn by the
+	 * `.dimension-line` class in `@yesid/ui/base.css`.
+	 */
+	type SeparatorDimensionProps = WithElementRef<
+		Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
+		HTMLDivElement
+	> & {
+		variant: 'dimension';
+		orientation?: never;
+		child?: never;
+		children?: never;
+		decorative?: never;
+		hazardSize?: never;
+		hazardAngle?: never;
+		maxWidth?: never;
+		label?: never;
+	};
+
 	export type SeparatorProps =
 		| SeparatorDefaultProps
 		| SeparatorHazardProps
-		| SeparatorGradientProps;
+		| SeparatorGradientProps
+		| SeparatorDimensionProps;
 </script>
 
 <script lang="ts">
@@ -51,6 +72,10 @@
 	import { cn } from '../../cn/index.js';
 
 	let { ref = $bindable(null), ...separatorProps }: SeparatorProps = $props();
+
+	// Decorative only: hidden from assistive technology and without a role (D22). Passed as one
+	// object because Svelte's checker flags `aria-hidden` beside `role="none"`, a valid ARIA pair.
+	const decorativeAttributes = { role: 'none', 'aria-hidden': 'true' } as const;
 
 	const stripeWidth = { sm: 6, md: 8, lg: 12 } as const;
 	const hazardHeightClass = { sm: 'h-[3px]', md: 'h-1.5', lg: 'h-2.5' } as const;
@@ -121,6 +146,33 @@
 		return { maxWidth, label, className, style, dataSlot, nativeProps };
 	}
 
+	function getDimensionProps(props: SeparatorDimensionProps) {
+		const {
+			variant,
+			orientation,
+			child,
+			children,
+			decorative,
+			hazardSize,
+			hazardAngle,
+			maxWidth,
+			label,
+			class: className,
+			'data-slot': dataSlot = 'separator',
+			...nativeProps
+		} = props;
+		void variant;
+		void orientation;
+		void child;
+		void children;
+		void decorative;
+		void hazardSize;
+		void hazardAngle;
+		void maxWidth;
+		void label;
+		return { className, dataSlot, nativeProps };
+	}
+
 	function getDefaultProps(props: SeparatorDefaultProps) {
 		const {
 			variant,
@@ -180,6 +232,16 @@
 			aria-hidden="true"
 		></div>
 	{/if}
+{:else if separatorProps.variant === 'dimension'}
+	{@const dimension = getDimensionProps(separatorProps)}
+	<div
+		{...dimension.nativeProps}
+		bind:this={ref}
+		data-slot={dimension.dataSlot}
+		data-variant="dimension"
+		class={cn('dimension-line', dimension.className)}
+		{...decorativeAttributes}
+	></div>
 {:else if separatorProps.variant === 'gradient'}
 	{@const gradient = getGradientProps(separatorProps)}
 	<div

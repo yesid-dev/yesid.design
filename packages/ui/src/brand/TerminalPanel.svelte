@@ -1,5 +1,6 @@
 <!--
-  Terminal window: a title bar with an optional caller-labelled signal, a hazard rule, a scrolling body
+  Terminal window: a title bar with an optional caller-labelled signal, a rule under it (hazard tape
+  by default, or `rule="dimension"` for THE divider, D22), a scrolling body
   and an optional footer readout. Styled by the global `.terminal-*` classes in `base.css`, which
   server-rendered markup can reuse.
 -->
@@ -23,6 +24,8 @@
 		/** Controls at the end of the title bar. */
 		actions?: Snippet;
 		footer?: readonly TerminalFooterItem[];
+		/** The rule under the title bar: `hazard` tape (default) or the `dimension` line (THE divider, D22). */
+		rule?: 'hazard' | 'dimension';
 		/** Drops the body padding for content that pads itself. */
 		noPadding?: boolean;
 		children: Snippet;
@@ -45,6 +48,7 @@
 		signal,
 		actions,
 		footer = [],
+		rule = 'hazard',
 		noPadding = false,
 		children,
 		class: className,
@@ -76,7 +80,11 @@
 		{/if}
 	</div>
 
-	<Separator variant="hazard" hazardSize="sm" />
+	{#if rule === 'dimension'}
+		<Separator variant="dimension" class="terminal-rule" />
+	{:else}
+		<Separator variant="hazard" hazardSize="sm" class="terminal-rule" />
+	{/if}
 
 	<div class="terminal-body" class:no-pad={noPadding} use:scrollChain>
 		{@render children()}

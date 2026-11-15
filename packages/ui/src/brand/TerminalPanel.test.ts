@@ -52,6 +52,23 @@ describe('TerminalPanel', () => {
 		expect(screen.getByTestId('panel').contains(screen.getByText('Query console'))).toBe(true);
 	});
 
+	it.each([
+		[undefined, 'hazard'],
+		['hazard', 'hazard'],
+		['dimension', 'dimension'],
+	] as const)('draws the %j rule as one decorative separator between the title bar and the body', (rule, drawn) => {
+		const { container } = render(TerminalPanel, { props: { title: 'Archive', children, rule } });
+		const rules = container.querySelectorAll<HTMLElement>('.terminal-rule');
+		expect(rules).toHaveLength(1);
+		const [line] = rules;
+		expect(line.getAttribute('aria-hidden')).toBe('true');
+		expect(line.classList.contains('dimension-line')).toBe(drawn === 'dimension');
+		expect(line.getAttribute('data-variant')).toBe(drawn === 'dimension' ? 'dimension' : null);
+		expect(line.style.background === '').toBe(drawn === 'dimension');
+		expect(line.previousElementSibling?.classList.contains('terminal-titlebar')).toBe(true);
+		expect(line.nextElementSibling?.classList.contains('terminal-body')).toBe(true);
+	});
+
 	it('needs only a title and children', () => {
 		render(TerminalPanel, { props: {
 			title: 'Query console',
