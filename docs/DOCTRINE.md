@@ -57,7 +57,7 @@ One brand, three registers. They share every contract that makes the family reco
 | | Expressive | Reading | Task |
 | --- | --- | --- | --- |
 | Job | Say who this is and why it matters, at the door | Understand and check, at the reader's pace | Finish a short action correctly |
-| yesid.dev | Home; page not found | Case studies, articles, blog lists, services and service details, About, projects, legal | Contact |
+| yesid.dev | Marketing pages (D20): home, services and service details, About; page not found | Case studies, articles, blog and project lists, legal | Contact |
 | yesid.login | Page not found | Privacy and terms | Sign-in, code, site choice, site switch, editor hand-off, Account, People |
 | Transit | The home closing scene and footer (4A) | Records, lines, stops, rankings, method, data health, legal | Search, map controls, filters |
 | Title | Display type, one lead treatment | Title size, sentence case | Compact task heading, about 28 to 32 px |
@@ -84,23 +84,23 @@ A page's type says what it is for; its register says how much expression it spen
 | --- | --- | --- | --- |
 | Editorial | Collection entries: yesid.dev case studies and articles; Transit's editorial page, if it has one | Reading | `ArticleHeader` with `presentation="reading"`, `DetailFrame`, `CollapsibleSection` and `TocNav`; `ReadingFrame` (Experimental) for long prose |
 | Listing | Pages that list a collection: projects, blog; Transit's listing pages | Reading | `ListingFrame` with `SearchInput`, `FilterGroup` and `FilterSection`; one `Card interactive` per entry |
-| Marketing | Home, services, About | Expressive, within this doctrine | Free composition from the brand pieces and the signatures in section 3; `Card`, `Button` and the listed signature components |
+| Marketing | Home, services and service details, About | Expressive, within this doctrine; a long-text region may declare reading | A canvas for unique layouts, built only from yesid.design components; never overrides their styles. Free composition, not free styling: `Card` (static, or `interactive` for a card that is or contains a link or control), `Button`, the brand pieces below and the signatures in section 3 |
 | Contact | The contact page, the same in every product and domain | Task | The [labelled field recipe](recipes/labelled-field.md), `Card edge="neutral" textSize="inherit"`, `Button`, `StateNotice`; the weather signature beside or after the form (section 3) |
 | Dashboard | Transit's live map and data views | Task | Product-owned patterns, with the shared brand pieces; `Surface`, `Masthead` and `DataTable` where they fit. Editorial reading rules do not apply |
 | Task | yesid.login's sign-in and account screens (assumed, owner to confirm) | Task | `Card edge="neutral" textSize="inherit"`, the labelled field recipe, `Masthead` without a kicker or tape, `Button` |
 
-The register table above lists yesid.dev's services and About under reading; under D20 they are marketing pages, whose default is expressive within this doctrine, so every rule and signature condition still applies to them. Pages the ruling does not name, such as legal pages and page not found, keep the register in the table above until the owner assigns them a type.
+Legal pages and page not found or error pages: type to be given by the owner.
 
 ### Brand pieces every product shares
 
 The owner wants every product to feel like one family (15 November 2026). These pieces are the standard, and each lives in one place:
 
-- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19, open PR 238; on `main` the opt-in `compactControls` still moves them into the phone menu).
-- **The product brand** "yesid. | Product": `ProductBrand` (Experimental) in open PR 238. Gap until it merges: `main` has only `Wordmark`.
+- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19; `compactControls` is deprecated).
+- **The product brand** "yesid. | Product": `ProductBrand` (Experimental), through the `brand` snippet of `SiteHeader` and `SiteFooter`.
 - **Headings that end on the orange dot**, where the design uses it: `SectionHeading` and `Masthead`, whose `dot` prop (default `true`) draws it.
 - **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
 - **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
-- **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a whole-card target; section cards react only through their heading. D21 lists the remaining gaps.
+- **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
 - **The divider:** a thin solid yellow line, identical everywhere, including under terminal-panel title bars and inside code panels, never hazard tape (owner answer A, 15 November 2026). Gap: `Separator` offers `default`, `hazard` and `gradient`, with no shared thin solid yellow line; add one in the next release.
 - **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
 
@@ -189,7 +189,7 @@ Carried by: Y-22 optional Masthead kicker and Y-4 calm article header (v0.43.0);
 
 ### Rule 5. One surface per question; hover only on things that act
 
-Cards hold one subject; comparisons are aligned rows inside one card; no card inside a card inside a section. Static cards use the neutral border; orange edges mark interaction or selection. Hover, press and lift effects appear only on whole-card links, buttons and section headings. No glow on reading or task surfaces, with two exceptions: the bulk control's orange active state (D15) and lit artwork in a signature region; the glow tokens otherwise serve the conversion button on expressive pages.
+Cards hold one subject; comparisons are aligned rows inside one card; no card inside a card inside a section. Static cards use the neutral border; orange edges mark interaction or selection. Hover, press and lift effects appear only on interactive surfaces ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): a card that is a link or control or contains them, buttons and section headings. No glow on reading or task surfaces, with two exceptions: the bulk control's orange active state (D15) and lit artwork in a signature region; the glow tokens otherwise serve the conversion button on expressive pages.
 
 **Why.** Repeated frames compete with the content and hide which items belong together. Hover effects on static cards suggest an action that the surface cannot perform.
 

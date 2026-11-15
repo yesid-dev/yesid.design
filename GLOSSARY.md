@@ -72,8 +72,10 @@ _Avoid_: detail page (for the type), article page (for case studies)
 page in every product shares one design, the owner's listing design. Default register: reading.
 _Avoid_: index page, archive
 
-**Marketing page**: Home, services or About: free composition from the brand pieces and the
-signatures the doctrine lists. Default register: expressive, within the doctrine.
+**Marketing page**: Home, services (with their detail pages) or About: a canvas for unique
+layouts, built only from yesid.design components; never overrides their styles. Free composition,
+not free styling: each surface uses the component and option that fits it, static or interactive.
+Default register: expressive, within the doctrine; a long-text region may declare reading.
 _Avoid_: landing page, expressive page (for the type)
 
 **Contact page**: The page for getting in touch, its own type and the same in every product and
