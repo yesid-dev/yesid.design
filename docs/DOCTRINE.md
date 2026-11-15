@@ -28,7 +28,7 @@ These are yesid.design itself. No rule below overrides them, and no product rest
 - **The four colours** and their roles (Rule 3).
 - **Inter and JetBrains Mono** in their roles (Rule 4).
 - **Cards and collapsible cards**, with D15's remembered choice and the 5A opt-in (Rule 7).
-- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). U1's opt-in `compactControls` may move both, unchanged, into the phone menu below a 600 px header (answer 8A). The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
+- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). Both toggles always stay in the navbar pill at every width (D19); `compactControls`, which moved them into the phone menu, is deprecated since v0.44.0. The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
 
 The owner kept the standard controls. The system-owned language order prevents product-specific cycling.
 
@@ -38,7 +38,7 @@ A signature is an expressive element the owner has approved, with its job and it
 
 | Signature | Where | Its job | Conditions |
 | --- | --- | --- | --- |
-| Theme and language toggles | Every product's header (or its phone menu, by opt-in) | Identity and the visitor's choices | Unchanged (section 2) |
+| Theme and language toggles | Every product's header pill (D19) | Identity and the visitor's choices | Unchanged (section 2) |
 | The wordmark and its dot | Every header and footer | Identity | The header's one-time wordmark play may be turned off on task pages (roadmap Y-18) |
 | The construction scene and its sliding props | yesid.dev home closing; Transit home and footer (4A); below yesid.login's sign-in task | The brand's closing gesture | Where a page passes the reveal marker (`ConstructionProps` `revealAt`, as yesid.dev and Transit do), the props slide up out of the ground only as the visitor scrolls to the scene, exactly as today; under reduced motion they appear whole without moving. yesid.login passes no marker, so its scene is still today and stays so. The scene sits at the end of a page or below a task, never between the reader and the answer |
 | The closing departure board | yesid.dev home closing | Real destinations (contact, GitHub, blog, About) as signage | Rows stay real links; no blinking cursor or invented readouts |
@@ -101,7 +101,10 @@ The owner wants every product to feel like one family (15 November 2026). These 
 - **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
 - **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
 - **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
-- **The divider:** a thin solid yellow line, identical everywhere, including under terminal-panel title bars and inside code panels, never hazard tape (owner answer A, 15 November 2026). Gap: `Separator` offers `default`, `hazard` and `gradient`, with no shared thin solid yellow line; add one in the next release.
+- **Section dividers and the footer edge** (owner rulings since 06:35 UTC, 15 November 2026). Gap: these arrive in the next release (v0.45.0 packet 1, in progress) as D22; `Separator` on `main` offers only `default`, `hazard` and `gradient`.
+  - The divider is a drafting dimension line: a hairline with scale ticks at the 80 px grid step, in the orange blueprint ink, edge to edge, at the bottom of every section except the last.
+  - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking.
+  - Every rotated title is sticky.
 - **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
 
 ## 5. Rules

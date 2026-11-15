@@ -687,7 +687,7 @@ same in every product; a change to either design belongs in yesid.design. Declar
 register with `data-register`, starting from the default the
 [doctrine](DOCTRINE.md#page-types-and-their-registers-d20) gives its type, and build marketing, contact,
 dashboard and task pages from the shared brand pieces: the header and its toggles, cards and their
-hover, the yellow line dividers, buttons and links.
+hover, the section dividers, buttons and links.
 
 ## Labelled fields
 

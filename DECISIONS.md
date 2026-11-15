@@ -201,7 +201,7 @@ from register:
 Across products, an editorial page uses yesid.dev's editorial design and a listing page uses
 yesid.dev's listing design; Transit likely has one editorial page, and everything else in Transit
 is the dashboard. Every product shares the brand pieces: the header and its toggles, cards and
-their hover, the yellow line dividers, buttons and links.
+their hover, the section dividers, buttons and links.
 
 The type sets a page's default register (`docs/DOCTRINE.md`, section 4): editorial and listing
 are reading; marketing is expressive within the doctrine, and a long-text region on a marketing
