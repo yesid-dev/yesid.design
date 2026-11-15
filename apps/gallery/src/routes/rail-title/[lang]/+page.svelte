@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { RailTitle, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { SiteHeader } from '@yesid/ui/layout';
-	import { PRODUCT_COPY, PRODUCT_LANGS, PRODUCT_LANGUAGE_NAMES } from '#lib/gallery/product-header-fixture.ts';
+	import { PRODUCT_COPY, PRODUCT_LANGS, PRODUCT_LANGUAGE_NAMES} from '#lib/gallery/product-header-fixture.ts';
 	import { RAIL_COPY } from '#lib/gallery/rail-title-fixture.ts';
 
 	let { data } = $props();
@@ -19,7 +19,7 @@
 <SiteHeader
 	{navigation}
 	{home}
-	links={[]}
+	links={header.links.map((link, index) => ({ href: `${home}#${['services', 'work', 'next'][index]}`, label: link.label, priority: link.priority }))}
 	labels={header.labels}
 	language={{ locale: data.lang, locales: PRODUCT_LANGS, href: (next) => `/rail-title/${next}`, label: header.language, names: PRODUCT_LANGUAGE_NAMES }}
 />

@@ -42,6 +42,7 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { cn } from '../cn/index.js';
 
 	let {
@@ -69,41 +70,150 @@
 		[size ? `--rail-title-size: ${size}` : '', style ?? ''].filter(Boolean).join('; ') || undefined,
 	);
 
+	let railEl = $state<HTMLElement>();
 	let titleEl = $state<HTMLElement>();
 
-	// Shrinks a rotated title that is longer than the room under the header pill; CSS sizes it first.
-	$effect(() => {
+	/** Below this the rotated title would be unreadable; it reads horizontally instead. */
+	const FLOOR_PX = 12;
+	/** Room kept under the rotated title, inside the scrollport. */
+	const BOTTOM_GAP_PX = 24;
+
+	/** The box whose scrollport the sticky title follows: the nearest scrolling ancestor, else the viewport. */
+	function scrollContainer(element: HTMLElement): HTMLElement | null {
+		for (let node = element.parentElement; node; node = node.parentElement) {
+			if (node === document.body || node === document.documentElement) return null;
+			if (/(auto|scroll|hidden|overlay)/.test(getComputedStyle(node).overflowY)) return node;
+		}
+		return null;
+	}
+
+	function scrollport(container: HTMLElement | null): { top: number; height: number } {
+		if (!container) return { top: 0, height: window.innerHeight };
+		return { top: container.getBoundingClientRect().top + container.clientTop, height: container.clientHeight };
+	}
+
+	let container: HTMLElement | null = null;
+	let observed: HTMLElement | null = null;
+	let observer: ResizeObserver | undefined;
+	let scrollTarget: HTMLElement | Window | undefined;
+	let wide: MediaQueryList | undefined;
+	let stickyTop: number | null = null;
+	let frame = 0;
+	let clipFrame = 0;
+
+	/** Follows the scrollport the title sticks in: observes its size and listens to its scrolling. */
+	function bindScrollport(rail: HTMLElement): void {
+		container = scrollContainer(rail);
+		const target: HTMLElement | Window = container ?? window;
+		if (target !== scrollTarget) {
+			scrollTarget?.removeEventListener('scroll', scheduleClip);
+			target.addEventListener('scroll', scheduleClip, { passive: true });
+			scrollTarget = target;
+		}
+		if (container !== observed) {
+			if (observed) observer?.unobserve(observed);
+			if (container) observer?.observe(container);
+			observed = container;
+		}
+	}
+
+	/**
+	 * Keeps the departing title's painted text below the sticky clearance line, so it never slides
+	 * under the header pill (or anything above that line) as its section scrolls away.
+	 */
+	function clip(): void {
+		const rail = railEl;
+		if (!rail) return;
+		if (stickyTop === null) {
+			rail.style.removeProperty('clip-path');
+			return;
+		}
+		const cut = scrollport(container).top + stickyTop - rail.getBoundingClientRect().top;
+		if (cut > 0.5) rail.style.setProperty('clip-path', `inset(${Math.ceil(cut)}px 0 0 0)`);
+		else rail.style.removeProperty('clip-path');
+	}
+
+	/**
+	 * Fits the rotated title to the room between the sticky clearance and the bottom of its actual
+	 * scrollport. A title that would need less than the 12px floor reads horizontally instead.
+	 */
+	function fit(): void {
+		const rail = railEl;
 		const title = titleEl;
-		if (!title || typeof window === 'undefined') return;
-		const wide = window.matchMedia('(min-width: 1024px)');
-		let frame = 0;
-		const fit = (): void => {
-			title.style.removeProperty('--rail-title-fit');
-			if (!wide.matches) return;
-			const room = title.clientHeight;
-			const length = title.scrollHeight;
-			if (room <= 0 || length <= room + 1) return;
-			const current = parseFloat(getComputedStyle(title).fontSize);
-			title.style.setProperty('--rail-title-fit', `${Math.floor((current * room) / length)}px`);
-		};
-		const schedule = (): void => {
-			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(fit);
-		};
-		fit();
-		document.fonts?.ready.then(schedule).catch(() => {});
+		if (!rail || !title) return;
+		rail.style.removeProperty('--rail-title-fit');
+		rail.style.removeProperty('--rail-title-room');
+		delete rail.dataset.fit;
+		stickyTop = null;
+		bindScrollport(rail);
+		if (!wide?.matches) {
+			clip();
+			return;
+		}
+		const style = getComputedStyle(rail);
+		const top = style.position === 'sticky' ? parseFloat(style.top) || 0 : null;
+		const room = Math.max(0, scrollport(container).height - (top ?? 0) - BOTTOM_GAP_PX);
+		rail.style.setProperty('--rail-title-room', `${room}px`);
+		const base = parseFloat(getComputedStyle(title).fontSize);
+		const length = title.scrollHeight;
+		if (length > room + 1) {
+			const fitted = Math.floor((base * room) / length);
+			if (fitted >= FLOOR_PX) rail.style.setProperty('--rail-title-fit', `${fitted}px`);
+			else rail.dataset.fit = 'horizontal';
+		}
+		if (rail.dataset.fit !== 'horizontal') stickyTop = top;
+		clip();
+	}
+
+	function schedule(): void {
+		cancelAnimationFrame(frame);
+		frame = requestAnimationFrame(fit);
+	}
+
+	function scheduleClip(): void {
+		cancelAnimationFrame(clipFrame);
+		clipFrame = requestAnimationFrame(clip);
+	}
+
+	// Observes the scrollport, the title's own size, the breakpoint and the web font.
+	$effect(() => {
+		const rail = railEl;
+		const title = titleEl;
+		if (!rail || !title || typeof window === 'undefined') return;
+		wide = window.matchMedia('(min-width: 1024px)');
+		observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(schedule);
+		observer?.observe(title);
+		// Content above may move the title without a scroll; the clip follows the page's size.
+		const pageObserver = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(scheduleClip);
+		pageObserver?.observe(document.documentElement);
 		window.addEventListener('resize', schedule);
 		wide.addEventListener('change', schedule);
+		document.fonts?.ready.then(schedule).catch(() => {});
+		fit();
 		return () => {
 			cancelAnimationFrame(frame);
+			cancelAnimationFrame(clipFrame);
+			observer?.disconnect();
+			pageObserver?.disconnect();
+			observer = undefined;
+			observed = null;
+			scrollTarget?.removeEventListener('scroll', scheduleClip);
+			scrollTarget = undefined;
 			window.removeEventListener('resize', schedule);
-			wide.removeEventListener('change', schedule);
+			wide?.removeEventListener('change', schedule);
 		};
+	});
+
+	// Refits when the words or sizing inputs change; effects run after the DOM has the new text.
+	$effect(() => {
+		void [heading, dot, size, level, decorative, side];
+		untrack(fit);
 	});
 </script>
 
 {#snippet title(extraClass?: string, attributes?: Record<string, unknown>)}
 	<div
+		bind:this={railEl}
 		class={cn('rail-title', extraClass)}
 		data-slot="rail-title"
 		data-side={side}
@@ -180,7 +290,8 @@
 		}
 
 		.rail-title-text {
-			max-height: calc(100dvh - var(--rail-title-sticky-top) - 1.5rem);
+			/* The script measures the room in the real scrollport; this covers the first paint. */
+			max-height: var(--rail-title-room, calc(100dvh - var(--rail-title-sticky-top) - 1.5rem));
 			writing-mode: vertical-rl;
 			font-size: min(
 				var(--rail-title-fit, var(--rail-title-size, min(clamp(3.5rem, 7vw, 6rem), 5.5dvh))),
@@ -219,6 +330,32 @@
 		.rail-title-layout > .rail-title-content {
 			grid-row: 1;
 			grid-column: 2;
+		}
+
+		/* Too long to rotate at 12px or more in this scrollport: the horizontal form, above the content. */
+		.rail-title[data-fit='horizontal'] {
+			position: static;
+			justify-content: flex-start;
+		}
+
+		.rail-title[data-fit='horizontal'] .rail-title-text {
+			max-height: none;
+			writing-mode: horizontal-tb;
+			rotate: none;
+			font-size: var(--text-display);
+			line-height: 1.05;
+			letter-spacing: -0.02em;
+			white-space: normal;
+			overflow-wrap: anywhere;
+		}
+
+		.rail-title-layout > .rail-title[data-fit='horizontal'] {
+			grid-column: 2;
+			margin-block-end: var(--space-card-gap, 1.5rem);
+		}
+
+		.rail-title-layout:has(> .rail-title[data-fit='horizontal']) > .rail-title-content {
+			grid-row: 2;
 		}
 	}
 </style>
