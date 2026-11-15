@@ -1,5 +1,120 @@
 # Changelog
 
+## 0.45.0
+
+<!-- release-fragment: dimension-divider-street-edge -->
+- `@yesid/ui` (minor): The dimension-line divider and the footer street edge (D22, owner ruling of 15 November 2026).
+  Every new option keeps today's output by default; the one behaviour change is the footer's top
+  edge, listed below.
+
+  New options:
+
+  - `Separator` `variant="dimension"`: THE divider, a drafting dimension line in the blueprint ink
+    (`--primary` at 70%), a 1px hairline with 9px end ticks and 5px scale ticks every 80px, full
+    width, horizontal only, decorative (`aria-hidden="true"`, `role="none"`) and static. The
+    `SeparatorVariant` type gains `'dimension'`.
+  - `base.css`: `.dimension-line` draws that line for server-rendered markup.
+  - `PageSections` and `PageSection` from `@yesid/ui/layout` (with `PageSectionsProps` and
+    `PageSectionProps`): the placement rule without page CSS. Every registered section but the last
+    ends with the line, drawn as a real row between two sections, outside both sections' boxes, so
+    nothing a section paints can cover it. Wrappers between them do not matter; plain `<section>`s
+    and nested `PageSection`s do not register; nothing sits before the footer. Inside a registered
+    section the kit's edge rules (Masthead's and ErrorPage's tape, DetailFrame's rule without a
+    header, now marked `data-edge-rule`) are hidden, so the stroke is never doubled.
+  - `DetailFrame` `rule="dimension"`; `ListingFrame` `rule` (`hazard`, `line` or `dimension`;
+    without it each presentation keeps its rule; it is the one line between the header and the list,
+    and the search draws no rule of its own); `TerminalPanel` and `CodeBlock` `rule` (`hazard` default or `dimension`);
+    `Masthead` and `ErrorPage` `tape="dimension"`. Hazard tape stays every default.
+
+  Behaviour change for existing callers (owner-approved, see DEPRECATION.md):
+
+  - `SiteFooter`'s top edge is the street edge instead of the 3px hazard strip: one dashed line,
+    4px tall, edge to edge, whose 20px dashes alternate yellow (`--hazard-a`) and white
+    (`--reflective`) with 20px gaps, with a hairline on the white dashes so they read on the light
+    footer. The footer keeps its background in both themes. `.footer-gradient-sep` is gone; the edge
+    is `[data-slot="footer-street-edge"]`. No prop, type or export changes.
+
+  Migration: products need no code change for the footer; drop any CSS or test that targets
+  `.footer-gradient-sep`. To adopt the divider, replace page-drawn section rules (hazard
+  `Separator`s between sections, dashed or solid lines) with `PageSections` and `PageSection`, and pass `rule="dimension"` or `tape="dimension"` where a frame or panel draws hazard
+  tape as a divider. Remove any divider placed just above the footer.
+
+<!-- release-fragment: header-link-tiers -->
+- `@yesid/ui` (minor): Add SiteHeader `linkTiers` (type `SiteHeaderLinkTiers`) so the header's link tiers agree before
+  and after hydration for a wider brand (Transit R1063-1, transit#1063).
+
+  With a supplied brand plus search and actions, Transit's full pill fits only from a wider header
+  than the default tiers assume: priority 3 links showed from 1024px in the server-rendered CSS, and
+  links-fit took the tier out once the app script ran, so at 1206px both toggles moved about 169px.
+  `linkTiers` raises the header width each priority needs: `priority2` takes 768, 1024 or 1280 and
+  `priority3` takes 1280, 1440 or 1600. Transit passes `linkTiers={{ priority3: 1280 }}`.
+
+  The link tiers, defaults included, are now static container-query rules in em, named in px at the
+  default 16px font size. They decide the same before hydration, after it and without JavaScript,
+  and they scale with the reader's font size, as rem-sized brands and controls do: a 1280px tier is
+  1600px at a 20px default. links-fit never brings back a tier they hide. Each priority hides below
+  its own width; the links row and its divider hide only below the lowest width among the
+  priorities present, so a raised priority 2 never hides priority 3 at its own width.
+
+  Defaults at the 16px default font size are unchanged (priority 1 from 375px, priority 2 from
+  600px or 500px with the deprecated `compactControls`, priority 3 from 1024px), so yesid.dev and
+  yesid.login keep today's output there. At another default font size the default tiers now move
+  with it. The `search` snippet keeps its 1024px step, since products pair their own compact
+  search with it. Defect fix in the same rules: a header whose links are all priority 2 no longer
+  shows the divider before an empty links row below 600px (500px in compact mode); no current
+  product has such a header.
+
+  Proven in the Gallery (`site-header-wide.spec.ts`): a Transit-shaped header stays still through
+  hydration within 0.1px at 320, 390, 1100, 1206, 1279 and 1280px at 16px, and at 1279, 1280, 1599
+  and 1600px at a 20px default font size, in EN and FR, and a mixed priority 2 and 3 header shows
+  the right links at 1023, 1024, 1279 and 1280px with and without JavaScript. Other compositions
+  need the same check in the product. These cases fail on the previous source.
+
+  Migration: none required. Transit passes `linkTiers={{ priority3: 1280 }}`.
+
+<!-- release-fragment: rail-title-header-band-listing-fixes -->
+- `@yesid/ui` (minor): Sticky rail titles, a compact editorial header band and listing fixes (D23 and the owner rulings
+  of 15 November 2026).
+
+  New:
+
+  - `RailTitle` (Experimental, `@yesid/ui/brand`, with `RailTitleProps`): the rotated section title
+    on a side rail, outside the centred content. It is the section's real heading (`level`, default
+    2; `titleId`), first in the section's DOM order, ending on the brand's orange dot (`dot`, default
+    `true`). From 1024px it sits rotated on the `side` rail (`left`, the default, or `right`) and is
+    sticky under the header pill (`--rail-title-top`, default the chrome offset plus 1rem) while its
+    section scrolls, then the next section's title takes over; below 1024px it reads horizontally
+    above the content. With `children` it lays out both rails (`--rail-title-rail`) so the content
+    stays centred and the title never covers it. `size` sets one rotated size for every title on a
+    page. A title longer than the room in its actual scrollport (the nearest scrolling ancestor,
+    else the viewport) shrinks to fit, never below 12px; below that it reads horizontally above the
+    content. It refits when its words, `dot`, `size`, the scrollport or its own size change, and a
+    departing title is clipped at the clearance line, so it never paints under the header pill.
+    `decorative` draws hidden decoration instead of a heading, for a frame whose real heading is
+    elsewhere.
+  - `filterCountText(count, countLabel, locale)` from `@yesid/ui/brand`: the words FilterSummary
+    shows for a count.
+  - `ListingFrame` `resultCountText`: an always-present, visually hidden polite status that announces
+    the result count whenever a search or filter changes it.
+
+  Changed (owner-approved, see DEPRECATION.md):
+
+  - `ArticleHeader`, both presentations: a compact band. No space around the back link, the title
+    4px above what follows, `actions` and `controls` in one row group (`.header__acts`) that shares a
+    row where they fit, and a short floor under the last row. The title keeps its size; long titles
+    still wrap uncropped. A case study with proof links and Collapse all: 254 to 146px at 1440px, 235
+    to 131px at 390px.
+  - `ListingFrame`: the edge title is a decorative `RailTitle` (same look and place); from 1024px no
+    dashed rule above the search; the phone Filters button keeps the standard focus ring.
+  - `SearchInput`: the standard 2px focus ring instead of the yellow border and glow.
+
+  Migration: yesid.dev can replace its own rotated titles (home sections, contact, manifesto edge)
+  with `RailTitle` and drop the page CSS that rotates or pins them; pass `resultCountText` (for
+  example `filterCountText(count, countLabel, locale)`) to `ListingFrame`. Drop product CSS that
+  re-spaces ArticleHeader's back link, title or action rows or selects `.header__actions` and
+  `.header__controls` as direct children of `.header__content`; drop rules that restore the search
+  glow or hide the Filters button's focus ring.
+
 ## 0.44.0
 
 <!-- release-fragment: calm-reading-surfaces -->
