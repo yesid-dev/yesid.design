@@ -539,7 +539,17 @@ test.describe('heading hover feedback', () => {
 					await card.locator('[data-section-trigger]').first().hover();
 					await expect(title).not.toHaveCSS('color', normalColor);
 					await expect(card).not.toHaveCSS('border-top-color', normalBorder);
-					await expect(card).not.toHaveCSS('box-shadow', normalShadow);
+					// Owner answer A, 15 November 2026: hover is identical in light and dark. The orange
+					// title and the firmer border carry the emphasis; the card casts no hover shadow.
+					await expect(title).toHaveCSS('color', await title.evaluate((node) => {
+						const probe = document.createElement('span');
+						probe.style.color = 'var(--primary)';
+						node.append(probe);
+						const color = getComputedStyle(probe).color;
+						probe.remove();
+						return color;
+					}));
+					await expect(card).toHaveCSS('box-shadow', normalShadow);
 					await card.getByText(bodyText, { exact: true }).hover();
 					await title.evaluate(async node => {
 						await Promise.all(node.getAnimations().map(animation => animation.finished));

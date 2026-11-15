@@ -252,23 +252,16 @@
 		padding-block: 0;
 	}
 
-	/* A section card is static: only its heading button reacts to hover. */
+	/* A section card is static: only its heading button reacts, to hover (border firms, title turns
+	   orange) and to keyboard focus (border firms, beside the focus ring). Identical in light and
+	   dark: no shadow (owner rulings, 15 November 2026). */
 	:global([data-slot='card'].section-card):has(
 		> [data-slot='collapsible'] > .section-header:hover,
-		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover
+		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover,
+		> [data-slot='collapsible'] > .section-header:focus-visible,
+		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:focus-visible
 	) {
 		border-color: var(--accent);
-		box-shadow:
-			var(--shadow-section),
-			inset 0 1px 0 var(--edge-highlight);
-	}
-
-	/* The neutral edge is the calm reading surface: the heading still firms the border, without glow. */
-	:global([data-slot='card'].section-card[data-edge='neutral']):has(
-		> [data-slot='collapsible'] > .section-header:hover,
-		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover
-	) {
-		box-shadow: inset 0 1px 0 var(--edge-highlight);
 	}
 
 	.section-header {

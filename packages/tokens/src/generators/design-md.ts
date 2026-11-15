@@ -76,6 +76,9 @@ export function generateDesignMd(tree: TokenTree, opts: DesignMdOptions = {}): s
   const text = tree.text as TokenTree;
   const radius = tree.radius as TokenTree;
   const space = tree.space as TokenTree;
+  const deprecatedShadows = Object.entries((tree.shadow ?? {}) as TokenTree)
+    .filter(([, v]) => isLeaf(v) && v.$deprecated)
+    .map(([k]) => `\`${k}\``);
 
   // Typography: each text-* token becomes { fontSize: <dimension> }.
   // fontSize uses the max of any clamp() value — a valid spec dimension.
@@ -204,6 +207,13 @@ surfaces. Only the D15 bulk control and lit artwork in a signature region may gl
 Only an \`interactive\` Card reacts to hover; \`edge="neutral"\` draws a static card's edge in
 \`border\` and never glows.
 
+Hover is identical in light and dark: lift and edge, no shadow (owner rulings, 15 November 2026).
+A hovered button, card, section heading, link or illustration may lift 1px, change colour, firm its
+border or change its underline, but it never gains a box-shadow, text-shadow or drop-shadow glow, and
+cards and section headings cast no outer shadow on hover. Keyboard focus gives an interactive Card
+and a section heading the same lift and edge as hover, beside the 2px focus ring. Active-state lamps
+are not hover effects.${deprecatedShadows.length ? ` Deprecated shadow tokens: ${deprecatedShadows.join(', ')}.` : ''}
+
 ## Motion
 
 Decorative animation must not loop endlessly (WCAG 2.2.2). Default-on decoration stays
@@ -237,6 +247,7 @@ the public \`@yesid/ui\` package documentation and the living Gallery.
 - Put a label above a heading.
 - Accent one word of a title.
 - Add hover effects to content that does not act.
+- Add a glow, text-shadow, drop-shadow or outer shadow on hover, or hover differently per theme.
 - Restyle the theme or language toggle.
 - Colour a link yellow.
 - Hardcode hex colors in components.

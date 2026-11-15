@@ -74,10 +74,38 @@ consumer or clean-room verification.
   [decorative vocabulary](docs/migrations/decorative-vocabulary.md). Earliest removal:
   publication date plus 90 days and an intervening minor (earliest v0.46.0 when v0.45.0 retains
   them), unless the owner waives the gates. Publication has not occurred.
+- **`@yesid/tokens` `--shadow-glow-sm` and `--shadow-cta-hover` (with the `shadow-glow-sm`
+  utility), starting v0.44.0:** Deprecated, retained and functional, with unchanged values; marked
+  `$deprecated` in `tokens.json`. Both exist only to light an element on hover, which the owner
+  ruled out on 15 November 2026 (see "Hover halos" below). `glow-sm` lost its only system use,
+  the call-to-action Button hover. No replacement: drop the hover shadow (keep `--shadow-cta` or
+  no shadow on hover) and keep the lift or colour change. Earliest removal: v0.46.0 and 90 days
+  after v0.44.0 is published, unless the owner waives the gates. Publication has not occurred.
 
 ## Removals
 
 ### Owner-approved behavior changes
+
+- **Hover halos, owner ruling, 2026-11-15 03:57 UTC, planned v0.44.0:** "The only thing that I
+  want to remove on hover was the halo. That's it." Hover no longer adds light around an element.
+  Owner answer A, 2026-11-15 05:36 UTC: hover is identical in light and dark. Removed: the
+  call-to-action Button glow (`default` and `conversion` at `cta-sm`, `cta` and `cta-lg`); the
+  `--shadow-section` hover shadow, in both themes, on an `interactive` Card and on a hovered
+  `CollapsibleSection` / `SectionCard` / TocNav card heading; and the text glow on hovered
+  `SiteHeader` nav links and menu labels. An interactive Card now lifts 1px (not under reduced
+  motion) and firms its edge; a section heading firms the edge and turns its title orange; neither
+  casts an outer shadow, and the inset bevel is the same at rest and on hover. Keyboard focus now
+  gets the same lift and edge as hover (D21): on an interactive Card, an element inside it or a
+  whole-card link that wraps it, and on a section heading button, beside the 2px focus ring; reduced
+  motion drops the lift. Every other hover
+  effect stays exactly: colour changes, border firming, underlines and the CTA lift. Focus rings,
+  active-state lamps (the current nav link, menu stop and icon) and static artwork glows are not
+  hover effects and stay. No prop, type or export changes. Migration: drop product rules that add a
+  hover glow or hover shadow, including `var(--shadow-cta-hover)` and any hover
+  `var(--shadow-section)`; keep the lift, edge or colour change. Proof: the Gallery `hover-halos`
+  spec fails on the previous source in both themes; `card.test.ts`, `SectionCard.reading.test.ts`,
+  `button.contract.test.ts` and `primitive-cleanup.test.ts` pin the rule. Rehearse in all three
+  products.
 
 - **Section title hover, owner answer B1 2A, 2026-11-14, planned v0.44.0:** the colour rule
   says yellow is never interactive, so a hovered collapsible section heading no longer turns its

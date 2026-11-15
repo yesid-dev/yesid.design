@@ -511,11 +511,6 @@
 		font-weight: 500;
 		white-space: nowrap;
 	}
-	.nav-pill-link:not(.nav-link-active):hover {
-		text-shadow:
-			0 0 8px color-mix(in srgb, var(--glow) 60%, transparent),
-			0 0 20px color-mix(in srgb, var(--glow) 30%, transparent);
-	}
 	.nav-link-active {
 		text-shadow:
 			0 0 8px color-mix(in srgb, var(--glow) 50%, transparent),
@@ -890,11 +885,9 @@
 		color: var(--primary);
 		text-shadow: 0 0 8px color-mix(in srgb, var(--glow) 50%, transparent);
 	}
+	/* Hover recolours the label; it never adds a halo (owner ruling, 15 November 2026). */
 	.menu-item:hover .menu-label {
 		color: var(--primary);
-		text-shadow:
-			0 0 8px color-mix(in srgb, var(--glow) 60%, transparent),
-			0 0 20px color-mix(in srgb, var(--glow) 30%, transparent);
 	}
 	.menu-subtitle {
 		font-family: var(--font-mono);

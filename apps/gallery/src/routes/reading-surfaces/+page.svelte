@@ -33,13 +33,13 @@
 		<a href="#cards" class="card-link">
 			<Card class="p-4" interactive data-fixture="interactive-brand">
 				<p class="label-reading">Whole-card link, brand edge</p>
-				<p>Hover firms the border, adds the section shadow and rises one pixel.</p>
+				<p>Hover and keyboard focus firm the border and rise one pixel, with no shadow.</p>
 			</Card>
 		</a>
 		<a href="#cards" class="card-link">
 			<Card class="p-4" interactive edge="neutral" data-fixture="interactive-neutral">
 				<p class="label-reading">Whole-card link, neutral edge</p>
-				<p>Hover firms the border in orange, without glow.</p>
+				<p>Hover and keyboard focus firm the border in orange and rise one pixel, with no shadow.</p>
 			</Card>
 		</a>
 	</div>

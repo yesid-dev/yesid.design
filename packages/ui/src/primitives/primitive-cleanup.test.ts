@@ -27,8 +27,11 @@ it('preserves every retained computed class string except the enumerated unused 
 			expect(row!.after).toBe(expected);
 			// Keep the historical cleanup evidence; Button now inherits the base focus outline and names its transitions explicitly.
 			const retiredButtonFocus = ['outline-none', 'focus-visible:border-ring', 'focus-visible:ring-ring/50', 'focus-visible:ring-3'];
+			// Owner ruling, 15 November 2026: hover never adds a halo, so the default and conversion
+			// call-to-action glows are retired. The 1px hover lift stays.
+			const retiredHoverHalos = ['hover:shadow-glow-sm', 'hover:shadow-[0_0_6px_color-mix(in_srgb,var(--accent)_35%,transparent)]'];
 			const current = family === 'button'
-				? row!.after.split(' ').filter((token) => !retiredButtonFocus.includes(token)).map(token => token === 'transition-all' ? 'transition-[color,background-color,border-color,box-shadow,translate]' : token).join(' ')
+				? row!.after.split(' ').filter((token) => !retiredButtonFocus.includes(token) && !retiredHoverHalos.includes(token)).map(token => token === 'transition-all' ? 'transition-[color,background-color,border-color,box-shadow,translate]' : token).join(' ')
 				: row!.after;
 			expect(variants(props), `${family} ${JSON.stringify(props)}`).toBe(current);
 		}

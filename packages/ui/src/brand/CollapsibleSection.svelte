@@ -25,7 +25,7 @@
 		icon?: Snippet;
 		headerActions?: Snippet;
 		children?: Snippet;
-		/** `neutral` draws the static edge in `--border`; the heading hover firms it without glow. */
+		/** `neutral` draws the static edge in `--border` instead of the brand orange; the heading hover firms it. */
 		edge?: 'brand' | 'neutral';
 		/** Border weight: `heavy` (3px, default), `regular` (2px) or `thin` (1px). */
 		edgeWeight?: 'heavy' | 'regular' | 'thin';

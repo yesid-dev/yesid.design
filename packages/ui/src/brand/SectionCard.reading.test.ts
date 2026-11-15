@@ -50,10 +50,13 @@ describe('SectionCard reading surfaces', () => {
 		expect(rules.find((rule) => rule.selector.endsWith("[data-edge-weight='thin']"))?.body).toContain('border-width: 1px');
 	});
 
-	it('firms a neutral edge from its heading without the orange glow', () => {
-		const neutralHeading = rules.find((rule) => rule.selector.includes("[data-edge='neutral']") && rule.selector.includes(':hover'));
-		expect(neutralHeading?.body).not.toContain('shadow-section');
-		const brandHeading = rules.find((rule) => !rule.selector.includes('neutral') && rule.selector.includes('.section-header:hover') && rule.body.includes('border-color'));
-		expect(brandHeading?.body).toContain('var(--shadow-section)');
+	it('firms the edge from its heading, identically in light and dark, with no shadow (owner rulings, 15 November 2026)', () => {
+		const brandHeading = rules.find((rule) => rule.selector.includes('.section-header:hover') && rule.body.includes('border-color'));
+		expect(brandHeading?.body).toContain('var(--accent)');
+		expect(brandHeading?.selector, 'keyboard focus firms the edge like hover (D21)').toContain('.section-header:focus-visible');
+		for (const rule of rules.filter((candidate) => candidate.selector.includes(':hover'))) {
+			expect(rule.body, rule.selector).not.toMatch(/box-shadow|text-shadow|drop-shadow/);
+			expect(rule.selector, rule.selector).not.toMatch(/data-theme|theme-light|theme-dark/);
+		}
 	});
 });

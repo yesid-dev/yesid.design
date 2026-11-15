@@ -6,6 +6,8 @@ export interface DtcgPrimitive {
   $type: 'color' | 'dimension' | 'fontFamily' | 'fontWeight' | 'duration' | 'cubicBezier' | 'number' | 'string';
   $value: string | number;
   $description?: string;
+  /** DTCG deprecation: `true`, or a string naming the reason and the migration. */
+  $deprecated?: boolean | string;
 }
 
 /** Structured fluid-value extension; serialized under DECISIONS.md D10. */
@@ -17,6 +19,8 @@ export interface YesidClampToken {
     max: string;
   };
   $description?: string;
+  /** DTCG deprecation: `true`, or a string naming the reason and the migration. */
+  $deprecated?: boolean | string;
 }
 
 /** Any leaf token. */

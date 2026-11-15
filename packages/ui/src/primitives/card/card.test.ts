@@ -21,23 +21,28 @@ describe('Card', () => {
 		for (const rule of hover) expect(rule.selector, rule.selector).toContain("[data-interactive='true']");
 	});
 
-	it('keeps the brand edge, the hover glow and the 14px base by default', () => {
+	it('keeps the brand edge, the hover border and the 14px base by default', () => {
 		const element = card();
 		expect(element.dataset.edge).toBeUndefined();
 		expect(element.dataset.interactive).toBeUndefined();
 		expect(element.classList.contains('text-sm')).toBe(true);
 		expect(rules.find((rule) => rule.selector === '.card-surface')?.body).toContain('var(--border-brand)');
-		const lift = rules.find((rule) => rule.selector.endsWith(":hover") && !rule.selector.includes('neutral'));
-		expect(lift?.body).toContain('var(--shadow-section)');
+		const lift = rules.find((rule) => rule.selector.includes(':hover') && rule.body.includes('border-color'));
 		expect(lift?.body).toContain('var(--border-brand-active)');
+		expect(lift?.body).toContain('translateY(-1px)');
 	});
 
-	it('draws the neutral edge in --border and never adds the orange glow', () => {
+	it('draws the neutral edge in --border', () => {
 		expect(card({ edge: 'neutral' }).dataset.edge).toBe('neutral');
 		expect(rules.find((rule) => rule.selector.includes("[data-edge='neutral']") && !rule.selector.includes(':hover'))?.body)
 			.toContain('var(--border)');
-		const neutralHover = rules.find((rule) => rule.selector.includes("[data-edge='neutral']:hover"));
-		expect(neutralHover?.body).not.toContain('shadow-section');
+	});
+
+	it('hovers identically in light and dark: lift and edge, no shadow (owner rulings, 15 November 2026)', () => {
+		for (const rule of rules.filter((candidate) => candidate.selector.includes(':hover'))) {
+			expect(rule.body, rule.selector).not.toMatch(/box-shadow|text-shadow|drop-shadow/);
+			expect(rule.selector, rule.selector).not.toMatch(/data-theme|theme-light|theme-dark/);
+		}
 	});
 
 	it('textSize="inherit" drops the 14px base so fields inside keep the page size', () => {
@@ -48,6 +53,14 @@ describe('Card', () => {
 
 	it('keeps the interactive rise and removes it under reduced motion', () => {
 		expect(card({ interactive: true }).dataset.interactive).toBe('true');
-		expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^}]*\[data-interactive='true'\]:hover[^}]*\{\s*transform: none;/);
+		expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^}]*\[data-interactive='true'\]:is\(:hover[^}]*\{\s*transform: none;/);
+	});
+
+	it('gives keyboard focus the same lift and edge as hover (D21)', () => {
+		const lift = rules.find((rule) => rule.body.includes('translateY(-1px)'));
+		expect(lift?.selector).toContain(':focus-visible');
+		expect(lift?.selector).toContain(':has(:focus-visible)');
+		expect(lift?.selector).toMatch(/:focus-visible\s*>\s*\.card-surface\[data-interactive='true'\]/);
+		expect(lift?.body).toContain('var(--border-brand-active)');
 	});
 });
