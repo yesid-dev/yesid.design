@@ -330,12 +330,16 @@ precedence when both are supplied. The theme and language toggles stay in the pi
 width (D19); `compactControls` is deprecated, so omit it. Give your main call to action
 `priority: 1`: priority 2 links show from a 600px header, and links that do not fit leave a whole
 priority at a time. For a product navbar such as "yesid. | Login", pass the Experimental
-`ProductBrand` through the `brand` snippets of SiteHeader and SiteFooter:
+`ProductBrand` through the `brand` snippets of SiteHeader and SiteFooter. A complete example of
+what each snippet renders:
 
 ```svelte
-{#snippet brand()}
-  <ProductBrand product="Login" href={home} houseHref="https://yesid.dev" />
-{/snippet}
+<script lang="ts">
+  import { ProductBrand } from '@yesid/ui/brand';
+  const home = '/';
+</script>
+
+<ProductBrand product="Login" href={home} houseHref="https://yesid.dev" />
 ```
 Read [the doctrine](DOCTRINE.md) before composing a page and apply its five-minute review
 before completion. Declare the page register; keep the theme and language toggles unchanged.
