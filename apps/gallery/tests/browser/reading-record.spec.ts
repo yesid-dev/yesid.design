@@ -17,11 +17,15 @@ for (const language of ['en', 'fr', 'es']) {
     const values = await page.locator('[data-slot="metric-display"] .metric-value').evaluateAll(els => els.map(el => ({color:getComputedStyle(el).color, figures:getComputedStyle(el).fontVariantNumeric})));
     expect(values[0].figures).toContain('tabular-nums');
     expect(values[0].color).toBe(await page.locator('article').evaluate(el => getComputedStyle(el).color));
+    const readingLabel = page.locator('[data-slot="metric-display"]').first().locator('.label-reading');
+    await expect(readingLabel).toHaveCSS('text-transform', 'none');
+    expect(await readingLabel.evaluate(el => getComputedStyle(el).fontFamily)).toContain('Inter');
+    await expect(page.locator('[data-slot="metric-display"]').nth(1).locator('.label-metric')).toHaveCSS('text-transform', 'uppercase');
     const radios = page.getByRole('radiogroup').first().getByRole('radio');
     const boxes = await Promise.all((await radios.all()).map(el => el.boundingBox()));
     if (width >= 390) expect(new Set(boxes.map(box => box?.y)).size).toBe(1);
     if (width < 640) {
-     const label = await page.locator('[data-slot="metric-display"]').first().locator('.label-metric').boundingBox();
+     const label = await readingLabel.boundingBox();
      const value = await page.locator('.metric-value').first().boundingBox();
      expect(Math.abs(label!.y - value!.y)).toBeLessThan(20);
     }

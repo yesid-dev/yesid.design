@@ -23,7 +23,7 @@
   <ul aria-label={c.search}>{#each matches as stop}<li>{stop}</li>{/each}</ul>
  </section>
  <section aria-label={c.metric}>
-  <MetricDisplay value="84" label={c.metric} tone="reading" layout="phone-row" sublabel={c.period}>
+  <MetricDisplay value="84" label={c.metric} tone="reading" labelRole="reading" layout="phone-row" sublabel={c.period}>
    {#snippet info()}<a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="#evidence">{c.evidence}</a>{/snippet}
   </MetricDisplay>
   <MetricDisplay value={null} label={c.scheduled} tone="reading" layout="phone-row">

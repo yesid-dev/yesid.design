@@ -1872,6 +1872,7 @@ interface MetricDisplayProps extends HTMLAttributes<HTMLDivElement> {
     label: string;
     // (undocumented)
     labelBelow?: boolean;
+    labelRole?: 'metric' | 'reading';
     layout?: 'stacked' | 'phone-row';
     // (undocumented)
     size?: 'sm' | 'md' | 'lg';
@@ -2155,6 +2156,7 @@ interface RailTitleProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'
     decorative?: boolean;
     dot?: boolean;
     heading: string;
+    horizontalSize?: string;
     level?: 1 | 2 | 3 | 4 | 5 | 6;
     side?: 'left' | 'right';
     size?: string;

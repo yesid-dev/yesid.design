@@ -15,6 +15,8 @@
 		labelBelow?: boolean;
 		/** Reading ink for ordinary figures; accent for the screen's one highlight. */
 		tone?: 'accent' | 'reading';
+		/** Sentence-case reading typography or the default compact metric label. Independent of value tone. */
+		labelRole?: 'metric' | 'reading';
 		/** Label beside value on phones, stacked from 640px. */
 		layout?: 'stacked' | 'phone-row';
 		class?: string;
@@ -33,6 +35,7 @@
 		size = 'md',
 		labelBelow = false,
 		tone = 'accent',
+		labelRole = 'metric',
 		layout = 'stacked',
 		class: className,
 		...restProps
@@ -49,7 +52,7 @@
 
 {#snippet labelRow(extra: string)}
 	<div class={cn('flex items-center gap-1', extra)}>
-		<span class="label-metric">{label}</span>
+		<span class={labelRole === 'reading' ? 'label-reading' : 'label-metric'}>{label}</span>
 		{@render info?.()}
 	</div>
 {/snippet}
