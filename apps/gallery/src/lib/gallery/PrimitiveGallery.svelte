@@ -239,12 +239,13 @@
 		<Card.Root data-gallery-family="primitive:separator">
 			<Card.Header>
 				<Card.Title>Separator</Card.Title>
-				<Card.Description>Default, gradient, and hazard treatments.</Card.Description>
+				<Card.Description>Default, gradient, hazard and dimension treatments.</Card.Description>
 			</Card.Header>
 			<Card.Content class="grid gap-3">
 				<Separator />
 				<Separator variant="gradient" label="PROCESS BOUNDARY" />
 				<Separator variant="hazard" hazardSize="sm" />
+				<Separator variant="dimension" />
 			</Card.Content>
 		</Card.Root>
 

@@ -1,7 +1,9 @@
 <!--
   Listing page frame. Expressive (default): on desktop a vertical edge title and accent rail beside
   the page, a blueprint header and the hazard rule. Reading: the visible horizontal h1 at every
-  width, sentence-case subtitle, no artwork, edge title or rail, and a neutral line. Both: a filter
+  width, sentence-case subtitle, no artwork, edge title or rail, and a neutral line. `rule` picks
+  the rule under the header in either presentation; `dimension` (THE divider, D22) also draws the
+  dimension line in place of the dashed rule above the desktop search. Both: a filter
   column (search plus a filter panel that collapses below 1024px) and the results.
 
   CSS shows the panel from 1024px in every state, so desktop filters work before hydration and
@@ -16,6 +18,12 @@
 		 * `reading`: the visible horizontal title at every width; ignores `edgeTitle` and `blueprint`.
 		 */
 		presentation?: 'expressive' | 'reading';
+		/**
+		 * The rule under the header: `hazard` tape (the expressive default), a neutral `line` (the
+		 * reading default) or the `dimension` line (THE divider, D22), which also replaces the dashed
+		 * rule above the search in the desktop filter column.
+		 */
+		rule?: 'hazard' | 'line' | 'dimension';
 		/** The page h1; in the expressive presentation visually hidden from 1024px, where the edge title shows. */
 		heading: string;
 		/** Defaults to `heading`. Decorative, so hidden from assistive technology. Expressive only. */
@@ -44,6 +52,7 @@
 
 	let {
 		presentation = 'expressive',
+		rule,
 		heading,
 		edgeTitle,
 		subtitle,
@@ -58,6 +67,7 @@
 	}: ListingFrameProps = $props();
 
 	const reading = $derived(presentation === 'reading');
+	const drawnRule = $derived(rule ?? (reading ? 'line' : 'hazard'));
 	const uid = $props.id();
 	const panelId = `${uid}-filters`;
 	let filterOpen = $state(false);
@@ -77,6 +87,7 @@
 	class:listing-layout--reading={reading}
 	data-slot="listing-frame"
 	data-presentation={presentation}
+	data-rule={drawnRule}
 >
 	{#if !reading}
 		<div class="edge-title-column" data-slot="listing-edge-title" aria-hidden="true">
@@ -135,8 +146,10 @@
 			</div>
 		</header>
 
-		{#if reading}
+		{#if drawnRule === 'line'}
 			<div class="listing-line" data-testid="listing-page-separator" aria-hidden="true"></div>
+		{:else if drawnRule === 'dimension'}
+			<Separator variant="dimension" data-testid="listing-page-separator" />
 		{:else}
 			<Separator variant="hazard" data-testid="listing-page-separator" />
 		{/if}
@@ -146,6 +159,9 @@
 				<div class="listing-filter-sticky" use:scrollChain>
 					{#if search}
 						<div class="listing-filter-search" data-slot="listing-filter-search">
+							{#if drawnRule === 'dimension'}
+								<Separator variant="dimension" class="listing-filter-rule" data-testid="listing-filter-rule" />
+							{/if}
 							{@render search()}
 						</div>
 					{/if}
@@ -304,6 +320,11 @@
 
 	.listing-filter-search {
 		margin-bottom: 1rem;
+	}
+
+	/* The search's own dimension line shows only where the dashed rule did: the desktop column. */
+	.listing-filter-search :global(.listing-filter-rule) {
+		display: none;
 	}
 
 	.listing-content {
@@ -467,6 +488,16 @@
 			margin-bottom: 1.5rem;
 			padding: 0.75rem 0 1.25rem;
 			border-top: 2px dashed var(--border-rule);
+		}
+
+		.listing-layout[data-rule='dimension'] .listing-filter-search {
+			padding-top: 0;
+			border-top: 0;
+		}
+
+		.listing-layout[data-rule='dimension'] .listing-filter-search :global(.listing-filter-rule) {
+			display: block;
+			margin-bottom: 0.75rem;
 		}
 
 		.mobile-filter-toggle {

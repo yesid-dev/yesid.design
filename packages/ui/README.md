@@ -87,13 +87,21 @@ locale or copy modules.
 ### Separator
 
 `Separator` has a discriminated surface. The `default` variant delegates to bits-ui and retains
-its `child`, `children`, and `decorative` contract. `hazard` and `gradient` render native
+its `child`, `children`, and `decorative` contract. `hazard`, `gradient` and `dimension` render native
 wrapper-owned divs, accept native div attributes, and reject delegated-only props. Custom
 variants consume `orientation` instead of leaking it to the DOM, apply `maxWidth`, forward the
 outer ref, and preserve or default `data-slot` on that outer element.
 
 The hazard tape is full width by default; the gradient rule defaults to `var(--width-content)`.
 Labels use the shared station label vocabulary.
+
+`variant="dimension"` is THE divider ([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)):
+a drafting dimension line in the blueprint ink (`--primary` at 70%), a 1px hairline with 9px end
+ticks and 5px scale ticks every 80px (the grid's major step), full width, the same in every
+product and theme. It is horizontal only, has no size, width cap or label, never moves, and is
+hidden from assistive technology (`aria-hidden="true"`, `role="none"`). The `.dimension-line` class
+in `base.css` draws it, so it needs `@yesid/ui/base.css`. Use it by hand for a break inside a
+section; between sections, let `PageSections` draw it (see [Page sections](#page-sections)).
 
 ### Sheet
 
@@ -362,7 +370,8 @@ A steady block cursor in `accent` (`accent-text` in light).
 ### TerminalPanel and CodeBlock
 
 `TerminalPanel` is the terminal window: a title bar with the
-`title`, an optional `tag` and `status` and an `actions` snippet, a hazard rule, the body (pass
+`title`, an optional `tag` and `status` and an `actions` snippet, a rule (`rule`: `hazard` tape by
+default, or `dimension` for the dimension line, D22), the body (pass
 `noPadding` when the content pads itself) and an optional `footer` readout of label and value
 pairs. Extra attributes go to the root. Its look comes from the `.terminal-*` classes in
 `base.css`, so markup rendered on the server can wear the same chrome.
@@ -579,6 +588,10 @@ title, accent rail or artwork (`edgeTitle` and `blueprint` are ignored, and `blu
 omitted), a sentence-case subtitle in reading type, and a neutral line instead of the hazard rule.
 The title, the line and the filter column share one left edge.
 
+`rule` overrides the rule under the header in either presentation: `hazard`, `line` or
+`dimension` (THE divider, D22). `dimension` also replaces the dashed rule above the search in the
+desktop filter column with the same line. Without `rule`, each presentation keeps its rule.
+
 The filter column holds the `search` snippet and a panel with the `filters` snippet. From 1024px
 the panel is always shown and the column is sticky. Below 1024px a button labelled `filterLabel`
 opens it. The panel starts closed on every mount. The panel
@@ -595,7 +608,8 @@ it and to park the sticky column below it. It falls back to `0px`.
 `DetailFrame` is the detail and article page template: the `header` snippet, a rule, an
 optional `toolbar` band, then a grid of an optional left rail, the center (`children`, with an
 optional `summary` on top) and an optional right rail, then `after`. `rule` is `hazard` (the
-default tape), `line` (a neutral hairline for reading pages) or `none`.
+default tape), `dimension` (the dimension line, THE divider, D22), `line` (a neutral hairline for
+reading pages) or `none`.
 
 `header` renders first, before the rule and the grid, so it is the place for an opening that must
 come before both rails: the answer, the summary of findings, or the first paragraph a phone reader
@@ -797,9 +811,51 @@ standalone links pass their `bind:ref` to the lifecycle's optional `languageLink
 The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.44.0/docs/migrations/navigation-lifecycle.md)
 records the v0.33.0 copy and integration migration for Transit and yesid.dev.
 
+## Page sections
+
+`PageSections` and `PageSection` carry the owner's placement rule
+([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)): every section ends with the
+dimension line at its bottom, except the last section of the page, so a divider never sits before
+the footer. A page composes its sections with them and draws no divider itself.
+
+```svelte
+<script>
+	import { PageSection, PageSections, SiteFooter } from '@yesid/ui/layout';
+</script>
+
+<main id="main">
+	<PageSections data-register="expressive">
+		<PageSection aria-labelledby="work">...</PageSection>          <!-- ends with the line -->
+		<div class="product-wrapper">
+			<PageSection aria-labelledby="services">...</PageSection>  <!-- ends with the line -->
+		</div>
+		<PageSection aria-labelledby="contact">...</PageSection>       <!-- last: no line -->
+	</PageSections>
+</main>
+<SiteFooter {...footer} />                                         <!-- its street edge -->
+```
+
+`PageSections` renders a `<div>` and `PageSection` a `<section>`; both forward their attributes.
+Each `PageSection` registers with the nearest `PageSections` at any depth, so product wrappers do
+not matter, and every registered section after the first is preceded by a boundary row (a
+`Separator variant="dimension"` with `data-slot="page-section-boundary"`). The row is in the flow,
+outside both sections' boxes and as wide as `PageSections` (make that full-bleed for an
+edge-to-edge line), so a section's own backgrounds and positioned children cannot paint over it.
+Order is document order, on the server too; a section that mounts later takes its place. Plain
+`<section>`s do not register, and a `PageSection` inside another, or outside `PageSections`, is a
+plain section.
+
+A registered section carries `data-page-section-edges`, and `base.css` hides the kit's edge rules
+inside it (`data-edge-rule`): Masthead's and ErrorPage's tape and DetailFrame's rule without a
+header. The boundary owns the section's edges, so a Masthead that is a whole section gives one
+stroke, and the final section leaves nothing before the footer. Internal rules (DetailFrame and
+ListingFrame under their header, TerminalPanel and CodeBlock under their title bar) stay.
+
 ## Site footer and error page
 
-`SiteFooter` renders the hazard strip, the `brand` snippet with a `tagline`, one labelled
+`SiteFooter` renders the street edge along its top edge (D22: one dashed road marking whose 20px
+dashes alternate yellow and white, edge to edge, with a hairline on the white dashes so they read
+on the light footer; decorative and still; it replaced the hazard strip in v0.45.0), the `brand` snippet with a `tagline`, one labelled
 navigation per entry in `groups` (`navLabel` when the accessible name differs from the heading;
 `external` links open in a new tab with `rel="noopener noreferrer"`, and `me` adds `rel="me"` for
 the owner's own profiles; `after` adds controls inside the group), and a status row with
@@ -818,7 +874,7 @@ optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a
 `statusNote` is given. For 404 the scene's sign shows the code; other statuses announce the code
 with `role="alert"`. The app keeps its copy and `<svelte:head>`. Every part of today's page stays by
 default and each can be turned off: `label` is optional (omit it to start with the heading),
-`tape={false}` drops the hazard rule, and `illustration` places the scene: `'large-first'` (the
+`tape={false}` drops the hazard rule (`tape="dimension"` draws the dimension line instead, D22), and `illustration` places the scene: `'large-first'` (the
 default, a large scene above the copy), `'small-after'` (a small scene after the heading, body,
 destinations and terminal line, so the way back comes first) or `'none'`. The scene's lamps are
 still. The suggestions navigation is always named: by `suggestionsLabel`, or by the heading when
@@ -829,7 +885,7 @@ the label is missing or empty.
 `@yesid/ui/layout` also exports the parts of a data page. `Surface` is the page column with the
 page gutter. `Masthead` heads a surface with an optional station `kicker`, a dotted `heading`
 (`dot={false}` drops the dot), optional `lede`, `meta` and body, and a hazard tape (`tape={false}`
-drops it); its `cornerMeta` snippet takes a `CornerMeta`. A task page starts with its heading: omit
+drops it, `tape="dimension"` draws the dimension line instead, D22); its `cornerMeta` snippet takes a `CornerMeta`. A task page starts with its heading: omit
 `kicker`, and drop the tape. The masthead sets no fixed heights, so long French and Spanish
 headings wrap. `Breadcrumb` renders `items` (`{ name, href }`) as a navigation named
 `label`, with the last item as the current page, and nothing for fewer than two items; build the
@@ -1006,8 +1062,9 @@ unchanged beside it.
 focus ring, text links (a link without a class is underlined in `--primary`; components
 style their own), scrollbar, circuit grid, shared keyframes, label styles, `.glass-chrome`, the
 `TerminalPanel` and `CodeBlock` classes (`.terminal-*` and `.syn-*`, in the components layer), the
-`SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), a focus outline under
-forced colors and the
+`SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), the dimension line
+(`.dimension-line`) and the rule that hides kit edge rules inside a page section, a focus outline under forced
+colors and the
 View Transitions route crossfade (off under reduced motion; pair it with `onNavigate(viewTransition)`
 from `@yesid/motion/utils/viewTransition`). It imports
 `tw-animate-css` from its own dependency for Sheet motion, plus `@yesid/tokens/theme.css`,

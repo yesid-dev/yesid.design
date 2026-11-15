@@ -86,6 +86,20 @@ consumer or clean-room verification.
 
 ### Owner-approved behavior changes
 
+- **Footer street edge, owner ruling D22, 2026-11-15 06:42 UTC (corrected 07:05 UTC), planned
+  v0.45.0:** `SiteFooter`'s top edge is a road marking instead of the 3px hazard-tape strip: one
+  dashed line, 4px tall, edge to edge, whose 20px dashes alternate yellow (`--hazard-a`) and white
+  (`--reflective`) with 20px gaps, so one yellow and one white dash every 80px; a hairline in the
+  reading ink edges each white dash so it reads on the light footer. Both colours are
+  theme-invariant, like paint. The footer keeps its own background in both themes. It is
+  decorative (`aria-hidden="true"`, `role="none"`) and still. The strip's class
+  `.footer-gradient-sep` is gone; the edge is `[data-slot="footer-street-edge"]`. No prop, type or
+  export changes. Every product that renders `SiteFooter` (yesid.dev, yesid.login, Transit) shows
+  the new edge with no code change. Migration: drop product CSS or tests that target
+  `.footer-gradient-sep` (none found in the three products on 15 November 2026), and never draw a
+  divider just above the footer (see `PageSections`). Proof: `SiteFooter.test.ts` and the
+  Gallery `/dividers` spec fail on the previous source. Rehearse in all three products.
+
 - **Hover halos, owner ruling, 2026-11-15 03:57 UTC, planned v0.44.0:** "The only thing that I
   want to remove on hover was the halo. That's it." Hover no longer adds light around an element.
   Owner answer A, 2026-11-15 05:36 UTC: hover is identical in light and dark. Removed: the

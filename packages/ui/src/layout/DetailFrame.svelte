@@ -1,5 +1,6 @@
 <!--
-  Detail and article page frame: header, a rule (hazard tape by default, a neutral line, or none),
+  Detail and article page frame: header, a rule (hazard tape by default, the dimension line, a
+  neutral line, or none),
   optional toolbar band, then a grid of an optional left rail, the center and an optional right
   rail, then `after`. `header` renders before the grid, so an opening placed there precedes both
   rails in the DOM and on phones; `summary` is the top of the center column, after the left rail.
@@ -37,8 +38,12 @@
 		 * opening that must come before both rails in the DOM and on phones.
 		 */
 		header?: Snippet;
-		/** Below the header: `hazard` tape (default), a neutral `line`, or `none`. */
-		rule?: 'hazard' | 'line' | 'none';
+		/**
+		 * Below the header: `hazard` tape (default), the `dimension` line (THE divider, D22), a
+		 * neutral `line`, or `none`. Without a `header`, inside a `PageSection` within `PageSections`,
+		 * the rule would sit on the section's edge, so it is hidden: the section boundary owns it.
+		 */
+		rule?: 'hazard' | 'dimension' | 'line' | 'none';
 		toolbar?: Snippet;
 		/**
 		 * Top of the center column, inside the grid: after the left rail in the DOM, and below it on
@@ -70,6 +75,7 @@
 	import { cn } from '../cn/index.js';
 	import { Separator } from '../primitives/separator/index.js';
 	import TocPill from '../brand/TocPill.svelte';
+
 	import { createSectionJump } from '../brand/section-jump.js';
 
 	let {
@@ -94,6 +100,9 @@
 		...rest
 	}: DetailFrameProps = $props();
 
+	// Without a header the rule is the frame's top edge; inside a PageSection the section boundary
+	// owns that edge (D22, `data-edge-rule` in base.css).
+	const edgeRule = $derived(header ? undefined : true);
 	const ownNavigation = createSectionJump();
 	let frame = $state<HTMLElement>();
 	$effect(() => {
@@ -128,9 +137,11 @@
 	{@render header?.()}
 
 	{#if rule === 'hazard'}
-		<Separator variant="hazard" class="detail-shell-tape" />
+		<Separator variant="hazard" class="detail-shell-tape" data-edge-rule={edgeRule} />
+	{:else if rule === 'dimension'}
+		<Separator variant="dimension" class="detail-shell-dimension" data-edge-rule={edgeRule} />
 	{:else if rule === 'line'}
-		<div class="detail-shell-line" data-slot="detail-shell-line" aria-hidden="true"></div>
+		<div class="detail-shell-line" data-slot="detail-shell-line" data-edge-rule={edgeRule} aria-hidden="true"></div>
 	{/if}
 
 	{#if toolbar}

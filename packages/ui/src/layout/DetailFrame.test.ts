@@ -67,13 +67,23 @@ describe('layout order', () => {
 		[undefined, 'hazard'],
 		['hazard', 'hazard'],
 		['line', 'line'],
+		['dimension', 'dimension'],
 		['none', null],
 	] as const)('draws the %j rule below the header', (rule, drawn) => {
 		const view = frame({ header: part('header'), rule, left: part('left'), right: part('right') });
-		const tape = slot(view, 'separator');
+		const separator = slot(view, 'separator');
+		const tape = separator?.hasAttribute('data-variant') ? null : separator;
+		const dimension = article(view).querySelector<HTMLElement>('[data-variant="dimension"]');
 		const line = slot(view, 'detail-shell-line');
 		expect(tape !== null).toBe(drawn === 'hazard');
+		expect(dimension !== null).toBe(drawn === 'dimension');
 		expect(line !== null).toBe(drawn === 'line');
+		if (dimension) {
+			expect(dimension.classList.contains('dimension-line')).toBe(true);
+			expect(dimension.getAttribute('aria-hidden')).toBe('true');
+			expect(precedes(view.getByTestId('header'), dimension)).toBe(true);
+			expect(precedes(dimension, slot(view, 'detail-shell-left'))).toBe(true);
+		}
 		if (line) {
 			expect(line.getAttribute('aria-hidden')).toBe('true');
 			expect(precedes(view.getByTestId('header'), line)).toBe(true);

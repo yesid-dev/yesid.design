@@ -22,6 +22,8 @@
 		language?: string;
 		/** Shows a copy button with these labels. */
 		copy?: CodeBlockCopyLabels;
+		/** The rule under the title bar: `hazard` tape (default) or the `dimension` line (THE divider, D22). */
+		rule?: 'hazard' | 'dimension';
 		children?: Snippet;
 		class?: string;
 	}
@@ -32,7 +34,7 @@
 	import { cn } from '../cn/index.js';
 	import TerminalPanel from './TerminalPanel.svelte';
 
-	let { code, title, language, copy, children, class: className }: CodeBlockProps = $props();
+	let { code, title, language, copy, rule = 'hazard', children, class: className }: CodeBlockProps = $props();
 
 	let copyState = $state<'idle' | 'copied' | 'failed'>('idle');
 	let resetTimer: ReturnType<typeof setTimeout> | undefined;
@@ -65,6 +67,7 @@
 <TerminalPanel
 	{title}
 	tag={language}
+	{rule}
 	actions={copy ? copyButton : undefined}
 	noPadding
 	class={cn('terminal-code', className)}

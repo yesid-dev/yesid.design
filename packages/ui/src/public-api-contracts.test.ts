@@ -332,6 +332,11 @@ const separatorGradient: SeparatorProps = {
 const invalidSeparatorChild: SeparatorProps = { variant: 'hazard', child: ignoredChildren };
 // @ts-expect-error custom visual variants are always decorative
 const invalidSeparatorDecorative: SeparatorProps = { variant: 'gradient', decorative: false };
+const separatorDimension: SeparatorProps = { variant: 'dimension', class: 'rule', 'data-testid': 'dimension', ref: null };
+// @ts-expect-error the dimension line is horizontal only
+const invalidSeparatorDimensionVertical: SeparatorProps = { variant: 'dimension', orientation: 'vertical' };
+// @ts-expect-error the dimension line has one look: no width cap, size or label
+const invalidSeparatorDimensionLabel: SeparatorProps = { variant: 'dimension', label: 'Section' };
 
 const sheetRoot: SheetRootProps = { open: false };
 const sheetTrigger: SheetTriggerProps = {};
@@ -410,6 +415,7 @@ describe('public UI prop contracts', () => {
 		expect(separatorDefault.variant).toBe('default');
 		expect(separatorHazard.maxWidth).toBe('100%');
 		expect(separatorGradient.variant).toBe('gradient');
+		expect(separatorDimension.variant).toBe('dimension');
 		expect(sheetRoot.open).toBe(false);
 		expect(sheetTrigger).toEqual({});
 		expect(sheetClose).toEqual({});

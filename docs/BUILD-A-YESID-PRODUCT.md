@@ -687,7 +687,10 @@ same in every product; a change to either design belongs in yesid.design. Declar
 register with `data-register`, starting from the default the
 [doctrine](DOCTRINE.md#page-types-and-their-registers-d20) gives its type, and build marketing, contact,
 dashboard and task pages from the shared brand pieces: the header and its toggles, cards and their
-hover, the section dividers, buttons and links.
+hover, the section dividers, buttons and links. Never draw a divider in page CSS: compose the
+page's sections with `PageSections` and `PageSection`, so every section but the last ends with the
+dimension line and nothing sits before the footer's street edge
+([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge)).
 
 ## Labelled fields
 

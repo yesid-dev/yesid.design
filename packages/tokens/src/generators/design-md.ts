@@ -191,6 +191,11 @@ words, wrapping a single word only when it exceeds the cell width.
 \`.chrome-clearance\` on the scrolling element keeps focus and fragment jumps clear of the fixed
 header and the floating pills; a contents pill stacks above a SurfaceRail pill.
 ReadingFrame (Experimental) holds legal pages and long prose on a 65 to 70 character measure.
+The divider is the dimension line (D22): \`Separator variant="dimension"\`, a 1px blueprint-ink
+hairline with end ticks and a scale tick every 80px, edge to edge, static. \`PageSections\` and
+\`PageSection\` end every section but the last with it, so none sits before the footer; frames and panels take
+\`rule="dimension"\` (Masthead and ErrorPage \`tape="dimension"\`). SiteFooter's top edge is the
+street edge: one dashed line of alternating yellow and white dashes. Hazard tape is not a divider.
 
 MetricDisplay keeps yellow by default; reading pages pass \`tone="reading"\` explicitly.
 Figures use tabular numerals. Put period, unit and comparison in \`sublabel\`, evidence in

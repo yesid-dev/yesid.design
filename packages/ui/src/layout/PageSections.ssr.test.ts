@@ -1,0 +1,27 @@
+// @vitest-environment node
+import { render } from 'svelte/server';
+import { expect, it, vi } from 'vitest';
+import PageSectionsFixture from './test-fixtures/PageSectionsFixture.svelte';
+
+// The suite resolves svelte's browser build, whose context and lifecycle functions throw outside a
+// client component; a server render (SvelteKit SSR) resolves the server build, as here.
+vi.mock('svelte', async (importOriginal) => {
+	const server = '../../node_modules/svelte/src/index-server.js';
+	return { ...(await importOriginal<typeof import('svelte')>()), ...(await import(/* @vite-ignore */ server)) };
+});
+
+const order = (body: string) =>
+	[...body.matchAll(/data-slot="page-section-boundary"|<section[^>]*\bid="(\w+)"/g)].map((match) => match[1] ?? '|');
+
+it('server markup puts the boundary between page sections, never after the last', () => {
+	const { body } = render(PageSectionsFixture, { props: { mode: 'wrapped' } });
+	expect(order(body)).toEqual(['a', 'plain', '|', 'b', 'nested', '|', 'c']);
+	expect(body.match(/data-page-section-edges/g)).toHaveLength(3);
+});
+
+it('server markup marks every Masthead tape inside page sections as an edge rule', () => {
+	const { body } = render(PageSectionsFixture, { props: { mode: 'masthead' } });
+	expect(order(body)).toEqual(['a', '|', 'b', '|', 'c']);
+	const sections = body.slice(0, body.indexOf('id="footer"'));
+	expect(sections.match(/data-slot="separator"[^>]*data-edge-rule|data-edge-rule[^>]*data-slot="separator"/g)).toHaveLength(3);
+});

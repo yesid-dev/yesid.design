@@ -1,5 +1,6 @@
 <!--
-  Site footer: hazard strip, a brand block with tagline, one labelled navigation per link group,
+  Site footer: the street edge (D22: one dashed road marking, yellow and white dashes alternating,
+  along its top edge), a brand block with tagline, one labelled navigation per link group,
   and a status row with a live lamp and today's date. `data-in-view` reports whether the footer
   is on screen, for chrome that should step aside.
 -->
@@ -54,6 +55,10 @@
 
 	let { brand, tagline, groups, statusStart, statusPrefix, liveLabel }: SiteFooterProps = $props();
 
+	// Decorative only (D22). One object because Svelte's checker flags `aria-hidden` beside
+	// `role="none"`, a valid ARIA pair.
+	const decorativeAttributes = { role: 'none', 'aria-hidden': 'true' } as const;
+
 	const now = new Date();
 	const systemDate = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
 
@@ -75,7 +80,7 @@
 	class="relative z-[var(--z-content)] bg-[var(--muted)]"
 	style="--footer-groups: {groups.length};"
 >
-	<div class="footer-gradient-sep" aria-hidden="true"></div>
+	<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
 	<div
 		class="grid w-full grid-cols-1 gap-10 px-6 pb-8 pt-10 sm:grid-cols-2 sm:px-10 sm:pt-12 lg:grid-cols-[1.5fr_repeat(var(--footer-groups),minmax(0,1fr))] lg:gap-8 lg:px-16 lg:pt-14"
 	>
@@ -124,15 +129,26 @@
 		padding-bottom: env(safe-area-inset-bottom, 0px);
 	}
 
-	.footer-gradient-sep {
-		height: 3px;
-		background: repeating-linear-gradient(
-			-45deg,
-			var(--hazard-a) 0px,
-			var(--hazard-a) 6px,
-			var(--hazard-b) 6px,
-			var(--hazard-b) 12px
-		);
+	/* The street edge (D22): one dashed road marking along the footer's top edge, edge to edge.
+	   Its 20px dashes alternate yellow (`--hazard-a`) and white (`--reflective`), both
+	   theme-invariant like real paint, with 20px gaps: one yellow, one white per 80px, the grid's
+	   major step. A hairline in the reading ink edges each white dash so it reads on the light
+	   footer too; on the dark footer it fades into the dash. Whole pixels only, so it stays crisp
+	   at 1x and 2x. Decorative and static. */
+	.footer-street-edge {
+		--street-edge-hairline: color-mix(in srgb, var(--foreground) 35%, transparent);
+		height: 4px;
+		background-image:
+			repeating-linear-gradient(90deg, transparent 0 41px, var(--reflective) 41px 59px, transparent 59px 80px),
+			repeating-linear-gradient(90deg, var(--hazard-a) 0 20px, transparent 20px 40px, var(--street-edge-hairline) 40px 60px, transparent 60px 80px);
+		background-size:
+			100% 2px,
+			100% 4px;
+		background-position:
+			0 1px,
+			0 0;
+		background-repeat: no-repeat;
+		pointer-events: none;
 	}
 
 	.footer-status-border {

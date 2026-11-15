@@ -99,6 +99,31 @@ describe('reading presentation', () => {
 	});
 });
 
+describe('rule option (D22)', () => {
+	it.each([
+		['expressive', undefined, 'hazard'],
+		['reading', undefined, 'line'],
+		['expressive', 'dimension', 'dimension'],
+		['reading', 'dimension', 'dimension'],
+		['reading', 'hazard', 'hazard'],
+		['expressive', 'line', 'line'],
+	] as const)('in the %s presentation, rule %j draws the %s rule', (presentation, rule, drawn) => {
+		const view = frame({ presentation, rule, search });
+		const separator = view.getByTestId('listing-page-separator');
+		expect(slot(view, 'listing-frame').dataset.rule).toBe(drawn);
+		expect(separator.getAttribute('aria-hidden')).toBe('true');
+		expect(separator.classList.contains('dimension-line')).toBe(drawn === 'dimension');
+		expect(separator.getAttribute('data-variant')).toBe(drawn === 'dimension' ? 'dimension' : null);
+		expect(separator.classList.contains('listing-line')).toBe(drawn === 'line');
+		const searchRule = view.queryByTestId('listing-filter-rule');
+		expect(searchRule !== null).toBe(drawn === 'dimension');
+		if (searchRule) {
+			expect(searchRule.classList.contains('dimension-line')).toBe(true);
+			expect(slot(view, 'listing-filter-search').firstElementChild).toBe(searchRule);
+		}
+	});
+});
+
 describe('layout order', () => {
 	it('runs from the separator through the filter column to the results', () => {
 		const view = frame({ search });
