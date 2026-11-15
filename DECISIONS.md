@@ -179,3 +179,60 @@ both controls in the pill, its link priorities leave room for them (priority 2 f
 header), and links that do not fit leave a whole priority at a time so the toggles stay put.
 `compactControls`, which moved them into the menu below 600px, is deprecated from v0.44.0 and
 stays functional until removal. D18 still governs the toggles' look, behaviour and order.
+
+## D20: Page types
+
+The owner ruled on 2026-11-15 that every product classifies each page by type, a separate axis
+from register:
+
+- **Editorial pages** are the entries of a collection: on yesid.dev, a project case study and a
+  blog article. All editorial pages share one design.
+- **Listing pages** list a collection, such as projects or the blog. All listing pages share one
+  design: the listing design the owner built.
+- **Marketing pages** are home, services and About: free composition from the brand pieces.
+- **The contact page** is its own type, the same in every product and domain.
+- **A dashboard** is a live map or data view, such as Transit's, with its own patterns.
+- **Task pages** are yesid.login's sign-in and account screens (assumed, owner to confirm).
+
+Across products, an editorial page uses yesid.dev's editorial design and a listing page uses
+yesid.dev's listing design; Transit likely has one editorial page, and everything else in Transit
+is the dashboard. Every product shares the brand pieces: the header and its toggles, cards and
+their hover, the yellow line dividers, buttons and links.
+
+The type sets a page's default register (`docs/DOCTRINE.md`, section 4): editorial and listing
+are reading; marketing is expressive within the doctrine; contact, dashboard and task pages are
+task. A page or region that needs another register declares it with `data-register`, as before.
+
+**Why.** In the owner's words, "we have to start using the right vocabulary and putting things in
+the correct place." Named types give each shared design one home, so pages of one type stop
+drifting apart and Transit reuses yesid.dev's designs instead of copying them.
+
+**Consequences.** A change to the editorial or listing design changes every page of that type in
+every product. Marketing pages may compose freely, but only from the brand pieces and the
+signatures listed in the doctrine. Dashboard patterns stay product-owned until two products need
+the same contract (D14). Pages outside these types, such as legal pages and page not found, keep
+their doctrine register until the owner assigns a type.
+
+## D21: Interactive and static surfaces
+
+The owner decided on 2026-11-15 that every product has two kinds of card or surface, so all
+products feel the same under the pointer:
+
+- **Interactive**: the whole card is the target of a link or control. It reacts on hover and
+  focus with a slight lift (none under reduced motion) and its edge lighting up and firming. The
+  reaction is identical in light and dark, with no glow and no shadow.
+- **Static**: nothing to click. It never reacts to the pointer.
+
+On `main`, `Card` implements this: `interactive` on a whole-card link or button lifts it 1px
+(not under reduced motion) and firms its edge on hover; a card without it stays still. Section
+cards (`SectionCard`, used by `CollapsibleSection`) are static, and only their heading button
+reacts, lighting the card's edge while hovered. PR 239 removes the hover halo, the glow that
+dark mode added around hovered cards, buttons and header links.
+
+**Why.** Hover is a promise that something acts. One rule for every surface keeps that promise
+the same in every product and theme.
+
+**Consequences.** Gaps against this decision on `main`, for the next release: an interactive
+`Card` reacts to hover but not to keyboard focus beyond the focus outline; and on the brand edge
+the light theme still casts `--shadow-section` under a hovered card or section card, which
+PR 239 deliberately keeps, so hover is not yet identical in both themes.

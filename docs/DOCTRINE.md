@@ -76,6 +76,34 @@ One brand, three registers. They share every contract that makes the family reco
 
 Reading and task share calm rules but differ in width, density and what comes first.
 
+### Page types and their registers (D20)
+
+A page's type says what it is for; its register says how much expression it spends. The owner named the types on 15 November 2026 ([D20](../DECISIONS.md#d20-page-types)). Each type sets a default register, which the page still declares with `data-register`, and a region may declare another (a closing scene stays expressive). Editorial and listing designs are shared: Transit's editorial and listing pages use yesid.dev's designs, not their own. Every type uses the brand pieces listed below.
+
+| Type | Pages | Default register | Kit pieces that serve it |
+| --- | --- | --- | --- |
+| Editorial | Collection entries: yesid.dev case studies and articles; Transit's editorial page, if it has one | Reading | `ArticleHeader` with `presentation="reading"`, `DetailFrame`, `CollapsibleSection` and `TocNav`; `ReadingFrame` (Experimental) for long prose |
+| Listing | Pages that list a collection: projects, blog; Transit's listing pages | Reading | `ListingFrame` with `SearchInput`, `FilterGroup` and `FilterSection`; one `Card interactive` per entry |
+| Marketing | Home, services, About | Expressive, within this doctrine | Free composition from the brand pieces and the signatures in section 3; `Card`, `Button` and the listed signature components |
+| Contact | The contact page, the same in every product and domain | Task | The [labelled field recipe](recipes/labelled-field.md), `Card edge="neutral" textSize="inherit"`, `Button`, `StateNotice`; the weather signature beside or after the form (section 3) |
+| Dashboard | Transit's live map and data views | Task | Product-owned patterns, with the shared brand pieces; `Surface`, `Masthead` and `DataTable` where they fit. Editorial reading rules do not apply |
+| Task | yesid.login's sign-in and account screens (assumed, owner to confirm) | Task | `Card edge="neutral" textSize="inherit"`, the labelled field recipe, `Masthead` without a kicker or tape, `Button` |
+
+The register table above lists yesid.dev's services and About under reading; under D20 they are marketing pages, whose default is expressive within this doctrine, so every rule and signature condition still applies to them. Pages the ruling does not name, such as legal pages and page not found, keep the register in the table above until the owner assigns them a type.
+
+### Brand pieces every product shares
+
+The owner wants every product to feel like one family (15 November 2026). These pieces are the standard, and each lives in one place:
+
+- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19, open PR 238; on `main` the opt-in `compactControls` still moves them into the phone menu).
+- **The product brand** "yesid. | Product": `ProductBrand` (Experimental) in open PR 238. Gap until it merges: `main` has only `Wordmark`.
+- **Headings that end on the orange dot**, where the design uses it: `SectionHeading` and `Masthead`, whose `dot` prop (default `true`) draws it.
+- **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
+- **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
+- **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a whole-card target; section cards react only through their heading. D21 lists the remaining gaps.
+- **The divider:** a thin solid yellow line, identical everywhere, including under terminal-panel title bars and inside code panels, never hazard tape (owner answer A, 15 November 2026). Gap: `Separator` offers `default`, `hazard` and `gradient`, with no shared thin solid yellow line; add one in the next release.
+- **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
+
 ## 5. Rules
 
 Each rule has its reason and a do / don't pair. "Carried by" names the yesid.design release that adds the option a product needs (the shared component roadmap). The full rules apply when a recomposed page is completed; follow-up shared options are listed below.

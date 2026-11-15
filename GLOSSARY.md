@@ -56,7 +56,37 @@ A product's reviewed integration of one exact stable release; it may begin as th
 _Avoid_: automatic sync, merging a prerelease
 
 **Register**: The amount of expression a page or region spends: expressive, reading or task.
-Light and dark are a separate axis. An undeclared page is reading.
+Light and dark are a separate axis. An undeclared page is reading. A page's type sets its default
+register; see **Page type**.
+
+**Page type**: What a page is for, one of editorial, listing, marketing, contact, dashboard or
+task (D20). A separate axis from **Register**: the type sets the default register, and a page or
+region may still declare another.
+_Avoid_: page template, layout, register (for the type)
+
+**Editorial page**: An entry of a collection, such as a yesid.dev case study or blog article.
+Every editorial page in every product shares one design. Default register: reading.
+_Avoid_: detail page (for the type), article page (for case studies)
+
+**Listing page**: A page that lists a collection, such as projects or the blog. Every listing
+page in every product shares one design, the owner's listing design. Default register: reading.
+_Avoid_: index page, archive
+
+**Marketing page**: Home, services or About: free composition from the brand pieces and the
+signatures the doctrine lists. Default register: expressive, within the doctrine.
+_Avoid_: landing page, expressive page (for the type)
+
+**Contact page**: The page for getting in touch, its own type and the same in every product and
+domain. Default register: task.
+_Avoid_: contact form (for the page)
+
+**Dashboard**: A product's live map and data views, such as Transit's, with its own patterns and
+the shared brand pieces. Editorial reading rules do not apply. Default register: task.
+_Avoid_: data page (for the type), app shell
+
+**Task page**: A page for finishing a short action, such as yesid.login's sign-in and account
+screens (assumed, owner to confirm). Default register: task.
+_Avoid_: form page, flow
 
 **Signature**: An expressive element approved by the owner by name, with its job and conditions.
 
