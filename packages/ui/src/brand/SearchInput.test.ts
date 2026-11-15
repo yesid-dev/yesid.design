@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import SearchInput, { type SearchInputProps } from './SearchInput.svelte';
+import Ref from './test-fixtures/SearchInputRef.svelte';
 import Persisted from './test-fixtures/SearchInputPersisted.svelte';
 
 const field = (props: Partial<SearchInputProps> = {}) =>
@@ -40,4 +41,28 @@ describe('SearchInput', () => {
 
 		expect((render(Persisted).getByRole('textbox') as HTMLInputElement).value).toBe('railway');
 	});
+});
+
+	describe('native search contract', () => {
+		it('associates a visible label and descriptions, forwards events and native constraints', async () => {
+			let focused = false;
+			const view = field({ visibleLabel: true, description: 'Search by route name', id: 'routes',
+				required: true, disabled: false, maxlength: 40, autocomplete: 'off',
+				onfocus: () => { focused = true; }, 'aria-describedby': 'external' });
+			const element = input(view);
+			expect(view.getByLabelText('Search lines')).toBe(element);
+			expect(element.required).toBe(true);
+			expect(element.maxLength).toBe(40);
+			expect(element.getAttribute('aria-describedby')).toBe('external routes-description');
+			expect(view.getByText('Search by route name').id).toBe('routes-description');
+			element.focus();
+			expect(document.activeElement).toBe(element);
+			expect(focused).toBe(true);
+		});
+	});
+
+it('exposes the input through the bindable ref for programmatic focus', async () => {
+	const view = render(Ref);
+	await fireEvent.click(view.getByRole('button', { name: 'Focus search' }));
+	expect(document.activeElement).toBe(view.getByRole('textbox', { name: 'Routes' }));
 });

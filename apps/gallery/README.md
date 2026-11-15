@@ -51,3 +51,10 @@ illustration (`large-first`, `small-after`, `none`), any of `no-label`, `no-tape
 `/error-page/small-after.no-label.no-tape.en`; `OPTION_SEGMENTS` in `options.ts` lists them. The
 focused `quiet-task-headers.spec.ts` checks order, fit, stillness and pre- and post-hydration
 geometry from 320 to 1920px in both themes and both motion settings.
+
+`/reading-record` is a complete simulated public-data record in EN, FR and ES. It includes
+metric context and absence, native labelled search, a fitting time window, consistent filters,
+a comparison table with row headers inside its own keyboard-scrollable region, narrative
+facts in a definition list and 25 people with confirmation inside each row. The focused
+`reading-record.spec.ts` covers 320 to 1920px, both themes and reduced motion. Values are
+fixtures, never live service evidence. Consumer rehearsal remains separate.

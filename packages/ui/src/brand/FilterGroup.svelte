@@ -18,6 +18,8 @@
 		allowDeselect?: boolean;
 		collapsible?: boolean;
 		startOpen?: boolean;
+		/** Filled orange selection for both a choice and its reset. Legacy stays the default. */
+		selectedStyle?: 'legacy' | 'consistent';
 		density?: 'compact' | 'spacious';
 		onSelect: (key: string | null) => void;
 		/** Each item button gets `data-testid="{testIdPrefix}-{key}"`. */
@@ -39,6 +41,7 @@
 		collapsible = false,
 		startOpen = true,
 		density = 'compact',
+		selectedStyle = 'legacy',
 		onSelect,
 		testIdPrefix,
 	}: FilterGroupProps = $props();
@@ -60,7 +63,7 @@
 	}
 </script>
 
-<div data-density={density}>
+<div data-density={density} data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}>
 	{#if collapsible}
 		<button
 			type="button"
@@ -182,6 +185,11 @@
 		border-radius: 50%;
 		background: var(--accent);
 	}
+
+	[data-selected-style='consistent'] .filter-btn[aria-checked='true'] {
+		background: var(--primary); border-color: var(--primary); color: var(--primary-foreground);
+	}
+	[data-selected-style='consistent'] .filter-btn::after { display: none; }
 
 	.filter-collapse {
 		display: grid;

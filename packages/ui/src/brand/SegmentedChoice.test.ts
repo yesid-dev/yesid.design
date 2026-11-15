@@ -44,3 +44,11 @@ describe('SegmentedChoice', () => {
 		expect(onSelect.mock.calls).toEqual([['day']]);
 	});
 });
+
+it('keeps radio selection and arrow focus in fit-row layout', async () => {
+ const onSelect = vi.fn();
+ const view = render(SegmentedChoice, { props: { options, value: 'day', label: 'Period', variant: 'fit-row', onSelect } });
+ await fireEvent.keyDown(view.getByRole('radio', { name: 'Day' }), { key: 'ArrowRight' });
+ expect(onSelect).toHaveBeenCalledWith('month');
+ expect(document.activeElement).toBe(view.getByRole('radio', { name: 'Month' }));
+});
