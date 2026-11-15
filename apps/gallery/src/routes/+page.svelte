@@ -25,4 +25,4 @@
 
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/labelled-field">Labelled field recipe</a></p>
 
-<p class="mt-4"><a href="/reading-record">Public-data reading record and row recipes</a></p>
+<p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/reading-record">Public-data reading record and row recipes</a></p>

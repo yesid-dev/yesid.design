@@ -24,7 +24,7 @@
  </section>
  <section aria-label={c.metric}>
   <MetricDisplay value="84" label={c.metric} tone="reading" layout="phone-row" sublabel={c.period}>
-   {#snippet info()}<a href="#evidence">{c.evidence}</a>{/snippet}
+   {#snippet info()}<a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="#evidence">{c.evidence}</a>{/snippet}
   </MetricDisplay>
   <MetricDisplay value={null} label={c.scheduled} tone="reading" layout="phone-row">
    {#snippet absent()}<span>{c.absent}</span>{/snippet}
