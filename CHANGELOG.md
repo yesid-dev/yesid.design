@@ -1,5 +1,133 @@
 # Changelog
 
+## 0.44.0
+
+<!-- release-fragment: calm-reading-surfaces -->
+- `@yesid/ui` (minor): Calm reading surfaces, reading labels, chrome clearance and an Experimental reading frame
+  (Y-6, Y-8, Y-10, Y-21). Every new option keeps today's output by default; the three behaviour
+  changes are listed below.
+
+  New options:
+
+  - `Card` `edge="neutral"` draws the edge in `--border` and never adds the orange hover glow;
+    `textSize="inherit"` drops the 14px base so text and fields inside keep the page size (16px or
+    more). Defaults `edge="brand"` and `textSize="small"` keep today's output.
+  - `CollapsibleSection` (and the `SectionCard` it renders) `edge`, `edgeWeight` (`heavy` 3px default,
+    `regular` 2px, `thin` 1px) and `textSize`. A neutral section edge firms from its heading without
+    glow.
+  - `TocNav` and `TocPill` `counter` (default `true`), and `DetailFrame` `toc.counter`, to drop the
+    position on reading pages.
+  - `base.css`: the `.label-reading` role (Inter, sentence case, muted, 15px) beside `.label-station`,
+    which stays for signage; the opt-in `.chrome-clearance` class with `--chrome-clearance-top`,
+    `--floating-pill-clearance` and `--floating-pill-stack-clearance`. The section-jump controller
+    subtracts a scroller's `scroll-padding-top`, so contents jumps keep the 25% landing line
+    (unchanged when no scroll padding is set).
+  - `ReadingFrame` from `@yesid/ui/layout`, **Experimental**: title, real update date (ISO 8601,
+    calendar and time ranges checked), summary, contents (an unnumbered list of 44px links from
+    `sections`, or a `contents` snippet) and body, on a 65 to 70 character measure, with section ids that must be language-independent slugs.
+  - Documentation: SectionHeading `overline` is signage only; when numbering, hazard tape and artwork
+    carry meaning. DESIGN.md records the label roles, the clearance pattern and the hover rule.
+
+  Behaviour changes for existing callers:
+
+  - Defect fix (Y-6): a `Card` without `interactive` no longer firms its border and adds
+    `shadow-section` on hover. `interactive` marks a card that acts, and a static card must not
+    suggest an action. Interactive cards are unchanged. Proof: `card.test.ts` and the Gallery
+    `/reading-surfaces` spec fail on the previous source. Migration: pass `interactive` to a Card that
+    is a whole-card link or button and should react; product rules that already style their own
+    linked-card hover keep working.
+  - Defect fix (Y-10): below 1024px a `TocPill` and a `SurfaceRail` pill on the same page shared one
+    spot, so one hid the other. The contents pill now stacks 8px above the rail pill and is hidden
+    while the rail sheet is open. Pages with one pill are unchanged. Proof: the Gallery
+    `/chrome-clearance` spec fails on the previous source.
+  - Owner-approved behaviour change (answer B1 2A, 14 November 2026): a hovered section heading turns
+    its title orange (`--primary`) instead of yellow (`--accent-text`), because yellow is never
+    interactive. Recorded in DEPRECATION.md under "Owner-approved behavior changes". Migration: remove
+    product rules that recolour `.section-title` on hover.
+
+<!-- release-fragment: no-hover-halos -->
+- `@yesid/tokens` (minor), `@yesid/ui` (minor): Hover never adds a halo (owner ruling, 15 November 2026: "The only thing that I want to remove on
+  hover was the halo. That's it."), and hover is identical in light and dark: lift and edge, no shadow
+  (owner answer A, same day). Owner-approved behaviour change, recorded in DEPRECATION.md under
+  "Owner-approved behavior changes". No prop, type or export changes.
+
+  Removed on hover:
+
+  - `Button` `default` and `conversion` at `cta-sm`, `cta` and `cta-lg`: the orange or yellow glow.
+    The 1px lift and the colour change stay.
+  - An `interactive` `Card`: the `--shadow-section` hover shadow, in both themes (an orange glow in
+    dark, a dark cast in light). The border firms and the card lifts 1px, as before (no lift under
+    reduced motion).
+  - A hovered `CollapsibleSection`, `SectionCard` or TocNav card heading: the `--shadow-section` shadow
+    on the card, in both themes. The border still firms to the section accent and the title still
+    turns orange.
+  - `SiteHeader` nav links and menu labels: the text glow. They still turn orange.
+
+  Cards and section headings cast no outer shadow on hover in either theme; the inset bevel is the
+  same at rest and on hover.
+
+  Keyboard focus matches hover (D21): an interactive `Card` lifts 1px and firms its edge when it, an
+  element inside it, or a whole-card link wrapping it has `:focus-visible`; a section heading button
+  with `:focus-visible` firms the card edge. The 2px focus ring stays, both themes behave the same, and
+  reduced motion drops the lift. Unchanged: focus rings (the 2px outline), active-state lamps (the current nav link, menu stop and
+  menu icon), static artwork glows and every other hover animation.
+
+  Deprecated in `@yesid/tokens`, retained with unchanged values and marked `$deprecated` in
+  `tokens.json`: `--shadow-glow-sm` (and the `shadow-glow-sm` utility), whose only system use was the
+  call-to-action Button hover, and `--shadow-cta-hover`. No replacement. Earliest removal: v0.46.0
+  and 90 days after v0.44.0 is published. `DESIGN.md` records the rule and the deprecated tokens.
+
+  Migration: drop product rules that add a hover glow or hover shadow, including
+  `box-shadow: var(--shadow-cta-hover)` and any hover `var(--shadow-section)`; keep the lift, edge or
+  colour change. Proof: the Gallery `hover-halos` spec fails on the previous source in light and dark
+  and checks that both themes make the same hover changes; `primitive-cleanup.test.ts` records the two
+  retired Button classes.
+
+<!-- release-fragment: reading-data-controls -->
+- `@yesid/ui` (minor): Add MetricDisplay reading tone and phone-row layout, SearchInput native attributes and
+  bindable ref with visible-label, description and body-text options, SegmentedChoice fit-row,
+  and FilterGroup consistent selection as opt-ins. Existing defaults stay unchanged. Metric
+  figures now use tabular numerals. Products explicitly opt into reading ink and consistent
+  selection when adopting. Gallery adds public-data, comparison, narrative and member recipes.
+
+<!-- release-fragment: v044-header-brand-deprecations -->
+- `@yesid/ui` (minor): Add the Experimental `ProductBrand`, fix SiteHeader's link tiers so the pill toggles always fit,
+  and start three deprecations (Y-23, Y-26, owner decision of 14 November 2026, DECISIONS.md D19).
+
+  - `ProductBrand` (Experimental, `@yesid/ui` and `@yesid/ui/brand`): the still house wordmark, an
+    `aria-hidden` divider and the product name as a link, for SiteHeader's and SiteFooter's `brand`
+    snippets. Props: `product`, `href`, `houseHref` (required), `houseExternal` (default false),
+    `houseLabel`, `current`. The product's copy keeps its case; a long name wraps between words.
+  - Defect fix, SiteHeader link tiers (found by yesid.dev PR 723): with both toggles in the pill,
+    priority 2 links showed from a 500px header, so between 500 and about 527 (EN), 517 (FR) or
+    555 (ES) px the pill overflowed the viewport before hydration and without JavaScript, then
+    links-fit took every link out at once and the toggles moved. Priority 2 now shows from 600px
+    while the toggles are in the pill, and links that do not fit leave a whole priority at a time
+    (3, then 2); priority 1 leaves only when it cannot fit alone. Behaviour change: between 500 and
+    599px, priority 2 links no longer show beside the toggles. Callers still passing the deprecated
+    `compactControls` keep the 500px step below 600px, where their toggles are in the menu.
+    Proof: `site-header-pill.spec.ts` and `links-fit.test.ts` fail on the previous source.
+  - Defect fix, Wordmark: with motion allowed, hydration splits the letters into separate boxes for
+    the hover effects, which dropped kerning and ligatures and widened the wordmark (0.375px locally,
+    enough in CI to move a centred pill's toggles 1.8px). The letters now render without kerning or
+    ligatures from the first paint, as they already did after hydration, so the width holds and the
+    toggles stay put. Proof: the hydration case in `site-header-pill.spec.ts` fails before.
+  - Defect fix, SiteHeader transitions: the pill's padding and the links' fold (max-width, margin,
+    opacity) transitioned at any time, and header links used `transition-all`. When the header's
+    stylesheet applied after a first layout, those transitions slid the pill and its toggles by up
+    to 11px before hydration. Layout transitions now run only after hydration, where the menu's fold
+    needs them, and links transition only colour and text shadow. Proof: the late-stylesheet cases
+    in `site-header-pill.spec.ts` fail before.
+  - Deprecated, retained and functional: SiteHeader `compactControls` (omit it; the toggles stay in
+    the pill at every width), `CornerMeta` and `MetroStation` with their props types (no product
+    use; see docs/migrations/decorative-vocabulary.md and docs/migrations/compact-controls.md).
+    The Gallery no longer demonstrates compact controls as a pattern, corner notes, the station
+    roundel or the mono section overline. Earliest removal: publication plus 90 days and an
+    intervening minor.
+
+  Migration: omit `compactControls`. To adopt `ProductBrand`, replace a local house-plus-product
+  cluster with it in the `brand` snippets. ThemeToggle and LanguageToggle are unchanged.
+
 ## 0.43.0
 
 <!-- release-fragment: calm-article-header -->
