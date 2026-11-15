@@ -7,6 +7,7 @@
 		FilterSection,
 		FilterSummary,
 		SearchInput,
+		filterCountText,
 	} from '@yesid/ui/brand';
 	import { BlueprintBridge, BlueprintSignal } from '@yesid/ui/blueprints';
 	import { ListingFrame } from '@yesid/ui/layout';
@@ -30,6 +31,7 @@
 	onMount(() => (params = new URLSearchParams(page.url.searchParams.toString())));
 	const reading = $derived(params.get('presentation') === 'reading');
 	const spanish = $derived(params.get('lang') === 'es');
+	const rule = $derived(params.get('rule') === 'dimension' ? 'dimension' : undefined);
 
 	let query = $state('');
 	let mode = $state<string | null>(null);
@@ -42,6 +44,8 @@
 				entry.title.toLowerCase().includes(query.toLowerCase()),
 		),
 	);
+
+	const countLabel = { singular: '{count} résultat', plural: '{count} résultats' };
 
 	function clearFilters(): void {
 		query = '';
@@ -82,11 +86,13 @@
 <div class="contents" lang={spanish ? 'es' : 'fr'}>
 <ListingFrame
 	presentation={reading ? 'reading' : 'expressive'}
+	{rule}
 	heading={spanish ? 'Responsabilidades e internacionalización: trabajos e investigaciones' : 'Catalogue'}
 	edgeTitle="Un catalogue de travaux et de recherches"
 	subtitle={spanish ? 'Trabajos e investigaciones' : 'Travaux et recherches'}
 	description="Exemple de page de liste avec filtres, recherche et résultats."
 	filterLabel="Filtres"
+	resultCountText={filterCountText(shown.length, countLabel, 'fr')}
 	onHeaderMount={reading ? undefined : blueprintScrub}
 	aside={params.get('aside') === '0' ? undefined : totals}
 	blueprint={reading ? undefined : blueprint}
@@ -119,7 +125,7 @@
 
 	<FilterSummary
 		count={shown.length}
-		countLabel={{ singular: '{count} résultat', plural: '{count} résultats' }}
+		{countLabel}
 		locale="fr"
 		clearLabel="Effacer les filtres"
 		onClear={clearFilters}

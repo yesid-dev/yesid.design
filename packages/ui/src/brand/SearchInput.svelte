@@ -1,4 +1,7 @@
-<!-- Free-text listing search. `label` is the accessible name; the placeholder is only a hint. -->
+<!--
+  Free-text listing search. `label` is the accessible name; the placeholder is only a hint. Focus
+  shows the standard 2px focus ring from `@yesid/ui/base.css`, with no glow.
+-->
 <script lang="ts" module>
 	import type { HTMLInputAttributes } from 'svelte/elements';
 	export interface SearchInputProps extends Omit<HTMLInputAttributes, 'value'> {
@@ -50,7 +53,7 @@
 		aria-label={visibleLabel ? undefined : label}
 		{placeholder}
 		bind:value
-		class={cn("w-full rounded-lg border border-[var(--input)] bg-[var(--card)] px-4 py-3.5 min-h-11 pl-10 text-[var(--foreground)] placeholder-[var(--muted-foreground)] outline-none transition-colors focus:border-[var(--accent)] focus:shadow-[0_0_12px_color-mix(in_srgb,var(--accent)_15%,transparent)]", textSize === "body" ? "font-sans text-body" : "font-mono text-sm", className)}
+		class={cn("w-full rounded-lg border border-[var(--input)] bg-[var(--card)] px-4 py-3.5 min-h-11 pl-10 text-[var(--foreground)] placeholder-[var(--muted-foreground)] transition-colors", textSize === "body" ? "font-sans text-body" : "font-mono text-sm", className)}
 		data-testid={testId}
 	/>
 	<SearchIcon

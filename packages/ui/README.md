@@ -555,7 +555,9 @@ with an "All" reset (`allLabel`) mapped to `null`; choosing the active item agai
 unless `allowDeselect={false}`. With `collapsible` it gets a header toggle and starts at `startOpen` (true) on every mount. `FilterSection` wraps one block of a filter
 panel with the dashed rule. `FilterSummary` shows `countLabel.singular` or `countLabel.plural`
 (each with a `{count}` placeholder) by the plural rule of `locale`, plus a `clearLabel` button.
-`SearchInput` is the listing search field; `label` is its accessible name.
+`filterCountText(count, countLabel, locale)` returns the same words, for ListingFrame's
+`resultCountText`. `SearchInput` is the listing search field; `label` is its accessible name. Its
+focus shows the standard 2px focus ring from `base.css`, with no glow and no border change.
 
 ### CornerMeta, SegmentedChoice, and ToggleChip
 
@@ -589,8 +591,8 @@ omitted), a sentence-case subtitle in reading type, and a neutral line instead o
 The title, the line and the filter column share one left edge.
 
 `rule` overrides the rule under the header in either presentation: `hazard`, `line` or
-`dimension` (THE divider, D22). `dimension` also replaces the dashed rule above the search in the
-desktop filter column with the same line. Without `rule`, each presentation keeps its rule.
+`dimension` (THE divider, D22). Without `rule`, each presentation keeps its rule. It is the one
+line between the header and the list: the search draws no rule of its own.
 
 The filter column holds the `search` snippet and a panel with the `filters` snippet. From 1024px
 the panel is always shown and the column is sticky. Below 1024px a button labelled `filterLabel`
@@ -599,6 +601,17 @@ never uses `inert`; a closed panel is `visibility: hidden` below 1024px only. So
 filters are visible and reachable by keyboard before hydration and without JavaScript, and below
 1024px opening them needs JavaScript. Wheel scrolling in the sticky column chains to the page
 through `scrollChain`.
+
+From 1024px one line parts the header from the list: the rule under the header. The search block
+has no dashed rule of its own. The phone `filterLabel` button keeps the standard focus ring beside
+its colour change. The edge title is a decorative `RailTitle` (the `heading` h1 stays the page's
+heading), centred in a column that stays in view.
+
+`resultCountText` (optional) is the result count in words, for example from `filterCountText`.
+The frame keeps a visually hidden polite status (`role="status"`) in the results column for as long
+as the prop is set, so screen readers hear the count whenever a search or filter changes it, even
+when the visible `FilterSummary` only shows while filters are active. Without it nothing is
+announced, as before.
 
 The frame reads `--chrome-offset`, the height of the fixed site chrome, to pull the header under
 it and to park the sticky column below it. It falls back to `0px`.
@@ -649,8 +662,11 @@ snippet replaces it (an empty one leaves the header plain) and receives the head
 bound (undefined before and during SSR). Its circuit grid holds still with the viewport while the
 header scrolls, fixed and clipped to the header, so it lines up with a fixed page grid.
 Like `ListingFrame`, it expects the page to pad its top by `--chrome-offset` and pulls itself under
-the chrome. The back link sits midway between the chrome and the next line; an app whose
-`--chrome-offset` leaves a gap under its chrome sets `--chrome-gap` to that gap. The title uses
+the chrome. The band is compact (owner ruling, 15 November 2026): no space is added around the back
+link, the title sits right under it, and the `actions` and `controls` snippets share one row where
+they fit (each group still wraps inside itself), with a short floor under the last row. The back
+link sits midway between the chrome and the next line; an app whose `--chrome-offset` leaves a gap
+under its chrome sets `--chrome-gap` to that gap. The title keeps its size and uses
 `--text-title`, so it follows the density mode; `--article-title-size` replaces it, for example
 with a container-relative size. Long titles wrap between words and break inside a word only when
 it is wider than the column (soft hyphens, U+00AD, choose the break); meta entries, including a
@@ -1029,6 +1045,43 @@ pill so they stay reachable. Existing menus retain their controls and behavior.
 The native compact popover before hydration has an 8px gap below the pill and the same visible
 control labels as the hydrated menu. Its toggle artwork remains unchanged. The menu button's
 focus outline follows its round corner shape.
+
+### RailTitle (Experimental)
+
+`RailTitle` is a section title on the side rail ([D23](../../DECISIONS.md#d23-rail-titles)), in
+the look of the rotated titles on yesid.dev's home and contact pages. It is Experimental in its
+first release: an incompatible change waits for a minor with migration notes.
+
+```svelte
+<section aria-labelledby="work-title">
+  <RailTitle heading="Selected work" side="left" titleId="work-title">
+    <ProjectCards />
+  </RailTitle>
+</section>
+```
+
+With `children`, RailTitle lays out the section: from 1024px a rail on each side (both
+`--rail-title-rail` wide, default `clamp(4.5rem, 8vw, 8rem)`, so the content stays centred) and the
+content between them; the title sits on its `side` rail (`left`, the default, reads bottom to top;
+`right` reads top to bottom). The title is sticky: it holds `--rail-title-top` below the viewport
+top (default `--chrome-offset`, else `--nav-clearance`, plus 1rem, clear of the header pill) while
+its section scrolls, then leaves with the section's end as the next section's title takes over.
+It never overlaps the content, which keeps its own column, and it is never wider than the rail.
+After hydration the title fits the room between the clearance and the bottom of the scrollport it
+sticks in (the nearest scrolling ancestor, else the viewport): a longer title shrinks, never below
+12px; one that would need less reads horizontally above the content instead. It refits when its
+words, `dot`, `size` or `level` change, when the scrollport or the title resizes, at the breakpoint
+and when the web font loads. As its section scrolls away, the part of the title above the
+clearance line is clipped, so it never paints under the header pill. Below 1024px it reads
+horizontally above the content, in SectionHeading's display type, inset by `--space-page-x`.
+
+It is the section's real heading, first in the section's DOM order: `level` (default 2) picks the
+element and `titleId` its id. `dot` (default `true`) ends it on the brand's orange dot, drawn as
+SectionHeading draws it and hidden from assistive technology. `size` sets the rotated title's
+font size, for example one size shared by every title on a page (default
+`min(clamp(3.5rem, 7vw, 6rem), 5.5dvh)`), capped at seven eighths of the rail. Without `children`
+it draws only the title, for a frame that owns its rail column; `decorative` then draws it as
+hidden decoration (no heading), as ListingFrame's edge title does beside its real h1.
 
 ### ProductBrand (Experimental)
 

@@ -6,7 +6,10 @@
   canvas or decoration, no highlight, and the category leads the meta row below the title.
   It sits under the fixed site chrome: it cancels the page's top padding of `--chrome-offset` and
   pads itself by the same amount. An app whose offset leaves a gap under its chrome sets
-  `--chrome-gap` to it, so the back link sits midway between the chrome and the next line.
+  `--chrome-gap` to it, so the back link sits midway between the chrome and the next line. The band
+  is compact (owner ruling, 15 November 2026): no space is added around the back link, the rows sit
+  close, and `actions` and `controls` share one row where they fit; the title keeps its size and the
+  band still grows with long titles and larger text.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -198,15 +201,19 @@
 				</div>
 			{/if}
 
-			{#if actions}
-				<div class="header__actions" data-slot="article-header-actions">
-					{@render actions()}
-				</div>
-			{/if}
+			{#if actions || controls}
+				<div class="header__acts" data-slot="article-header-acts">
+					{#if actions}
+						<div class="header__actions" data-slot="article-header-actions">
+							{@render actions()}
+						</div>
+					{/if}
 
-			{#if controls}
-				<div class="header__controls" data-slot="article-header-controls">
-					{@render controls()}
+					{#if controls}
+						<div class="header__controls" data-slot="article-header-controls">
+							{@render controls()}
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -325,7 +332,7 @@
 		width: 100%;
 		min-width: 0;
 		margin-inline: auto;
-		padding: max(0px, calc(0.5rem - var(--chrome-gap, 0px))) 1.25rem 1.5rem;
+		padding: 0 1.25rem 0.75rem;
 		text-align: center;
 	}
 
@@ -333,7 +340,8 @@
 		display: inline-flex;
 		align-items: center;
 		min-height: 44px;
-		margin-bottom: 0.5rem;
+		/* Matches the app's gap above the link, so the link stays midway between chrome and title. */
+		margin-bottom: max(0px, var(--chrome-gap, 0px));
 		font-family: var(--font-mono);
 		font-size: var(--text-back-link);
 		letter-spacing: 0;
@@ -352,7 +360,7 @@
 		justify-content: center;
 		gap: 1rem;
 		max-width: calc(100% - 2rem);
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 3px;
@@ -373,7 +381,7 @@
 	   choose where a long word breaks. */
 	.header__title {
 		max-width: 100%;
-		margin: 0 0 0.75rem;
+		margin: 0 0 0.25rem;
 		font-family: var(--font-heading);
 		font-size: var(--article-title-size, var(--text-title));
 		font-weight: 900;
@@ -398,7 +406,7 @@
 
 	.header__subtitle {
 		max-width: 720px;
-		margin: 0 auto 0.75rem;
+		margin: 0 auto 0.5rem;
 		line-height: 1.6;
 	}
 
@@ -442,6 +450,18 @@
 		opacity: 0.4;
 	}
 
+	/* The actions and the controls share one row where they fit, each wrapping inside itself. */
+	.header__acts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		column-gap: 1.5rem;
+		row-gap: 0;
+		width: 100%;
+		min-width: 0;
+	}
+
 	.header__actions,
 	.header__controls {
 		display: flex;
@@ -449,8 +469,8 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		width: 100%;
-		margin-top: 0.75rem;
+		min-width: 0;
+		max-width: 100%;
 	}
 
 	@media (max-width: 390px) {
@@ -478,11 +498,11 @@
 
 		.header__content {
 			padding-inline: 2rem;
-			padding-bottom: 2rem;
+			padding-bottom: 1rem;
 		}
 
 		.header__cat-line {
-			margin-bottom: 1rem;
+			margin-bottom: 0.75rem;
 		}
 
 		.header__title {
@@ -490,7 +510,7 @@
 		}
 
 		.header__subtitle {
-			margin-bottom: 1rem;
+			margin-bottom: 0.5rem;
 		}
 	}
 
@@ -508,12 +528,11 @@
 	.article-header--reading .header__content {
 		align-items: flex-start;
 		max-width: calc(var(--article-measure, var(--detail-center-width, 46rem)) + 2 * var(--space-page-x));
-		padding: max(0px, calc(0.5rem - var(--chrome-gap, 0px))) var(--space-page-x) clamp(1.5rem, 1rem + 2vw, 2.5rem);
+		padding: 0 var(--space-page-x) clamp(1rem, 0.75rem + 1vw, 1.5rem);
 		text-align: start;
 	}
 
 	.article-header--reading .header__back {
-		margin-bottom: 0.25rem;
 		font-family: var(--font-body);
 		font-size: var(--text-back-link);
 		color: var(--primary);
@@ -557,7 +576,7 @@
 		justify-content: flex-start;
 		column-gap: 0.625rem;
 		row-gap: 0.25rem;
-		margin-top: 1rem;
+		margin-top: 0.75rem;
 		margin-inline-start: calc(-1 * var(--meta-sep-space));
 		clip-path: inset(0 0 0 var(--meta-sep-space));
 		font-family: var(--font-body);
@@ -597,18 +616,19 @@
 		background: color-mix(in srgb, var(--foreground) 10%, transparent);
 	}
 
+	.article-header--reading .header__acts {
+		column-gap: 1.25rem;
+		justify-content: flex-start;
+		margin-top: 0.75rem;
+	}
+
 	.article-header--reading .header__actions,
 	.article-header--reading .header__controls {
 		justify-content: flex-start;
-		margin-top: 1.25rem;
 	}
 
 	.article-header--reading .header__actions {
 		column-gap: 1.25rem;
-	}
-
-	.article-header--reading .header__actions + .header__controls {
-		margin-top: 0.75rem;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

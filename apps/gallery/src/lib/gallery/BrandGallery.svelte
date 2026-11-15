@@ -33,6 +33,7 @@
 		ToggleChip,
 		Wordmark,
 		ProductBrand,
+		RailTitle,
 		type SectionIconName,
 		type StatusDotColor,
 		type TocEntry,
@@ -224,6 +225,18 @@
 			<Card.Content class="flex flex-wrap items-center gap-6">
 				<ProductBrand product="Login" href="/product-brand/en" houseHref="https://yesid.dev" />
 				<ProductBrand product="Transit" href="/product-brand/en" houseHref="https://yesid.dev" class="text-2xl" />
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:RailTitle">
+			<Card.Header>
+				<Card.Title>RailTitle</Card.Title>
+				<Card.Description>Experimental. A section title on the side rail, sticky from 1024px and horizontal below; see the <a class="underline" href="/rail-title/en">sticky rail titles page</a>.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<RailTitle heading="Selected work" level={3}>
+					<p class="text-small text-muted-foreground">The section content sits between two rails.</p>
+				</RailTitle>
 			</Card.Content>
 		</Card.Root>
 

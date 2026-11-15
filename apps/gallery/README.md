@@ -58,6 +58,17 @@ the pill; `site-header-pill.spec.ts` checks 500 to 768px with and without JavaSc
 place through hydration, and links leaving by priority. `/product-brand/[lang]` shows the
 Experimental `ProductBrand` in a narrow navbar ("yesid. | Login") and footer; `product-brand.spec.ts`
 checks 320 to 1920px in both themes, long names, keyboard order, focus rings and hover colour.
+`/rail-title/[lang]` (`en`, `fr`, `es`) puts the Experimental `RailTitle` on four sections of
+different lengths on alternating rails under a product header; `rail-title.spec.ts` checks heading
+semantics, the rotated title on its rail from 1024px and horizontal below at 320 to 1920px, the
+sticky hand-off from one title to the next, that no title covers the pill, its content or another
+title at any scroll position (painted glyphs), a departing title never painting under a pill that
+spans the rails, long titles fitting a short window, and axe in both themes. `/rail-title-fit`
+(`?offset=`, `?scroller=` and buttons that change the heading, dot and size) checks the 12px
+floor and its horizontal fallback, fitting an overflow container's scrollport as it resizes, and
+refitting on prop changes without a resize.
+`header-band.spec.ts` checks the compact ArticleHeader band on `/article-header` and that long
+French and Spanish titles stay uncropped at 320px and 200% text.
 `/site-header-compact` keeps the deprecated `compactControls` only to prove it still works.
 
 `/masthead` shows Masthead with its kicker (today) and heading first without one, with and without

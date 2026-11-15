@@ -784,6 +784,7 @@ declare namespace Brand {
         FilterSection,
         FilterSectionProps,
         FilterSummary,
+        filterCountText,
         FilterSummaryProps,
         ManifestoCanvas,
         ManifestoCanvasProps,
@@ -793,6 +794,8 @@ declare namespace Brand {
         MetroStationProps,
         ProductBrand,
         ProductBrandProps,
+        RailTitle,
+        RailTitleProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -1448,6 +1451,12 @@ declare namespace Feedback {
     }
 }
 
+// @public
+function filterCountText(count: number, countLabel: {
+    singular: string;
+    plural: string;
+}, locale: string): string;
+
 // @public (undocumented)
 const FilterGroup: Component<FilterGroupProps, {}, "">;
 
@@ -1612,6 +1621,7 @@ declare namespace Index {
         FilterSection,
         FilterSectionProps,
         FilterSummary,
+        filterCountText,
         FilterSummaryProps,
         ManifestoCanvas,
         ManifestoCanvasProps,
@@ -1621,6 +1631,8 @@ declare namespace Index {
         MetroStationProps,
         ProductBrand,
         ProductBrandProps,
+        RailTitle,
+        RailTitleProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -1781,6 +1793,7 @@ interface ListingFrameProps {
     heading: string;
     onHeaderMount?: (header: HTMLElement, frame: HTMLElement) => (() => void) | void;
     presentation?: 'expressive' | 'reading';
+    resultCountText?: string;
     rule?: 'hazard' | 'line' | 'dimension';
     // (undocumented)
     search?: Snippet;
@@ -2125,6 +2138,26 @@ interface ProductBrandProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'child
     houseLabel?: string;
     href: string;
     product: string;
+}
+
+// @public
+const RailTitle: Component<RailTitleProps, {}, "">;
+
+// @public (undocumented)
+type RailTitle = ReturnType<typeof RailTitle>;
+
+// @public (undocumented)
+interface RailTitleProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    children?: Snippet;
+    // (undocumented)
+    class?: string;
+    decorative?: boolean;
+    dot?: boolean;
+    heading: string;
+    level?: 1 | 2 | 3 | 4 | 5 | 6;
+    side?: 'left' | 'right';
+    size?: string;
+    titleId?: string;
 }
 
 // @public (undocumented)

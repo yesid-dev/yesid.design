@@ -106,6 +106,7 @@ The owner wants every product to feel like one family (15 November 2026). These 
   - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking: `SiteFooter` draws it by default.
   - Every rotated title is sticky.
 - **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
+- **Rail titles** ([D23](../DECISIONS.md#d23-rail-titles)): `RailTitle` (Experimental) is the rotated section title, the section's real heading ending on the orange dot. From 1024px it sits on the left or right rail outside the centred content, sticky under the header pill while its section scrolls, then the next title takes over; below 1024px it reads horizontally. It never overlaps the content or the pill. ListingFrame's edge title is a decorative RailTitle.
 
 ## 5. Rules
 
@@ -208,7 +209,7 @@ Carried by: Y-1 heading-only hover on sections (v0.42.0), Y-6 (v0.44.0), Y-11 ro
 
 ### Rule 6. Headings answer
 
-A page title names the subject in plain words. A section heading says what the section tells; its summary gives the finding. A task heading says the task. No slogan in a reading or task title, no console phrase, no rotated or visually hidden title.
+A page title names the subject in plain words. A section heading says what the section tells; its summary gives the finding. A task heading says the task. No slogan in a reading or task title, no console phrase, no rotated or visually hidden page title. A rotated section title is a `RailTitle` (D23): a real heading on the rail that reads horizontally below 1024px.
 
 **Why.** Ceremonial title stages delay the answer, especially on a phone. A plain heading tells readers what the page contains or what they can do next.
 
@@ -355,6 +356,7 @@ Additions to the generated Overview, Typography and Do's and Don'ts:
 | 3 Colour | Status palette, after the rendered test and the owner's choice (Y-7) | Status tokens release |
 | 4 Type | Calm article header, whole-word emphasis only, readable category (Y-4); Masthead kicker optional (Y-22) | v0.43.0 |
 | 4 Type | Sentence-case label role, optional TOC counter (Y-8) | v0.44.0 |
+| 6 Headings | Sticky rail titles, real headings on the rails (D23); a compact editorial header band | v0.45.0 |
 | 5 Surfaces | Heading-only hover on sections (Y-1) | v0.42.0 |
 | 5 Surfaces | Hover only on interactive cards (Y-6); comparison, narrative and member-list recipes (Y-11) | v0.44.0, v0.45.0 |
 | 7 Sections | Heading-only toggle and unclamped summary (Y-1) | v0.42.0 |
@@ -364,6 +366,7 @@ Additions to the generated Overview, Typography and Do's and Don'ts:
 | 11 Identity controls | Compact phone menu placement (U1); brand language order (Y-27) | v0.42.0 |
 | Floor | Visible focus on filled buttons (Y-17) | v0.42.0 |
 | Floor | Labelled field recipe (Y-20); calm reading frame for legal and long prose (Y-21) | v0.43.0, v0.45.0 |
+| Floor | Listing search and Filters button keep the standard focus ring; the result count is announced | v0.45.0 |
 
 ## 8. The five-minute review
 

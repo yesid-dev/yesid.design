@@ -196,6 +196,11 @@ hairline with end ticks and a scale tick every 80px, edge to edge, static. \`Pag
 \`PageSection\` end every section but the last with it, so none sits before the footer; frames and panels take
 \`rule="dimension"\` (Masthead and ErrorPage \`tape="dimension"\`). SiteFooter's top edge is the
 street edge: one dashed line of alternating yellow and white dashes. Hazard tape is not a divider.
+The Experimental \`RailTitle\` puts a section's real heading on a side rail outside the centred
+content (D23): rotated and sticky under the header pill from 1024px, horizontal above its section
+below. The editorial header band (ArticleHeader) is compact: the title keeps its size, the rows sit
+close and the actions share a row with the controls. A listing search keeps the standard focus
+ring, with no dashed rule above it; ListingFrame's \`resultCountText\` announces the count politely.
 
 MetricDisplay keeps yellow by default; reading pages pass \`tone="reading"\` explicitly.
 Figures use tabular numerals. Put period, unit and comparison in \`sublabel\`, evidence in

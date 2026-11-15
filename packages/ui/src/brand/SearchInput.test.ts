@@ -27,6 +27,13 @@ describe('SearchInput', () => {
 		expect([element.name, element.getAttribute('data-testid')]).toEqual([name, testId]);
 	});
 
+	it('keeps the standard focus ring: no outline reset, focus border or glow of its own', () => {
+		const classes = [...input(field()).classList];
+		expect(classes).not.toContain('outline-none');
+		expect(classes.filter((name) => name.startsWith('focus:'))).toEqual([]);
+		expect(classes.some((name) => name.includes('shadow'))).toBe(false);
+	});
+
 	it('updates its value as the reader types', async () => {
 		const element = input(field());
 		await type(element, 'bus');

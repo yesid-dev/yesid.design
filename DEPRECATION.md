@@ -100,6 +100,27 @@ consumer or clean-room verification.
   divider just above the footer (see `PageSections`). Proof: `SiteFooter.test.ts` and the
   Gallery `/dividers` spec fail on the previous source. Rehearse in all three products.
 
+- **Compact editorial header and listing fixes, owner rulings, 2026-11-15 06:45 UTC and the
+  previews' kit gaps, planned v0.45.0:** "Editorial pages: the header section is less tall (less
+  vertical padding / empty space; title letter size unchanged)." `ArticleHeader` (both
+  presentations) adds no space around the back link, sets the title 4px above what follows, puts
+  the `actions` and `controls` snippets in one row group (`data-slot="article-header-acts"`) that
+  shares a row where they fit, and keeps a short floor under the last row (12px, 16px from 1024px;
+  the reading floor is `clamp(1rem, 0.75rem + 1vw, 1.5rem)`). A case study with proof links and
+  Collapse all goes from 254 to 146px at 1440px and from 235 to 131px at 390px in the Gallery; the
+  title keeps `--text-title`, and long French and Spanish titles still wrap uncropped at 320px and
+  200% text. The back link stays midway between the chrome and the title (`--chrome-gap` keeps its
+  meaning). `ListingFrame` no longer draws the dashed rule above the search from 1024px (one line
+  parts the header from the list) and its phone Filters button keeps the standard focus ring;
+  `SearchInput` shows the standard 2px focus ring instead of its yellow border and glow. No prop,
+  type or export is removed. Migration: drop product CSS that re-spaces the header's back link,
+  title or action rows, or that targets `.header__actions` / `.header__controls` as direct
+  children of the header content (they now sit inside `.header__acts`); drop product rules that
+  restore the search glow or hide the Filters button's focus ring. Proof: `header-band.spec.ts`
+  and the new `listing-frame.spec.ts` checks fail on the previous source;
+  `ArticleHeader.test.ts`, `SearchInput.test.ts` and `ListingFrame.test.ts` pin the rules.
+  Rehearse in all three products.
+
 - **Hover halos, owner ruling, 2026-11-15 03:57 UTC, planned v0.44.0:** "The only thing that I
   want to remove on hover was the halo. That's it." Hover no longer adds light around an element.
   Owner answer A, 2026-11-15 05:36 UTC: hover is identical in light and dark. Removed: the

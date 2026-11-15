@@ -64,6 +64,33 @@ describe('edge title', () => {
 		expect(column.textContent?.trim()).toBe('Lines.');
 		expect(column.getAttribute('aria-hidden')).toBe('true');
 	});
+	it('draws the edge title with a decorative left RailTitle, adding no heading', () => {
+		const view = frame({ edgeTitle: 'Catalogue' });
+		const title = slot(view, 'listing-edge-title').querySelector<HTMLElement>('[data-slot="rail-title"]')!;
+		expect(title.dataset.side).toBe('left');
+		expect(title.getAttribute('aria-hidden')).toBe('true');
+		expect(title.classList.contains('edge-title')).toBe(true);
+		expect(title.querySelector('h1, h2, h3, h4, h5, h6')).toBeNull();
+		expect(view.getAllByRole('heading')).toHaveLength(1);
+	});
+});
+
+describe('result count', () => {
+	it('announces resultCountText in a polite status that is always present', async () => {
+		const view = frame({ resultCountText: '3 results' });
+		const status = slot(view, 'listing-result-status');
+		expect(status.getAttribute('role')).toBe('status');
+		expect(status.classList.contains('sr-only')).toBe(true);
+		expect(status.textContent).toBe('3 results');
+		expect(slot(view, 'listing-content').contains(status)).toBe(true);
+		await view.rerender({ resultCountText: '1 result' });
+		expect(slot(view, 'listing-result-status')).toBe(status);
+		expect(status.textContent).toBe('1 result');
+	});
+
+	it('adds no status without resultCountText', () => {
+		expect(slot(frame(), 'listing-result-status')).toBeNull();
+	});
 });
 
 describe('reading presentation', () => {
@@ -115,12 +142,11 @@ describe('rule option (D22)', () => {
 		expect(separator.classList.contains('dimension-line')).toBe(drawn === 'dimension');
 		expect(separator.getAttribute('data-variant')).toBe(drawn === 'dimension' ? 'dimension' : null);
 		expect(separator.classList.contains('listing-line')).toBe(drawn === 'line');
-		const searchRule = view.queryByTestId('listing-filter-rule');
-		expect(searchRule !== null).toBe(drawn === 'dimension');
-		if (searchRule) {
-			expect(searchRule.classList.contains('dimension-line')).toBe(true);
-			expect(slot(view, 'listing-filter-search').firstElementChild).toBe(searchRule);
-		}
+		// One rule between the header and the list: the search never draws its own.
+		const rules = view.container.querySelectorAll('[data-slot="separator"], .listing-line');
+		expect(rules).toHaveLength(1);
+		expect(rules[0]).toBe(separator);
+		expect(slot(view, 'listing-filter-search').querySelector('[data-slot="separator"], .listing-line')).toBeNull();
 	});
 });
 

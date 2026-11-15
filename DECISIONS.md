@@ -281,3 +281,31 @@ changes"). A product removes its own divider CSS and uses the kit's options as i
 Divider ink is orange, the clickable hue, used here as faded drawing ink at 70%: it is never a
 link or a control. The open owner question is whether the remaining hazard defaults (DetailFrame,
 ListingFrame, TerminalPanel, Masthead, ErrorPage) flip to the dimension line in a later release.
+
+## D23: Rail titles
+
+The owner ruled on 2026-11-15 (05:25 and 07:15 UTC) that a rotated section title sits on a side
+rail at the viewport edge, outside the centred content, and is sticky: it stays in view while its
+section scrolls, clear of the header pill, then the next section's title takes over. Phones and
+tablets keep horizontal titles. It never overlaps the content or the pill.
+
+`RailTitle` (Experimental, `@yesid/ui/brand`) is that title. It is the section's real heading (an
+`h2` by default), first in the section's DOM order, ending on the brand's orange dot. From 1024px
+it is rotated on the left rail (reading bottom to top) or the right rail (top to bottom), sticky
+under the header pill within its section; below 1024px it reads horizontally above the section's
+content. With content it lays out both rails, so the content stays centred and the title can never
+cover it. ListingFrame's edge title is a decorative RailTitle beside the listing's real h1.
+
+**Why.** yesid.dev's home, contact and listing pages each drew their own rotated titles, with
+their own sizes, positions and stickiness, and the home's were text hidden on phones and
+duplicated as a second heading. The owner wants the rotated titles kept as part of the brand and
+placed by one rule ("rotated section titles sit on the side rails, outside the centered content";
+"rotated titles are sticky"), so one component carries the look and the behaviour for every
+product.
+
+**Consequences.** A product composes a section with a rail title from `RailTitle`, never with page
+CSS that rotates or pins a heading. A page title stays horizontal at every width (doctrine Rule
+6); a rail title is a section title, and it reads horizontally below 1024px. A product that wants
+one size for every title on a page passes the same `size`. Pages whose content is narrower than
+the space between the rails need nothing more; full-bleed sections keep their backgrounds edge to
+edge around the layout.
