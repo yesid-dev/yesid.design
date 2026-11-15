@@ -9,6 +9,7 @@
 	// and dataviz color names aren't misread as font-sizes.
 	//
 	// `conversion` is the yellow "talk to us" signage action: at most one per view, never data.
+	// Call-to-action sizes lift 1px on hover. Hover never adds a halo (owner ruling, 15 November 2026).
 	export const buttonVariants = tv(
 		{
 			base: "rounded-lg border border-transparent bg-clip-padding text-sm font-medium active:not-aria-[haspopup]:translate-y-px [&_svg:not([class*='size-'])]:size-4 group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-[color,background-color,border-color,box-shadow,translate] select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -34,15 +35,9 @@
 			},
 			compoundVariants: [
 				{
-					variant: 'default',
+					variant: ['default', 'conversion'],
 					size: ['cta-sm', 'cta', 'cta-lg'],
-					class: 'hover:-translate-y-px hover:shadow-glow-sm',
-				},
-				{
-					variant: 'conversion',
-					size: ['cta-sm', 'cta', 'cta-lg'],
-					class:
-						'hover:-translate-y-px hover:shadow-[0_0_6px_color-mix(in_srgb,var(--accent)_35%,transparent)]',
+					class: 'hover:-translate-y-px',
 				},
 			],
 			defaultVariants: {

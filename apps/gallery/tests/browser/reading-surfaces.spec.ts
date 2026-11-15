@@ -46,7 +46,7 @@ for (const theme of THEMES) {
 		}
 	});
 
-	test(`a card that acts reacts to hover, and the neutral edge never glows, in ${theme}`, async ({ page }) => {
+	test(`a card that acts reacts to hover without a halo, in ${theme}`, async ({ page }) => {
 		await page.emulateMedia({ reducedMotion: 'no-preference' });
 		await open(page, theme);
 		const brand = page.locator('[data-fixture="interactive-brand"]');
@@ -55,7 +55,8 @@ for (const theme of THEMES) {
 		await page.waitForTimeout(400);
 		const brandHover = await frame(brand);
 		expect(brandHover.border).not.toBe(brandRest.border);
-		expect(brandHover.shadow).not.toBe(brandRest.shadow);
+		// Hover is identical in light and dark: lift and edge, no shadow (owner answer A, 15 November 2026).
+		expect(brandHover.shadow).toBe(brandRest.shadow);
 		expect(brandHover.transform).not.toBe('none');
 
 		const neutral = page.locator('[data-fixture="interactive-neutral"]');
@@ -118,7 +119,7 @@ for (const theme of THEMES) {
 		const brandRest = await shadowOf(brandSection);
 		await page.locator('[data-fixture="section-default"] [data-section-trigger]').hover();
 		await page.waitForTimeout(400);
-		expect(await shadowOf(brandSection)).not.toBe(brandRest);
+		expect(await shadowOf(brandSection)).toBe(brandRest);
 		const neutralRest = await shadowOf(neutral);
 		await page.locator('[data-fixture="section-neutral-es"] [data-section-trigger]').hover();
 		await page.waitForTimeout(400);

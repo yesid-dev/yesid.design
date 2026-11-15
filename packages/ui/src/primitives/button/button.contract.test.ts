@@ -1,6 +1,6 @@
 import { cleanup, render } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
-import Button from './button.svelte';
+import Button, { buttonVariants } from './button.svelte';
 
 afterEach(() => cleanup());
 
@@ -13,6 +13,16 @@ describe('Button element contract', () => {
 				expect(classes).not.toContain('outline-none');
 				expect(classes).not.toContain('outline-hidden');
 				unmount();
+			}
+		},
+	);
+
+	it.each(['default', 'conversion'] as const)(
+		'%s call-to-action sizes lift 1px on hover without a halo (owner ruling, 15 November 2026)', (variant) => {
+			for (const size of ['cta-sm', 'cta', 'cta-lg'] as const) {
+				const classes = buttonVariants({ variant, size }).split(/\s+/);
+				expect(classes).toContain('hover:-translate-y-px');
+				expect(classes.filter((name) => /^(?:[\w-]+:)*hover:.*(?:shadow|drop-shadow|glow)/.test(name))).toEqual([]);
 			}
 		},
 	);
