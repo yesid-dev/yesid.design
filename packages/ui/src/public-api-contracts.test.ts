@@ -29,6 +29,7 @@ import {
 } from '@yesid/ui/sheet';
 import {
 	ChevronToggle,
+	CodeBlock,
 	CollapsibleSection,
 	CornerMarks,
 	ErrorIllustration,
@@ -45,9 +46,11 @@ import {
 	StatusDot,
 	StopLabel,
 	TerminalCursor,
+	TerminalPanel,
 	TocNav,
 	TocPill,
 	filterCountText,
+	type CodeBlockProps,
 	type CollapsibleSectionProps,
 	type ErrorIllustrationProps,
 	type FilterGroupProps,
@@ -59,6 +62,7 @@ import {
 	type SearchInputProps,
 	type StopLabelProps,
 	type TerminalCursorProps,
+	type TerminalPanelProps,
 	type TocEntry,
 	type TocNavProps,
 	type TocPillProps,
@@ -68,11 +72,13 @@ import {
 	DetailFrame,
 	ErrorPage,
 	ListingFrame,
+	PageSections,
 	SiteFooter,
 	type ArticleHeaderProps,
 	type DetailFrameProps,
 	type ErrorPageProps,
 	type ListingFrameProps,
+	type PageSectionsProps,
 	type SiteFooterProps,
 } from '@yesid/ui/layout';
 
@@ -228,6 +234,9 @@ const countText: string = filterCountText(2, filterSummaryProps.countLabel, 'en'
 const railTitleProps: RailTitleProps = { heading: 'Selected work', side: 'right', level: 2, titleId: 'work', dot: true, size: '4rem' };
 const railSectionProps: RailTitleProps = { heading: 'About', children: ignoredChildren };
 const decorativeRailTitle: RailTitleProps = { heading: 'Catalogue', decorative: true };
+const clippedRailTitle: RailTitleProps = { heading: 'About', clipAtHeader: false };
+// @ts-expect-error the clipping opt-out is a boolean
+const invalidRailClip: RailTitleProps = { heading: 'About', clipAtHeader: 'off' };
 // @ts-expect-error the heading is the caller's
 const invalidRailTitle: RailTitleProps = { side: 'left' };
 // @ts-expect-error a rail title sits on the left or right rail
@@ -257,6 +266,9 @@ const invalidListingFrame: ListingFrameProps = {
 	filters: ignoredChildren,
 	children: ignoredChildren,
 };
+const listingFrameClip: ListingFrameProps = { ...listingFrameProps, clipAtHeader: false };
+// @ts-expect-error the edge-title clipping opt-out is a boolean
+const invalidListingFrameClip: ListingFrameProps = { ...listingFrameProps, clipAtHeader: 'off' };
 
 const articleHeaderProps: ArticleHeaderProps = {
 	title: 'Reading the line',
@@ -310,6 +322,12 @@ const invalidSiteFooterMissingLabel: SiteFooterProps = { brand: ignoredChildren,
 // @ts-expect-error a live label without a status prefix is not a status
 const invalidSiteFooterLabel: SiteFooterProps = { brand: ignoredChildren, tagline: 'Built in Montreal', groups: [], liveLabel: 'Live' };
 const optionalSiteFooter: SiteFooterProps = { brand: ignoredChildren, tagline: 'Built in Montreal', groups: [], statusStart: ignoredChildren };
+const hazardSiteFooter: SiteFooterProps = { ...siteFooterProps, edge: 'hazard' };
+// @ts-expect-error the footer edge is a closed set
+const invalidSiteFooterEdge: SiteFooterProps = { ...siteFooterProps, edge: 'tape' };
+const pageSectionsDivider: PageSectionsProps = { children: ignoredChildren, divider: 'hand-drawn' };
+// @ts-expect-error the page divider is a closed set
+const invalidPageSectionsDivider: PageSectionsProps = { children: ignoredChildren, divider: 'street' };
 
 const errorIllustrationProps: ErrorIllustrationProps = { code: '404', signLabel: 'SAMPLE' };
 
@@ -348,6 +366,18 @@ const separatorDimension: SeparatorProps = { variant: 'dimension', class: 'rule'
 const invalidSeparatorDimensionVertical: SeparatorProps = { variant: 'dimension', orientation: 'vertical' };
 // @ts-expect-error the dimension line has one look: no width cap, size or label
 const invalidSeparatorDimensionLabel: SeparatorProps = { variant: 'dimension', label: 'Section' };
+const separatorHandDrawn: SeparatorProps = { variant: 'hand-drawn', class: 'pen', 'data-testid': 'hand-drawn', ref: null };
+// @ts-expect-error the hand-drawn line is horizontal only
+const invalidSeparatorHandDrawnVertical: SeparatorProps = { variant: 'hand-drawn', orientation: 'vertical' };
+// @ts-expect-error the hand-drawn line has one look: no width cap or label
+const invalidSeparatorHandDrawnLabel: SeparatorProps = { variant: 'hand-drawn', label: 'Section' };
+
+const terminalLine: TerminalPanelProps = { title: 'Archive', children: ignoredChildren, rule: 'line' };
+// @ts-expect-error the terminal rule is a closed set
+const invalidTerminalRule: TerminalPanelProps = { title: 'Archive', children: ignoredChildren, rule: 'pen' };
+const codeBlockLine: CodeBlockProps = { code: 'SELECT 1', title: 'Query', rule: 'line' };
+// @ts-expect-error CodeBlock forwards the same terminal rule set
+const invalidCodeBlockRule: CodeBlockProps = { code: 'SELECT 1', title: 'Query', rule: 'pen' };
 
 const sheetRoot: SheetRootProps = { open: false };
 const sheetTrigger: SheetTriggerProps = {};
@@ -429,6 +459,13 @@ describe('public UI prop contracts', () => {
 		expect(separatorHazard.maxWidth).toBe('100%');
 		expect(separatorGradient.variant).toBe('gradient');
 		expect(separatorDimension.variant).toBe('dimension');
+		expect(separatorHandDrawn.variant).toBe('hand-drawn');
+		expect(clippedRailTitle.clipAtHeader).toBe(false);
+		expect(listingFrameClip.clipAtHeader).toBe(false);
+		expect(hazardSiteFooter.edge).toBe('hazard');
+		expect(pageSectionsDivider.divider).toBe('hand-drawn');
+		expect(terminalLine.rule).toBe('line');
+		expect(codeBlockLine.rule).toBe('line');
 		expect(sheetRoot.open).toBe(false);
 		expect(sheetTrigger).toEqual({});
 		expect(sheetClose).toEqual({});

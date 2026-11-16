@@ -58,13 +58,13 @@
 	.card-surface[data-edge='neutral'] {
 		border-color: var(--border);
 	}
-	.card-surface[data-interactive='true']:is(:hover, :focus-visible, :has(:focus-visible)),
+	.card-surface[data-interactive='true']:is(:hover, :focus-visible, :has(:global(:focus-visible))),
 	:global(:focus-visible) > .card-surface[data-interactive='true'] {
 		border-color: var(--border-brand-active);
 		transform: translateY(-1px);
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.card-surface[data-interactive='true']:is(:hover, :focus-visible, :has(:focus-visible)),
+		.card-surface[data-interactive='true']:is(:hover, :focus-visible, :has(:global(:focus-visible))),
 		:global(:focus-visible) > .card-surface[data-interactive='true'] {
 			transform: none;
 		}

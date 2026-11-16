@@ -1,11 +1,19 @@
 import { getContext, setContext } from 'svelte';
 
 /**
+ * The divider a `PageSections` draws between its sections. `dimension` is THE divider (D22); the
+ * owner's 16 November 2026 ruling makes `hand-drawn` the yesid.dev page default at adoption, and
+ * `hazard` is the kit tape kept for existing callers. Every value is a `Separator` variant.
+ */
+export type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
+
+/**
  * The section registry behind `PageSections` and `PageSection` (D22). Every registered section
  * except the first is preceded by the boundary row, so every section but the last ends with the
- * dimension line and none sits before the footer. Order is registration order, which is document
+ * page's divider and none sits before the footer. Order is registration order, which is document
  * order on the server and during hydration; once mounted, sections re-sort by document position,
- * so a section that mounts later still lands in its place.
+ * so a section that mounts later still lands in its place. `divider` is a getter so a section reads
+ * its parent's current choice and follows a change to the `PageSections` prop.
  */
 export interface PageSectionEntry {
 	element: HTMLElement | null;
@@ -16,12 +24,15 @@ export interface PageSectionsRegistry {
 	register(entry: PageSectionEntry): () => void;
 	isFirst(entry: PageSectionEntry): boolean;
 	refresh(): void;
+	divider(): PageDivider;
 }
 
 const SECTIONS = Symbol('yesid-page-sections');
 const SECTION = Symbol('yesid-page-section');
 
-export function createPageSectionsRegistry(): PageSectionsRegistry {
+export function createPageSectionsRegistry(
+	divider: () => PageDivider = () => 'dimension',
+): PageSectionsRegistry {
 	const entries: PageSectionEntry[] = [];
 	const ordered = (): PageSectionEntry[] => {
 		if (!entries.every((entry) => entry.element?.isConnected)) return entries;
@@ -41,6 +52,7 @@ export function createPageSectionsRegistry(): PageSectionsRegistry {
 		},
 		isFirst: (entry) => ordered()[0] === entry,
 		refresh,
+		divider,
 	};
 }
 

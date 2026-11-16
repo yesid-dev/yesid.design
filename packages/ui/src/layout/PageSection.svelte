@@ -1,11 +1,11 @@
 <!--
   One page section (D22). Inside `PageSections`, every section after the first is preceded by the
-  boundary row, so the section before it ends with the dimension line: a real row in the flow,
-  outside both sections' boxes, so nothing a section paints can cover it. The last section draws
-  none, so nothing sits before the footer. A registered section carries
-  `data-page-section-edges`, which hides the kit's edge rules inside it (`data-edge-rule`:
-  Masthead's and ErrorPage's tape, DetailFrame's rule without a header; base.css). A
-  `PageSection` nested in another, or outside `PageSections`, is a plain `<section>`.
+  boundary row, so the section before it ends with the page's divider: a real row in the flow,
+  outside both sections' boxes, so nothing a section paints can cover it. The parent's `divider`
+  chooses the stroke; the last section draws none, so nothing sits before the footer. A registered
+  section carries `data-page-section-edges`, which hides the kit's edge rules inside it
+  (`data-edge-rule`: Masthead's and ErrorPage's tape, DetailFrame's rule without a header; base.css).
+  A `PageSection` nested in another, or outside `PageSections`, is a plain `<section>`.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -32,6 +32,8 @@
 	const nested = insidePageSection();
 	const registry = nested ? undefined : pageSectionsRegistry();
 	provideInsidePageSection(nested || registry !== undefined);
+	// The parent PageSections owns the divider choice; reading it here keeps a prop change reactive.
+	const divider = $derived(registry?.divider() ?? 'dimension');
 
 	let element = $state<HTMLElement>();
 	let first = $state(true);
@@ -49,7 +51,7 @@
 </script>
 
 {#if registry && !first}
-	<Separator variant="dimension" class="page-section-boundary" data-slot="page-section-boundary" />
+	<Separator variant={divider} class="page-section-boundary" data-slot="page-section-boundary" />
 {/if}
 <section
 	bind:this={element}

@@ -60,7 +60,9 @@
 	.product-brand {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5em;
+		/* Inside SiteHeader's pill the divider takes the pill's one split space, the same on both
+		   sides as every other navbar `|`; elsewhere the cluster keeps its own 0.5em. */
+		gap: var(--nav-split-space, 0.5em);
 		min-width: 0;
 		line-height: 1.2;
 	}

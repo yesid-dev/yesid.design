@@ -103,6 +103,14 @@ hidden from assistive technology (`aria-hidden="true"`, `role="none"`). The `.di
 in `base.css` draws it, so it needs `@yesid/ui/base.css`. Use it by hand for a break inside a
 section; between sections, let `PageSections` draw it (see [Page sections](#page-sections)).
 
+`variant="hand-drawn"` is the owner's drawn page divider (16 November 2026): one slightly irregular
+orange pen stroke, at most 1px off true, in the blueprint ink (`--primary` through `currentColor`),
+8px tall and edge to edge. It is one decorative inline SVG path with round caps and
+`vector-effect: non-scaling-stroke`, so the stroke stays 1.25px at every width: no stamps, ticks,
+glow, shadow or animation. Like the dimension line it is horizontal only, has no width cap or
+label, and is hidden from assistive technology; `base.css` supplies `.hand-drawn-line` and
+`.hand-drawn-line-art`. yesid.dev opts its page default to it through `PageSections`.
+
 ### Sheet
 
 Sheet exports named prop types for Root, Trigger, Close, Portal, Content, Overlay, Header, Footer,
@@ -193,7 +201,8 @@ A solid panel with a lit top bevel (`edge-highlight`). Only a card that acts rea
 `interactive` on a card that is a link or control, or contains them. Hover, keyboard focus on the
 card or a whole-card link that wraps it, and keyboard focus on a link or control inside it firm the
 border and raise the card one pixel (no rise under reduced motion), the same in light and dark,
-with no glow and no shadow. A static card stays still under the pointer. A card with several links
+with no glow and no shadow. A focus inside the card matches a product-owned link or control passed
+as children too, not only kit components. A static card stays still under the pointer. A card with several links
 keeps them as separate targets; never wrap them in a whole-card link.
 
 - `edge="neutral"` draws the edge in `--border` instead of the orange `--border-brand`: the calm
@@ -371,10 +380,17 @@ A steady block cursor in `accent` (`accent-text` in light).
 
 `TerminalPanel` is the terminal window: a title bar with the
 `title`, an optional `tag` and `status` and an `actions` snippet, a rule (`rule`: `hazard` tape by
-default, or `dimension` for the dimension line, D22), the body (pass
-`noPadding` when the content pads itself) and an optional `footer` readout of label and value
+default, `dimension` for the dimension line, D22, or `line` for one solid yellow line), the body
+(pass `noPadding` when the content pads itself) and an optional `footer` readout of label and value
 pairs. Extra attributes go to the root. Its look comes from the `.terminal-*` classes in
 `base.css`, so markup rendered on the server can wear the same chrome.
+
+`rule="line"` is the owner's live QA line (16 November 2026): one solid yellow line
+(`--accent`) replaces the grey hairline under the title bar, and the footer's top boundary takes
+the same yellow when a footer is present. It renders no `Separator`, so there is no orange
+dimension or hazard rule and no second stroke. The presentation is the root class
+`terminal-rule-line`, so server-rendered `<div class="terminal terminal-rule-line">` markup gets
+the same line; `CodeBlock` forwards the same `rule` values.
 
 There is no lamp or colored window chrome by default. To report a status the caller can verify,
 pass `signal={{ color: 'green', label: 'Live feed', live: true }}`. `color` uses `StatusDotColor`;
@@ -384,7 +400,8 @@ motion are also still. `status` remains independent text.
 Removing the automatic green pulse corrects an unmeasured status claim; existing callers need
 no prop changes unless they want to report a verified signal.
 
-`CodeBlock` puts source in a `TerminalPanel` with the `language` as its tag. Pass `copy` labels
+`CodeBlock` puts source in a `TerminalPanel` with the `language` as its tag. `rule` takes the same
+`hazard`, `dimension` and `line` values, so a CMS or docs code panel can use the yellow line. Pass `copy` labels
 to show a copy button; it copies `code` and shows ✓ for two seconds, or `copy.failed` if the
 clipboard refuses, and a polite status announces `copy.copied` or `copy.failed`. Highlight on the
 server with `@yesid/seo-kit/highlight` and render its markup as `children` inside
@@ -605,7 +622,9 @@ through `scrollChain`.
 From 1024px one line parts the header from the list: the rule under the header. The search block
 has no dashed rule of its own. The phone `filterLabel` button keeps the standard focus ring beside
 its colour change. The edge title is a decorative `RailTitle` (the `heading` h1 stays the page's
-heading), centred in a column that stays in view.
+heading), centred in a column that stays in view. `clipAtHeader` forwards the same `RailTitle`
+option (default true) so a listing can stop the header clip without internal CSS, keeping the edge
+column and metro decoration.
 
 `resultCountText` (optional) is the result count in words, for example from `filterCountText`.
 The frame keeps a visually hidden polite status (`role="status"`) in the results column for as long
@@ -813,6 +832,16 @@ required, with an empty footer string hiding it. The header opens with the named
 Each group has `{ label, items }`. When supplied, groups replace `menuItems`, including an empty
 array. `menuItems` is now optional and defaults to an empty array; existing flat menus are unchanged.
 Keep every header destination in the selected menu source. Headings use the supplied case and copy.
+Grouped menus lay out as organized columns from 768px (one column per group while they fit, then
+wrapping) and as one column below it; each heading still labels its own list and reading and tab
+order stay group order across the columns.
+
+Every vertical divider in the pill takes one inline space on both sides, from `--nav-split-space`
+on `.nav-pill`: 20px by default and 10px, 4px and 2px at the phone compaction tiers. `ProductBrand`
+inside the pill uses the same value, so "yesid. | Transit" and the kit's own `|` agree. A product
+brand snippet that draws its own `|` owns that spacing: use `ProductBrand`, or space its divider
+with `var(--nav-split-space)` so it matches. The divider space never changes the 44px targets, the
+pill's fit or the link priorities.
 
 `compactControls` is deprecated since v0.44.0: the theme and language toggles stay in the pill
 at every width in every product (owner decision of 14 November 2026, `DECISIONS.md` D19). Omit
@@ -874,12 +903,14 @@ the footer. A page composes its sections with them and draws no divider itself.
 `PageSections` renders a `<div>` and `PageSection` a `<section>`; both forward their attributes.
 Each `PageSection` registers with the nearest `PageSections` at any depth, so product wrappers do
 not matter, and every registered section after the first is preceded by a boundary row (a
-`Separator variant="dimension"` with `data-slot="page-section-boundary"`). The row is in the flow,
-outside both sections' boxes and as wide as `PageSections` (make that full-bleed for an
-edge-to-edge line), so a section's own backgrounds and positioned children cannot paint over it.
-Order is document order, on the server too; a section that mounts later takes its place. Plain
-`<section>`s do not register, and a `PageSection` inside another, or outside `PageSections`, is a
-plain section.
+`Separator` with `data-slot="page-section-boundary"`). `divider` picks that divider for the whole
+page: `dimension` (the default), `hand-drawn` for the owner's drawn page line, or `hazard` for the
+kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
+sections. The row is in the flow, outside both sections' boxes and as wide as `PageSections` (make
+that full-bleed for an edge-to-edge line), so a section's own backgrounds and positioned children
+cannot paint over it. Order is document order, on the server too; a section that mounts later takes
+its place. Plain `<section>`s do not register, and a `PageSection` inside another, or outside
+`PageSections`, is a plain section.
 
 A registered section carries `data-page-section-edges`, and `base.css` hides the kit's edge rules
 inside it (`data-edge-rule`): Masthead's and ErrorPage's tape and DetailFrame's rule without a
@@ -896,7 +927,9 @@ navigation per entry in `groups` (`navLabel` when the accessible name differs fr
 `external` links open in a new tab with `rel="noopener noreferrer"`, and `me` adds `rel="me"` for
 the owner's own profiles; `after` adds controls inside the group), and a status row with
 optional `statusStart`, and, when `statusPrefix` is supplied, a live lamp (`liveLabel` for screen
-readers) and today's date. This self-made status pair is deprecated starting with v0.43.0;
+readers) and today's date. `edge` picks that top edge: `street` (the default) or `hazard`, which
+draws the existing `Separator variant="hazard"` strip (3px, full width) instead of the road
+marking; groups, links, the status row and `data-in-view` behave the same either way. This self-made status pair is deprecated starting with v0.43.0;
 use `statusStart` with a real source, subject and observation time, or omit both props.
 The date describes the visitor's day, not service health. Lamps stay still under the
 no-endless-decorative-loops policy. See [the migration](../../docs/migrations/footer-status.md). The status props form an all-or-nothing union: supply both
@@ -1092,7 +1125,10 @@ sticks in (the nearest scrolling ancestor, else the viewport): a longer title sh
 12px; one that would need less reads horizontally above the content instead. It refits when its
 words, `dot`, `size`, `horizontalSize` or `level` change, when the scrollport or the title resizes, at the breakpoint
 and when the web font loads. As its section scrolls away, the part of the title above the
-clearance line is clipped, so it never paints under the header pill. Below 1024px it reads
+clearance line is clipped, so it never paints under the header pill. `clipAtHeader={false}` removes
+that scroll-applied clip and lets the title leave naturally with its section; sticky placement,
+scrollport fitting, the 12px horizontal fallback, sizing, fonts and cleanup are unchanged. It
+defaults to true. Below 1024px it reads
 horizontally above the content, in SectionHeading's display type, inset by `--space-page-x`.
 `horizontalSize` optionally sets that horizontal font size, including the too-long-to-rotate
 desktop fallback. For example, `horizontalSize="2rem"` gives a 32px title at a 16px root and
@@ -1127,7 +1163,9 @@ the case it is written in. `houseExternal` (default `false`) opens the house lin
 with `rel="noopener noreferrer"`; say so in `houseLabel`, the house link's accessible name.
 `current` marks the product link with `aria-current="page"`. Both links keep a 44px target and
 the shared 2px focus ring; the product name is the foreground colour at rest and the clickable
-orange on hover, without an underline. The divider is `aria-hidden`. The cluster takes
+orange on hover, without an underline. The divider is `aria-hidden`. Inside `SiteHeader` its split
+space is the pill's `--nav-split-space`, the same on both sides as every navbar `|`; elsewhere the
+cluster keeps its 0.5em gap. The cluster takes
 `--text-nav-brand-desktop` (18px) unless a caller class sets another size, and a long name wraps
 between words beside the house mark instead of overflowing. The theme and language toggles stay
 unchanged beside it.

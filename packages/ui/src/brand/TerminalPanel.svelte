@@ -1,8 +1,9 @@
 <!--
   Terminal window: a title bar with an optional caller-labelled signal, a rule under it (hazard tape
-  by default, or `rule="dimension"` for THE divider, D22), a scrolling body
-  and an optional footer readout. Styled by the global `.terminal-*` classes in `base.css`, which
-  server-rendered markup can reuse.
+  by default, `rule="dimension"` for THE divider, D22, or `rule="line"` for one solid yellow line),
+  a scrolling body and an optional footer readout. Styled by the global `.terminal-*` classes in
+  `base.css`, which server-rendered markup can reuse (`.terminal-rule-line` on the root draws the
+  `line` rule without the component).
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -24,8 +25,8 @@
 		/** Controls at the end of the title bar. */
 		actions?: Snippet;
 		footer?: readonly TerminalFooterItem[];
-		/** The rule under the title bar: `hazard` tape (default) or the `dimension` line (THE divider, D22). */
-		rule?: 'hazard' | 'dimension';
+		/** The rule under the title bar: `hazard` tape (default), the `dimension` line (THE divider, D22), or `line` for one solid yellow line in place of the grey hairline. */
+		rule?: 'hazard' | 'dimension' | 'line';
 		/** Drops the body padding for content that pads itself. */
 		noPadding?: boolean;
 		children: Snippet;
@@ -59,7 +60,11 @@
 	onMount(() => { motionAllowed = shouldAnimate('motion-gated'); });
 </script>
 
-<div class={cn('terminal', className)} data-slot="terminal-panel" {...rest}>
+<div
+	class={cn('terminal', rule === 'line' && 'terminal-rule-line', className)}
+	data-slot="terminal-panel"
+	{...rest}
+>
 	<div class="terminal-titlebar">
 		<div class="terminal-titlebar-main">
 			{#if signal}
@@ -82,7 +87,7 @@
 
 	{#if rule === 'dimension'}
 		<Separator variant="dimension" class="terminal-rule" />
-	{:else}
+	{:else if rule === 'hazard'}
 		<Separator variant="hazard" hazardSize="sm" class="terminal-rule" />
 	{/if}
 

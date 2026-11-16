@@ -3,7 +3,7 @@
 	import type { Separator as SeparatorTypes } from 'bits-ui';
 	import type { WithElementRef } from '../../cn/index.js';
 
-	export type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension';
+	export type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension' | 'hand-drawn';
 	export type HazardSize = 'sm' | 'md' | 'lg';
 
 	type CustomSeparatorElementProps = WithElementRef<
@@ -60,11 +60,32 @@
 		label?: never;
 	};
 
+	/**
+	 * The owner's hand-drawn divider (D22, 16 November 2026): one slightly irregular orange stroke,
+	 * as if drawn with a pen on the blueprint paper, edge to edge in the blueprint ink
+	 * (`--primary`), 8px tall, horizontal only, decorative and static.
+	 */
+	type SeparatorHandDrawnProps = WithElementRef<
+		Omit<HTMLAttributes<HTMLDivElement>, 'children'>,
+		HTMLDivElement
+	> & {
+		variant: 'hand-drawn';
+		orientation?: never;
+		child?: never;
+		children?: never;
+		decorative?: never;
+		hazardSize?: never;
+		hazardAngle?: never;
+		maxWidth?: never;
+		label?: never;
+	};
+
 	export type SeparatorProps =
 		| SeparatorDefaultProps
 		| SeparatorHazardProps
 		| SeparatorGradientProps
-		| SeparatorDimensionProps;
+		| SeparatorDimensionProps
+		| SeparatorHandDrawnProps;
 </script>
 
 <script lang="ts">
@@ -173,6 +194,33 @@
 		return { className, dataSlot, nativeProps };
 	}
 
+	function getHandDrawnProps(props: SeparatorHandDrawnProps) {
+		const {
+			variant,
+			orientation,
+			child,
+			children,
+			decorative,
+			hazardSize,
+			hazardAngle,
+			maxWidth,
+			label,
+			class: className,
+			'data-slot': dataSlot = 'separator',
+			...nativeProps
+		} = props;
+		void variant;
+		void orientation;
+		void child;
+		void children;
+		void decorative;
+		void hazardSize;
+		void hazardAngle;
+		void maxWidth;
+		void label;
+		return { className, dataSlot, nativeProps };
+	}
+
 	function getDefaultProps(props: SeparatorDefaultProps) {
 		const {
 			variant,
@@ -242,6 +290,36 @@
 		class={cn('dimension-line', dimension.className)}
 		{...decorativeAttributes}
 	></div>
+{:else if separatorProps.variant === 'hand-drawn'}
+	{@const handDrawn = getHandDrawnProps(separatorProps)}
+	<div
+		{...handDrawn.nativeProps}
+		bind:this={ref}
+		data-slot={handDrawn.dataSlot}
+		data-variant="hand-drawn"
+		class={cn('hand-drawn-line', handDrawn.className)}
+		{...decorativeAttributes}
+	>
+		<!-- One pen stroke: a gentle wobble at most 1px off true, round caps and a stroke that
+		     never scales (vector-effect), stretched to any width. Ink is the wrapper's currentColor. -->
+		<svg
+			class="hand-drawn-line-art"
+			viewBox="0 0 1000 8"
+			preserveAspectRatio="none"
+			focusable="false"
+			aria-hidden="true"
+		>
+			<path
+				d="M1.5 4.6C60 3.4 120 3.5 190 4.3S310 5.4 400 4.5S520 3 610 3.8S760 5.3 850 4.6S960 3.4 998.5 3.9"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.25"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				vector-effect="non-scaling-stroke"
+			/>
+		</svg>
+	</div>
 {:else if separatorProps.variant === 'gradient'}
 	{@const gradient = getGradientProps(separatorProps)}
 	<div

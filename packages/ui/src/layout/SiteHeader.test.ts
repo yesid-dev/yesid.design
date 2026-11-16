@@ -64,6 +64,40 @@ describe('SiteHeader', () => {
 		expect(within(nav.getByRole('list', { name: 'Explore routes' })).getAllByRole('link').map(node => node.textContent?.trim())).toEqual(['One', 'Two']);
 		expect(nav.getAllByRole('link').map(node => node.getAttribute('href'))).toEqual(['/one', '/two', '/three']);
 	});
+	it('keeps flat menus flat and pairs each group heading with its own list in one cell', async () => {
+		const flat = setup();
+		await flat.open();
+		const flatNav = flat.menu()!;
+		expect(flatNav.classList.contains('menu-content-grouped')).toBe(false);
+		expect(flatNav.querySelector('[data-slot="menu-group"]')).toBeNull();
+		flat.unmount();
+
+		const groups = [
+			{ label: 'Explore routes', items: [{ href: '/one', label: 'One' }] },
+			{ label: 'Read the listing', items: [{ href: '/two', label: 'Two' }] },
+			{ label: 'Empty group', items: [] },
+			{ label: 'Get help', items: [{ href: '/three', label: 'Three' }] },
+		];
+		const view = setup({ menuGroups: groups });
+		await view.open();
+		const nav = view.menu()!;
+		expect(nav.classList.contains('menu-content-grouped')).toBe(true);
+		const cells = [...nav.querySelectorAll<HTMLElement>('[data-slot="menu-group"]')];
+		expect(cells).toHaveLength(4);
+		for (const [index, cell] of cells.entries()) {
+			const heading = cell.querySelector('h3')!;
+			const list = cell.querySelector('ul')!;
+			expect(heading.textContent).toBe(groups[index]!.label);
+			expect(heading.nextElementSibling).toBe(list);
+			expect(list.getAttribute('aria-labelledby')).toBe(heading.id);
+			expect(list.querySelectorAll('li')).toHaveLength(groups[index]!.items.length);
+		}
+		expect([...nav.querySelectorAll('.menu-item')].map((node) => node.getAttribute('href'))).toEqual([
+			'/one',
+			'/two',
+			'/three',
+		]);
+	});
 	it('moves a single set of labelled controls into the compact menu and back on resize', async () => {
 		let resize: ((width: number) => void) | undefined;
 		vi.stubGlobal('ResizeObserver', class {

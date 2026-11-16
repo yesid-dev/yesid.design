@@ -9,10 +9,10 @@ import { column, strokes } from './pixels.js';
 const WIDTHS = [320, 390, 768, 1440, 1920];
 const THEMES = ['dark', 'light'] as const;
 
-async function open(page: Page, lang: string, theme: string, width = 1440) {
+async function open(page: Page, lang: string, theme: string, width = 1440, query = '') {
 	await page.setViewportSize({ width, height: 900 });
 	await page.addInitScript((value) => localStorage.setItem('theme', value), theme);
-	await page.goto(`/dividers/${lang}`);
+	await page.goto(`/dividers/${lang}${query}`);
 	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 	await page.evaluate(() => document.fonts.ready);
 }
@@ -113,7 +113,7 @@ for (const theme of THEMES) {
 			}
 		});
 
-		test(`${lang}, ${theme}: the footer's top edge is one dashed line of alternating yellow and white dashes`, async ({ page }, testInfo) => {
+	test(`${lang}, ${theme}: the footer's top edge is one dashed line of alternating yellow and white dashes`, async ({ page }, testInfo) => {
 			test.skip(testInfo.project.name !== 'desktop', 'One run covers both themes');
 			await open(page, lang, theme);
 			const footer = page.getByRole('contentinfo');
@@ -178,4 +178,74 @@ for (const theme of THEMES) {
 			await expectAccessible(page);
 		});
 	}
+}
+
+// Owner live QA, 16 November 2026: the drawn page divider, the hazard footer edge and the one solid
+// yellow terminal line, rendered together in both themes.
+for (const theme of THEMES) {
+	test(`${theme}: hand-drawn dividers, hazard footer edge and yellow terminal line`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run covers both themes');
+		await open(page, 'en', theme, 1440, '?divider=hand-drawn&edge=hazard');
+		const ink = await resolve(page, 'var(--primary)');
+		const yellow = await resolve(page, 'var(--accent)');
+		const { client, sections } = await layout(page);
+		for (const section of sections.slice(0, -1)) {
+			expect(section.lines, section.id).toHaveLength(1);
+			const [line] = section.lines;
+			expect(line!.left, section.id).toBe(0);
+			expect(line!.width, `${section.id} runs edge to edge`).toBe(client);
+			expect(line!.height, section.id).toBe('8px');
+			expect(line!.animation, `${section.id} is static`).toBe('none');
+			expect([line!.ariaHidden, line!.role], section.id).toEqual(['true', 'none']);
+		}
+		const boundaries = page.locator('[data-slot="page-section-boundary"]');
+		await expect(boundaries).toHaveCount(3);
+		for (const boundary of await boundaries.all()) {
+			await expect(boundary).toHaveClass(/hand-drawn-line/);
+			await expect(boundary).toHaveAttribute('data-variant', 'hand-drawn');
+			const path = boundary.locator('svg path');
+			await expect(path).toHaveCount(1);
+			await expect(path).toHaveAttribute('vector-effect', 'non-scaling-stroke');
+			await expect(path).toHaveAttribute('stroke', 'currentColor');
+			await expect(path).toHaveCSS('stroke', ink);
+			await expect(path).toHaveCSS('stroke-width', '1.25px');
+		}
+
+		const footer = page.getByRole('contentinfo');
+		const edge = footer.locator('[data-slot="footer-hazard-edge"]');
+		await expect(edge).toHaveCount(1);
+		await expect(footer.locator('[data-slot="footer-street-edge"]')).toHaveCount(0);
+		expect(await footer.evaluate((node) => node.firstElementChild?.getAttribute('data-slot'))).toBe('footer-hazard-edge');
+		await expect(edge).toHaveAttribute('aria-hidden', 'true');
+		await expect(edge).toHaveCSS('height', '3px');
+		expect(await edge.evaluate((node) => getComputedStyle(node).backgroundImage)).toContain('repeating-linear-gradient');
+
+		const terminal = page.getByTestId('line-terminal');
+		await expect(terminal).toHaveClass(/terminal-rule-line/);
+		await expect(terminal.locator('.terminal-rule, [data-slot="separator"]')).toHaveCount(0);
+		await expect(terminal.locator('.terminal-titlebar')).toHaveCSS('border-bottom-color', yellow);
+		await expect(terminal.locator('.terminal-titlebar')).toHaveCSS('border-bottom-width', '1px');
+		await expect(terminal.locator('.terminal-footer')).toHaveCSS('border-top-color', yellow);
+		await expect(page.getByTestId('dimension-terminal').locator('.dimension-line')).toHaveCount(1);
+
+		// A line panel may contain other panels. Its opt-in must not recolour their own rules.
+		const control = page.getByTestId('default-terminal-control');
+		const controlHeader = await control.locator(':scope > .terminal-titlebar').evaluate(node => getComputedStyle(node).borderBottomColor);
+		const controlFooter = await control.locator(':scope > .terminal-footer').evaluate(node => getComputedStyle(node).borderTopColor);
+		expect(controlHeader).not.toBe(yellow);
+		expect(controlFooter).not.toBe(yellow);
+		const outer = page.getByTestId('nested-line-terminal');
+		await expect(outer.locator(':scope > .terminal-titlebar')).toHaveCSS('border-bottom-color', yellow);
+		await expect(outer.locator(':scope > .terminal-footer')).toHaveCSS('border-top-color', yellow);
+		for (const id of ['nested-default-terminal', 'nested-dimension-terminal']) {
+			const inner = page.getByTestId(id);
+			await expect(inner.locator(':scope > .terminal-titlebar')).toHaveCSS('border-bottom-color', controlHeader);
+			await expect(inner.locator(':scope > .terminal-footer')).toHaveCSS('border-top-color', controlFooter);
+		}
+		const defaultTape = await control.locator(':scope > .terminal-rule').evaluate(node => getComputedStyle(node).backgroundImage);
+		expect(defaultTape).toContain('repeating-linear-gradient');
+		await expect(page.getByTestId('nested-default-terminal').locator(':scope > .terminal-rule')).toHaveCSS('background-image', defaultTape);
+		await expect(page.getByTestId('nested-dimension-terminal').locator(':scope > .terminal-rule')).toHaveClass(/dimension-line/);
+		await expect(page.getByTestId('nested-default-code').locator('.terminal-titlebar')).toHaveCSS('border-bottom-color', controlHeader);
+	});
 }

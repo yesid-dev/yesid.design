@@ -7,6 +7,7 @@ import {
 	LANGUAGE_LABEL,
 	LINKS,
 	LOCALES,
+	MENU_GROUP_LABELS,
 	MENU_ITEMS,
 	SEARCH_LABEL,
 	languageHref,
@@ -78,6 +79,66 @@ test('nav text keeps one size at every width and the pill fits the screen', asyn
 		expect(sizes.wordmark, `wordmark at ${width}px`).toBe('18px');
 		expect(sizes.left, `pill left edge at ${width}px`).toBeGreaterThanOrEqual(0);
 		expect(sizes.right, `pill right edge at ${width}px`).toBeLessThanOrEqual(width);
+	}
+});
+
+// One divider space at every width, for the kit's `|` and for a product brand's own `|` inside
+// the pill (owner live QA, 16 November 2026). Both sides of every divider take the same value.
+test('every navbar divider keeps the same space on both sides, with a kit or product brand', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run resizes through both widths');
+	const cases = [
+		{ brand: false, long: false },
+		{ brand: true, long: false },
+		{ brand: false, long: true },
+		{ brand: true, long: true },
+	];
+	for (const width of [390, 1440]) {
+		for (const variant of cases) {
+			const query = new URLSearchParams();
+			if (variant.brand) query.set('brand', 'product');
+			if (variant.long) query.set('nav', 'long');
+			await page.setViewportSize({ width, height: 900 });
+			await visitHeader(page, `${HOME}${query.toString() ? `?${query}` : ''}`);
+			const where = `${width}px, ${variant.brand ? 'product' : 'kit'} brand, ${variant.long ? 'long' : 'short'} nav`;
+			const spacing = await page.getByTestId('nav-pill').evaluate((nav) => {
+				const shown = (node: Element) => node.checkVisibility({ visibilityProperty: true });
+				const box = (node: Element) => node.getBoundingClientRect();
+				const brand = nav.querySelector<HTMLElement>('[data-slot="product-brand"]');
+				const brandDivider = nav.querySelector<HTMLElement>('.product-brand-divider');
+				return {
+					split: Number.parseFloat(getComputedStyle(nav).getPropertyValue('--nav-split-space')),
+					dividers: [...nav.querySelectorAll<HTMLElement>('.nav-divider')].filter(shown).map((divider) => {
+						const style = getComputedStyle(divider);
+						return { left: Number.parseFloat(style.marginLeft), right: Number.parseFloat(style.marginRight) };
+					}),
+					brand: brand && brandDivider && shown(brandDivider)
+						? {
+								gap: Number.parseFloat(getComputedStyle(brand).columnGap),
+								targets: [brand.querySelector('[data-slot="wordmark"]')!, brand.querySelector('[data-slot="product-brand-name"]')!]
+									.map((target) => Math.min(box(target).width, box(target).height)),
+							}
+						: null,
+					overflow: document.documentElement.scrollWidth > innerWidth,
+					controls: [nav.querySelector('[role="switch"]')!, nav.querySelector('[data-testid="language-toggle"]')!]
+						.filter((control): control is HTMLElement => control !== null)
+						.map((control) => Math.min(box(control).width, box(control).height)),
+				};
+			});
+
+			expect(spacing.split, where).toBe(width > 479 ? 20 : 4);
+			expect(spacing.dividers.length, `${where}: at least one divider`).toBeGreaterThan(0);
+			for (const divider of spacing.dividers) {
+				expect(divider.left, `${where}: left side`).toBe(spacing.split);
+				expect(divider.right, `${where}: right side`).toBe(spacing.split);
+			}
+			if (variant.brand) {
+				expect(spacing.brand, where).not.toBeNull();
+				expect(spacing.brand!.gap, `${where}: the product brand's | uses the same space`).toBe(spacing.split);
+				for (const target of spacing.brand!.targets) expect(target, `${where}: 44px brand target`).toBeGreaterThanOrEqual(44);
+			}
+			for (const control of spacing.controls) expect(control, `${where}: 44px control target`).toBeGreaterThanOrEqual(44);
+			expect(spacing.overflow, `${where}: the pill never overflows the page`).toBe(false);
+		}
 	}
 });
 
@@ -574,6 +635,94 @@ for (const width of [390, 599, 600, 1024, 1440]) {
 		await page.keyboard.press('Escape');
 		await expect(menu(page)).toBeHidden();
 		await expect(toggle(page)).toBeFocused();
+	});
+}
+
+test('grouped menus use one organized column per group on desktop and one column on phones', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run sets every width, group count and language');
+	const cases = [
+		{ count: 2 as const, locale: 'en', width: 390, columns: 1 },
+		{ count: 4 as const, locale: 'fr', width: 390, columns: 1 },
+		{ count: 2 as const, locale: 'en', width: 1440, columns: 2 },
+		{ count: 4 as const, locale: 'fr', width: 1440, columns: 4 },
+	];
+	for (const { count, locale, width, columns } of cases) {
+		const where = `${count} groups, ${locale}, ${width}px`;
+		await page.setViewportSize({ width, height: 900 });
+		await visitHeader(page, `${HOME}?groups=${count}&lang=${locale}`);
+		const largeText = width < 600;
+		if (largeText) await page.evaluate(() => { document.documentElement.style.fontSize = '20px'; });
+		try {
+			await toggle(page).click();
+			await expect(menu(page)).toBeVisible();
+			const nav = menuLinks(page);
+			const labels = MENU_GROUP_LABELS[locale as 'en' | 'fr'][count];
+			await expect(nav.getByRole('heading', { level: 3 })).toHaveText([...labels]);
+
+			const layout = await nav.evaluate((node) => {
+				const groups = [...node.querySelectorAll<HTMLElement>('[data-slot="menu-group"]')];
+				const box = (group: HTMLElement) => group.getBoundingClientRect();
+				return {
+					lefts: [...new Set(groups.map((group) => Math.round(box(group).left)))].sort((a, b) => a - b),
+					tops: groups.map((group) => Math.round(box(group).top)),
+					pairs: groups.map((group) => {
+						const heading = group.querySelector('h3')!;
+						const list = group.querySelector('ul')!;
+						return {
+							heading: heading.textContent,
+							labelledby: list.getAttribute('aria-labelledby'),
+							id: heading.id,
+							next: heading.nextElementSibling === list,
+							links: [...list.querySelectorAll('a')].map((link) => link.getAttribute('href')),
+						};
+					}),
+					hrefs: [...node.querySelectorAll<HTMLAnchorElement>('.menu-item')].map((link) => link.getAttribute('href')),
+					overflow: document.documentElement.scrollWidth > innerWidth,
+				};
+			});
+
+			expect(layout.lefts, `${where}: organized columns`).toHaveLength(columns);
+			expect(new Set(layout.tops).size, `${where}: groups share the row or stack`).toBe(width < 768 ? count : 1);
+			for (const [index, pair] of layout.pairs.entries()) {
+				expect(pair.heading, `${where}: heading ${index}`).toBe(labels[index]);
+				expect(pair.next, `${where}: heading ${index} labels its list`).toBe(true);
+				expect(pair.labelledby, `${where}: list ${index}`).toBe(pair.id);
+				expect(pair.links.length, `${where}: group ${index} keeps its items`).toBeGreaterThan(0);
+			}
+			expect(layout.hrefs, `${where}: reading order across groups`).toEqual(MENU_ITEMS.map((item) => item.href));
+			expect(layout.overflow, `${where}: no horizontal overflow`).toBe(false);
+			for (const label of labels) await expect(nav.getByRole('list', { name: label })).toHaveCount(1);
+			await expect(page.getByRole('switch', { name: LABELS.theme })).toHaveCount(1);
+			await expect(language(page)).toHaveCount(1);
+
+			await toggle(page).focus();
+			await page.keyboard.press('Tab');
+			await expect(nav.getByRole('link', { name: new RegExp(`^${literal(MENU_ITEMS[0]!.label)}`) })).toBeFocused();
+			await page.keyboard.press('Escape');
+			await expect(menu(page)).toBeHidden();
+			await expect(toggle(page)).toBeFocused();
+		} finally {
+			if (largeText) await page.evaluate(() => { document.documentElement.style.removeProperty('font-size'); });
+		}
+	}
+});
+
+for (const theme of ['dark', 'light'] as const) {
+	test(`four grouped columns keep their layout and accessibility in the ${theme} theme`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run covers both themes');
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto(`${HOME}?groups=4&lang=fr`);
+		await page.evaluate((value) => localStorage.setItem('theme', value), theme);
+		await page.reload();
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		await toggle(page).click();
+		const nav = menuLinks(page);
+		const tops = await nav.evaluate((node) =>
+			[...node.querySelectorAll<HTMLElement>('[data-slot="menu-group"]')].map((group) => Math.round(group.getBoundingClientRect().top)),
+		);
+		expect(new Set(tops).size, `${theme}: one row of columns`).toBe(1);
+		await expect(nav.getByRole('heading', { level: 3 })).toHaveText([...MENU_GROUP_LABELS.fr[4]]);
+		await expectAccessible(page);
 	});
 }
 

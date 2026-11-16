@@ -11,8 +11,8 @@ async function ready(page: Page) {
 	await page.evaluate(() => document.fonts.ready);
 }
 
-async function open(page: Page, lang: RailLang) {
-	await page.goto(`/rail-title/${lang}`);
+async function open(page: Page, lang: RailLang, query = '') {
+	await page.goto(`/rail-title/${lang}${query}`);
 	await ready(page);
 	// Reopening the same page can restore the previous scroll position; start from the top.
 	await scrollTo(page, 0);
@@ -246,6 +246,63 @@ test('a departing title never paints under a header pill that spans the rails', 
 			}
 		}
 	}
+});
+
+test('clipAtHeader={false} lets a departing title leave naturally while sticky placement and fitting stay', async ({ page }) => {
+	test.skip(page.viewportSize()!.width < DESKTOP_MIN_WIDTH, 'Rail titles are sticky from 1024px');
+	await page.setViewportSize({ width: 1280, height: 800 });
+	const index = RAIL_COPY.en.sections.findIndex((section) => section.id === 'work');
+	const departing = async (query: string) => {
+		await open(page, 'en', query);
+		const start = await sectionTop(page, 'work');
+		const height = await page.locator('#work').evaluate((node) => node.getBoundingClientRect().height);
+		await scrollTo(page, start + height - 40);
+		const state = await snapshot(page);
+		return {
+			title: state.sections[index],
+			pill: state.pill!,
+			clip: await page.locator('#work [data-slot="rail-title"]').evaluate((node) => getComputedStyle(node).clipPath),
+		};
+	};
+
+	// The default still clips the part of the departing title above the clearance line.
+	const on = await departing('');
+	expect(on.clip).toMatch(/inset\([1-9]\d*px/);
+	if (on.title.painted) {
+		expect(on.title.painted.top, 'the default never paints above the pill').toBeGreaterThanOrEqual(on.pill.bottom);
+	}
+	// The opt-out removes the clip and shows the departing title above the clearance line, with every
+	// other behaviour unchanged.
+	const off = await departing('?clip=off');
+	expect(off.clip).toBe('none');
+	expect(off.title.painted).not.toBeNull();
+	expect(off.title.painted!.top, 'the opt-out lets the title leave naturally').toBeLessThan(off.pill.bottom);
+	expect(off.title.fontSize).toBe(on.title.fontSize);
+	expect(off.title.writing).toBe(on.title.writing);
+});
+
+test('clipAtHeader follows a prop change in a nested scroller, both ways', async ({ page }) => {
+	test.skip(page.viewportSize()!.width < DESKTOP_MIN_WIDTH, 'Rail titles are sticky from 1024px');
+	await page.setViewportSize({ width: 1280, height: 900 });
+	await page.goto('/rail-title-fit?scroller=400&clip=off');
+	await ready(page);
+	const title = page.locator('#fit [data-slot="rail-title"]');
+	const clip = () => title.evaluate((node) => getComputedStyle(node).clipPath);
+	const start = await sectionTop(page, 'fit');
+	const height = await page.locator('#fit').evaluate((node) => node.getBoundingClientRect().height);
+	await scrollTo(page, start + height - 60);
+
+	await expect.poll(clip, { message: 'the opt-out applies inside the nested scrollport' }).toBe('none');
+	const port = await snapshot(page);
+	const state = port.sections[0];
+	expect(state.fontSize).toBeGreaterThanOrEqual(FLOOR_PX);
+	expect(state.painted).not.toBeNull();
+	expect(state.painted!.bottom).toBeLessThanOrEqual(port.port.bottom + 0.5);
+
+	await page.getByTestId('toggle-clip').click();
+	await expect.poll(clip, { message: 'turning the clip back on applies it' }).toMatch(/^inset\([1-9]/);
+	await page.getByTestId('toggle-clip').click();
+	await expect.poll(clip, { message: 'the clip can be turned off again' }).toBe('none');
 });
 
 test('a long rotated title shrinks to fit under the pill on a short window', async ({ page }) => {

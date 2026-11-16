@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { RailTitle, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { SiteHeader } from '@yesid/ui/layout';
 	import { PRODUCT_COPY, PRODUCT_LANGS, PRODUCT_LANGUAGE_NAMES} from '#lib/gallery/product-header-fixture.ts';
@@ -10,6 +11,10 @@
 	const header = $derived(PRODUCT_COPY[data.lang]);
 	const copy = $derived(RAIL_COPY[data.lang]);
 	const home = $derived(`/rail-title/${data.lang}`);
+	// `?clip=off` exercises the RailTitle clip opt-out on this page.
+	let params = $state(new URLSearchParams());
+	onMount(() => (params = new URLSearchParams(page.url.searchParams.toString())));
+	const clipAtHeader = $derived(params.get('clip') !== 'off');
 </script>
 
 <svelte:head>
@@ -38,7 +43,7 @@
 			class="border-t border-border-subtle py-12"
 			class:bg-card={index % 2 === 1}
 		>
-			<RailTitle heading={section.heading} side={section.side} titleId="{section.id}-title">
+			<RailTitle heading={section.heading} side={section.side} titleId="{section.id}-title" {clipAtHeader}>
 				<div class="mx-auto grid max-w-3xl gap-4 px-[var(--space-page-x)]" data-testid="rail-content-{section.id}">
 					{#each { length: section.paragraphs } as _, paragraph (paragraph)}
 						<p class="rounded-md border border-border bg-background p-4 text-reading leading-[1.7]">{copy.paragraph}</p>

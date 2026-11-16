@@ -17,6 +17,8 @@
 	const offset = $derived(params.get('offset'));
 	const scroller = $derived(params.get('scroller'));
 	const horizontalSize = $derived(params.get('horizontalSize') ?? undefined);
+	let clipOverride = $state<boolean | null>(null);
+	const clipAtHeader = $derived(clipOverride ?? params.get('clip') !== 'off');
 	let length = $state<Length>('short');
 	let dot = $state(true);
 	let size = $state<string | undefined>(undefined);
@@ -35,6 +37,7 @@
 		{/each}
 		<button type="button" class="min-h-11 rounded-md border border-border px-3" data-testid="toggle-dot" onclick={() => (dot = !dot)}>dot</button>
 		<button type="button" class="min-h-11 rounded-md border border-border px-3" data-testid="size-large" onclick={() => (size = '5rem')}>5rem</button>
+		<button type="button" class="min-h-11 rounded-md border border-border px-3" data-testid="toggle-clip" onclick={() => (clipOverride = !clipAtHeader)}>clip</button>
 	</div>
 	<div
 		data-testid="rail-scroller"
@@ -43,7 +46,7 @@
 		{#key scroller}
 		{#each ['fit', 'after'] as id (id)}
 			<section id={id} aria-labelledby="{id}-title" data-testid="rail-section-{id}" class="py-12">
-				<RailTitle heading={id === 'fit' ? titles[length] : 'Suite'} side={id === 'fit' ? 'left' : 'right'} titleId="{id}-title" dot={id === 'fit' ? dot : true} size={id === 'fit' ? size : undefined} horizontalSize={id === 'fit' ? horizontalSize : undefined}>
+				<RailTitle heading={id === 'fit' ? titles[length] : 'Suite'} side={id === 'fit' ? 'left' : 'right'} titleId="{id}-title" dot={id === 'fit' ? dot : true} size={id === 'fit' ? size : undefined} horizontalSize={id === 'fit' ? horizontalSize : undefined} clipAtHeader={id === 'fit' ? clipAtHeader : undefined}>
 					<div class="mx-auto grid max-w-3xl gap-4 px-[var(--space-page-x)]" data-testid="rail-content-{id}">
 						{#each { length: 12 } as _, index (index)}
 							<p class="rounded-md border border-border p-4">{paragraph}</p>

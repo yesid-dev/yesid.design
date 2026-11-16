@@ -5,6 +5,7 @@
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
+	import type { TerminalPanelProps } from './TerminalPanel.svelte';
 
 	export interface CodeBlockCopyLabels {
 		label: string;
@@ -22,8 +23,8 @@
 		language?: string;
 		/** Shows a copy button with these labels. */
 		copy?: CodeBlockCopyLabels;
-		/** The rule under the title bar: `hazard` tape (default) or the `dimension` line (THE divider, D22). */
-		rule?: 'hazard' | 'dimension';
+		/** The rule under the title bar: `hazard` tape (default), the `dimension` line (D22) or the solid yellow `line`. */
+		rule?: TerminalPanelProps['rule'];
 		children?: Snippet;
 		class?: string;
 	}

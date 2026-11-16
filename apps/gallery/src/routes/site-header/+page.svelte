@@ -7,6 +7,7 @@
 	import FileText from '@lucide/svelte/icons/file-text';
 	import LayoutList from '@lucide/svelte/icons/layout-list';
 	import PanelTop from '@lucide/svelte/icons/panel-top';
+	import { ProductBrand } from '@yesid/ui/brand';
 	import { SiteHeader, SiteFooter } from '@yesid/ui/layout';
 	import {
 		HOME,
@@ -15,9 +16,11 @@
 		LANGUAGE_NAMES,
 		LINKS,
 		LOCALES,
+		LONG_LINKS,
 		MENU_ITEMS,
 		SEARCH_LABEL,
 		languageHref,
+		menuGroupsFor,
 	} from '#lib/gallery/site-header-fixture.ts';
 
 	const navigation = getContext<NavigationLifecycle>('gallery-navigation');
@@ -30,8 +33,25 @@
 	};
 	const compact = $derived(compactFixture || (browser && page.url.searchParams.has('compact')));
 	const scrambled = $derived(browser && page.url.searchParams.has('scrambled'));
-	const groupedItems = MENU_ITEMS.map(item => ({ ...item, icon: ICONS[item.href] }));
+	const productBrand = $derived(browser && page.url.searchParams.get('brand') === 'product');
+	const longNav = $derived(browser && page.url.searchParams.get('nav') === 'long');
+	const links = $derived(longNav ? LONG_LINKS : LINKS);
 	const locale = $derived((browser && page.url.searchParams.get('lang')) || LOCALES[0]);
+	// `?groups=2|4` exercises the grouped menu layout at any width, independently of the deprecated
+	// compact shell; the compact fixture keeps its two groups.
+	const groupCount = $derived.by(() => {
+		const requested = browser ? page.url.searchParams.get('groups') : null;
+		if (requested === '4') return 4;
+		if (requested === '2') return 2;
+		return compact ? 2 : 0;
+	});
+	const groups = $derived.by(() => {
+		const built = groupCount === 4 ? menuGroupsFor(4, locale) : groupCount === 2 ? menuGroupsFor(2, compact ? 'en' : locale) : undefined;
+		return built?.map(group => ({
+			...group,
+			items: group.items.map(item => ({ ...item, icon: ICONS[item.href] })),
+		}));
+	});
 </script>
 
 <svelte:head>
@@ -51,12 +71,23 @@
 	<button type="button" class="min-h-11 px-3 text-small" onclick={() => document.querySelector<HTMLInputElement>('#fixture-search')?.focus()}>Search</button>
 {/snippet}
 
+{#snippet productBrandMarkup()}
+	<ProductBrand
+		product="Transit"
+		href={HOME}
+		houseHref="https://yesid.dev"
+		houseLabel="yesid.dev (opens in a new tab)"
+		houseExternal
+	/>
+{/snippet}
+
 <SiteHeader
 	{navigation}
 	home={HOME}
-	links={LINKS}
+	links={links}
 	menuItems={MENU_ITEMS.map((item) => ({ ...item, icon: ICONS[item.href] }))}
-	menuGroups={compact ? [{ label: 'Explore routes', items: groupedItems.slice(0, 2) }, { label: 'More destinations', items: groupedItems.slice(2) }] : undefined}
+	menuGroups={groups}
+	brand={productBrand ? productBrandMarkup : undefined}
 	compactControls={compact}
 	actions={compact && !compactFixture ? action : undefined}
 	labels={LABELS}

@@ -69,6 +69,17 @@ describe('TerminalPanel', () => {
 		expect(line.nextElementSibling?.classList.contains('terminal-body')).toBe(true);
 	});
 
+	it('draws rule="line" as one yellow title-bar line, with no separator and no second stroke', () => {
+		const footer = [{ label: 'Rows', value: '42' }];
+		const { container } = render(TerminalPanel, { props: { title: 'Archive', children, rule: 'line', footer } });
+		const root = container.querySelector<HTMLElement>('.terminal')!;
+		expect(root.classList.contains('terminal-rule-line')).toBe(true);
+		expect(container.querySelectorAll('.terminal-rule, [data-slot="separator"]')).toHaveLength(0);
+		const titlebar = container.querySelector('.terminal-titlebar')!;
+		expect(titlebar.nextElementSibling?.classList.contains('terminal-body')).toBe(true);
+		expect(container.querySelectorAll('.terminal-footer')).toHaveLength(1);
+	});
+
 	it('needs only a title and children', () => {
 		render(TerminalPanel, { props: {
 			title: 'Query console',

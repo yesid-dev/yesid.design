@@ -79,6 +79,13 @@ describe('CodeBlock', () => {
 		expect(line!.classList.contains('dimension-line')).toBe(dimension);
 	});
 
+	it('passes rule="line" to its panel as the yellow title-bar line, with no separator', () => {
+		const { container } = render(CodeBlock, { props: { code, title: 'Query', rule: 'line' } });
+		const root = container.querySelector<HTMLElement>('.terminal-code')!;
+		expect(root.classList.contains('terminal-rule-line')).toBe(true);
+		expect(container.querySelectorAll('.terminal-rule, [data-slot="separator"]')).toHaveLength(0);
+	});
+
 	it('replaces the plain code with highlighted children', () => {
 		render(CodeBlock, { props: {
 			code, title: 'Query',

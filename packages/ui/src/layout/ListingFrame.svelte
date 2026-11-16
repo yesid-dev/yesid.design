@@ -29,6 +29,12 @@
 		heading: string;
 		/** Defaults to `heading`. Decorative, so hidden from assistive technology. Expressive only. */
 		edgeTitle?: string;
+		/**
+		 * Forwards `RailTitle`'s `clipAtHeader`. Defaults to true: a departing edge title is clipped
+		 * above the header clearance line. Set false to let it leave naturally with its section,
+		 * keeping the frame's geometry, sticky edge column and metro decoration unchanged.
+		 */
+		clipAtHeader?: boolean;
 		subtitle: string;
 		description?: string;
 		/** Header artwork, usually a `BlueprintShell`, drawn in the frame's `--blueprint-ink`. Expressive only. */
@@ -63,6 +69,7 @@
 		rule,
 		heading,
 		edgeTitle,
+		clipAtHeader,
 		subtitle,
 		description,
 		blueprint,
@@ -100,7 +107,7 @@
 >
 	{#if !reading}
 		<div class="edge-title-column" data-slot="listing-edge-title" aria-hidden="true">
-			<RailTitle heading={edgeTitle ?? heading} decorative size="clamp(3rem, 4vw, 3.5rem)" class="edge-title" />
+			<RailTitle heading={edgeTitle ?? heading} decorative size="clamp(3rem, 4vw, 3.5rem)" class="edge-title" {clipAtHeader} />
 			<div class="metro-dots metro-dots-top">
 				<div class="metro-line"></div>
 				<div class="metro-dot metro-dot-sm"></div>
