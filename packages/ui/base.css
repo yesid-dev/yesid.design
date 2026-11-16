@@ -404,10 +404,10 @@ pre, code, table {
 	   footer is present. No separator element is rendered in this mode: no orange dimension line,
 	   no hazard tape, no second stroke. Global, so server-rendered `.terminal.terminal-rule-line`
 	   markup wears it too. */
-	.terminal.terminal-rule-line .terminal-titlebar {
+	.terminal.terminal-rule-line > .terminal-titlebar {
 		border-bottom-color: var(--accent);
 	}
-	.terminal.terminal-rule-line .terminal-footer {
+	.terminal.terminal-rule-line > .terminal-footer {
 		border-top-color: var(--accent);
 	}
 	.terminal-code-body pre {

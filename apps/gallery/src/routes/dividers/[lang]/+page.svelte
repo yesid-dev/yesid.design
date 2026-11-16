@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { TerminalPanel } from '@yesid/ui/brand';
+	import { CodeBlock, TerminalPanel } from '@yesid/ui/brand';
 	import { PageSection, PageSections, SiteFooter } from '@yesid/ui/layout';
 	import { Separator } from '@yesid/ui/separator';
 	import { DIVIDER_COPY, DIVIDER_LANGS } from '#lib/gallery/dividers-fixture.ts';
@@ -62,6 +62,20 @@
 						</TerminalPanel>
 						<TerminalPanel title="Ligne jaune" rule="line" class="mt-4" footer={[{ label: 'Lignes', value: '1' }]} data-testid="line-terminal">
 							<p class="font-mono text-small">rule="line"</p>
+						</TerminalPanel>
+						<TerminalPanel title="Default control" class="mt-4" footer={[{ label: 'Lines', value: '1' }]} data-testid="default-terminal-control">
+							<p class="font-mono text-small">Default terminal rules remain independent.</p>
+						</TerminalPanel>
+						<TerminalPanel title="Nested terminals" rule="line" class="mt-4" footer={[{ label: 'Panels', value: '3' }]} data-testid="nested-line-terminal">
+							<TerminalPanel title="Nested default" footer={[{ label: 'Lines', value: '1' }]} data-testid="nested-default-terminal">
+								<p class="font-mono text-small">Default rule.</p>
+							</TerminalPanel>
+							<TerminalPanel title="Nested dimension" rule="dimension" class="mt-4" footer={[{ label: 'Lines', value: '1' }]} data-testid="nested-dimension-terminal">
+								<p class="font-mono text-small">Dimension rule.</p>
+							</TerminalPanel>
+							<div class="mt-4" data-testid="nested-default-code">
+								<CodeBlock title="Nested code" code="const rule = 'default';" />
+							</div>
 						</TerminalPanel>
 					{/if}
 				</div>

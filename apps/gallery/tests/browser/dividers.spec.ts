@@ -227,5 +227,25 @@ for (const theme of THEMES) {
 		await expect(terminal.locator('.terminal-titlebar')).toHaveCSS('border-bottom-width', '1px');
 		await expect(terminal.locator('.terminal-footer')).toHaveCSS('border-top-color', yellow);
 		await expect(page.getByTestId('dimension-terminal').locator('.dimension-line')).toHaveCount(1);
+
+		// A line panel may contain other panels. Its opt-in must not recolour their own rules.
+		const control = page.getByTestId('default-terminal-control');
+		const controlHeader = await control.locator(':scope > .terminal-titlebar').evaluate(node => getComputedStyle(node).borderBottomColor);
+		const controlFooter = await control.locator(':scope > .terminal-footer').evaluate(node => getComputedStyle(node).borderTopColor);
+		expect(controlHeader).not.toBe(yellow);
+		expect(controlFooter).not.toBe(yellow);
+		const outer = page.getByTestId('nested-line-terminal');
+		await expect(outer.locator(':scope > .terminal-titlebar')).toHaveCSS('border-bottom-color', yellow);
+		await expect(outer.locator(':scope > .terminal-footer')).toHaveCSS('border-top-color', yellow);
+		for (const id of ['nested-default-terminal', 'nested-dimension-terminal']) {
+			const inner = page.getByTestId(id);
+			await expect(inner.locator(':scope > .terminal-titlebar')).toHaveCSS('border-bottom-color', controlHeader);
+			await expect(inner.locator(':scope > .terminal-footer')).toHaveCSS('border-top-color', controlFooter);
+		}
+		const defaultTape = await control.locator(':scope > .terminal-rule').evaluate(node => getComputedStyle(node).backgroundImage);
+		expect(defaultTape).toContain('repeating-linear-gradient');
+		await expect(page.getByTestId('nested-default-terminal').locator(':scope > .terminal-rule')).toHaveCSS('background-image', defaultTape);
+		await expect(page.getByTestId('nested-dimension-terminal').locator(':scope > .terminal-rule')).toHaveClass(/dimension-line/);
+		await expect(page.getByTestId('nested-default-code').locator('.terminal-titlebar')).toHaveCSS('border-bottom-color', controlHeader);
 	});
 }
