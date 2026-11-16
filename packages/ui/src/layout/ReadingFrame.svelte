@@ -1,9 +1,9 @@
 <!--
   Experimental. A calm reading frame for legal pages and long prose: an Inter title in sentence
-  case, the real date of the last change, a short summary, a contents list and the body, on a
-  measure of about 65 to 70 characters. No canvas, tape, mono labels, numbering or glow. Products
-  keep the copy, the schema and server rendering; section ids come from language-independent keys,
-  so `#contact` reaches the same section in English, French and Spanish.
+  case, the real date of the last change when the text has one, a short summary, a contents list
+  and the body, on a measure of about 65 to 70 characters. No canvas, tape, mono labels, numbering
+  or glow. Products keep the copy, the schema and server rendering; section ids come from
+  language-independent keys, so `#contact` reaches the same section in English, French and Spanish.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -27,7 +27,8 @@
 	/** Experimental: the shape may change in a minor release, with migration notes. */
 	export interface ReadingFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'children'> {
 		title: string;
-		updated: ReadingFrameUpdated;
+		/** The text's real revision metadata. Omit it when no authored date exists. */
+		updated?: ReadingFrameUpdated;
 		/** A short summary under the date: what the text covers, in two or three sentences. */
 		summary?: Snippet;
 		/** Entries for the built-in contents list. Ids are lowercase ASCII slugs, unique on the page. */
@@ -65,6 +66,18 @@
 		if (days === undefined || day < 1 || day > days) return fail();
 		if (Number(h) > 23 || Number(mi) > 59 || Number(se) > 59 || Number(oh) > 23 || Number(om) > 59) return fail();
 		return datetime;
+	}
+
+	/**
+	 * Returns the validated date for a supplied update, or no date when it is omitted. A null
+	 * update is rejected rather than treated as omission.
+	 */
+	function checkedUpdate(updated: ReadingFrameUpdated | undefined): string | undefined {
+		if (updated === undefined) return undefined;
+		if (!updated || typeof updated !== 'object') {
+			throw new Error('ReadingFrame: updated must be an object with datetime, label and text, or be omitted');
+		}
+		return checkedDatetime(updated.datetime);
 	}
 
 	/** Throws when an id is not a stable slug or appears twice. */
@@ -107,8 +120,8 @@
 	const uid = $props.id();
 	const contentsHeadingId = `${uid}-contents`;
 	// Checked during server rendering too: a malformed date or id fails loudly instead of shipping.
-	// The date is read by the always-rendered <time>, whatever renders the contents.
-	const datetime = $derived(checkedDatetime(updated.datetime));
+	// The date is read by the update row, which is absent when the product has no revision date.
+	const datetime = $derived(checkedUpdate(updated));
 	const entries = $derived(checkedSections(sections, contentsLabel, contents !== undefined));
 	const showBuiltInContents = $derived(!contents && entries.length > 0);
 </script>
@@ -116,10 +129,12 @@
 <article data-slot="reading-frame" class={cn('reading-frame', className)} {...restProps}>
 	<header class="reading-frame__header">
 		<h1 class="reading-frame__title" id={titleId}>{title}</h1>
-		<p class="reading-frame__updated" data-slot="reading-frame-updated">
-			{updated.label}
-			<time {datetime}>{updated.text}</time>
-		</p>
+		{#if datetime !== undefined && updated}
+			<p class="reading-frame__updated" data-slot="reading-frame-updated">
+				{updated.label}
+				<time datetime={datetime}>{updated.text}</time>
+			</p>
+		{/if}
 		{#if summary}
 			<div class="reading-frame__summary" data-slot="reading-frame-summary">{@render summary()}</div>
 		{/if}

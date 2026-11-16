@@ -30,6 +30,33 @@ describe('ReadingFrame (experimental)', () => {
 		expect(markup.indexOf('reading-frame__contents')).toBeLessThan(markup.indexOf('reading-frame__body'));
 	});
 
+	it('omits the update row and time when no update is supplied, keeping the rest of the page', () => {
+		const markup = html({ updated: undefined });
+		expect(markup).not.toContain('reading-frame__updated');
+		expect(markup).not.toContain('<time');
+		expect(markup).not.toContain('Last updated');
+		expect(markup).toMatch(/<h1 class="reading-frame__title[^"]*"[^>]*>Privacy policy<\/h1>/);
+		expect(markup).toContain('What this policy covers.');
+		expect(markup).toContain('href="#data"');
+		expect(markup).toContain('<h2 id="data">Data we keep</h2>');
+		expect(markup).toContain('Only what the form sends.');
+	});
+
+	it('omits the update row without sections or with a product contents snippet', () => {
+		const bare = html({ updated: undefined, sections: undefined, contentsLabel: undefined });
+		expect(bare).not.toContain('reading-frame__updated');
+		expect(bare).not.toContain('<time');
+		expect(bare).not.toContain('reading-frame__contents');
+		expect(bare).toContain('Only what the form sends.');
+		const own = html({ updated: undefined, ownContents: true, contentsLabel: undefined });
+		expect(own).not.toContain('reading-frame__updated');
+		expect(own).toContain('aria-label="Product contents"');
+	});
+
+	it('refuses a null update instead of treating it as omission', () => {
+		expect(() => html({ updated: null })).toThrow(/ReadingFrame: updated/);
+	});
+
 	it('omits the contents without sections, and renders a product contents snippet instead of the list', () => {
 		expect(html({ sections: undefined, contentsLabel: undefined })).not.toContain('reading-frame__contents');
 		const markup = html({ ownContents: true, contentsLabel: undefined });
