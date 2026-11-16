@@ -707,16 +707,19 @@ wrapped meta line never starts with a separator. Pair it with `DetailFrame`'s `r
 `ReadingFrame` from `@yesid/ui/layout` is the calm frame for legal pages and long prose. It is
 **Experimental** in its first release (v0.44.0): its shape may change in a minor release, with
 migration notes. It renders an `article` with an Inter `h1` in sentence case as written, the real
-date of the last change, an optional `summary`, the contents and the body (`children`), on a measure
-of about 65 to 70 characters (`--reading-measure`, default `34em` of the reading size) with
-`--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels, numbering or glow;
-the contents are an unnumbered list (`role="list"`) of orange underlined links, each a 44px
-target (`--size-tap-min`).
+date of the last change when the text has one, an optional `summary`, the contents and the body
+(`children`), on a measure of about 65 to 70 characters (`--reading-measure`, default `34em` of the
+reading size) with `--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels,
+numbering or glow; the contents are an unnumbered list (`role="list"`) of orange underlined links,
+each a 44px target (`--size-tap-min`).
 
-- `updated` is `{ datetime, label, text }`: an ISO 8601 date (`2026-11-02`, optionally with a
-  time and offset) from the text's real revision history, the product's label ("Last updated") and
-  the date as the product formats it. A malformed or impossible date or time (`2026-02-31`,
-  `T24:00`) throws during rendering, on the server too, whatever renders the contents.
+- `updated` is optional: `{ datetime, label, text }` with an ISO 8601 date (`2026-11-02`,
+  optionally with a time and offset) from the text's real revision history, the product's label
+  ("Last updated") and the date as the product formats it. Omit it when the text has no authored
+  revision date; the frame then renders no update row, time or placeholder, and the title, summary,
+  contents and body are unchanged. A malformed or impossible date or time (`2026-02-31`, `T24:00`)
+  throws during rendering, on the server too, whatever renders the contents. Passing `null` is not
+  omission and throws.
 - `sections` (`{ id, title }[]`) with `contentsLabel` renders the built-in contents list under a
   visible heading. Ids are lowercase ASCII slugs from language-independent keys, unique on the page,
   so `#contact` reaches the same section in English, French and Spanish; a translated, spaced,

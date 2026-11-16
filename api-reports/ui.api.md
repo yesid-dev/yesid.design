@@ -2187,8 +2187,7 @@ interface ReadingFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 
     // (undocumented)
     title: string;
     titleId?: string;
-    // (undocumented)
-    updated: ReadingFrameUpdated;
+    updated?: ReadingFrameUpdated;
 }
 
 // @public
