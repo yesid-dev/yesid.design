@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.46.0
+
+<!-- release-fragment: reading-label-and-horizontal-title -->
+- `@yesid/ui` (minor): Add optional `MetricDisplay labelRole="reading"` to use the existing sentence-case Inter
+  label role independently of the figure's tone. The default remains the uppercase metric label.
+  Add optional `RailTitle horizontalSize` for phone/tablet headings and the desktop horizontal
+  fallback; rotated `size` and every existing default remain unchanged. Products can request
+  `horizontalSize="2rem"` for a 32px heading at a 16px root without overriding component styles.
+
 ## 0.45.0
 
 <!-- release-fragment: dimension-divider-street-edge -->
