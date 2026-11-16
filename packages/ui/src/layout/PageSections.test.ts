@@ -1,10 +1,11 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { describe, expect, it } from 'vitest';
+import type { PageDivider } from './page-sections.js';
 import PageSectionsFixture from './test-fixtures/PageSectionsFixture.svelte';
 
 type Mode = 'wrapped' | 'masthead' | 'late' | 'frames' | 'outside';
-const view = (mode: Mode) => render(PageSectionsFixture, { props: { mode } });
+const view = (mode: Mode, divider?: PageDivider) => render(PageSectionsFixture, { props: { mode, divider } });
 type View = ReturnType<typeof view>;
 
 const all = (v: View, selector: string) => [...v.container.querySelectorAll<HTMLElement>(selector)];
@@ -39,6 +40,35 @@ describe('PageSections and PageSection (D22)', () => {
 		const last = byId(v, 'c');
 		expect(boundaries(v).some((line) => precedes(last, line))).toBe(false);
 		expect(precedes(last, byId(v, 'footer'))).toBe(true);
+	});
+
+	it('draws the parent divider choice, reactively, always once between sections and never before the footer', async () => {
+		const v = view('wrapped');
+		expect(pairs(v)).toEqual(['a|b', 'b|c']);
+		for (const line of boundaries(v)) expect(line.classList.contains('dimension-line')).toBe(true);
+
+		await v.rerender({ mode: 'wrapped', divider: 'hand-drawn' });
+		expect(pairs(v)).toEqual(['a|b', 'b|c']);
+		expect(boundaries(v)).toHaveLength(2);
+		for (const line of boundaries(v)) {
+			expect(line.classList.contains('hand-drawn-line')).toBe(true);
+			expect(line.getAttribute('aria-hidden')).toBe('true');
+			expect(line.getAttribute('role')).toBe('none');
+			expect(line.querySelectorAll('svg path')).toHaveLength(1);
+		}
+		expect(boundaries(v).some((line) => precedes(byId(v, 'c'), line))).toBe(false);
+
+		await v.rerender({ mode: 'wrapped', divider: 'hazard' });
+		expect(pairs(v)).toEqual(['a|b', 'b|c']);
+		for (const line of boundaries(v)) {
+			expect(line.classList.contains('dimension-line')).toBe(false);
+			expect(line.classList.contains('hand-drawn-line')).toBe(false);
+			expect(line.getAttribute('role')).toBeNull();
+			expect(line.style.background).toContain('repeating-linear-gradient');
+		}
+
+		await v.rerender({ mode: 'wrapped', divider: 'dimension' });
+		for (const line of boundaries(v)) expect(line.classList.contains('dimension-line')).toBe(true);
 	});
 
 	it('ignores plain and nested sections', () => {

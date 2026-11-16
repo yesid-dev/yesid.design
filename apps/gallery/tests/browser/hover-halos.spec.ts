@@ -313,6 +313,18 @@ test.describe('hover adds no halo', { tag: '@theme' }, () => {
 			await trigger.blur();
 		}
 
+		// A product-owned link passed as children: no component hash, still lifts its card (DEV-15).
+		const inside = page.locator('[data-fixture="interactive-inside"]');
+		const insideLink = page.getByTestId('inside-card-link');
+		const insideRest = await look(inside);
+		await focusByKeyboard(insideLink);
+		const insideFocused = await look(inside);
+		expect(insideFocused.border, 'a consumer link firms its card edge').not.toBe(insideRest.border);
+		expect(insideFocused.transform, 'a consumer link lifts its card').not.toBe('none');
+		expect(insideFocused.boxShadow, 'a consumer link casts no card shadow').toBe(insideRest.boxShadow);
+		await expect(insideLink).toHaveCSS('outline-width', '2px');
+		await insideLink.blur();
+
 		// Reduced motion drops the lift and keeps the edge.
 		await page.emulateMedia({ reducedMotion: 'reduce' });
 		const card = page.locator('[data-fixture="interactive-brand"]');

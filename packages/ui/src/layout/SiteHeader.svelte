@@ -77,7 +77,7 @@
 		wordmarkAutoPlay?: boolean;
 		links: readonly SiteHeaderLink[];
 		menuItems?: readonly SiteHeaderMenuItem[];
-		/** When supplied, replaces menuItems, including when empty. */
+		/** When supplied, replaces menuItems, including when empty. Groups lay out as organized columns from 768px and as one column below it. */
 		menuGroups?: readonly SiteHeaderMenuGroup[];
 		/** Raises the header width each link priority needs; omitted, the defaults apply. */
 		linkTiers?: SiteHeaderLinkTiers;
@@ -406,15 +406,21 @@
 						}}
 					>
 						<Dialog.Title class="sr-only">{labels.menu}</Dialog.Title>
-						<nav class="menu-content" aria-label={labels.menu}>
+						<nav
+							class="menu-content"
+							class:menu-content-grouped={indexedGroups !== undefined}
+							aria-label={labels.menu}
+						>
 							{#if indexedGroups !== undefined}
 								{#each indexedGroups as group, groupIndex}
-									<h3 class="menu-group-heading" id="{contentId}-group-{groupIndex}">{group.label}</h3>
-									<ul aria-labelledby="{contentId}-group-{groupIndex}">
-										{#each group.items as item, i (item.href)}
-											<li>{@render menuItem(item, i, group.items, group.offset)}</li>
-										{/each}
-									</ul>
+									<div class="menu-group" data-slot="menu-group">
+										<h3 class="menu-group-heading" id="{contentId}-group-{groupIndex}">{group.label}</h3>
+										<ul aria-labelledby="{contentId}-group-{groupIndex}">
+											{#each group.items as item, i (item.href)}
+												<li>{@render menuItem(item, i, group.items, group.offset)}</li>
+											{/each}
+										</ul>
+									</div>
 								{/each}
 							{:else}
 								{#each menuItems as item, i (item.href)}{@render menuItem(item, i, menuItems)}{/each}
@@ -506,6 +512,10 @@
 		transition: padding-inline-end var(--site-header-inset-duration, var(--duration-normal)) var(--ease-default);
 	}
 	.nav-pill {
+		/* The one inline space every vertical divider in the navbar uses, on both sides: the kit's
+		   own dividers and ProductBrand's inside the pill (owner live QA, 16 November 2026). The
+		   compaction tiers below only change this value, never the 44px targets. */
+		--nav-split-space: 20px;
 		background: color-mix(in srgb, var(--background) 92%, transparent);
 		-webkit-backdrop-filter: blur(var(--glass-blur));
 		backdrop-filter: blur(var(--glass-blur));
@@ -560,7 +570,7 @@
 		width: 2px;
 		height: 18px;
 		background: var(--border-brand);
-		margin-inline: 20px;
+		margin-inline: var(--nav-split-space);
 		flex-shrink: 0;
 	}
 	.nav-links {
@@ -678,6 +688,7 @@
 	/* Compaction tiers squeeze decorative spacing, never the 44px hit areas. */
 	@media (max-width: 767px) {
 		.nav-pill {
+			--nav-split-space: 10px;
 			padding: var(--nav-padding-y) 16px;
 		}
 		.nav-pill-compact {
@@ -685,9 +696,6 @@
 		}
 		.nav-pill :global(.nav-wordmark) {
 			font-size: var(--text-nav-brand-mobile);
-		}
-		.nav-divider {
-			margin-inline: 10px;
 		}
 		.nav-links {
 			gap: 18px;
@@ -701,11 +709,11 @@
 		.nav-pill-compact {
 			padding: var(--nav-padding-y) 8px;
 		}
+		.nav-pill {
+			--nav-split-space: 4px;
+		}
 		.nav-pill :global(.nav-wordmark) {
 			font-size: var(--text-nav-brand-compact);
-		}
-		.nav-divider {
-			margin-inline: 4px;
 		}
 		.nav-links {
 			gap: 7px;
@@ -719,8 +727,8 @@
 		.nav-pill-compact {
 			padding: var(--nav-padding-y) 4px;
 		}
-		.nav-divider {
-			margin-inline: 2px;
+		.nav-pill {
+			--nav-split-space: 2px;
 		}
 		/* Only the wordmark-to-links divider stays at the 320px floor. */
 		.nav-divider:not(.nav-collapsible) {
@@ -866,6 +874,34 @@
 	/* Without a footer the list balances its own top margin. */
 	.menu-content:last-child {
 		margin-bottom: auto;
+	}
+
+	/* Grouped menus (owner ruling, 16 November 2026): organized columns on desktop, one column on
+	   phones. Every group keeps its heading and its list paired inside one cell, so the heading
+	   still labels its list and reading and tab order stay group order across the columns. The
+	   flat `menuItems` presentation is unchanged: this only applies when `menuGroups` is supplied. */
+	.menu-content-grouped {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: 1.5rem;
+		width: 100%;
+		max-width: 40rem;
+	}
+	.menu-content-grouped .menu-group {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.menu-content-grouped .menu-group-heading {
+		margin-top: 0;
+	}
+	@media (min-width: 768px) {
+		.menu-content-grouped {
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+			column-gap: 3rem;
+			row-gap: 2rem;
+			max-width: 72rem;
+		}
 	}
 	.menu-item {
 		position: relative;

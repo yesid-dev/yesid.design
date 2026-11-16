@@ -37,6 +37,13 @@
 		 * elsewhere (ListingFrame's `edgeTitle`). Defaults to false.
 		 */
 		decorative?: boolean;
+		/**
+		 * Clips the departing title's text above the sticky clearance line, so it never paints under
+		 * the header pill. Set false to let the title leave naturally with its section; sticky
+		 * placement, scrollport fitting, the 12px horizontal fallback and every other behaviour stay
+		 * the same. Defaults to true.
+		 */
+		clipAtHeader?: boolean;
 		/** The section's content. With it, RailTitle lays out both rails and centres the content between them. */
 		children?: Snippet;
 		class?: string;
@@ -56,6 +63,7 @@
 		size,
 		horizontalSize,
 		decorative = false,
+		clipAtHeader = true,
 		children,
 		class: className,
 		style,
@@ -126,11 +134,16 @@
 
 	/**
 	 * Keeps the departing title's painted text below the sticky clearance line, so it never slides
-	 * under the header pill (or anything above that line) as its section scrolls away.
+	 * under the header pill (or anything above that line) as its section scrolls away. With
+	 * `clipAtHeader={false}` the title leaves naturally with its section and nothing is clipped.
 	 */
 	function clip(): void {
 		const rail = railEl;
 		if (!rail) return;
+		if (!clipAtHeader) {
+			rail.style.removeProperty('clip-path');
+			return;
+		}
 		if (stickyTop === null) {
 			rail.style.removeProperty('clip-path');
 			return;
@@ -213,7 +226,7 @@
 
 	// Refits when the words or sizing inputs change; effects run after the DOM has the new text.
 	$effect(() => {
-		void [heading, dot, size, horizontalSize, level, decorative, side];
+		void [heading, dot, size, horizontalSize, level, decorative, side, clipAtHeader];
 		untrack(fit);
 	});
 </script>

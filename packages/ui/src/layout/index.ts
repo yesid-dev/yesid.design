@@ -11,7 +11,7 @@ export { default as ListingFrame } from './ListingFrame.svelte';
 export type { ListingFrameProps } from './ListingFrame.svelte';
 
 export { default as SiteFooter } from './SiteFooter.svelte';
-export type { SiteFooterGroup, SiteFooterLink, SiteFooterProps } from './SiteFooter.svelte';
+export type { SiteFooterEdge, SiteFooterGroup, SiteFooterLink, SiteFooterProps } from './SiteFooter.svelte';
 
 export { default as SiteRoot } from './SiteRoot.svelte';
 export type { SiteRootProps, SiteRootScroller } from './SiteRoot.svelte';
@@ -53,6 +53,7 @@ export type { ReadingFrameProps, ReadingFrameSection, ReadingFrameUpdated } from
 
 export { default as PageSections } from './PageSections.svelte';
 export type { PageSectionsProps } from './PageSections.svelte';
+export type { PageDivider } from './page-sections.js';
 
 export { default as PageSection } from './PageSection.svelte';
 export type { PageSectionProps } from './PageSection.svelte';

@@ -1,6 +1,14 @@
 import { cleanup, render } from '@testing-library/svelte';
+import { compile } from 'svelte/compiler';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ProductBrand from './ProductBrand.svelte';
+
+const css = compile(readFileSync(resolve('src/brand/ProductBrand.svelte'), 'utf8'), {
+	filename: 'ProductBrand.svelte',
+	css: 'external',
+}).css!.code;
 
 const hover = vi.hoisted(() => vi.fn(() => ({ destroy() {} })));
 vi.mock('@yesid/motion/actions', async (original) => ({ ...(await original<object>()), wordmarkHover: hover }));
@@ -23,6 +31,10 @@ describe('ProductBrand', () => {
 		expect(divider?.previousElementSibling).toBe(links[0]);
 		expect(divider?.nextElementSibling).toBe(links[1]);
 		expect(hover).not.toHaveBeenCalled();
+	});
+
+	it('takes the pill divider space inside SiteHeader and keeps its own elsewhere', () => {
+		expect(css).toMatch(/\.product-brand(?:\.[\w-]+)*\s*\{[^}]*gap:\s*var\(--nav-split-space,\s*0\.5em\)/);
 	});
 
 	it('takes the product copy as written, without changing its case', () => {

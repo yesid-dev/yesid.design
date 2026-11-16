@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { Card } from './index.js';
 
 const cardPath = resolve('src/primitives/card/card.svelte');
-const css = compile(readFileSync(cardPath, 'utf8'), { filename: 'card.svelte', css: 'external' }).css!.code
+const compiled = compile(readFileSync(cardPath, 'utf8'), { filename: 'card.svelte', css: 'external' }).css!.code;
+const css = compiled
 	.replace(/\/\*[\s\S]*?\*\//g, '')
 	.replace(/:where\(\.svelte-[\w-]+\)|\.svelte-[\w-]+/g, '');
 const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selector, body]) => ({ selector: selector.trim(), body }));
@@ -62,5 +63,12 @@ describe('Card', () => {
 		expect(lift?.selector).toContain(':has(:focus-visible)');
 		expect(lift?.selector).toMatch(/:focus-visible\s*>\s*\.card-surface\[data-interactive='true'\]/);
 		expect(lift?.body).toContain('var(--border-brand-active)');
+	});
+
+	it('matches a focused descendant from any component, not only kit-owned markup', () => {
+		// A consumer link passed as children has no component hash; Svelte's scoped `:has(...)` would
+		// require one and the card would never lift on that link's keyboard focus.
+		expect(compiled).not.toMatch(/:has\(:where\(\.svelte-[\w-]+\):focus-visible\)/);
+		expect(compiled).toMatch(/:has\(:focus-visible\)/);
 	});
 });

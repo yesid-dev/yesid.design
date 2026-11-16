@@ -42,6 +42,13 @@
 				<p>Hover and keyboard focus firm the border in orange and rise one pixel, with no shadow.</p>
 			</Card>
 		</a>
+		<Card class="p-4" interactive data-fixture="interactive-inside">
+			<p class="label-reading">Consumer link inside the card</p>
+			<p>
+				<a href="#cards" data-testid="inside-card-link">A product-owned link</a>, not a kit control,
+				still firms the border and rises one pixel on keyboard focus.
+			</p>
+		</Card>
 	</div>
 
 	{#each LANGS as lang (lang)}

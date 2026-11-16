@@ -73,6 +73,19 @@ describe('edge title', () => {
 		expect(title.querySelector('h1, h2, h3, h4, h5, h6')).toBeNull();
 		expect(view.getAllByRole('heading')).toHaveLength(1);
 	});
+	it('forwards clipAtHeader to the decorative RailTitle without changing the frame geometry', () => {
+		for (const clipAtHeader of [undefined, true, false]) {
+			const view = frame({ edgeTitle: 'Catalogue', clipAtHeader });
+			const column = slot(view, 'listing-edge-title');
+			const title = column.querySelector<HTMLElement>('[data-slot="rail-title"]')!;
+			expect(title.classList.contains('edge-title')).toBe(true);
+			expect(title.dataset.side).toBe('left');
+			expect(column.querySelectorAll('[data-slot="rail-title"]')).toHaveLength(1);
+			// The option is consumed: it never reaches the section or the rail as an attribute.
+			expect(view.container.querySelector('[clipatheader]')).toBeNull();
+			expect(title.hasAttribute('clipatheader')).toBe(false);
+		}
+	});
 });
 
 describe('result count', () => {

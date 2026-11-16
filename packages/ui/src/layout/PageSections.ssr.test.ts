@@ -25,3 +25,17 @@ it('server markup marks every Masthead tape inside page sections as an edge rule
 	const sections = body.slice(0, body.indexOf('id="footer"'));
 	expect(sections.match(/data-slot="separator"[^>]*data-edge-rule|data-edge-rule[^>]*data-slot="separator"/g)).toHaveLength(3);
 });
+
+it.each(['hand-drawn', 'hazard'] as const)('server markup draws the supplied %s divider between sections only', (divider) => {
+	const { body } = render(PageSectionsFixture, { props: { mode: 'wrapped', divider } });
+	expect(order(body)).toEqual(['a', 'plain', '|', 'b', 'nested', '|', 'c']);
+	expect(body.match(/data-slot="page-section-boundary"/g)).toHaveLength(2);
+	if (divider === 'hand-drawn') {
+		expect(body.match(/data-variant="hand-drawn"/g)).toHaveLength(2);
+		expect(body.match(/vector-effect="non-scaling-stroke"/g)).toHaveLength(2);
+	} else {
+		expect(body.match(/data-variant="hand-drawn"/g)).toBeNull();
+		expect(body.match(/repeating-linear-gradient/g)?.length).toBe(2);
+	}
+	expect(body.slice(body.indexOf('id="c"'))).not.toContain('page-section-boundary');
+});

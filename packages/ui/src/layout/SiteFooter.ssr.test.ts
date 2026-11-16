@@ -22,3 +22,12 @@ it('preserves the supplied status on the server', () => {
 		expect(body).toContain('2026.07.30');
 	} finally { vi.useRealTimers(); }
 });
+it('renders the street edge by default and the hazard strip when asked, on the server too', () => {
+	const street = render(SiteFooter, { props });
+	expect(street.body).toContain('data-slot="footer-street-edge"');
+	expect(street.body).not.toContain('data-slot="footer-hazard-edge"');
+	const hazard = render(SiteFooter, { props: { edge: 'hazard' } });
+	expect(hazard.body).toContain('data-slot="footer-hazard-edge"');
+	expect(hazard.body).not.toContain('data-slot="footer-street-edge"');
+	expect(hazard.body).toContain('repeating-linear-gradient');
+});

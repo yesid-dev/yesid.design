@@ -399,6 +399,17 @@ pre, code, table {
 		font-family: var(--font-mono);
 		font-size: var(--text-caption);
 	}
+	/* `rule="line"` (owner live QA, 16 November 2026): one solid yellow line replaces the grey
+	   hairline under the title bar, with the same yellow on the footer's horizontal boundary when a
+	   footer is present. No separator element is rendered in this mode: no orange dimension line,
+	   no hazard tape, no second stroke. Global, so server-rendered `.terminal.terminal-rule-line`
+	   markup wears it too. */
+	.terminal.terminal-rule-line .terminal-titlebar {
+		border-bottom-color: var(--accent);
+	}
+	.terminal.terminal-rule-line .terminal-footer {
+		border-top-color: var(--accent);
+	}
 	.terminal-code-body pre {
 		margin: 0;
 		border: 0;
@@ -497,5 +508,27 @@ pre, code, table {
 	   rule without a header) is not drawn: never a doubled stroke, never a line before the footer. */
 	[data-page-section-edges] [data-edge-rule] {
 		display: none;
+	}
+}
+
+/* The hand-drawn divider (D22, 16 November 2026): one slightly irregular orange stroke, as if a pen
+   had been drawn along a rule on the blueprint paper. The markup is one decorative inline SVG path
+   (1.25px, round caps, `vector-effect: non-scaling-stroke`) in `currentColor`, so here it only takes
+   the blueprint orange ink and stretches edge to edge. Static, horizontal only, no ticks, stamps,
+   glow or shadow. `Separator variant="hand-drawn"` and `PageSections divider="hand-drawn"` draw it. */
+@layer components {
+	.hand-drawn-line {
+		display: block;
+		width: 100%;
+		height: 8px;
+		flex-shrink: 0;
+		color: var(--primary);
+		pointer-events: none;
+	}
+
+	.hand-drawn-line-art {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 }

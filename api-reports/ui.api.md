@@ -143,7 +143,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `1cc369d72fe470265996ac19b3c85a0267b06d065fdb89decfaee8cb7dbfe10c`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `bfe910b5cad1c7c50f091968dbe3ca6de2836dd8b1b273283f3deaaeb2ff2730`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `40450a648e4a461734946514b529ca42bc67cd38a813f0c51babd335e5409683`
 
 ## Declaration namespaces
@@ -1043,7 +1043,7 @@ interface CodeBlockProps {
     copy?: CodeBlockCopyLabels;
     // (undocumented)
     language?: string;
-    rule?: 'hazard' | 'dimension';
+    rule?: TerminalPanelProps['rule'];
     // (undocumented)
     title: string;
 }
@@ -1734,6 +1734,7 @@ declare namespace Layout {
         ListingFrame,
         ListingFrameProps,
         SiteFooter,
+        SiteFooterEdge,
         SiteFooterGroup,
         SiteFooterLink,
         SiteFooterProps,
@@ -1768,6 +1769,7 @@ declare namespace Layout {
         ReadingFrameUpdated,
         PageSections,
         PageSectionsProps,
+        PageDivider,
         PageSection,
         PageSectionProps
     }
@@ -1785,6 +1787,7 @@ interface ListingFrameProps {
     blueprint?: Snippet;
     // (undocumented)
     children: Snippet;
+    clipAtHeader?: boolean;
     // (undocumented)
     description?: string;
     edgeTitle?: string;
@@ -1942,6 +1945,9 @@ type OnNavigate = (callback: (navigation: NavigationEvent) => NavigationResult) 
 // @public
 function openSection(id: string, root?: Element | Document): boolean;
 
+// @public
+type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
+
 // @public (undocumented)
 const PageSection: Component<PageSectionProps, {}, "">;
 
@@ -1964,6 +1970,7 @@ type PageSections = ReturnType<typeof PageSections>;
 interface PageSectionsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
     // (undocumented)
     children: Snippet;
+    divider?: PageDivider;
 }
 
 // @public
@@ -2153,6 +2160,7 @@ interface RailTitleProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'
     children?: Snippet;
     // (undocumented)
     class?: string;
+    clipAtHeader?: boolean;
     decorative?: boolean;
     dot?: boolean;
     heading: string;
@@ -2523,6 +2531,19 @@ type SeparatorGradientProps = CustomSeparatorElementProps & {
     label?: string;
 };
 
+// @public
+type SeparatorHandDrawnProps = WithElementRef<Omit<HTMLAttributes<HTMLDivElement>, 'children'>, HTMLDivElement> & {
+    variant: 'hand-drawn';
+    orientation?: never;
+    child?: never;
+    children?: never;
+    decorative?: never;
+    hazardSize?: never;
+    hazardAngle?: never;
+    maxWidth?: never;
+    label?: never;
+};
+
 // @public (undocumented)
 type SeparatorHazardProps = CustomSeparatorElementProps & {
     variant: 'hazard';
@@ -2533,10 +2554,10 @@ type SeparatorHazardProps = CustomSeparatorElementProps & {
 };
 
 // @public (undocumented)
-type SeparatorProps = SeparatorDefaultProps | SeparatorHazardProps | SeparatorGradientProps | SeparatorDimensionProps;
+type SeparatorProps = SeparatorDefaultProps | SeparatorHazardProps | SeparatorGradientProps | SeparatorDimensionProps | SeparatorHandDrawnProps;
 
 // @public (undocumented)
-type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension';
+type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension' | 'hand-drawn';
 
 // @public (undocumented)
 type SheetCloseProps = Dialog.CloseProps;
@@ -2659,6 +2680,9 @@ const SiteFooter: Component<SiteFooterProps, {}, "">;
 type SiteFooter = ReturnType<typeof SiteFooter>;
 
 // @public (undocumented)
+type SiteFooterEdge = 'street' | 'hazard';
+
+// @public (undocumented)
 interface SiteFooterGroup {
     after?: Snippet;
     // (undocumented)
@@ -2688,6 +2712,7 @@ type SiteFooterProps = {
     tagline: string;
     groups: readonly SiteFooterGroup[];
     statusStart?: Snippet;
+    edge?: SiteFooterEdge;
 } & ({
     statusPrefix: string;
     liveLabel: string;
@@ -3073,7 +3098,7 @@ interface TerminalPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title
     // (undocumented)
     footer?: readonly TerminalFooterItem[];
     noPadding?: boolean;
-    rule?: 'hazard' | 'dimension';
+    rule?: 'hazard' | 'dimension' | 'line';
     signal?: {
         color: StatusDotColor;
         label: string;

@@ -100,6 +100,39 @@ describe('street edge (D22)', () => {
 	});
 });
 
+describe('edge option', () => {
+	it('opens with the kit hazard strip when asked, in place of the street edge', () => {
+		const view = footer({ edge: 'hazard' });
+		const edge = root(view).querySelector<HTMLElement>('[data-slot="footer-hazard-edge"]')!;
+
+		expect(edge).not.toBeNull();
+		expect(root(view).firstElementChild).toBe(edge);
+		expect(root(view).querySelectorAll('[data-slot="footer-hazard-edge"]')).toHaveLength(1);
+		expect(root(view).querySelector('[data-slot="footer-street-edge"]')).toBeNull();
+		expect(edge.getAttribute('aria-hidden')).toBe('true');
+		expect(edge.getAttribute('role')).toBeNull();
+		expect(edge.classList.contains('h-[3px]')).toBe(true);
+		expect(edge.classList.contains('w-full')).toBe(true);
+		expect(edge.style.background).toContain('repeating-linear-gradient');
+		expect(edge.childElementCount).toBe(0);
+	});
+
+	it('keeps groups, status and the in-view observer unchanged with the hazard edge', async () => {
+		const observer = stubObserver();
+		const view = footer({ edge: 'hazard', statusStart: html('<address>Montreal</address>') });
+
+		expect(navs(view)).toHaveLength(groups.length);
+		expect(root(view).querySelector('[data-slot="status-dot"]')).not.toBeNull();
+		expect(view.getByText('Montreal')).toBeInTheDocument();
+		await vi.waitFor(() => expect(observer.observe).toHaveBeenCalledWith(root(view)));
+		observer.report(true);
+		await tick();
+		expect(root(view).dataset.inView).toBe('true');
+		view.unmount();
+		expect(observer.disconnect).toHaveBeenCalledOnce();
+	});
+});
+
 describe('groups', () => {
 	it('gives each group its own labelled navigation, in order, with its links in order', () => {
 		const view = footer();

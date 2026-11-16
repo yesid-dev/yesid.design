@@ -27,12 +27,20 @@
 		after?: Snippet;
 	}
 
+	export type SiteFooterEdge = 'street' | 'hazard';
+
 	export type SiteFooterProps = {
 		brand: Snippet;
 		tagline: string;
 		groups: readonly SiteFooterGroup[];
 		/** Start of the status row, such as an address or attribution. */
 		statusStart?: Snippet;
+		/**
+		 * The decorative edge along the footer's top. `street` is the default road marking (D22);
+		 * `hazard` draws the kit's hazard tape instead, for a product that opts into it. Groups,
+		 * links and the status row are the same either way.
+		 */
+		edge?: SiteFooterEdge;
 	} & (
 		| {
 				/** Supply both status props to render the lamp and date. */
@@ -51,9 +59,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { FooterGroup, FooterLink } from '../primitives/footer/index.js';
+	import { Separator } from '../primitives/separator/index.js';
 	import StatusDot from '../brand/StatusDot.svelte';
 
-	let { brand, tagline, groups, statusStart, statusPrefix, liveLabel }: SiteFooterProps = $props();
+	let { brand, tagline, groups, statusStart, statusPrefix, liveLabel, edge = 'street' }: SiteFooterProps = $props();
 
 	// Decorative only (D22). One object because Svelte's checker flags `aria-hidden` beside
 	// `role="none"`, a valid ARIA pair.
@@ -80,7 +89,11 @@
 	class="relative z-[var(--z-content)] bg-[var(--muted)]"
 	style="--footer-groups: {groups.length};"
 >
-	<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
+	{#if edge === 'hazard'}
+		<Separator variant="hazard" hazardSize="sm" class="footer-hazard-edge" data-slot="footer-hazard-edge" />
+	{:else}
+		<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
+	{/if}
 	<div
 		class="grid w-full grid-cols-1 gap-10 px-6 pb-8 pt-10 sm:grid-cols-2 sm:px-10 sm:pt-12 lg:grid-cols-[1.5fr_repeat(var(--footer-groups),minmax(0,1fr))] lg:gap-8 lg:px-16 lg:pt-14"
 	>
