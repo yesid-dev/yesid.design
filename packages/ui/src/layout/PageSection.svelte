@@ -63,7 +63,7 @@
 </section>
 
 <style>
-	/* The ink straddles the real background seam; its 8px drawing canvas adds no layout space. */
+	/* A zero-height anchor keeps the section backgrounds touching. */
 	:global(.page-section-boundary[data-variant='hand-drawn']) {
 		position: relative;
 		height: 0;
@@ -73,7 +73,10 @@
 
 	:global(.page-section-boundary[data-variant='hand-drawn'] > .hand-drawn-line-art) {
 		position: absolute;
-		inset: -4px 0 auto;
-		height: 8px;
+		inset: -10px 0 auto;
+		height: 20px;
+		/* Only the part above the section edge paints, matching the reference's fine, fading ink.
+		   Standalone/card strokes keep their full canvas and are unaffected. */
+		clip-path: inset(0 0 50%);
 	}
 </style>

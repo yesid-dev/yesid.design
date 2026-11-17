@@ -33,9 +33,12 @@ for (const theme of THEMES) {
 					return { y: before.bottom, gap: after.top - before.bottom };
 				});
 				expect(Math.abs(edge.gap), 'no blank strip between the painted sections').toBeLessThanOrEqual(0.5);
-				const pixels = await column(page, 40, edge.y - 3, edge.y + 4);
+				const width = page.viewportSize()!.width;
+				const pixels = await column(page, width / 2, edge.y - 4, edge.y + 4);
 				expect(pixels.some(isInk), 'orange ink remains visible above the opaque child at the seam').toBe(true);
 				expect(strokes(pixels), 'one drawn stroke at the actual edge').toBe(1);
+				const quiet = await column(page, Math.round(width * 0.3), edge.y - 4, edge.y + 4);
+				expect(quiet.some(isInk), 'the reference stroke fades out where the wave passes the section edge').toBe(false);
 			} finally { await context.close(); }
 		});
 
