@@ -1,7 +1,7 @@
 <!--
   One page section (D22). Inside `PageSections`, every section after the first is preceded by the
-  boundary row, so the section before it ends with the page's divider: a real row in the flow,
-  outside both sections' boxes, so nothing a section paints can cover it. The parent's `divider`
+  boundary, so the section before it ends with the page's divider. A hand-drawn stroke overlays
+  the joined section edges without inserting a blank row. The parent's `divider`
   chooses the stroke; the last section draws none, so nothing sits before the footer. A registered
   section carries `data-page-section-edges`, which hides the kit's edge rules inside it
   (`data-edge-rule`: Masthead's and ErrorPage's tape, DetailFrame's rule without a header; base.css).
@@ -61,3 +61,19 @@
 >
 	{@render children()}
 </section>
+
+<style>
+	/* The ink straddles the real background seam; its 8px drawing canvas adds no layout space. */
+	:global(.page-section-boundary[data-variant='hand-drawn']) {
+		position: relative;
+		height: 0;
+		z-index: 1;
+		overflow: visible;
+	}
+
+	:global(.page-section-boundary[data-variant='hand-drawn'] > .hand-drawn-line-art) {
+		position: absolute;
+		inset: -4px 0 auto;
+		height: 8px;
+	}
+</style>

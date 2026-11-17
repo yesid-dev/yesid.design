@@ -1,6 +1,6 @@
 <!--
   The page's sections (D22). Wrap a page's `PageSection`s, at any depth: every section but the
-  last ends with the page's divider, drawn by the kit as its own row between two sections, and no
+  last ends with the page's divider, drawn by the kit between two sections, and no
   divider ever sits before the footer. `divider` picks that divider for every registered section
   (`dimension` by default, `hand-drawn` for the owner's 16 November 2026 page default, or `hazard`);
   a change follows through immediately. Wrappers between this element and a section do not matter;

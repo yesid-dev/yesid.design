@@ -942,9 +942,11 @@ not matter, and every registered section after the first is preceded by a bounda
 `Separator` with `data-slot="page-section-boundary"`). `divider` picks that divider for the whole
 page: `dimension` (the default), `hand-drawn` for the owner's drawn page line, or `hazard` for the
 kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
-sections. The row is in the flow, outside both sections' boxes and as wide as `PageSections` (make
-that full-bleed for an edge-to-edge line), so a section's own backgrounds and positioned children
-cannot paint over it. Order is document order, on the server too; a section that mounts later takes
+sections. A hand-drawn boundary has zero layout height: its 8px SVG canvas overlays the exact joined
+section edges, with no blank strip between their backgrounds. Standalone and card separators
+keep their own geometry. Dimension and hazard boundaries retain their existing flow rows.
+Every boundary stays outside the sections and as wide as `PageSections` (make that full-bleed
+for an edge-to-edge line), above section backgrounds. Order is document order, on the server too; a section that mounts later takes
 its place. Plain `<section>`s do not register, and a `PageSection` inside another, or outside
 `PageSections`, is a plain section.
 

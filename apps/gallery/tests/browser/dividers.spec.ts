@@ -194,7 +194,7 @@ for (const theme of THEMES) {
 			const [line] = section.lines;
 			expect(line!.left, section.id).toBe(0);
 			expect(line!.width, `${section.id} runs edge to edge`).toBe(client);
-			expect(line!.height, section.id).toBe('8px');
+			expect(line!.height, `${section.id} adds no blank row between backgrounds`).toBe('0px');
 			expect(line!.animation, `${section.id} is static`).toBe('none');
 			expect([line!.ariaHidden, line!.role], section.id).toEqual(['true', 'none']);
 		}
@@ -209,6 +209,18 @@ for (const theme of THEMES) {
 			await expect(path).toHaveAttribute('stroke', 'currentColor');
 			await expect(path).toHaveCSS('stroke', ink);
 			await expect(path).toHaveCSS('stroke-width', '1.25px');
+			const seam = await boundary.evaluate(node => {
+				const sections = [...node.closest('[data-slot="page-sections"]')!.querySelectorAll('[data-slot="page-section"]')];
+				const previous = sections.filter(section => Boolean(section.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)).at(-1)!;
+				const before = previous.getBoundingClientRect();
+				const after = node.nextElementSibling!.getBoundingClientRect();
+				const path = node.querySelector('path')!;
+				const ink = path.getBBox();
+				const center = new DOMPoint(ink.x + ink.width / 2, ink.y + ink.height / 2).matrixTransform(path.getScreenCTM()!);
+				return { gap: after.top - before.bottom, inkToEdge: center.y - before.bottom };
+			});
+			expect(Math.abs(seam.gap), 'section backgrounds meet with no padded strip').toBeLessThanOrEqual(0.5);
+			expect(Math.abs(seam.inkToEdge), 'the drawn ink sits on the actual section edge').toBeLessThanOrEqual(1);
 		}
 
 		const footer = page.getByRole('contentinfo');
