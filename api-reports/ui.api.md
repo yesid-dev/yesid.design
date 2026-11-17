@@ -2168,11 +2168,14 @@ type ProductBrand = ReturnType<typeof ProductBrand>;
 // @public (undocumented)
 interface ProductBrandProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
     current?: boolean;
+    dividerStyle?: string;
     houseExternal?: boolean;
     houseHref: string;
     houseLabel?: string;
+    houseStyle?: string;
     href: string;
     product: string;
+    productStyle?: string;
 }
 
 // @public

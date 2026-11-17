@@ -1209,6 +1209,40 @@ cluster keeps its 0.5em gap. The cluster takes
 between words beside the house mark instead of overflowing. The theme and language toggles stay
 unchanged beside it.
 
+`houseStyle`, `productStyle` and `dividerStyle` optionally style the two links and decorative
+divider directly. Omit them to retain the existing header and footer defaults. Use `rem` sizes
+to follow the visitor's text size; keep both links, their full names, minimum 44px targets and
+focus rings. The existing root `style` controls layout. For example, a footer can retain an
+18px house mark and 24px product name, then stack them and hide the divider when its own column
+is narrower than 9.5em, including with enlarged text:
+
+```svelte
+<div class="brand-space">
+  <div class="brand-layout">
+    <ProductBrand product="Transit" href={home} houseHref="https://yesid.dev"
+      houseStyle="font-size: 1.125rem" productStyle="font-size: 1.5rem"
+      dividerStyle="display: var(--brand-divider, block)"
+      style="flex-direction: var(--brand-direction, row); align-items: var(--brand-align, center); gap: var(--brand-gap, 0.5em); max-inline-size: 100%" />
+  </div>
+</div>
+
+<style>
+  .brand-space { container-type: inline-size; }
+  @container (inline-size < 9.5em) {
+    .brand-layout {
+      --brand-direction: column;
+      --brand-align: flex-start;
+      --brand-gap: 0;
+      --brand-divider: none;
+    }
+  }
+</style>
+```
+
+The wrapper's column supplies the available width. The custom properties above are chosen by
+this caller and passed through public styles; no descendant selectors or product-specific
+breakpoints ship in ProductBrand.
+
 ## Base stylesheet
 
 `@yesid/ui/base.css` is the base layer both products share: resets, the dark variant, selection,

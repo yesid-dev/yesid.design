@@ -18,6 +18,12 @@
 		houseExternal?: boolean;
 		/** The house link's accessible name, for example one that says it opens a new tab. */
 		houseLabel?: string;
+		/** Inline styles for the house link, for example an independent rem font size. */
+		houseStyle?: string;
+		/** Inline styles for the product link. Preserve its focus ring and minimum target. */
+		productStyle?: string;
+		/** Inline styles for the decorative divider, for example container-driven visibility. */
+		dividerStyle?: string;
 		/** Marks the product link as the current page. */
 		current?: boolean;
 	}
@@ -33,6 +39,9 @@
 		houseHref,
 		houseExternal = false,
 		houseLabel,
+		houseStyle,
+		productStyle,
+		dividerStyle,
 		current = false,
 		class: className,
 		...rest
@@ -45,9 +54,10 @@
 		external={houseExternal}
 		animate={false}
 		aria-label={houseLabel}
+		style={houseStyle}
 	/>
-	<span class="product-brand-divider" aria-hidden="true"></span>
-	<a {href} class="product-brand-name" data-slot="product-brand-name" aria-current={current ? 'page' : undefined}
+	<span class="product-brand-divider" style={dividerStyle} aria-hidden="true"></span>
+	<a {href} class="product-brand-name" style={productStyle} data-slot="product-brand-name" aria-current={current ? 'page' : undefined}
 		>{product}</a
 	>
 </span>
