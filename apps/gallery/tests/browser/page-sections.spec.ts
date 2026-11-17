@@ -19,6 +19,26 @@ async function open(browser: Browser, baseURL: string, theme: string, deviceScal
 
 for (const theme of THEMES) {
 	for (const scale of [1, 2]) {
+		test(`${theme} at ${scale}x: drawn ink sits on touching section backgrounds`, async ({ browser, baseURL }, testInfo) => {
+			test.skip(testInfo.project.name !== 'desktop', 'One run per theme and scale');
+			const { context, page } = await open(browser, baseURL!, theme, scale);
+			try {
+				await page.goto('/page-sections?divider=hand-drawn');
+				await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+				const boundary = page.locator('[data-slot="page-section-boundary"]').first();
+				await expect(boundary).toHaveAttribute('data-variant', 'hand-drawn');
+				const edge = await boundary.evaluate(node => {
+					const before = node.previousElementSibling!.getBoundingClientRect();
+					const after = node.nextElementSibling!.getBoundingClientRect();
+					return { y: before.bottom, gap: after.top - before.bottom };
+				});
+				expect(Math.abs(edge.gap), 'no blank strip between the painted sections').toBeLessThanOrEqual(0.5);
+				const pixels = await column(page, 40, edge.y - 3, edge.y + 4);
+				expect(pixels.some(isInk), 'orange ink remains visible above the opaque child at the seam').toBe(true);
+				expect(strokes(pixels), 'one drawn stroke at the actual edge').toBe(1);
+			} finally { await context.close(); }
+		});
+
 		test(`${theme} at ${scale}x: painted sections, Masthead sections and the wrapped last section`, async ({ browser, baseURL }, testInfo) => {
 			test.skip(testInfo.project.name !== 'desktop', 'One run per theme and scale');
 			const { context, page } = await open(browser, baseURL!, theme, scale);
