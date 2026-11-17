@@ -726,8 +726,14 @@ link, and no canvas, circuit grid, chevrons, corner marks, crosshair cursor or h
 `watermark`, `edgeLeft`, `edgeRight`, `decorations`, `canvas`, `highlight` and `accent` are
 ignored, so a page can switch presentation without changing its other props. There is no line
 above the title: `category` becomes the first meta entry below it, at the meta size (15px), and a
-wrapped meta line never starts with a separator. Pair it with `DetailFrame`'s `rule="line"` and
-`measure`, and put an opening in the `header` snippet after it.
+wrapped meta line never starts with a separator. Use `DetailFrame`'s `measure` to align it with the
+reading column, and put any opening in the `header` snippet after it.
+
+Both presentations end with the built-in hand-drawn edge, in the
+`article-header-boundary` slot. It spans the available header width and adds no layout height.
+Use the header directly in the frame, without adding a second separator. `DetailFrame` hides its
+own rule when the header already supplies this edge. Inside `PageSections` the header shares
+the page's alternating ink sequence.
 
 ## Reading frame (Experimental)
 
@@ -938,14 +944,15 @@ the footer. A page composes its sections with them and draws no divider itself.
 
 `PageSections` renders a `<div>` and `PageSection` a `<section>`; both forward their attributes.
 Each `PageSection` registers with the nearest `PageSections` at any depth, so product wrappers do
-not matter, and every registered section after the first is preceded by a boundary row (a
-`Separator` with `data-slot="page-section-boundary"`). `divider` picks that divider for the whole
+not matter, and every registered section after the first is preceded by a boundary in the
+`page-section-boundary` slot. `divider` picks that divider for the whole
 page: `dimension` (the default), `hand-drawn` for the owner's drawn page line, or `hazard` for the
 kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
-sections. A hand-drawn page boundary has zero layout height. Only the upper half of its taller 20px
-SVG canvas paints at the joined section edge: the wave fades as it passes beyond that edge,
-matching the fine reference stroke without a blank strip. Standalone and card separators
-keep their full 8px canvas and existing stroke. Dimension and hazard boundaries retain their existing flow rows.
+sections. Hand-drawn page boundaries alternate four and five pen strokes from edge to edge,
+with small gaps and a slight wobble. Editorial header edges count in that same document order.
+Only the upper half of the 20px canvas paints at the joined edge, leaving zero layout height.
+Standalone and card separators keep their full 8px canvas and existing stroke. Dimension and hazard
+boundaries retain their existing flow rows.
 Every boundary stays outside the sections and as wide as `PageSections` (make that full-bleed
 for an edge-to-edge line), above section backgrounds. Order is document order, on the server too; a section that mounts later takes
 its place. Plain `<section>`s do not register, and a `PageSection` inside another, or outside

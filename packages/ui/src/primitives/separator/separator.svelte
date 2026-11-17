@@ -91,6 +91,7 @@
 <script lang="ts">
 	import { Separator as SeparatorPrimitive } from 'bits-ui';
 	import { cn } from '../../cn/index.js';
+	import HandDrawnStroke from './HandDrawnStroke.svelte';
 
 	let { ref = $bindable(null), ...separatorProps }: SeparatorProps = $props();
 
@@ -300,25 +301,7 @@
 		class={cn('hand-drawn-line', handDrawn.className)}
 		{...decorativeAttributes}
 	>
-		<!-- One pen stroke: a gentle wobble at most 1px off true, round caps and a stroke that
-		     never scales (vector-effect), stretched to any width. Ink is the wrapper's currentColor. -->
-		<svg
-			class="hand-drawn-line-art"
-			viewBox="0 0 1000 8"
-			preserveAspectRatio="none"
-			focusable="false"
-			aria-hidden="true"
-		>
-			<path
-				d="M1.5 4.6C60 3.4 120 3.5 190 4.3S310 5.4 400 4.5S520 3 610 3.8S760 5.3 850 4.6S960 3.4 998.5 3.9"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="1.25"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				vector-effect="non-scaling-stroke"
-			/>
-		</svg>
+		<HandDrawnStroke />
 	</div>
 {:else if separatorProps.variant === 'gradient'}
 	{@const gradient = getGradientProps(separatorProps)}

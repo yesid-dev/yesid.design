@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createRawSnippet } from 'svelte';
+	import ArticleHeader from '../ArticleHeader.svelte';
 	import DetailFrame from '../DetailFrame.svelte';
 	import ErrorPage from '../ErrorPage.svelte';
 	import Masthead from '../Masthead.svelte';
@@ -7,7 +8,7 @@
 	import PageSections from '../PageSections.svelte';
 	import type { PageDivider } from '../page-sections.js';
 
-	let { mode, divider }: { mode: 'wrapped' | 'masthead' | 'late' | 'frames' | 'outside'; divider?: PageDivider } = $props();
+	let { mode, divider }: { mode: 'wrapped' | 'masthead' | 'late' | 'frames' | 'editorial' | 'outside'; divider?: PageDivider } = $props();
 	let showLead = $state(false);
 	const body = createRawSnippet(() => ({ render: () => '<p>Body</p>' }));
 	const header = createRawSnippet(() => ({ render: () => '<h1>Header</h1>' }));
@@ -39,7 +40,7 @@
 	<div id="outside"><Masthead heading="Outside" tape="dimension" /></div>
 {:else if mode === 'late'}
 	<button type="button" onclick={() => (showLead = !showLead)}>Toggle lead</button>
-	<PageSections>
+	<PageSections {divider}>
 		{#if showLead}
 			<PageSection id="lead" aria-label="Lead"><p>Lead</p></PageSection>
 		{/if}
@@ -58,6 +59,16 @@
 			<ErrorPage status={404} heading="Missing" body="Gone." tape="dimension" />
 		</PageSection>
 	</PageSections>
+{:else if mode === 'editorial'}
+	<PageSections divider="hand-drawn">
+		<PageSection id="a">
+			<ArticleHeader title="Field notes" backHref="/" backLabel="Back" presentation="reading" />
+			<p>Article text</p>
+		</PageSection>
+		<PageSection id="b"><p>References</p></PageSection>
+		<PageSection id="c"><p>Related stories</p></PageSection>
+	</PageSections>
+	<footer id="footer">Footer</footer>
 {:else}
 	<PageSection id="alone" aria-label="Alone"><Masthead heading="Alone" tape="dimension" /></PageSection>
 {/if}

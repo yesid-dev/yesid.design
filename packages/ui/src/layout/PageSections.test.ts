@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { PageDivider } from './page-sections.js';
 import PageSectionsFixture from './test-fixtures/PageSectionsFixture.svelte';
 
-type Mode = 'wrapped' | 'masthead' | 'late' | 'frames' | 'outside';
+type Mode = 'wrapped' | 'masthead' | 'late' | 'frames' | 'editorial' | 'outside';
 const view = (mode: Mode, divider?: PageDivider) => render(PageSectionsFixture, { props: { mode, divider } });
 type View = ReturnType<typeof view>;
 
@@ -97,14 +97,17 @@ describe('PageSections and PageSection (D22)', () => {
 	});
 
 	it('keeps document order when a section mounts later, and moves the boundary', async () => {
-		const v = view('late');
+		const v = view('late', 'hand-drawn');
 		expect(pairs(v)).toEqual(['a|b']);
+		expect(boundaries(v).map(line => line.dataset.strokeSegments)).toEqual(['4']);
 		await fireEvent.click(v.getByRole('button', { name: 'Toggle lead' }));
 		await tick();
 		expect(pairs(v)).toEqual(['lead|a', 'a|b']);
+		expect(boundaries(v).map(line => line.dataset.strokeSegments)).toEqual(['4', '5']);
 		await fireEvent.click(v.getByRole('button', { name: 'Toggle lead' }));
 		await tick();
 		expect(pairs(v)).toEqual(['a|b']);
+		expect(boundaries(v).map(line => line.dataset.strokeSegments)).toEqual(['4']);
 	});
 
 	it('hides edge rules that would touch a section boundary, and keeps internal ones', () => {

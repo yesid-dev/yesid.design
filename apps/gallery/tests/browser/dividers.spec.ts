@@ -200,6 +200,10 @@ for (const theme of THEMES) {
 		}
 		const boundaries = page.locator('[data-slot="page-section-boundary"]');
 		await expect(boundaries).toHaveCount(3);
+		const paths = await boundaries.locator('svg path').evaluateAll(nodes => nodes.map(node => node.getAttribute('d')!));
+		expect(paths.map(path => (path.match(/M/g) ?? []).length)).toEqual([4, 5, 4]);
+		expect(paths[0]).toBe(paths[2]);
+		expect(paths[0]).not.toBe(paths[1]);
 		for (const boundary of await boundaries.all()) {
 			await expect(boundary).toHaveClass(/hand-drawn-line/);
 			await expect(boundary).toHaveAttribute('data-variant', 'hand-drawn');
@@ -220,7 +224,8 @@ for (const theme of THEMES) {
 				return { gap: after.top - before.bottom, inkToEdge: center.y - before.bottom };
 			});
 			expect(Math.abs(seam.gap), 'section backgrounds meet with no padded strip').toBeLessThanOrEqual(0.5);
-			expect(Math.abs(seam.inkToEdge), 'the drawn ink sits on the actual section edge').toBeLessThanOrEqual(1);
+			expect(seam.inkToEdge, 'the drawn ink sits just above the actual section edge').toBeGreaterThanOrEqual(-2);
+			expect(seam.inkToEdge).toBeLessThanOrEqual(0);
 		}
 
 		const footer = page.getByRole('contentinfo');

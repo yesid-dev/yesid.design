@@ -37,8 +37,12 @@ for (const theme of THEMES) {
 				const pixels = await column(page, width / 2, edge.y - 4, edge.y + 4);
 				expect(pixels.some(isInk), 'orange ink remains visible above the opaque child at the seam').toBe(true);
 				expect(strokes(pixels), 'one drawn stroke at the actual edge').toBe(1);
-				const quiet = await column(page, Math.round(width * 0.3), edge.y - 4, edge.y + 4);
-				expect(quiet.some(isInk), 'the reference stroke fades out where the wave passes the section edge').toBe(false);
+				const quiet = await column(page, Math.round(width * 0.26), edge.y - 4, edge.y + 4);
+				expect(quiet.some(isInk), 'the pen lifts between painted segments').toBe(false);
+				for (const x of [width * 0.02, width * 0.98]) {
+					const end = await column(page, x, edge.y - 4, edge.y + 4);
+					expect(end.some(isInk), 'the ink reaches both edges of the page').toBe(true);
+				}
 			} finally { await context.close(); }
 		});
 

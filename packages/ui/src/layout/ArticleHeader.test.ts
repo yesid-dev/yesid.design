@@ -39,7 +39,7 @@ describe('anatomy', () => {
 
 	it('renders only the title and back link when nothing else is given', () => {
 		const view = header();
-		expect(view.container.querySelector('p, [data-pending], [data-slot^="article-header-"]')).toBeNull();
+		expect(root(view).querySelector('p, [data-pending], [data-slot^="article-header-"]')).toBeNull();
 	});
 
 	it('never renders a tag list or pills', () => {
@@ -228,7 +228,7 @@ describe('reading presentation', () => {
 			canvas: html('<canvas data-testid="canvas"></canvas>'),
 		});
 		expect(view.container.querySelector('canvas')).toBeNull();
-		expect(view.container.querySelector('[aria-hidden="true"]:not(.header__meta-sep)')).toBeNull();
+		expect(root(view).querySelector('[aria-hidden="true"]:not(.header__meta-sep)')).toBeNull();
 		for (const text of ['Method', 'LINE 24', 'JUL 9 2026', '+']) expect(view.queryByText(text)).toBeNull();
 	});
 
