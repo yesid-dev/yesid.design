@@ -9,7 +9,7 @@ export type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
 
 /**
  * The section registry behind `PageSections` and `PageSection` (D22). Every registered section
- * except the first is preceded by the boundary row, so every section but the last ends with the
+ * except the first is preceded by its boundary, so every section but the last ends with the
  * page's divider and none sits before the footer. Order is registration order, which is document
  * order on the server and during hydration; once mounted, sections re-sort by document position,
  * so a section that mounts later still lands in its place. `divider` is a getter so a section reads

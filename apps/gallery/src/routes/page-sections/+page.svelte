@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { Masthead, PageSection, PageSections, SiteFooter } from '@yesid/ui/layout';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	let divider = $state<'dimension' | 'hand-drawn'>('dimension');
+	onMount(() => { divider = page.url.searchParams.get('divider') === 'hand-drawn' ? 'hand-drawn' : 'dimension'; });
 </script>
 
 <svelte:head>
@@ -9,7 +13,7 @@
 <!-- D22 regression fixture for PageSections: a section a full-bleed positioned child paints over,
      a Masthead as a whole section, and a wrapped final Masthead section before the footer. -->
 <main id="main" data-ripple-exempt>
-	<PageSections data-testid="fixture-sections">
+	<PageSections {divider} data-testid="fixture-sections">
 		<PageSection id="painted" aria-labelledby="painted-heading" class="fixture-painted">
 			<!-- A full-bleed, positioned, opaque child that fills its section to the last pixel. -->
 			<div class="fixture-paint" data-testid="painted-child">
