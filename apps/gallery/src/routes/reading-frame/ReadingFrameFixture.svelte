@@ -14,7 +14,7 @@
 			<a href={`/reading-frame/${lang}`} aria-current={lang === current ? 'page' : undefined}>{lang.toUpperCase()}</a>
 		{/each}
 	</nav>
-	<button type="button" onclick={() => drawn = !drawn} aria-pressed={drawn}>Hand-drawn contents boundaries</button>
+	<button type="button" class="rule-toggle" onclick={() => drawn = !drawn} aria-pressed={drawn}>Hand-drawn contents boundaries</button>
 	<ReadingFrame
 		title={copy.title}
 		updated={{ datetime: '2026-11-02', label: copy.updatedLabel, text: copy.updatedText }}
@@ -35,6 +35,7 @@
 </div>
 
 <style>
+	.rule-toggle { min-block-size: var(--size-tap-min, 44px); }
 	.langs {
 		display: flex;
 		gap: 1rem;
