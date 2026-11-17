@@ -1227,7 +1227,7 @@ is narrower than 9.5em, including with enlarged text:
 </div>
 
 <style>
-  .brand-space { container-type: inline-size; }
+  .brand-space { container-type: inline-size; inline-size: 100%; }
   @container (inline-size < 9.5em) {
     .brand-layout {
       --brand-direction: column;

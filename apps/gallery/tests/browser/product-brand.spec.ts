@@ -125,17 +125,20 @@ test('independent sizes retain full links and compact container layout at 200% t
 	await page.setViewportSize({ width: 320, height: 900 });
 	await open(page, 'en');
 	const space = page.getByTestId('compact-brand-space');
-	const brand = page.getByTestId('compact-brand');
-	const house = brand.getByRole('link', { name: /^yesid\s*\.$/ });
+	const brand = page.getByTestId('footer-brand');
+	const house = brand.getByRole('link', { name: PRODUCT_COPY.en.houseLabel });
 	const product = brand.getByRole('link', { name: 'Transit', exact: true });
 	const divider = brand.locator('[aria-hidden="true"]');
-	await space.evaluate((node) => { node.style.inlineSize = '224px'; });
+	const header = page.getByTestId('header-brand');
+	await expect(header.getByRole('link', { name: PRODUCT_COPY.en.houseLabel })).toHaveCSS('font-size', '18px');
+	await expect(header.getByRole('link', { name: 'Login', exact: true })).toHaveCSS('font-size', '18px');
 
 	for (const scale of [1, 2]) {
 		await page.evaluate((scale) => { document.documentElement.style.fontSize = `${16 * scale}px`; }, scale);
 		await expect(house).toHaveCSS('font-size', `${18 * scale}px`);
 		await expect(product).toHaveCSS('font-size', `${24 * scale}px`);
 		const bounds = (await space.boundingBox())!;
+		expect(bounds.width, 'the brand wrapper fills its real footer column').toBeGreaterThanOrEqual(224);
 		const first = (await house.boundingBox())!;
 		const second = (await product.boundingBox())!;
 		for (const [name, box] of [['house', first], ['product', second]] as const) {
