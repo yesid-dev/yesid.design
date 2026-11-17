@@ -56,31 +56,39 @@ consumer or clean-room verification.
 
 ## Active deprecations
 
+Publication starts the 90-day gate. These UTC dates come from the immutable stable releases;
+the intervening-minor gate above also applies.
+
+| Deprecation release | Published | 90-day gate ends |
+| --- | --- | --- |
+| [v0.43.0](https://github.com/yesid-dev/yesid.design/releases/tag/v0.43.0) | 2026-11-15 01:56:50 | 2027-02-13 01:56:50 |
+| [v0.44.0](https://github.com/yesid-dev/yesid.design/releases/tag/v0.44.0) | 2026-11-15 07:15:18 | 2027-02-13 07:15:18 |
+
 - **SiteFooter `statusPrefix` / `liveLabel`, starting v0.43.0:** Deprecated, retained and
   functional. Migrate to omission or the existing `statusStart` snippet with a real source and
   time. The former pulse is already still. See [footer status](docs/migrations/footer-status.md).
   Earliest removal: publication date plus 90 days and an intervening minor (earliest v0.45.0
-  when v0.44.0 retains it), unless the owner waives the gates. Publication has not occurred.
+  when v0.44.0 retains it), unless the owner waives the gates.
 - **SiteHeader `compactControls`, starting v0.44.0:** Deprecated, retained and functional. The
   owner decided on 2026-11-14 that the theme and language toggles sit in the navbar pill at every
   width in every product (`DECISIONS.md` D19). Migration: omit the prop. No replacement API. See
   [compact controls](docs/migrations/compact-controls.md). Earliest removal: publication date
   plus 90 days and an intervening minor (earliest v0.46.0 when v0.45.0 retains it), unless the
-  owner waives the gates. Publication has not occurred.
+  owner waives the gates.
 - **`CornerMeta` and `MetroStation` (with `CornerMetaProps` and `MetroStationProps`), starting
   v0.44.0:** Deprecated, retained and functional, from `@yesid/ui` and `@yesid/ui/brand`. No
   product uses them (Y-26). Migration: put essential corner text in the content and drop the
   decoration; use a plain number or `StopLabel` instead of the roundel. No replacement API. See
   [decorative vocabulary](docs/migrations/decorative-vocabulary.md). Earliest removal:
   publication date plus 90 days and an intervening minor (earliest v0.46.0 when v0.45.0 retains
-  them), unless the owner waives the gates. Publication has not occurred.
+  them), unless the owner waives the gates.
 - **`@yesid/tokens` `--shadow-glow-sm` and `--shadow-cta-hover` (with the `shadow-glow-sm`
   utility), starting v0.44.0:** Deprecated, retained and functional, with unchanged values; marked
   `$deprecated` in `tokens.json`. Both exist only to light an element on hover, which the owner
   ruled out on 15 November 2026 (see "Hover halos" below). `glow-sm` lost its only system use,
   the call-to-action Button hover. No replacement: drop the hover shadow (keep `--shadow-cta` or
   no shadow on hover) and keep the lift or colour change. Earliest removal: v0.46.0 and 90 days
-  after v0.44.0 is published, unless the owner waives the gates. Publication has not occurred.
+  after v0.44.0 is published, unless the owner waives the gates.
 
 ## Removals
 
