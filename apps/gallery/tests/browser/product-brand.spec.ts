@@ -120,3 +120,49 @@ test('the product name turns the clickable orange on hover and keeps the foregro
 	await product.hover();
 	await expect(product).toHaveCSS('color', await token('--primary'));
 });
+
+test('independent sizes retain full links and compact container layout at 200% text @theme', async ({ page }, testInfo) => {
+	await page.setViewportSize({ width: 320, height: 900 });
+	await open(page, 'en');
+	const space = page.getByTestId('compact-brand-space');
+	const brand = page.getByTestId('footer-brand');
+	const house = brand.getByRole('link', { name: PRODUCT_COPY.en.houseLabel });
+	const product = brand.getByRole('link', { name: 'Transit', exact: true });
+	const divider = brand.locator('[aria-hidden="true"]');
+	const header = page.getByTestId('header-brand');
+	await expect(header.getByRole('link', { name: PRODUCT_COPY.en.houseLabel })).toHaveCSS('font-size', '18px');
+	await expect(header.getByRole('link', { name: 'Login', exact: true })).toHaveCSS('font-size', '18px');
+
+	for (const scale of [1, 2]) {
+		await page.evaluate((scale) => { document.documentElement.style.fontSize = `${16 * scale}px`; }, scale);
+		await expect(house).toHaveCSS('font-size', `${18 * scale}px`);
+		await expect(product).toHaveCSS('font-size', `${24 * scale}px`);
+		const bounds = (await space.boundingBox())!;
+		expect(bounds.width, 'the brand wrapper fills its real footer column').toBeGreaterThanOrEqual(224);
+		const first = (await house.boundingBox())!;
+		const second = (await product.boundingBox())!;
+		for (const [name, box] of [['house', first], ['product', second]] as const) {
+			expect(box.width, `${name} target at ${scale * 100}%`).toBeGreaterThanOrEqual(44);
+			expect(box.height, `${name} target at ${scale * 100}%`).toBeGreaterThanOrEqual(44);
+			expect(box.x).toBeGreaterThanOrEqual(bounds.x);
+			expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width + 0.5);
+			await expect(name === 'house' ? house : product).toHaveJSProperty('scrollWidth', Math.round(box.width));
+		}
+		if (scale === 1) {
+			await expect(divider).toBeVisible();
+			expect(first.x + first.width).toBeLessThan(second.x);
+		} else {
+			await expect(divider).toBeHidden();
+			expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
+			expect(second.x).toBeCloseTo(first.x, 1);
+		}
+		await house.focus();
+		await expect(house).toHaveCSS('outline-width', '2px');
+		await page.keyboard.press('Tab');
+		await expect(product).toBeFocused();
+		await expect(product).toHaveCSS('outline-width', '2px');
+	}
+	await testInfo.attach('compact-brand-200-percent', { body: await brand.screenshot(), contentType: 'image/png' });
+	await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+	await expectAccessible(page);
+});

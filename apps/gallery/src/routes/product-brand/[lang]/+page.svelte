@@ -40,6 +40,26 @@
 
 <SiteFooter tagline={copy.tagline} groups={[]}>
 	{#snippet brand()}
-		<ProductBrand product="Transit" href={home} houseHref="https://yesid.dev" houseExternal houseLabel={copy.houseLabel} class="text-xl" data-testid="footer-brand" />
+		<div class="brand-space" data-testid="compact-brand-space">
+			<div class="brand-layout">
+				<ProductBrand product="Transit" href={home} houseHref="https://yesid.dev" houseExternal houseLabel={copy.houseLabel}
+					houseStyle="font-size: 1.125rem" productStyle="font-size: 1.5rem"
+					dividerStyle="display: var(--brand-divider, block)"
+					style="flex-direction: var(--brand-direction, row); align-items: var(--brand-align, center); gap: var(--brand-gap, 0.5em); max-inline-size: 100%"
+					data-testid="footer-brand" />
+			</div>
+		</div>
 	{/snippet}
 </SiteFooter>
+
+<style>
+	.brand-space { container-type: inline-size; inline-size: 100%; }
+	@container (inline-size < 9.5em) {
+		.brand-layout {
+			--brand-direction: column;
+			--brand-align: flex-start;
+			--brand-gap: 0;
+			--brand-divider: none;
+		}
+	}
+</style>
