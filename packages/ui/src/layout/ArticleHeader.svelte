@@ -62,10 +62,13 @@
 </script>
 
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { boop } from '@yesid/motion/actions';
 	import { findHighlight } from './article-highlight.js';
 	import CornerMarks from '../brand/CornerMarks.svelte';
 	import ManifestoCanvas from '../brand/ManifestoCanvas.svelte';
+	import DrawnPageBoundary from './DrawnPageBoundary.svelte';
+	import { pageSectionsRegistry, type PageSectionEntry, type PageSectionPosition } from './page-sections.js';
 
 	let {
 		title,
@@ -90,6 +93,24 @@
 	}: ArticleHeaderProps = $props();
 
 	let headerEl = $state<HTMLElement>();
+	const registry = pageSectionsRegistry();
+	let position = $state<PageSectionPosition>({ sectionsBefore: 0, headersBefore: 0 });
+	const entry: PageSectionEntry = {
+		kind: 'article-header',
+		element: null,
+		setPosition: (value) => (position = value),
+	};
+	if (registry) {
+		onDestroy(registry.register(entry));
+		position = registry.position(entry);
+	}
+	$effect(() => {
+		if (!registry) return;
+		entry.element = headerEl ?? null;
+		registry.refresh();
+	});
+	const inkIndex = $derived(position.headersBefore
+		+ (registry?.divider() === 'hand-drawn' ? Math.max(0, position.sectionsBefore - 1) : 0));
 
 	const reading = $derived(presentation === 'reading');
 	const titleParts = $derived.by(() => {
@@ -219,6 +240,7 @@
 		</div>
 	</section>
 </div>
+<DrawnPageBoundary {inkIndex} slot="article-header-boundary" />
 
 <style>
 	.article-header {

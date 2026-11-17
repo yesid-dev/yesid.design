@@ -10,19 +10,26 @@ export type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
 /**
  * The section registry behind `PageSections` and `PageSection` (D22). Every registered section
  * except the first is preceded by its boundary, so every section but the last ends with the
- * page's divider and none sits before the footer. Order is registration order, which is document
- * order on the server and during hydration; once mounted, sections re-sort by document position,
+ * page's divider and none sits before the footer. Article headers share the hand-drawn sequence.
+ * Order is registration order, which is document order on the server and during hydration;
+ * once mounted, entries re-sort by document position,
  * so a section that mounts later still lands in its place. `divider` is a getter so a section reads
  * its parent's current choice and follows a change to the `PageSections` prop.
  */
 export interface PageSectionEntry {
+	kind: 'section' | 'article-header';
 	element: HTMLElement | null;
-	setFirst(first: boolean): void;
+	setPosition(position: PageSectionPosition): void;
+}
+
+export interface PageSectionPosition {
+	sectionsBefore: number;
+	headersBefore: number;
 }
 
 export interface PageSectionsRegistry {
 	register(entry: PageSectionEntry): () => void;
-	isFirst(entry: PageSectionEntry): boolean;
+	position(entry: PageSectionEntry): PageSectionPosition;
 	refresh(): void;
 	divider(): PageDivider;
 }
@@ -40,7 +47,15 @@ export function createPageSectionsRegistry(
 			a.element!.compareDocumentPosition(b.element!) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
 		);
 	};
-	const refresh = () => ordered().forEach((entry, index) => entry.setFirst(index === 0));
+	const refresh = () => {
+		let sectionsBefore = 0;
+		let headersBefore = 0;
+		for (const entry of ordered()) {
+			entry.setPosition({ sectionsBefore, headersBefore });
+			if (entry.kind === 'section') sectionsBefore++;
+			else headersBefore++;
+		}
+	};
 	return {
 		register(entry) {
 			entries.push(entry);
@@ -50,7 +65,16 @@ export function createPageSectionsRegistry(
 				refresh();
 			};
 		},
-		isFirst: (entry) => ordered()[0] === entry,
+		position(entry) {
+			let sectionsBefore = 0;
+			let headersBefore = 0;
+			for (const preceding of ordered()) {
+				if (preceding === entry) break;
+				if (preceding.kind === 'section') sectionsBefore++;
+				else headersBefore++;
+			}
+			return { sectionsBefore, headersBefore };
+		},
 		refresh,
 		divider,
 	};

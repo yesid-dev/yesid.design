@@ -200,6 +200,10 @@ for (const theme of THEMES) {
 		}
 		const boundaries = page.locator('[data-slot="page-section-boundary"]');
 		await expect(boundaries).toHaveCount(3);
+		const paths = await boundaries.locator('svg path').evaluateAll(nodes => nodes.map(node => node.getAttribute('d')!));
+		expect(paths.map(path => (path.match(/M/g) ?? []).length)).toEqual([4, 5, 4]);
+		expect(paths[0]).toBe(paths[2]);
+		expect(paths[0]).not.toBe(paths[1]);
 		for (const boundary of await boundaries.all()) {
 			await expect(boundary).toHaveClass(/hand-drawn-line/);
 			await expect(boundary).toHaveAttribute('data-variant', 'hand-drawn');
@@ -209,18 +213,15 @@ for (const theme of THEMES) {
 			await expect(path).toHaveAttribute('stroke', 'currentColor');
 			await expect(path).toHaveCSS('stroke', ink);
 			await expect(path).toHaveCSS('stroke-width', '1.25px');
-			const seam = await boundary.evaluate(node => {
+			await expect(boundary.locator('svg')).toHaveCSS('clip-path', 'inset(0px 0px 50%)');
+			const gap = await boundary.evaluate(node => {
 				const sections = [...node.closest('[data-slot="page-sections"]')!.querySelectorAll('[data-slot="page-section"]')];
 				const previous = sections.filter(section => Boolean(section.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING)).at(-1)!;
 				const before = previous.getBoundingClientRect();
 				const after = node.nextElementSibling!.getBoundingClientRect();
-				const path = node.querySelector('path')!;
-				const ink = path.getBBox();
-				const center = new DOMPoint(ink.x + ink.width / 2, ink.y + ink.height / 2).matrixTransform(path.getScreenCTM()!);
-				return { gap: after.top - before.bottom, inkToEdge: center.y - before.bottom };
+				return after.top - before.bottom;
 			});
-			expect(Math.abs(seam.gap), 'section backgrounds meet with no padded strip').toBeLessThanOrEqual(0.5);
-			expect(Math.abs(seam.inkToEdge), 'the drawn ink sits on the actual section edge').toBeLessThanOrEqual(1);
+			expect(Math.abs(gap), 'section backgrounds meet with no padded strip').toBeLessThanOrEqual(0.5);
 		}
 
 		const footer = page.getByRole('contentinfo');

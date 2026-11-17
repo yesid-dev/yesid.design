@@ -137,11 +137,11 @@
 	{@render header?.()}
 
 	{#if rule === 'hazard'}
-		<Separator variant="hazard" class="detail-shell-tape" data-edge-rule={edgeRule} />
+		<Separator variant="hazard" class="detail-shell-tape detail-shell-rule" data-edge-rule={edgeRule} />
 	{:else if rule === 'dimension'}
-		<Separator variant="dimension" class="detail-shell-dimension" data-edge-rule={edgeRule} />
+		<Separator variant="dimension" class="detail-shell-dimension detail-shell-rule" data-edge-rule={edgeRule} />
 	{:else if rule === 'line'}
-		<div class="detail-shell-line" data-slot="detail-shell-line" data-edge-rule={edgeRule} aria-hidden="true"></div>
+		<div class="detail-shell-line detail-shell-rule" data-slot="detail-shell-line" data-edge-rule={edgeRule} aria-hidden="true"></div>
 	{/if}
 
 	{#if toolbar}
@@ -224,6 +224,14 @@
 		height: 1px;
 		margin-inline: var(--space-page-x);
 		background: var(--border);
+	}
+
+	/* ArticleHeader already ends on its own edge. Match only an earlier
+	   sibling, directly or through a header wrapper, so a header in the
+	   frame body cannot suppress the frame's own rule. */
+	:global([data-slot='detail-shell'] > [data-slot='article-header-boundary'] ~ .detail-shell-rule),
+	:global([data-slot='detail-shell'] > :has([data-slot='article-header-boundary']) ~ .detail-shell-rule) {
+		display: none;
 	}
 
 	.detail-shell-toolbar {

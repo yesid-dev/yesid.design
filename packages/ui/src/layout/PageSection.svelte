@@ -19,11 +19,13 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { Separator } from '../primitives/separator/index.js';
+	import DrawnPageBoundary from './DrawnPageBoundary.svelte';
 	import {
 		insidePageSection,
 		pageSectionsRegistry,
 		provideInsidePageSection,
 		type PageSectionEntry,
+		type PageSectionPosition,
 	} from './page-sections.js';
 
 	let { children, ...rest }: PageSectionProps = $props();
@@ -36,11 +38,15 @@
 	const divider = $derived(registry?.divider() ?? 'dimension');
 
 	let element = $state<HTMLElement>();
-	let first = $state(true);
-	const entry: PageSectionEntry = { element: null, setFirst: (value) => (first = value) };
+	let position = $state<PageSectionPosition>({ sectionsBefore: 0, headersBefore: 0 });
+	const entry: PageSectionEntry = {
+		kind: 'section',
+		element: null,
+		setPosition: (value) => (position = value),
+	};
 	if (registry) {
 		onDestroy(registry.register(entry));
-		first = registry.isFirst(entry);
+		position = registry.position(entry);
 	}
 
 	$effect(() => {
@@ -50,8 +56,12 @@
 	});
 </script>
 
-{#if registry && !first}
-	<Separator variant={divider} class="page-section-boundary" data-slot="page-section-boundary" />
+{#if registry && position.sectionsBefore > 0}
+	{#if divider === 'hand-drawn'}
+		<DrawnPageBoundary inkIndex={position.sectionsBefore - 1 + position.headersBefore} />
+	{:else}
+		<Separator variant={divider} class="page-section-boundary" data-slot="page-section-boundary" />
+	{/if}
 {/if}
 <section
 	bind:this={element}
@@ -61,22 +71,3 @@
 >
 	{@render children()}
 </section>
-
-<style>
-	/* A zero-height anchor keeps the section backgrounds touching. */
-	:global(.page-section-boundary[data-variant='hand-drawn']) {
-		position: relative;
-		height: 0;
-		z-index: 1;
-		overflow: visible;
-	}
-
-	:global(.page-section-boundary[data-variant='hand-drawn'] > .hand-drawn-line-art) {
-		position: absolute;
-		inset: -10px 0 auto;
-		height: 20px;
-		/* Only the part above the section edge paints, matching the reference's fine, fading ink.
-		   Standalone/card strokes keep their full canvas and are unaffected. */
-		clip-path: inset(0 0 50%);
-	}
-</style>

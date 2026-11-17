@@ -1,9 +1,15 @@
 // @vitest-environment node
 import { Window } from 'happy-dom';
 import { render } from 'svelte/server';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import ArticleHeader from './ArticleHeader.svelte';
 import Canvas from './test-fixtures/ArticleHeaderCanvas.svelte';
+
+// The server renderer and getContext must both use Svelte's server build.
+vi.mock('svelte', async (importOriginal) => {
+	const server = '../../node_modules/svelte/src/index-server.js';
+	return { ...(await importOriginal<typeof import('svelte')>()), ...(await import(/* @vite-ignore */ server)) };
+});
 
 it('server markup has the title, back link and meta', () => {
 	const { body } = render(ArticleHeader, {

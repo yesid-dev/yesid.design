@@ -39,3 +39,14 @@ it.each(['hand-drawn', 'hazard'] as const)('server markup draws the supplied %s 
 	}
 	expect(body.slice(body.indexOf('id="c"'))).not.toContain('page-section-boundary');
 });
+
+it('alternates the built-in article edge with the later page edges before hydration', () => {
+	const { body } = render(PageSectionsFixture, { props: { mode: 'editorial' } });
+	const edges = [...body.matchAll(/data-slot="(article-header-boundary|page-section-boundary)"[^>]*data-stroke-segments="([45])"/g)];
+	expect(edges.map(match => [match[1], match[2]])).toEqual([
+		['article-header-boundary', '4'],
+		['page-section-boundary', '5'],
+		['page-section-boundary', '4'],
+	]);
+	expect(body.slice(body.indexOf('id="c"'))).not.toContain('page-section-boundary');
+});

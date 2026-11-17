@@ -12,6 +12,12 @@ test('detail frame layout at this width', async ({ page }) => {
 	const left = page.locator('[data-slot="detail-shell-left"]');
 	const right = page.locator('[data-slot="detail-shell-right"]');
 	const header = page.locator('[data-slot="article-header"]');
+	const boundary = page.locator('[data-slot="article-header-boundary"]');
+	await expect(boundary).toHaveCount(1);
+	await expect(boundary).toHaveCSS('height', '0px');
+	await expect(boundary).toHaveAttribute('data-stroke-segments', '4');
+	await expect(boundary.locator('svg')).toHaveCSS('clip-path', 'inset(0px 0px 50%)');
+	await expect(page.locator('.detail-shell-rule')).toBeHidden();
 	const title = header.locator('h1');
 	const navBottom = async () => {
 		const nav = (await page.getByTestId('fixture-nav').boundingBox())!;
