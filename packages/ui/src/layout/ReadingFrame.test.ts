@@ -42,3 +42,23 @@ describe('ReadingFrame update row', () => {
 		);
 	});
 });
+
+
+describe('ReadingFrame contents boundaries', () => {
+	it('switches both boundaries reactively without remounting contents or changing its links', async () => {
+		const view = render(ReadingFrame, { props });
+		const nav = view.getByRole('navigation', { name: 'Contents' });
+		const link = view.getByRole('link', { name: 'Data we keep' });
+		const strokes = () => nav.querySelectorAll('[data-slot="separator"][data-variant="hand-drawn"]');
+		expect(strokes()).toHaveLength(0);
+		await view.rerender({ ...props, contentsRule: 'hand-drawn' });
+		expect(strokes()).toHaveLength(2);
+		expect(view.getByRole('navigation', { name: 'Contents' })).toBe(nav);
+		expect(view.getByRole('link', { name: 'Data we keep' })).toBe(link);
+		expect(link.getAttribute('href')).toBe('#data');
+		for (const stroke of strokes()) expect(stroke.getAttribute('aria-hidden')).toBe('true');
+		await view.rerender({ ...props, contentsRule: 'line' });
+		expect(strokes()).toHaveLength(0);
+		expect(view.getByRole('link', { name: 'Data we keep' })).toBe(link);
+	});
+});

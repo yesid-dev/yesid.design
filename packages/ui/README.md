@@ -752,6 +752,12 @@ each a 44px target (`--size-tap-min`).
   so `#contact` reaches the same section in English, French and Spanish; a translated, spaced,
   uppercase or repeated id throws. The body's sections carry the same ids.
 - `contents` (snippet) replaces the built-in list for a product that renders its own navigation.
+- `contentsRule` selects the top and bottom contents boundaries: `line` (default) retains the
+  existing solid rules and markup; `hand-drawn` uses the exact shared `Separator` hand-drawn
+  orange stroke. It applies to both the built-in list and a custom `contents` snippet, adds no
+  focus targets or announced separators, and preserves the contents box dimensions and reading
+  rhythm. With no contents, neither boundary renders. For example, pass
+  `contentsRule="hand-drawn"` alongside `sections` and `contentsLabel`.
 - `titleId` names the title for a landmark labelled by it.
 
 Products keep the legal copy, the schema and server rendering.

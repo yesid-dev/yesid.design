@@ -117,3 +117,28 @@ describe('ReadingFrame (experimental)', () => {
 		expect(markup).not.toContain('<ol');
 	});
 });
+
+
+describe('ReadingFrame contents boundaries', () => {
+	it('keeps omitted and explicit line markup identical and draws no separators by default', () => {
+		const normalize = (markup: string) => markup.replace(/s[0-9]+-contents/g, 'uid-contents');
+		expect(normalize(html())).toBe(normalize(html({ contentsRule: 'line' })));
+		expect(html()).not.toContain('data-slot="separator"');
+	});
+
+	it.each([false, true])('draws two shared decorative strokes for ownContents=%s on the server', (ownContents) => {
+		const markup = html({ ownContents, contentsRule: 'hand-drawn' });
+		expect(markup.match(/data-variant="hand-drawn"/g)).toHaveLength(2);
+		expect(markup.match(/role="none" aria-hidden="true"/g)).toHaveLength(2);
+		expect(markup).toContain('datetime="2026-11-02"');
+		expect(markup).toContain(ownContents ? 'aria-label="Product contents"' : 'href="#data"');
+	});
+
+	it('does not draw orphan boundaries without contents and preserves null/date validation', () => {
+		expect(html({ sections: undefined, contentsLabel: undefined, contentsRule: 'hand-drawn' })).not.toContain('data-slot="separator"');
+		expect(html({ updated: undefined, contentsRule: 'hand-drawn' })).not.toContain('<time');
+		expect(() => html({ updated: null, contentsRule: 'hand-drawn' })).toThrow(/ReadingFrame: updated/);
+		expect(() => html({ updated: { ...base.updated, datetime: '2026-02-30' }, contentsRule: 'hand-drawn' })).toThrow(/updated\.datetime/);
+		expect(() => html({ contentsLabel: undefined, contentsRule: 'hand-drawn' })).toThrow(/contentsLabel/);
+	});
+});

@@ -132,3 +132,51 @@ for (const theme of ['dark', 'light']) {
 		});
 	}
 }
+
+
+test('contents boundary option preserves layout, links and focus with shared strokes', async ({ page }) => {
+	await page.setViewportSize(page.viewportSize()!.width < 1024 ? { width: 320, height: 640 } : { width: 1024, height: 600 });
+	for (const theme of ['dark', 'light']) {
+		await open(page, 'fr', theme);
+		const contents = page.locator('[data-slot="reading-frame-contents"]');
+		const strokes = contents.locator('[data-slot="separator"][data-variant="hand-drawn"]');
+		const toggle = page.getByRole('button', { name: 'Hand-drawn contents boundaries' });
+		const links = contents.getByRole('link');
+		const hrefs = await links.evaluateAll(links => links.map(link => link.getAttribute('href')));
+		for (const scale of [100, 200]) {
+			await page.evaluate(scale => { document.documentElement.style.fontSize = `${scale}%`; }, scale);
+			await page.evaluate(() => window.scrollTo(0, 0));
+			const geometry = () => contents.evaluate(el => {
+				const box = el.getBoundingClientRect();
+				return { x: box.x, y: box.y + scrollY, width: box.width, height: box.height };
+			});
+			const before = await geometry();
+			await expect(strokes).toHaveCount(0);
+			await expect(contents).toHaveCSS('border-top-style', 'solid');
+			await expect(contents).toHaveCSS('border-top-width', '1px');
+			await toggle.click();
+			await expect(strokes).toHaveCount(2);
+			expect(await geometry()).toEqual(before);
+			await expect(contents).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+			for (const stroke of await strokes.all()) {
+				await expect(stroke).toHaveAttribute('aria-hidden', 'true');
+				await expect(stroke.locator('svg path')).toHaveCount(1);
+				const box = (await stroke.boundingBox())!;
+				expect(box.x).toBe(before.x);
+				expect(box.width).toBe(before.width);
+				expect(box.height).toBe(8);
+			}
+			expect(await links.evaluateAll(links => links.map(link => link.getAttribute('href')))).toEqual(hrefs);
+			await links.first().focus();
+			await expect(links.first()).toBeFocused();
+			await page.keyboard.press('Tab');
+			await expect(links.nth(1)).toBeFocused();
+			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+			await toggle.click();
+			await expect(strokes).toHaveCount(0);
+			expect(await geometry()).toEqual(before);
+		}
+		await links.last().click();
+		await expect(page).toHaveURL(new RegExp(`${hrefs.at(-1)}$`));
+	}
+});

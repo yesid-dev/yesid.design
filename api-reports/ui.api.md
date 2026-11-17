@@ -2208,6 +2208,7 @@ interface ReadingFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'title' | 
     children: Snippet;
     contents?: Snippet;
     contentsLabel?: string;
+    contentsRule?: 'line' | 'hand-drawn';
     sections?: ReadingFrameSection[];
     summary?: Snippet;
     // (undocumented)
