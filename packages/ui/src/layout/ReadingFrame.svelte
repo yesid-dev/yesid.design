@@ -37,6 +37,8 @@
 		contentsLabel?: string;
 		/** Replaces the built-in contents list, for a product that renders its own navigation. */
 		contents?: Snippet;
+		/** Contents boundaries: existing solid `line` (default), or the shared decorative hand-drawn stroke. */
+		contentsRule?: 'line' | 'hand-drawn';
 		/** The body: the product's own sections, each with the id its contents entry names. */
 		children: Snippet;
 		/** The title's id, for a landmark that names itself after the title. */
@@ -103,6 +105,7 @@
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import { Separator } from '../primitives/separator/index.js';
 
 	let {
 		title,
@@ -111,6 +114,7 @@
 		sections,
 		contentsLabel,
 		contents,
+		contentsRule = 'line',
 		children,
 		titleId,
 		class: className,
@@ -125,6 +129,12 @@
 	const entries = $derived(checkedSections(sections, contentsLabel, contents !== undefined));
 	const showBuiltInContents = $derived(!contents && entries.length > 0);
 </script>
+
+{#snippet boundary(edge: 'top' | 'bottom')}
+	{#if contentsRule === 'hand-drawn'}
+		<Separator variant="hand-drawn" style={`position: absolute; inset-inline: 0; ${edge}: -4px;`} />
+	{/if}
+{/snippet}
 
 <article data-slot="reading-frame" class={cn('reading-frame', className)} {...restProps}>
 	<header class="reading-frame__header">
@@ -141,9 +151,14 @@
 	</header>
 
 	{#if contents}
-		<div class="reading-frame__contents" data-slot="reading-frame-contents">{@render contents()}</div>
+		<div class={cn('reading-frame__contents', contentsRule === 'hand-drawn' && 'reading-frame__contents--drawn')} data-slot="reading-frame-contents">
+			{@render boundary('top')}
+			{@render contents()}
+			{@render boundary('bottom')}
+		</div>
 	{:else if showBuiltInContents}
-		<nav class="reading-frame__contents" data-slot="reading-frame-contents" aria-labelledby={contentsHeadingId}>
+		<nav class={cn('reading-frame__contents', contentsRule === 'hand-drawn' && 'reading-frame__contents--drawn')} data-slot="reading-frame-contents" aria-labelledby={contentsHeadingId}>
+			{@render boundary('top')}
 			<h2 class="reading-frame__contents-heading" id={contentsHeadingId}>{contentsLabel}</h2>
 			<!-- Unnumbered; role="list" keeps list semantics in Safari once list-style is none. -->
 			<ul class="reading-frame__contents-list" role="list">
@@ -151,6 +166,7 @@
 					<li><a class="reading-frame__contents-link" href={`#${section.id}`}>{section.title}</a></li>
 				{/each}
 			</ul>
+			{@render boundary('bottom')}
 		</nav>
 	{/if}
 
@@ -221,6 +237,12 @@
 		margin-block-start: 2rem;
 		padding-block: 1rem;
 		border-block: 1px solid var(--border);
+	}
+
+	/* Keep the default border box and rhythm; only replace its visible ink. */
+	.reading-frame__contents--drawn {
+		position: relative;
+		border-color: transparent;
 	}
 
 	.reading-frame__contents-heading {

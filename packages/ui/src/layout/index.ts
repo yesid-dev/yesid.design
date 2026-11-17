@@ -57,3 +57,6 @@ export type { PageDivider } from './page-sections.js';
 
 export { default as PageSection } from './PageSection.svelte';
 export type { PageSectionProps } from './PageSection.svelte';
+
+export { default as ListingRail } from './ListingRail.svelte';
+export type { ListingRailProps } from './ListingRail.svelte';

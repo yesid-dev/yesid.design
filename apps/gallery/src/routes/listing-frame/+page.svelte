@@ -88,6 +88,7 @@
 	presentation={reading ? 'reading' : 'expressive'}
 	{rule}
 	heading={spanish ? 'Responsabilidades e internacionalización: trabajos e investigaciones' : 'Catalogue'}
+	clipAtHeader={params.get('clip') !== '0'}
 	edgeTitle="Un catalogue de travaux et de recherches"
 	subtitle={spanish ? 'Trabajos e investigaciones' : 'Travaux et recherches'}
 	description="Exemple de page de liste avec filtres, recherche et résultats."

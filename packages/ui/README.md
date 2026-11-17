@@ -626,6 +626,33 @@ heading), centred in a column that stays in view. `clipAtHeader` forwards the sa
 option (default true) so a listing can stop the header clip without internal CSS, keeping the edge
 column and metro decoration.
 
+`ListingRail` from `@yesid/ui/layout` owns that same centered left title column, both
+original four-dot clusters and the adjacent accent. It renders two sibling grid items: on desktop
+the parent supplies `grid-template-columns: auto 2px minmax(0, 1fr)` and its content follows the
+rail. Below 1024px the semantic title reads horizontally, while the dots/accent are hidden.
+The parent must allow natural overflow and enough section height for sticky placement.
+
+```svelte
+<section class="page-grid" aria-labelledby="page-title">
+  <ListingRail heading="Contact" titleId="page-title" clipAtHeader={false} />
+  <div><!-- Page content --></div>
+</section>
+
+<style>
+  @media (min-width: 1024px) {
+    .page-grid { display: grid; grid-template-columns: auto 2px minmax(0, 1fr); }
+  }
+</style>
+```
+
+The default is a real `h1`; `level` accepts 1–6 and `titleId` labels that heading at every
+width. The orange title dot and metro artwork remain hidden from assistive technology. Use
+`decorative` only beside a separate accessible/mobile heading, as ListingFrame does; that typed
+mode excludes `level` and `titleId` and hides the entire title column below 1024px. No focusable
+elements are added. `clipAtHeader` retains RailTitle's default true; false disables its scroll
+mask without changing fitting, sticky placement or decoration. Existing listing data slots,
+rail dimensions and callers are unchanged. Consumers need no private CSS selectors.
+
 `resultCountText` (optional) is the result count in words, for example from `filterCountText`.
 The frame keeps a visually hidden polite status (`role="status"`) in the results column for as long
 as the prop is set, so screen readers hear the count whenever a search or filter changes it, even
@@ -725,6 +752,12 @@ each a 44px target (`--size-tap-min`).
   so `#contact` reaches the same section in English, French and Spanish; a translated, spaced,
   uppercase or repeated id throws. The body's sections carry the same ids.
 - `contents` (snippet) replaces the built-in list for a product that renders its own navigation.
+- `contentsRule` selects the top and bottom contents boundaries: `line` (default) retains the
+  existing solid rules and markup; `hand-drawn` uses the exact shared `Separator` hand-drawn
+  orange stroke. It applies to both the built-in list and a custom `contents` snippet, adds no
+  focus targets or announced separators, and preserves the contents box dimensions and reading
+  rhythm. With no contents, neither boundary renders. For example, pass
+  `contentsRule="hand-drawn"` alongside `sections` and `contentsLabel`.
 - `titleId` names the title for a landmark labelled by it.
 
 Products keep the legal copy, the schema and server rendering.

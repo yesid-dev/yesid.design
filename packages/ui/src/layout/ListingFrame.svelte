@@ -61,7 +61,7 @@
 	import { onMount } from 'svelte';
 	import { scrollChain } from '@yesid/motion/actions';
 	import ChevronToggle from '../brand/ChevronToggle.svelte';
-	import RailTitle from '../brand/RailTitle.svelte';
+	import ListingRail from './ListingRail.svelte';
 	import { Separator } from '../primitives/separator/index.js';
 
 	let {
@@ -106,25 +106,7 @@
 	data-rule={drawnRule}
 >
 	{#if !reading}
-		<div class="edge-title-column" data-slot="listing-edge-title" aria-hidden="true">
-			<RailTitle heading={edgeTitle ?? heading} decorative size="clamp(3rem, 4vw, 3.5rem)" class="edge-title" {clipAtHeader} />
-			<div class="metro-dots metro-dots-top">
-				<div class="metro-line"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-dot metro-dot-lg"></div>
-			</div>
-			<div class="metro-dots metro-dots-bottom">
-				<div class="metro-dot metro-dot-lg"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-dot metro-dot-sm"></div>
-				<div class="metro-line"></div>
-			</div>
-		</div>
-
-		<div class="accent-rail" data-slot="listing-accent-rail" aria-hidden="true"></div>
+		<ListingRail heading={edgeTitle ?? heading} decorative {clipAtHeader} />
 	{/if}
 
 	<div class="listing-main">
@@ -223,11 +205,6 @@
 		display: block;
 		width: 100%;
 		min-width: 0;
-	}
-
-	.edge-title-column,
-	.accent-rail {
-		display: none;
 	}
 
 	.listing-main,
@@ -428,34 +405,6 @@
 			padding-top: var(--chrome-offset, 0px);
 		}
 
-		.edge-title-column {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			position: sticky;
-			top: 0;
-			height: 100dvh;
-			padding: 1rem 1.5rem;
-		}
-
-		/* The column itself stays in view and centres the rail title, which may wrap onto a second
-		   vertical line to keep clear of the header pill and the column's metro dots. */
-		.edge-title-column :global([data-slot='rail-title'].rail-title) {
-			position: static;
-			align-self: center;
-		}
-
-		.edge-title-column :global([data-slot='rail-title'] .rail-title-text) {
-			max-height: calc(100dvh - 16rem);
-			white-space: normal;
-			overflow-wrap: anywhere;
-		}
-
-		.accent-rail {
-			display: block;
-			background: color-mix(in srgb, var(--primary) 35%, transparent);
-		}
-
 		.listing-blueprint-header {
 			min-height: calc(160px + var(--chrome-offset, 0px));
 		}
@@ -605,45 +554,4 @@
 		}
 	}
 
-	.metro-dots {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 12px;
-		writing-mode: horizontal-tb;
-	}
-
-	.metro-dots-top {
-		top: 16px;
-	}
-
-	.metro-dots-bottom {
-		bottom: 16px;
-	}
-
-	.metro-line {
-		width: 2px;
-		height: 32px;
-		background: color-mix(in srgb, var(--primary) 25%, transparent);
-	}
-
-	.metro-dot {
-		border-radius: 50%;
-	}
-
-	.metro-dot-sm {
-		width: 6px;
-		height: 6px;
-		border: 1.5px solid color-mix(in srgb, var(--primary) 35%, transparent);
-	}
-
-	.metro-dot-lg {
-		width: 10px;
-		height: 10px;
-		background: color-mix(in srgb, var(--primary) 25%, transparent);
-		border: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
-	}
 </style>

@@ -53,6 +53,16 @@ describe('header', () => {
 });
 
 describe('edge title', () => {
+	it('retains both original four-dot clusters and adjacent accent as direct grid items', () => {
+		const view = frame();
+		const column = slot(view, 'listing-edge-title');
+		expect(column.children).toHaveLength(3);
+		for (const cluster of [...column.children].slice(1)) {
+			expect(cluster.children).toHaveLength(5);
+		}
+		expect(column.nextElementSibling).toBe(slot(view, 'listing-accent-rail'));
+		expect(column.parentElement).toBe(slot(view, 'listing-frame'));
+	});
 	it.each(['Notes', 'Un catalogue de travaux et de recherches', ''])('shows the supplied title %j and the results', (edgeTitle) => {
 		const view = frame({ edgeTitle });
 		expect(slot(view, 'listing-edge-title').textContent?.trim()).toBe(`${edgeTitle}.`);
