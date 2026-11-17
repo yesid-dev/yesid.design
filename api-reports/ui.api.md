@@ -1771,7 +1771,9 @@ declare namespace Layout {
         PageSectionsProps,
         PageDivider,
         PageSection,
-        PageSectionProps
+        PageSectionProps,
+        ListingRail,
+        ListingRailProps
     }
 }
 
@@ -1804,6 +1806,30 @@ interface ListingFrameProps {
     // (undocumented)
     subtitle: string;
 }
+
+// @public (undocumented)
+const ListingRail: Component<ListingRailProps, {}, "">;
+
+// @public (undocumented)
+type ListingRail = ReturnType<typeof ListingRail>;
+
+// @public (undocumented)
+interface ListingRailBase {
+    clipAtHeader?: boolean;
+    // (undocumented)
+    heading: string;
+}
+
+// @public
+type ListingRailProps = ListingRailBase & ({
+    decorative: true;
+    level?: never;
+    titleId?: never;
+} | {
+    decorative?: false;
+    level?: 1 | 2 | 3 | 4 | 5 | 6;
+    titleId?: string;
+});
 
 // @public (undocumented)
 interface LocaleContext<Locale extends string> {

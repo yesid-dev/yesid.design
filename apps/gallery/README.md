@@ -93,3 +93,8 @@ a comparison table with row headers inside its own keyboard-scrollable region, n
 facts in a definition list and 25 people with confirmation inside each row. The focused
 `reading-record.spec.ts` covers 320 to 1920px, both themes and reduced motion. Values are
 fixtures, never live service evidence. Consumer rehearsal remains separate.
+
+`/listing-rail` demonstrates the public ListingRail in semantic mode with its own h1/id,
+original metro clusters and accent. `listing-rail.spec.ts` pins ListingFrame's existing rail
+geometry and checks the standalone title at 320px and a short 1024px desktop, 200% text,
+keyboard focus and unclipped scroll departure.
