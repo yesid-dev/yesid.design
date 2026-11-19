@@ -94,16 +94,17 @@
 		container-type: inline-size;
 	}
 
+	/* Notice tones are interface semantics, not transport status, so they stay off the dataviz status scale. */
 	.state-notice[data-tone='positive'] {
-		--state-notice-ink: var(--dataviz-status-on-time);
+		--state-notice-ink: var(--success);
 	}
 
 	.state-notice[data-tone='warning'] {
-		--state-notice-ink: var(--dataviz-status-late);
+		--state-notice-ink: var(--accent-text);
 	}
 
 	.state-notice[data-tone='error'] {
-		--state-notice-ink: var(--dataviz-status-severe);
+		--state-notice-ink: var(--destructive);
 	}
 
 	.state-notice-surface {

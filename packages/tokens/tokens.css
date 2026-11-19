@@ -180,8 +180,8 @@
   --grid-glow: color-mix(in srgb, var(--primary) 5%, transparent);
   --edge-highlight: color-mix(in srgb, var(--foreground) 5%, transparent);
   --dataviz-status-early: #4aa3d4;
-  --dataviz-status-on-time: #28c840;
-  --dataviz-status-late: #ffb627;
+  --dataviz-status-on-time: #f5f5f0;
+  --dataviz-status-late: #ff5f57;
   --dataviz-status-severe: #ff5f57;
   --dataviz-status-unknown: #8a8a8a;
   --dataviz-occupancy-empty: #5b4a7a;
@@ -246,8 +246,8 @@
   --grid-glow: transparent;
   --edge-highlight: rgba(255, 255, 255, 0.6);
   --dataviz-status-early: #1f6f9c;
-  --dataviz-status-on-time: #1f7a33;
-  --dataviz-status-late: #9a6a00;
+  --dataviz-status-on-time: #131923;
+  --dataviz-status-late: #c62828;
   --dataviz-status-severe: #c62828;
   --dataviz-status-unknown: #6b6b6b;
   --dataviz-occupancy-empty: #c9b8e8;
@@ -313,8 +313,8 @@
     --grid-glow: color-mix(in srgb, var(--primary) 5%, transparent);
     --edge-highlight: color-mix(in srgb, var(--foreground) 5%, transparent);
     --dataviz-status-early: #4aa3d4;
-    --dataviz-status-on-time: #28c840;
-    --dataviz-status-late: #ffb627;
+    --dataviz-status-on-time: #f5f5f0;
+    --dataviz-status-late: #ff5f57;
     --dataviz-status-severe: #ff5f57;
     --dataviz-status-unknown: #8a8a8a;
     --dataviz-occupancy-empty: #5b4a7a;
@@ -381,8 +381,8 @@
     --grid-glow: transparent;
     --edge-highlight: rgba(255, 255, 255, 0.6);
     --dataviz-status-early: #1f6f9c;
-    --dataviz-status-on-time: #1f7a33;
-    --dataviz-status-late: #9a6a00;
+    --dataviz-status-on-time: #131923;
+    --dataviz-status-late: #c62828;
     --dataviz-status-severe: #c62828;
     --dataviz-status-unknown: #6b6b6b;
     --dataviz-occupancy-empty: #c9b8e8;
