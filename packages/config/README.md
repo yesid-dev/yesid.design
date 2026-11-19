@@ -17,8 +17,8 @@ Shared TypeScript, Svelte and Turborepo configuration for yesid repositories. It
 The TypeScript contracts run on the locked 5.9.3 and 6.0.3 compilers for libraries, and on 6.0.3
 composed after the real Kit 3 generated config for apps. Gallery checks/build/browser tests run
 on Kit 3.1.1, Svelte 5.57.2 and Vite 8.3.5. These are sampled versions within the supported ranges,
-not an exhaustive version matrix. Kit 2 is no longer a supported app target. Both products extend
-this config on TypeScript 6; package/tooling checks retain TypeScript 5.9. No config flags changed.
+not an exhaustive version matrix. Kit 3 is the supported app target. Both products extend
+this config on TypeScript 6; package/tooling checks run TypeScript 5.9 as well.
 Only the Playwright export names its tools, as optional peers.
 
 ## TypeScript and Svelte
@@ -54,8 +54,8 @@ export default {
 
 ## Turborepo
 
-`@yesid/config/turbo/base.json` is deprecated. Each product commits its own `turbo.json`, and nothing
-reads this base any more. It goes no earlier than v0.31.0.
+`@yesid/config/turbo/base.json` is deprecated and may be removed. Each product commits its own
+`turbo.json`, and nothing reads this base.
 
 ESLint, Prettier, Vitest and deploy settings stay in each product until two products need the same
 setup.

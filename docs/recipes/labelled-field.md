@@ -42,14 +42,12 @@ must explain retry or an alternate contact and preserve the draft.
 
 ## Boundary and text
 
-The fix is a documented product class using the existing **input** token, not a token value
-change. The 13 November audit found yesid.dev's contact form using `--border` before submit,
-at only 1.62:1 dark and 1.73:1 light. yesid.dev has used `--input` there since its PR 703,
-measured at 3.31:1 dark and 3.17:1 light. Those are consumer measurements. A product field
-that still uses a weaker boundary class replaces it with `border-color: var(--input)`.
+The boundary is a documented product class using the **input** token. `--border` as a field
+boundary measures only 1.62:1 dark and 1.73:1 light; `--input` on yesid.dev's contact form
+measures 3.31:1 dark and 3.17:1 light. Those are consumer measurements. A product field with a
+weaker boundary class uses `border-color: var(--input)` instead.
 The Gallery browser spec measures this token against page and card in both themes with a
-3:1 floor. No token value change is proposed or included; any future value proposal needs
-owner approval and a separate contrast review.
+3:1 floor. A change to the token's value needs owner approval and its own contrast review.
 
 ```css
 .labelled-input {

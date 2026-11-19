@@ -35,14 +35,14 @@ mount-time motion and input decisions. Omitting `input` preserves the motion-onl
 - Both input gates return false during SSR or without `matchMedia`, including fresh imports.
   Capabilities are checked on the next mount, not live on pointer attachment.
 
-`boop`, `cursorGlow` and `sectionGlow` remain safe-always. `cardParallax`, `magnetic` and
-`wordmarkHover` remain motion-gated. `pressBounce` stays safe-always on touch-only devices.
+`boop`, `cursorGlow` and `sectionGlow` are safe-always. `cardParallax`, `magnetic` and
+`wordmarkHover` are motion-gated. `pressBounce` stays safe-always on touch-only devices.
 Lenis keeps its separate touch-device rule.
 
-Boop uses its original transform pulse and pressBounce tweens the node as before. On hybrids,
+Boop uses a transform pulse and pressBounce tweens the node. On hybrids,
 CSS supplies press feedback just as on desktops. Keep a CSS press baseline on consumers of
 pressBounce, normally `tap-press` from the optional `tap-feedback.css` import (or a deliberate
-alternative such as opacity or an active translation). Touch-only phone behavior is unchanged.
+alternative such as opacity or an active translation).
 
 ## GSAP and route transitions
 

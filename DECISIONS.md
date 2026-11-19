@@ -14,11 +14,12 @@ The tag never moves. Later releases advance from that reference rather than rewr
 
 Each release attaches one `bun pm pack` tarball per package, and consumers install them by URL from
 an exact tag; the lockfile's integrity hash is the pin. The immutable GitHub Release and its
-build-provenance attestation replaced the vendored snapshot, adoption tool and manifest in v0.28.0.
+build-provenance attestation are the distribution: there is no vendored snapshot, adoption tool or
+manifest.
 
 ## D3: Eight packages release in lockstep
 
-The root version and all eight packages, `@yesid/config` included since v0.28.0, move together and
+The root version and all eight packages, `@yesid/config` included, move together and
 nothing floats; the private Gallery stays outside. Sibling packages are peer dependencies pinned to
 the same release, so each app holds exactly one copy of each.
 
@@ -114,10 +115,10 @@ moved file. Gallery has its own README because it is a private app that is never
 
 ## D14: Two consumers are enough to promote a component
 
-The owner changed [principle 4](README.md#principles) on 2026-10-26: a component or composed
-pattern promotes once two independent products need the same contract. The rule of three left every frame and composed
-component duplicated in Transit and yesid.dev while they waited for a third product. The copies
-drifted, and each carried fixes the other lacked. Principle 1 still holds: a difference that cannot be a
+A component or composed pattern promotes once two independent products need the same contract
+([principle 4](README.md#principles), owner decision of 2026-10-26). Waiting for a third product
+leaves every frame and composed component duplicated in Transit and yesid.dev, where the copies
+drift and each carries fixes the other lacks. Principle 1 still holds: a difference that cannot be a
 prop with a default stays in the app.
 
 ## D15: The expand-all control remembers one site-wide choice
@@ -141,9 +142,9 @@ choice. Back and locale reading-position restoration remain the product's respon
 
 The head boot script applies initial geometry before paint; hydration adopts it without changing
 layout. The server sends complete, readable section bodies. Without JavaScript they stay readable;
-if storage access throws, opted sections start closed and other interactive sections use declared defaults. Old `persisted:*` disclosure
-keys and `quiet-mode` are ignored. The owner approved this contract on 2026-11-05 and changed
-the first-visit default from collapsed to expanded on 2026-11-07.
+if storage access throws, opted sections start closed and other interactive sections use declared defaults. `persisted:*` disclosure
+keys and `quiet-mode` are ignored. The owner approved this contract on 2026-11-05 and set the
+expanded first-visit default on 2026-11-07.
 
 ## D16: Consumers own navigation setup and header copy
 
@@ -177,8 +178,8 @@ pill at every width, in every product, and never move into the menu. They show n
 their accessible names keep the theme wording and the language name. SiteHeader therefore keeps
 both controls in the pill, its link priorities leave room for them (priority 2 from a 600px
 header), and links that do not fit leave a whole priority at a time so the toggles stay put.
-`compactControls`, which moved them into the menu below 600px, is deprecated from v0.44.0 and
-stays functional until removal. D18 still governs the toggles' look, behaviour and order.
+`compactControls`, which moves them into the menu below 600px, is deprecated and stays functional
+until removal ([DEPRECATION.md](DEPRECATION.md)). D18 governs the toggles' look, behaviour and order.
 
 ## D20: Page types
 
@@ -206,7 +207,7 @@ their hover, the section dividers, buttons and links.
 The type sets a page's default register (`docs/DOCTRINE.md`, section 4): editorial and listing
 are reading; marketing is expressive within the doctrine, and a long-text region on a marketing
 page may declare reading; contact, dashboard and task pages are task. A page or region that needs
-another register declares it with `data-register`, as before.
+another register declares it with `data-register`.
 
 **Why.** In the owner's words, "we have to start using the right vocabulary and putting things in
 the correct place." Named types give each shared design one home, so pages of one type stop
@@ -232,7 +233,7 @@ products feel the same under the pointer:
   link wrapping other links, and no interactive element nested inside another (owner, 06:20 UTC).
 - **Static**: nothing to click. It never reacts to the pointer.
 
-PR 239 delivers this. `Card interactive` lifts 1px (not under reduced motion) and firms its edge
+`Card interactive` lifts 1px (not under reduced motion) and firms its edge
 on hover, on keyboard focus of the card or of a whole-card link that wraps it, and on keyboard focus
 of a link or control inside it (`:has(:focus-visible)`), the same in light and dark with no glow
 and no shadow. A `Card` without `interactive` stays still. Section cards (`SectionCard`, used by
@@ -247,40 +248,46 @@ control, and to no other card. A card with several links keeps them as separate 
 plain `Card interactive`, never inside a whole-card link. Hover effects stay on the shared
 components; a product adds no hover shadow or glow of its own.
 
-## D22: The divider and the street edge
+## D22: Section edges and the footer edge
 
-The owner ruled on 2026-11-15 that every product draws one divider, from yesid.design, never drawn
-by a page (products always use yesid.design components):
+The owner ruled on 2026-11-15 that every product draws its section dividers from yesid.design,
+never from page CSS (products always use yesid.design components), and on 2026-11-16 chose the
+hand-drawn edge as yesid.dev's page divider.
 
-- **The divider is a dimension line**, as if drawn on the blueprint paper: a 1px hairline with
-  9px end ticks and 5px scale ticks every 80px (the grid's major step), in the blueprint ink
-  (`--primary` at 70%, the colour BlueprintShell draws in), running edge to edge. It is identical
-  in every product and both themes, decorative and static. `Separator variant="dimension"` draws
-  it; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and
-  `Masthead` and `ErrorPage` take `tape="dimension"`, wherever they drew hazard tape as a divider.
 - **Placement:** every section ends with the divider at its bottom, except the last section of
   the page; never a divider before the footer. `PageSections` and `PageSection`
   (`@yesid/ui/layout`) draw it that way without page CSS: every registered section after the first
-  is preceded by a real boundary row, outside both sections' boxes, so nothing a section paints can
-  cover it; wrappers do not matter, and plain or nested sections do not register. Inside a
-  registered section the kit's edge rules (Masthead's and ErrorPage's tape, DetailFrame's rule
-  without a header) are not drawn, so the stroke is never doubled or left before the footer.
-- **The street edge:** `SiteFooter`'s top edge is a road marking: one dashed line whose dashes
-  alternate yellow and white, edge to edge, on the footer's own colours in dark and light. It
-  replaces the footer's hazard strip by default.
+  is preceded by a boundary outside both sections' boxes, so nothing a section paints can cover
+  it; wrappers do not matter, and plain or nested sections do not register. Inside a registered
+  section the kit's edge rules (Masthead's and ErrorPage's tape, DetailFrame's rule without a
+  header) are not drawn, so the stroke is never doubled or left before the footer.
+- **The strokes:** `PageSections divider` picks one for the whole page.
+  - `hand-drawn`, the edge yesid.dev uses: an orange pen stroke in the blueprint ink
+    (`--primary`), alternating four and five tapered strokes from one boundary to the next. It
+    overlays the joined edge of the two sections with zero layout height, above their
+    backgrounds. `ArticleHeader` ends with the same edge and shares the page's alternating
+    sequence. `Separator variant="hand-drawn"` draws a standalone 8px stroke.
+  - `dimension`, the default: a drafting dimension line, a 1px hairline with 9px end ticks and 5px
+    scale ticks every 80px (the grid's major step) in the blueprint ink (`--primary` at 70%), as
+    a row of its own. `Separator variant="dimension"` draws it; `DetailFrame`, `ListingFrame`,
+    `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and `Masthead` and `ErrorPage` take
+    `tape="dimension"`.
+  - `hazard`, the kit tape.
+- **The footer edge:** every product passes `SiteFooter edge="hazard"`, the diagonal yellow and
+  black hazard strip along the footer's top. The default, `edge="street"`, is a road marking: one
+  dashed line whose dashes alternate yellow and white, edge to edge, on the footer's own colours.
+- **Terminal rules:** `TerminalPanel` and `CodeBlock` take `rule="line"` for one solid yellow
+  rule under the title bar, with no second stroke.
 
-**Why.** The owner wants the products to read as one family and the divider to belong to the
-blueprint, not to construction caution. Earlier pages drew their own lines: hazard tape, a dashed
-rule, a solid yellow line, sometimes two at once. One part, owned by yesid.design, ends that
-drift. Hazard tape returns to its job, a real caution or a signature. The street edge closes the
-page as the ground the construction scene stands on.
+**Why.** The owner wants the products to read as one family. Lines that pages draw for themselves
+drift: hazard tape, a dashed rule, a solid yellow line, sometimes two at once. One part, owned by
+yesid.design, keeps every section edge the same.
 
-**Consequences.** Hazard tape stays the default of every existing option, so no page changes until
-it opts in; only the footer's edge changes for everyone (DEPRECATION.md, "Owner-approved behavior
-changes"). A product removes its own divider CSS and uses the kit's options as it adopts them.
-Divider ink is orange, the clickable hue, used here as faded drawing ink at 70%: it is never a
-link or a control. The open owner question is whether the remaining hazard defaults (DetailFrame,
-ListingFrame, TerminalPanel, Masthead, ErrorPage) flip to the dimension line in a later release.
+**Consequences.** Hazard tape is the default of the frame and panel options (DetailFrame,
+ListingFrame, TerminalPanel, CodeBlock, Masthead, ErrorPage), so a page changes only when it opts
+in; whether those defaults change is an open owner question. A product removes its own divider
+CSS and uses the kit's options. Divider ink is orange, the clickable hue, used here as drawing
+ink: it is never a link or a control.
 
 ## D23: Rail titles
 
@@ -294,11 +301,13 @@ tablets keep horizontal titles. It never overlaps the content or the pill.
 it is rotated on the left rail (reading bottom to top) or the right rail (top to bottom), sticky
 under the header pill within its section; below 1024px it reads horizontally above the section's
 content. With content it lays out both rails, so the content stays centred and the title can never
-cover it. ListingFrame's edge title is a decorative RailTitle beside the listing's real h1.
+cover it. A departing title is clipped at the clearance line under the pill; `clipAtHeader={false}`,
+which yesid.dev passes, lets it leave with its section instead. ListingFrame's edge title is a
+decorative RailTitle beside the listing's real h1, and `ListingRail` is the same title column for
+a page without a listing.
 
-**Why.** yesid.dev's home, contact and listing pages each drew their own rotated titles, with
-their own sizes, positions and stickiness, and the home's were text hidden on phones and
-duplicated as a second heading. The owner wants the rotated titles kept as part of the brand and
+**Why.** Rotated titles that each page draws for itself drift in size, position and stickiness,
+and a title hidden as text on phones needs a second heading. The owner wants the rotated titles kept as part of the brand and
 placed by one rule ("rotated section titles sit on the side rails, outside the centered content";
 "rotated titles are sticky"), so one component carries the look and the behaviour for every
 product.

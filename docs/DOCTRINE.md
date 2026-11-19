@@ -7,7 +7,7 @@ Gallery fixtures accompany the rules they demonstrate below.
 
 ## 1. What stays, and what "slop" means here
 
-yesid.design is "digital infrastructure that moves": edge to edge, dark first, four colours with named jobs (orange acts and signs, yellow guides, white reflects, black structures), Inter for reading, JetBrains Mono for code and technical notation, cards and collapsible sections with one remembered Expand all or Collapse all choice, motion with intent, no fluff. None of that changes.
+yesid.design is "digital infrastructure that moves": edge to edge, dark first, four colours with one job each (orange is interactive and signage; yellow is wayfinding, hazard and the one highlight; white is reflective; black is structure), Inter for reading, JetBrains Mono for code and technical notation, cards and collapsible sections with one remembered Expand all or Collapse all choice, motion with intent, no fluff. Every rule below keeps all of it.
 
 In this doctrine, slop means **a default standing in for a decision**: a device that appears whatever the content, or decoration that looks like evidence. It is a judgment about repetition and meaning, not a guess about who or what made a page. A near-black page, an orange dot, a card, an arrow or a yellow highlight is not a defect on its own. Name the harm, fix its cause, and never score "tells".
 
@@ -28,9 +28,9 @@ These are yesid.design itself. No rule below overrides them, and no product rest
 - **The four colours** and their roles (Rule 3).
 - **Inter and JetBrains Mono** in their roles (Rule 4).
 - **Cards and collapsible cards**, with D15's remembered choice and the 5A opt-in (Rule 7).
-- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). Both toggles always stay in the navbar pill at every width (D19); `compactControls`, which moved them into the phone menu, is deprecated since v0.44.0. The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
+- **The theme toggle and the language toggle.** `ThemeToggle` (the signal-lamp switch) and `LanguageToggle` (the signpost boards) stay exactly as they are in look and behaviour in every product. The language signpost moves to the next language on each tap, in the brand order **English, French, Spanish, then English again**. yesid.design owns that order (D18, roadmap item Y-27): a product passes the languages it publishes and the toggle orders them, so Transit's two languages cycle English, French. Products supply the language names and the theme label (D16). Both toggles always stay in the navbar pill at every width (D19); `compactControls`, which moves them into the phone menu, is deprecated. The theme lamp is a control that shows the visitor's own choice, not a status claim, so Rule 1 does not apply to it.
 
-The owner kept the standard controls. The system-owned language order prevents product-specific cycling.
+The standard controls are the owner's choice. The system-owned language order prevents product-specific cycling.
 
 ## 3. Signatures: expression allowed by name
 
@@ -38,9 +38,9 @@ A signature is an expressive element the owner has approved, with its job and it
 
 | Signature | Where | Its job | Conditions |
 | --- | --- | --- | --- |
-| Theme and language toggles | Every product's header pill (D19) | Identity and the visitor's choices | Unchanged (section 2) |
+| Theme and language toggles | Every product's header pill (D19) | Identity and the visitor's choices | As in section 2 |
 | The wordmark and its dot | Every header and footer | Identity | The header's one-time wordmark play may be turned off on task pages (roadmap Y-18) |
-| The construction scene and its sliding props | yesid.dev home closing; Transit home and footer (4A); below yesid.login's sign-in task | The brand's closing gesture | Where a page passes the reveal marker (`ConstructionProps` `revealAt`, as yesid.dev and Transit do), the props slide up out of the ground only as the visitor scrolls to the scene, exactly as today; under reduced motion they appear whole without moving. yesid.login passes no marker, so its scene is still today and stays so. The scene sits at the end of a page or below a task, never between the reader and the answer |
+| The construction scene and its sliding props | yesid.dev home closing; Transit home and footer (4A); below yesid.login's sign-in task | The brand's closing gesture | Where a page passes the reveal marker (`ConstructionProps` `revealAt`, as yesid.dev and Transit do), the props slide up out of the ground only as the visitor scrolls to the scene; under reduced motion they appear whole without moving. yesid.login passes no marker, so its scene is still. The scene sits at the end of a page or below a task, never between the reader and the answer |
 | The closing departure board | yesid.dev home closing | Real destinations (contact, GitHub, blog, About) as signage | Rows stay real links; no blinking cursor or invented readouts |
 | "click me" and the Montréal metro scene | yesid.dev home opening | Invites the metro intro replay | Clicking opens the scene; under reduced motion it opens a still form of the scene with nothing moving |
 | The nine manifesto flow lines | yesid.dev home | Ambient brand texture | A visible control pauses them; still under reduced motion; decorative text stays hidden from assistive technology, meaningful links stay readable |
@@ -48,11 +48,11 @@ A signature is an expressive element the owner has approved, with its job and it
 | The shared error illustration | Every "page not found" | Shows that something is missing, in the brand's language | Small, after the heading and recovery links; its lights stay still (Y-22) |
 | The bulk control's orange active state (D15 `activeEffect="glow"`) | Pages with Expand all | Shows that Collapse all is active | Allowed on reading pages |
 
-**Removed by the owner's decision** (yesid.dev home): the headline dot's heartbeat pulse, the typewriter cursor, the two blinking terminal cursors, the three pulsing lamps and the pretend train countdown.
+**Not used, by the owner's decision** (yesid.dev home): a heartbeat pulse on the headline dot, a typewriter cursor, blinking terminal cursors, pulsing lamps and a pretend train countdown.
 
 ## 4. Three presentation registers
 
-One brand, three registers. They share every contract that makes the family recognizable and trustworthy; they differ only in how much expression a page spends. Reading and task are the two calm registers. Under the owner's mandate of 13 November 2026, every page other than the expressive ones moves to the calm registers.
+One brand, three registers. They share every contract that makes the family recognizable and trustworthy; they differ only in how much expression a page spends. Reading and task are the two calm registers. Under the owner's mandate of 13 November 2026, every page other than the expressive ones uses a calm register.
 
 | | Expressive | Reading | Task |
 | --- | --- | --- | --- |
@@ -72,7 +72,7 @@ One brand, three registers. They share every contract that makes the family reco
 
 **Placement:** expressive elements sit at the door (the top of an expressive page), at the end (a closing section or the footer zone), or beside the main content as context (the weather on About and Contact). Never between a reader and the answer, never inside a form or task region.
 
-**How a page declares its register:** set `data-register="expressive"`, `"reading"` or `"task"` on the route's top element (the first element inside `<main id="main">`); an undeclared page is reading. A signature region may declare its own register: the section or container that holds a closing scene carries `data-register="expressive"` even on a reading or task page, and a layout-owned footer scene (Transit's) carries it on the layout's scene container. The attribute is a declaration for reviewers, mockups, Gallery fixtures and product tests (a product may fail a test when a scene renders outside an expressive region; that policy stays with the product, per D7). No component reads it, and it is neither a theme nor a visitor setting: light and dark are a separate axis, and no "quiet mode" returns. Calm arrives through component options that pages choose, and default changes happen only where the owner approves them as named exceptions.
+**How a page declares its register:** set `data-register="expressive"`, `"reading"` or `"task"` on the route's top element (the first element inside `<main id="main">`); an undeclared page is reading. A signature region may declare its own register: the section or container that holds a closing scene carries `data-register="expressive"` even on a reading or task page, and a layout-owned footer scene (Transit's) carries it on the layout's scene container. The attribute is a declaration for reviewers, mockups, Gallery fixtures and product tests (a product may fail a test when a scene renders outside an expressive region; that policy stays with the product, per D7). No component reads it, and it is neither a theme nor a visitor setting: light and dark are a separate axis, and there is no "quiet mode". Calm arrives through component options that pages choose, and default changes happen only where the owner approves them as named exceptions.
 
 Reading and task share calm rules but differ in width, density and what comes first.
 
@@ -83,9 +83,9 @@ A page's type says what it is for; its register says how much expression it spen
 | Type | Pages | Default register | Kit pieces that serve it |
 | --- | --- | --- | --- |
 | Editorial | Collection entries: yesid.dev case studies and articles; Transit's editorial page, if it has one | Reading | `ArticleHeader` with `presentation="reading"`, `DetailFrame`, `CollapsibleSection` and `TocNav`; `ReadingFrame` (Experimental) for long prose |
-| Listing | Pages that list a collection: projects, blog; Transit's listing pages | Reading | `ListingFrame` with `SearchInput`, `FilterGroup` and `FilterSection`; one `Card interactive` per entry |
+| Listing | Pages that list a collection: projects, blog; Transit's listing pages | Reading | `ListingFrame` with `SearchInput`, `FilterGroup` (`selectedStyle="consistent"`) and `FilterSection`; one `Card interactive` per entry. `ListingRail` is the same title rail on its own |
 | Marketing | Home, services and service details, About | Expressive, within this doctrine; a long-text region may declare reading | A canvas for unique layouts, built only from yesid.design components; never overrides their styles. Free composition, not free styling: `Card` (static, or `interactive` for a card that is or contains a link or control), `Button`, the brand pieces below and the signatures in section 3 |
-| Contact | The contact page, the same in every product and domain | Task | The [labelled field recipe](recipes/labelled-field.md), `Card edge="neutral" textSize="inherit"`, `Button`, `StateNotice`; the weather signature beside or after the form (section 3) |
+| Contact | The contact page, the same in every product and domain | Task | `ListingRail` for the page title on the shared listing rail, the [labelled field recipe](recipes/labelled-field.md), `Card edge="neutral" textSize="inherit"`, `Button`, `StateNotice`; the weather signature beside or after the form (section 3) |
 | Dashboard | Transit's live map and data views | Task | Product-owned patterns, with the shared brand pieces; `Surface`, `Masthead` and `DataTable` where they fit. Editorial reading rules do not apply |
 | Task | yesid.login's sign-in and account screens (assumed, owner to confirm) | Task | `Card edge="neutral" textSize="inherit"`, the labelled field recipe, `Masthead` without a kicker or tape, `Button` |
 
@@ -95,28 +95,30 @@ Legal pages and page not found or error pages: type to be given by the owner.
 
 The owner wants every product to feel like one family (15 November 2026). These pieces are the standard, and each lives in one place:
 
-- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19; `compactControls` is deprecated).
-- **The product brand** "yesid. | Product": `ProductBrand` (Experimental), through the `brand` snippet of `SiteHeader` and `SiteFooter`.
+- **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19; `compactControls` is deprecated). Grouped menus (`menuGroups`) lay out in columns from 768px and in one column on phones.
+- **The product brand** "yesid. | Product": `ProductBrand` (Experimental), through the `brand` snippet of `SiteHeader` and `SiteFooter`, with optional sizes for each part (`houseStyle`, `productStyle`, `dividerStyle`).
 - **Headings that end on the orange dot**, where the design uses it: `SectionHeading` and `Masthead`, whose `dot` prop (default `true`) draws it.
 - **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
 - **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
 - **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
-- **Section dividers and the footer edge** ([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge), owner rulings since 06:35 UTC, 15 November 2026), from v0.45.0:
-  - The divider is a drafting dimension line: a hairline with scale ticks at the 80 px grid step, in the orange blueprint ink, edge to edge, at the bottom of every section except the last. `PageSections` and `PageSection` draw it that way between a page's sections; `Separator variant="dimension"` draws it by hand; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and `Masthead` and `ErrorPage` take `tape="dimension"`.
-  - No divider before the footer. The footer's top edge is one dashed line of alternating yellow and white dashes, like a road marking: `SiteFooter` draws it by default.
+- **Section edges, the footer edge and terminal rules** ([D22](../DECISIONS.md#d22-section-edges-and-the-footer-edge)):
+  - Every section except the last ends with an edge from yesid.design, edge to edge, in the orange blueprint ink. `PageSections` and `PageSection` place it between a page's sections; `PageSections divider` picks the stroke. `hand-drawn`, the edge yesid.dev uses, is an orange pen stroke that overlays the joined section edges with zero layout height and alternates four and five tapered strokes. `ArticleHeader` ends with the same drawn edge. `dimension`, the default, is a drafting dimension line with scale ticks at the 80 px grid step. `Separator variant="hand-drawn"` or `variant="dimension"` draws one by hand; `DetailFrame`, `ListingFrame`, `TerminalPanel` and `CodeBlock` take `rule="dimension"`, and `Masthead` and `ErrorPage` take `tape="dimension"`.
+  - No divider before the footer. The footer's top edge is the diagonal yellow and black hazard strip: every product passes `SiteFooter edge="hazard"`. The `street` default draws a dashed road marking of alternating yellow and white dashes instead.
+  - A terminal panel or code block takes `rule="line"`: one solid yellow rule under its title bar.
   - Every rotated title is sticky.
 - **Page types** ([D20](../DECISIONS.md#d20-page-types)): the shared editorial and listing designs, above.
-- **Rail titles** ([D23](../DECISIONS.md#d23-rail-titles)): `RailTitle` (Experimental) is the rotated section title, the section's real heading ending on the orange dot. From 1024px it sits on the left or right rail outside the centred content, sticky under the header pill while its section scrolls, then the next title takes over; below 1024px it reads horizontally. It never overlaps the content or the pill. ListingFrame's edge title is a decorative RailTitle.
+- **Rail titles** ([D23](../DECISIONS.md#d23-rail-titles)): `RailTitle` (Experimental) is the rotated section title, the section's real heading ending on the orange dot. From 1024px it sits on the left or right rail outside the centred content, sticky under the header pill while its section scrolls, then the next title takes over; below 1024px it reads horizontally. It never overlaps the content or the pill. With `clipAtHeader={false}`, as on yesid.dev, a departing title leaves with its section unclipped instead of being cut at the pill's clearance line. ListingFrame's edge title is a decorative RailTitle, and `ListingRail` is the same title column for a page without a listing, such as Contact.
+- **Reading and listings:** `ReadingFrame` (Experimental) holds legal pages and long prose with their contents; `ListingFrame` and `ListingRail` carry the listing rail; `FilterGroup selectedStyle="consistent"` gives every choice and the All reset the same selected style.
 
 ## 5. Rules
 
-Each rule has its reason and a do / don't pair. "Carried by" names the yesid.design release that adds the option a product needs (the shared component roadmap). The full rules apply when a recomposed page is completed; follow-up shared options are listed below.
+Each rule has its reason and a do / don't pair. Section 6 names the shared contract that carries each rule.
 
 ### Rule 1. Decoration never looks like evidence
 
 Lamps, dates, "Live", "Online", "System", demo figures, telemetry ticks, serial numbers, drawing stamps, coordinates and countdowns appear only when a real source supplies the state, its subject and its time. Otherwise they are not drawn. The theme toggle's lamp is a control, not a status (section 2).
 
-**Why.** Readers take a lamp or a date as a measurement. Earlier footers drew a pulsing "Live" lamp and a date the component made up, and terminal panels always drew a green lamp, even around a contact form.
+**Why.** Readers take a lamp or a date as a measurement. A pulsing "Live" lamp in a footer, a date the component makes up, or a green lamp around a contact form claims a state nobody measured.
 
 **Gallery:** [`/site-header`](../apps/gallery/src/routes/site-header/+page.svelte).
 
@@ -127,11 +129,9 @@ Lamps, dates, "Live", "Online", "System", demo figures, telemetry ticks, serial 
 | A footer with links, attribution and no state | A pulsing lamp on a contact form or a code sample |
 | A dated screenshot and a link to the live tool | "SCALE 1:48 · DWG AZUR-001-A" beside real work |
 
-Carried by: TerminalPanel `signal` and optional footer status (v0.42.0); documentation and deprecation of the self-made footer date (Y-25, v0.43.0).
-
 ### Rule 2. Spend boldness on purpose
 
-Reading and task pages spend no boldness of their own: their identity comes from the shared chrome, the toggles, the type and the colour roles, and at most a signature region at their end. An expressive page leads with one gesture at the door and may carry the signatures listed in section 3. Never add new costumes: no console, construction site or technical drawing stacked on a page beyond the listed signatures. Real material is not a gesture: screenshots, photographs, diagrams and code that explain the work are content and are never rationed.
+Reading and task pages spend no boldness of their own: their identity comes from the shared chrome, the toggles, the type and the colour roles, and at most a signature region at their end. An expressive page leads with one gesture at the door and may carry the signatures listed in section 3. Never add costumes: no console, construction site or technical drawing stacked on a page beyond the listed signatures. Real material is not a gesture: screenshots, photographs, diagrams and code that explain the work are content and are never rationed.
 
 **Why.** Boldness spent on purpose is remembered; costumes stacked everywhere dilute the identity and push the answer down. A slogan, metric tiles and a decorative console can fill the opening before the reader learns what the product does.
 
@@ -144,14 +144,14 @@ Reading and task pages spend no boldness of their own: their identity comes from
 
 ### Rule 3. Each colour has one job
 
-- **Orange acts and signs:** buttons, links (underlined inside text), focus, the selected tab or view, route signage, and the keywords of highlighted code. Not static card borders, not status.
-- **Yellow guides and highlights:** the screen's one highlight, departure-board signage, map and diagram amber, hazard tape for a real caution, string colours in highlighted code, and the "talk to Yesid" conversion button, at most one per view. Not ordinary numbers, not labels above headings, not status.
+- **Orange is interactive and signage:** buttons, links (underlined inside text), focus, the selected tab or view, route signage, and the keywords of highlighted code. Not static card borders, not status.
+- **Yellow is wayfinding, hazard and the one highlight:** the screen's one highlight, departure-board signage, map and diagram amber, hazard tape for a real caution and the footer's hazard edge, string colours in highlighted code, and the "talk to Yesid" conversion button, at most one per view. Not ordinary numbers, not labels above headings, not status.
 - **The highlight** is the one yellow emphasis that tells the reader where to look: the answer figure or the selected item. It does not count signage, hazard tape, code syntax or the conversion button.
 - **Text links** are underlined in the orange text ink (`primary`), like everything else that acts (owner answer 9A, 13 November 2026; Y-28). Yellow is never a link colour: on Transit's maps it already marks late buses, stops, the selected line and a button.
-- **White reflects:** reading ink for text and for ordinary numbers.
-- **Black structures:** rules, tape and the deep board.
-- **The divider** ([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge)) is one brand piece in every product, from yesid.design, never drawn by a page: a drafting dimension line in the blueprint ink (`primary` at 70%), edge to edge, with end ticks and a scale tick every 80px, decorative and still. It is drawing ink, not an action. Every section ends with it except the last, and nothing sits before the footer, whose top edge is the street edge: one dashed line of alternating yellow and white dashes. Hazard tape is not a divider; it stays for a real caution or a signature.
-- **Status colours** belong to named states only, always with a word and a shape (Transit: ▼ Early, ● On time, ▲ Late, ○ Delay unknown; yesid.login: a dot beside "Access confirmed"), never as decoration or a chart series. No status palette is verified colour-blind safe; tokens change only after the owner chooses from the rendered colour test (3A, item Y-7).
+- **White is reflective:** reading ink for text and for ordinary numbers.
+- **Black is structure:** rules, tape and the deep board.
+- **Section edges** ([D22](../DECISIONS.md#d22-section-edges-and-the-footer-edge)) are one brand piece in every product, from yesid.design, never drawn by a page: yesid.dev's hand-drawn pen edge or the drafting dimension line, both in the orange blueprint ink, edge to edge, decorative and still. They are drawing ink, not an action. Every section ends with one except the last, and nothing sits before the footer, whose top edge is the hazard strip. Hazard tape is otherwise not a divider; it stays for a real caution or a signature.
+- **Status colours** belong to named states only, always with a word and a glyph, never as decoration or a chart series. Early is blue (`--dataviz-status-early`, `#4aa3d4` dark, `#1f6f9c` light), on time is neutral reading ink (`#f5f5f0`, `#131923`), late is red (`#ff5f57`, `#c62828`) and unknown is grey, so only early and late draw the eye and late never shares the yellow highlight. Each travels with its word and glyph (Transit: ▼ Early, ● On time, ▲ Late, ○ Delay unknown; yesid.login: a dot beside "Access confirmed"), because no status palette is verified colour-blind safe. `--dataviz-status-severe` exists for compatibility and equals late. Interface feedback is not transport status: `StateNotice`'s positive, warning and error tones use `--success`, `--accent-text` and `--destructive`.
 - **Charts:** one neutral colour for a single series; a legend and direct labels for two to four series; values and labels in text colours, never a series colour; one axis per chart.
 
 **Why.** When highlights, ordinary figures, status and links share a colour, readers must guess what the colour means. Giving each colour one job keeps actions distinct from evidence and wayfinding.
@@ -165,21 +165,19 @@ Reading and task pages spend no boldness of their own: their identity comes from
 | A neutral border on a static card; orange on the selected one | An orange frame around every block |
 | An underlined orange link inside a sentence | A yellow link next to the screen's yellow highlight |
 
-Carried by: Y-28 orange text links (v0.43.0), Y-6 neutral surfaces (v0.44.0), Y-5 metric tone (v0.45.0), Y-7 colour roles and the status test (status tokens release).
-
 ### Rule 4. Type carries meaning, not costume
 
 - Sentence case for titles, headings, labels and buttons.
 - Uppercase only for short signage (route plates, sign codes, the language signpost's boards) and, on an expressive page, one short display line.
 - JetBrains Mono only for code, identifiers, stop codes, timetable values and timestamps that compare. Small labels are Inter.
 - Tabular figures for numbers that compare.
-- No eyebrow: a section starts with its heading. No kicker that repeats the brand above a task title. Under the owner's mandate this includes removing eyebrows already shipped.
+- No eyebrow: a section starts with its heading. No kicker that repeats the brand above a task title.
 - No single accented word or colour inside a title.
 - Numbers mark real sequences only.
 - Floors: body 16 px or more; meaningful labels 12 px or more, preferably 14 to 15 px; mono 13 px or more; the 11 px micro size for chrome only. Text wraps; it never shrinks to fit.
 - A separator joins facts a reader needs ("Record · data through Nov 10"), never system-like fragments.
 
-**Why.** Monospace, tracked uppercase labels and tiny categories made ordinary reading look like technical signage. Highlighting part of a word can also change its meaning, so type treatment must follow the content.
+**Why.** Monospace, tracked uppercase labels and tiny categories make ordinary reading look like technical signage. Highlighting part of a word can also change its meaning, so type treatment must follow the content.
 
 **Gallery:** [`/registers`](../apps/gallery/src/routes/registers/+page.svelte). Reading labels: [`/reading-surfaces`](../apps/gallery/src/routes/reading-surfaces/+page.svelte).
 
@@ -189,8 +187,6 @@ Carried by: Y-28 orange text links (v0.43.0), Y-6 neutral surfaces (v0.44.0), Y-
 | "In brief" as a heading, then the finding | "STOP 01 · LANGUAGES" above a section |
 | A title in one colour and weight | One orange word inside a white title |
 | Stop code "51234" in mono | Stop names, dates and prose in mono |
-
-Carried by: Y-22 optional Masthead kicker and Y-4 calm article header (v0.43.0); Y-8 label roles (v0.44.0).
 
 ### Rule 5. One surface per question; hover only on things that act
 
@@ -204,8 +200,6 @@ Cards hold one subject; comparisons are aligned rows inside one card; no card in
 | --- | --- |
 | People as one card with a row per person: identity, role, state in words, actions | An orange frame around each person |
 | A whole-card project link that lifts on hover | A hover glow on a static metric tile |
-
-Carried by: Y-1 heading-only hover on sections (v0.42.0), Y-6 (v0.44.0), Y-11 row recipes (v0.45.0).
 
 ### Rule 6. Headings answer
 
@@ -240,11 +234,9 @@ A page title names the subject in plain words. A section heading says what the s
 | Closed: "Cancellations. {share} of trips, {complete period}. {serious limit}." (format only; no figure implied) | Closed: "Cancellations" and the same line clipped after two lines |
 | "Technical details" closed on a first visit (Y-12), opened by its heading | The case study's "In brief" inside a collapsible card |
 
-Carried by: Y-1 (v0.42.0), Y-12 (v0.43.0).
-
 ### Rule 8. Motion has a job; reading stays still
 
-Motion answers an action (open, close, confirm, navigate, a refresh result) or is one of the signatures in section 3. Reading and task surfaces stay still: no new ambient loops, pulses, blinking or count-ups. A signature that loops on its own for more than five seconds has a visible control that pauses it and stops under reduced motion (WCAG 2.2.2). A scroll-linked signature, such as the construction props' slide, moves only while the visitor scrolls and appears whole under reduced motion. Reading surfaces keep native scrolling and carry `data-ripple-exempt` (D9). Under reduced motion nothing scales, slides or blinks, and every signature uses its still form.
+Motion answers an action (open, close, confirm, navigate, a refresh result) or is one of the signatures in section 3. Reading and task surfaces stay still: no ambient loops, pulses, blinking or count-ups. A signature that loops on its own for more than five seconds has a visible control that pauses it and stops under reduced motion (WCAG 2.2.2). A scroll-linked signature, such as the construction props' slide, moves only while the visitor scrolls and appears whole under reduced motion. Reading surfaces keep native scrolling and carry `data-ripple-exempt` (D9). Under reduced motion nothing scales, slides or blinks, and every signature uses its still form.
 
 **Why.** Endless decorative motion competes with reading, and a pulsing lamp can imply a state nobody measured. Motion that answers an action or belongs to a named signature keeps a clear purpose.
 
@@ -254,8 +246,6 @@ Motion answers an action (open, close, confirm, navigate, a refresh result) or i
 | --- | --- |
 | The construction props slide up as the visitor reaches the closing scene; with reduced motion they appear whole | Every card fades up as it scrolls into view |
 | The manifesto lines move, with a "Pause animation" button beside them | Lamps that blink on a 404 while the reader looks for a way back |
-
-Carried by: Y-2 and Y-13 (v0.42.0); still error illustration option (Y-22, v0.43.0); the yesid.dev pause control and "click me" still form are product work.
 
 ### Rule 9. Plain, specific words in every language
 
@@ -308,8 +298,6 @@ The theme toggle and the language toggle are the standard yesid.design ones on e
 | Pass the published languages and their names; the toggle orders them English, French, Spanish | Pass a product-specific order, or draw a separate language menu |
 | Leave both toggles in the pill; let lower-priority links move to the menu | Pass the deprecated `compactControls`, or swap the signal lamp for a text switch |
 
-Carried by: U1 (v0.42.0); the brand language order (Y-27, v0.42.0).
-
 ### Rule 12. Real material is the signature
 
 Distinctiveness comes from Yesid's real work: screenshots beside the text they explain, named contributions, highlighted code as selectable text, real photographs, route plates, and the scenes he made. No stock imagery, placeholder media or invented outcomes. A number that is evidence shows its unit and period, and its source where one exists. The service metrics already published on yesid.dev keep their approved form, without a source, date or tooltip (owner rule); a published metric stays unless it is wrong.
@@ -325,52 +313,25 @@ Distinctiveness comes from Yesid's real work: screenshots beside the text they e
 
 WCAG 2.2 AA in every register and theme: text contrast 4.5:1; a focus indicator and input boundaries of at least 3:1 against what surrounds them (the `input` token gives 3.12:1 or more on cards; Button keeps the 2 px offset outline, Y-17); 44 px targets as the product standard (24 px minimum); nothing essential on hover alone; reduced motion respected; a pause control for any looping signature; content readable without JavaScript where the server can render it; equal journeys in every offered language.
 
-## 6. Amended sentences for `DESIGN.md` and `tokens.json`
+## 6. Where the system carries each rule
 
-The generator and token descriptions carry these colour roles. They change no token value.
+| Rule | Shared contract |
+| --- | --- |
+| 1 Evidence | TerminalPanel draws a lamp only for a caller's verified `signal`; SiteFooter shows a status only through `statusStart` with a real source (its self-made date pair is deprecated) |
+| 3 Colour | Orange underlined text links from `base.css`; neutral static `Card` and section borders; MetricDisplay `tone="reading"` with tabular figures |
+| 3 Colour | Section edges through `PageSections` and `PageSection`, `ArticleHeader`'s drawn edge, and the footer's hazard edge (D22) |
+| 3 Colour | The status tokens (`--dataviz-status-*`), each with a word and a glyph; StateNotice tones on the interface colours |
+| 4 Type | The calm article header with whole-word emphasis only and a readable category; an optional Masthead kicker; the sentence-case `.label-reading` role; an optional TOC counter |
+| 5 Surfaces | Heading-only hover on sections; hover only on `Card interactive`; the comparison, narrative and member-list recipes in the Gallery |
+| 6 Headings | `RailTitle`: real, sticky headings on the rails (D23); the compact editorial header band |
+| 7 Sections | Heading-only toggle and unclamped summary; `firstVisitClosed` for chosen optional sections |
+| 8 Motion | No signal pulse; overscroll only for fine pointers; a still error illustration |
+| 11 Identity controls | Both toggles in the pill at every width (D19); `LANGUAGE_ORDER` |
+| Floor | Visible focus on filled buttons; the labelled field recipe; `ReadingFrame` for legal and long prose; listing search and the Filters button keep the standard focus ring, and `resultCountText` announces the result count |
 
-> **YELLOW: wayfinding and highlight** (`accent` as surface and art; `accent-text` as AA text; `line-amber`; `accent-surface`): the one highlight per screen (the answer figure or the selected item), departure-board signage, map and diagram amber, string colours in highlighted code, and hazard tape for a real caution or the page's signature. Not for ordinary numbers, labels above headings or status: ordinary numbers use reading ink, and status uses the status tokens with a word and a shape. The yellow conversion rule is unchanged: the only clickable yellow surface is the "talk to Yesid" button, at most one per view; every other yellow stays unclickable, text links included (they are orange).
+## 7. The five-minute review
 
-With owner answer 9A (13 November 2026), Y-28 also changes the ORANGE role's last sentence, from "The clickable hue for everything except conversion and text links (below)." to:
-
-> The clickable hue for everything except conversion (below), text links included: a link without a class is underlined in `primary` ink.
-
-Additions to the generated Overview, Typography and Do's and Don'ts:
-
-- Overview: "Before composing a page, read the doctrine (`docs/DOCTRINE.md`): core identity, signatures by name, three registers, calm by default."
-- Typography: "Sentence case. Uppercase only for short signage. A section starts with its heading, never with a label above it."
-- Don't: "Draw a status, date or lamp without a real source." "Put a label above a heading." "Accent one word of a title." "Add hover effects to content that does not act." "Restyle the theme or language toggle." "Colour a link yellow."
-- Elevation: no glow on reading or task surfaces except the D15 bulk control and lit artwork in a signature region; the existing drift ("no raw box-shadow in components" while Card, SiteHeader, TocNav and StopLabel draw their own) is resolved by documenting each exception or consolidating it.
-- Decisions: a new D18 records that the toggles are core identity and that yesid.design owns the language order, with a note in D8 that this is its one exception to product-owned locale policy.
-
-## 7. Where the system carries each rule
-
-| Rule | Shared contract | Release |
-| --- | --- | --- |
-| 1 Evidence | TerminalPanel `signal`; optional footer status | v0.42.0 |
-| 1 Evidence | Self-made footer date documented and deprecated (Y-25) | v0.43.0 starts the deprecation |
-| 3 Colour | Orange underlined text links (Y-28) | v0.43.0 |
-| 3 Colour | Neutral static Card and section borders (Y-6) | v0.44.0 |
-| 3 Colour | MetricDisplay reading-ink tone and tabular figures (Y-5) | v0.45.0 |
-| 3 Colour | The dimension-line divider, `PageSections` placement and the footer street edge (D22) | v0.45.0 |
-| 3 Colour | Status palette, after the rendered test and the owner's choice (Y-7) | Status tokens release |
-| 4 Type | Calm article header, whole-word emphasis only, readable category (Y-4); Masthead kicker optional (Y-22) | v0.43.0 |
-| 4 Type | Sentence-case label role, optional TOC counter (Y-8) | v0.44.0 |
-| 6 Headings | Sticky rail titles, real headings on the rails (D23); a compact editorial header band | v0.45.0 |
-| 5 Surfaces | Heading-only hover on sections (Y-1) | v0.42.0 |
-| 5 Surfaces | Hover only on interactive cards (Y-6); comparison, narrative and member-list recipes (Y-11) | v0.44.0, v0.45.0 |
-| 7 Sections | Heading-only toggle and unclamped summary (Y-1) | v0.42.0 |
-| 7 Sections | Chosen optional sections closed on a first visit (Y-12) | v0.43.0 |
-| 8 Motion | No signal pulse by default (Y-2); overscroll only for fine pointers (Y-13) | v0.42.0 |
-| 8 Motion | Still error illustration option (Y-22) | v0.43.0 |
-| 11 Identity controls | Compact phone menu placement (U1); brand language order (Y-27) | v0.42.0 |
-| Floor | Visible focus on filled buttons (Y-17) | v0.42.0 |
-| Floor | Labelled field recipe (Y-20); calm reading frame for legal and long prose (Y-21) | v0.43.0, v0.45.0 |
-| Floor | Listing search and Filters button keep the standard focus ring; the result count is announced | v0.45.0 |
-
-## 8. The five-minute review
-
-This is the completion review of a recomposed page and every mockup before the owner sees it. Full product acceptance also runs every language, theme and assistive-technology journey. Open the page at 390 px and 1440 px, in both themes and in one other language, then answer each line yes or no; a "no" goes back to the page's builder.
+This is the completion review of a page and every mockup before the owner sees it. Full product acceptance also runs every language, theme and assistive-technology journey. Open the page at 390 px and 1440 px, in both themes and in one other language, then answer each line yes or no; a "no" goes back to the page's builder.
 
 1. **Register.** The page declares `data-register`; decoration matches it; signatures appear only as listed in section 3, at the door, at the end or beside the content, never inside a form.
 2. **Job.** On the first phone screen, a stranger can say what the page is for and what to do next.
@@ -385,7 +346,7 @@ This is the completion review of a recomposed page and every mockup before the o
 11. **Controls and focus.** Tab through the page: every button, link and field shows a visible focus outline; the theme and language toggles are the standard ones, unchanged.
 12. **Phone.** At 390 px in French or Spanish, nothing is clipped, every target is at least 44 px, and the fixed header hides no focused control.
 
-## 9. Words used in this doctrine
+## 8. Words used in this doctrine
 
 - **Register:** the amount of expression a page or region spends: expressive, reading or task. Light and dark are a separate axis.
 - **Signature:** an expressive element the owner approved by name, with its job and conditions (section 3).

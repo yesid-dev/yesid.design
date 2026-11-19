@@ -1,7 +1,7 @@
 # yesid.design
 
-The design and product standard behind [yesid.dev](https://yesid.dev) and
-[Transit](https://transit.yesid.dev): design tokens, Svelte 5 components, motion, quality gates,
+The design and product standard behind [yesid.dev](https://yesid.dev),
+[Transit](https://transit.yesid.dev) and [yesid.login](https://login.yesid.dev): design tokens, Svelte 5 components, motion, quality gates,
 SEO, analytics and locale mechanics, released as eight packages. A SvelteKit product built on it
 brings its own content and product logic; the look and the shared plumbing come from here.
 
@@ -50,8 +50,8 @@ https://github.com/yesid-dev/yesid.design/releases/download/vX.Y.Z/yesid-<packag
 
 To upgrade, change the tag and the version in every URL and run `bun install`. A rollback is the
 same edit with an earlier release. `gh attestation verify <tarball> --repo yesid-dev/yesid.design`
-confirms a tarball came from the release workflow. This command applies to releases after v0.39.1.
-For v0.36.1 to v0.39.1, use `gh attestation verify <tarball> --owner mgkdante --signer-repo mgkdante/yesid.design`; for v0.36.0 and earlier, use `--signer-repo mgkdante/yesid.dev-design`.
+confirms a tarball came from the release workflow. [RELEASING.md](RELEASING.md#3-publish) lists the
+signer flags for releases signed under another repository name.
 
 ## Develop
 

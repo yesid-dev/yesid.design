@@ -29,11 +29,11 @@ props and public variant types remain available.
 
 Decorative motion never loops endlessly (WCAG 2.2.2). ErrorIllustration lamps,
 StopLabel's marker, MetroStation and TerminalCursor stay in their existing reduced-motion
-frames. MetroStation retains `pulseDelay` for compatibility; its hidden ping no longer animates.
+frames. MetroStation accepts `pulseDelay` for compatibility; its hidden ping stays still.
 The opt-in gradient Separator is a still orange-to-yellow rule. StatusDot `pulse`,
 TerminalPanel `signal.live` and the shared `.led-pulse` class are accepted for compatibility
-and produce no visual pulse. All props, types and exports remain available. Reduced motion stays still.
-These opt-in changes follow the owner-approved compatibility exception in `DEPRECATION.md`.
+and produce no visual pulse; their props, types and exports stay available under the
+owner-approved compatibility exception in `DEPRECATION.md`. Reduced motion stays still.
 
 Skeleton and consumer spinners may loop only while something is actually loading. The caller
 owns that lifetime: render them within an `aria-busy="true"` loading region and remove them
@@ -95,21 +95,23 @@ outer ref, and preserve or default `data-slot` on that outer element.
 The hazard tape is full width by default; the gradient rule defaults to `var(--width-content)`.
 Labels use the shared station label vocabulary.
 
-`variant="dimension"` is THE divider ([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)):
-a drafting dimension line in the blueprint ink (`--primary` at 70%), a 1px hairline with 9px end
+`variant="dimension"` is the dimension line ([D22](../../DECISIONS.md#d22-section-edges-and-the-footer-edge)),
+`PageSections`' default divider: a drafting dimension line in the blueprint ink (`--primary` at 70%), a 1px hairline with 9px end
 ticks and 5px scale ticks every 80px (the grid's major step), full width, the same in every
 product and theme. It is horizontal only, has no size, width cap or label, never moves, and is
 hidden from assistive technology (`aria-hidden="true"`, `role="none"`). The `.dimension-line` class
 in `base.css` draws it, so it needs `@yesid/ui/base.css`. Use it by hand for a break inside a
 section; between sections, let `PageSections` draw it (see [Page sections](#page-sections)).
 
-`variant="hand-drawn"` is the owner's drawn page divider (16 November 2026): one slightly irregular
+`variant="hand-drawn"` is the owner's drawn divider (16 November 2026): one slightly irregular
 orange pen stroke, at most 1px off true, in the blueprint ink (`--primary` through `currentColor`),
 8px tall and edge to edge. It is one decorative inline SVG path with round caps and
 `vector-effect: non-scaling-stroke`, so the stroke stays 1.25px at every width: no stamps, ticks,
 glow, shadow or animation. Like the dimension line it is horizontal only, has no width cap or
 label, and is hidden from assistive technology; `base.css` supplies `.hand-drawn-line` and
-`.hand-drawn-line-art`. yesid.dev opts its page default to it through `PageSections`.
+`.hand-drawn-line-art`. Between page sections, `PageSections divider="hand-drawn"` draws the
+zero-height page edge instead (see [Page sections](#page-sections)); yesid.dev composes its pages
+that way.
 
 ### Sheet
 
@@ -209,7 +211,7 @@ keeps them as separate targets; never wrap them in a whole-card link.
   surface for static reading and task cards. An interactive neutral card firms its border the
   same way.
 - `textSize="inherit"` drops the card's 14px base (`text-sm`), so text and form fields inside keep
-  the page size (16px or more). The default `small` keeps today's output.
+  the page size (16px or more). The default `small` keeps the 14px base.
 
 ```svelte
 <Card edge="neutral" textSize="inherit">…</Card>
@@ -262,7 +264,7 @@ on inactive hover (with text at full strength), and minimum tap height `--size-t
 The hover rule defaults to `currentColor`; `transparent` hides it without dimming the text.
 Reduced motion removes the rule-color transition. Keyboard focus uses a 2px inset outline in
 the control's current text color so it contrasts with both the inactive rail and active chip.
-Gallery's `/station-tabs` renders both compositions. Ordinary Tabs variants stay unchanged.
+Gallery's `/station-tabs` renders both compositions. The module does not affect ordinary Tabs variants.
 
 The package targets bits-ui's real `data-state="active"` selector and rejects the dead
 `data-active:` form. A product may keep its rail height, padding, active shadow, underline
@@ -361,8 +363,8 @@ No product locale type or copy table enters the package.
 
 ### MetroStation
 
-Deprecated since v0.44.0: no product uses it. It stays functional until removal (90 days after
-publication and an intervening minor). Use a plain number or `StopLabel`; see
+Deprecated: no product uses it. It stays functional until removal (see
+[DEPRECATION.md](../../DEPRECATION.md#active-deprecations)). Use a plain number or `StopLabel`; see
 [decorative vocabulary](../../docs/migrations/decorative-vocabulary.md). Renders the zero-padded
 station number in a still 2rem signage roundel.
 
@@ -385,9 +387,9 @@ default, `dimension` for the dimension line, D22, or `line` for one solid yellow
 pairs. Extra attributes go to the root. Its look comes from the `.terminal-*` classes in
 `base.css`, so markup rendered on the server can wear the same chrome.
 
-`rule="line"` is the owner's live QA line (16 November 2026): one solid yellow line
-(`--accent`) replaces the grey hairline under the title bar, and the footer's top boundary takes
-the same yellow when a footer is present. It renders no `Separator`, so there is no orange
+`rule="line"` is the owner's terminal rule (16 November 2026), used by yesid.dev's terminals and
+code blocks: one solid yellow line (`--accent`) under the title bar in place of the grey hairline,
+and the same yellow on the footer's top boundary when a footer is present. It renders no `Separator`, so there is no orange
 dimension or hazard rule and no second stroke. The presentation is the root class
 `terminal-rule-line`, so server-rendered `<div class="terminal terminal-rule-line">` markup gets
 the same line; `CodeBlock` forwards the same `rule` values.
@@ -395,10 +397,9 @@ the same line; `CodeBlock` forwards the same `rule` values.
 There is no lamp or colored window chrome by default. To report a status the caller can verify,
 pass `signal={{ color: 'green', label: 'Live feed', live: true }}`. `color` uses `StatusDotColor`;
 `label` is required and supplies screen-reader text. The lamp stays steady even with `live: true`;
-`live` remains accepted for compatibility and produces no visual pulse. Server output and reduced
-motion are also still. `status` remains independent text.
-Removing the automatic green pulse corrects an unmeasured status claim; existing callers need
-no prop changes unless they want to report a verified signal.
+`live` is accepted for compatibility and produces no visual pulse. Server output and reduced
+motion are also still. `status` is independent text. The panel draws no lamp of its own, because
+a lamp nobody measured is an unverified status claim.
 
 `CodeBlock` puts source in a `TerminalPanel` with the `language` as its tag. `rule` takes the same
 `hazard`, `dimension` and `line` values, so a CMS or docs code panel can use the yellow line. Pass `copy` labels
@@ -496,20 +497,19 @@ entries, target activity remains available. Ordinary content headings and `optio
 targets outside independent panels keep reporting activity, including unlisted targets.
 This protection also applies with `independent collapsible={false}`. A static panel stays
 visible, and jumps or reveal helpers leave its bound `open` value unchanged. Ordinary static
-cards keep their existing behavior and remain outside bulk actions.
+cards stay outside bulk actions.
 
 The optional `summary` snippet renders between the header and the body. It stays visible in both
 states, outside the inert collapsible region, wraps without clamping, and describes the heading
 button without becoming part of its name. Use it for the finding, period and material caveat.
-Use `subtitle` for a short label; its existing header placement and article-summary closed clamp
-are unchanged. `SectionCard` owns these rendered mechanics; `CollapsibleSection` owns registration.
+Use `subtitle` for a short label in the header; an article-summary subtitle clamps to two lines
+while its section is closed. `SectionCard` owns these rendered mechanics; `CollapsibleSection` owns registration.
 
 Reading surfaces: `edge="neutral"` draws the static edge in `--border`; `edgeWeight` is `heavy`
 (3px, default), `regular` (2px) or `thin` (1px); `textSize="inherit"` keeps body text and fields at
 the page size. Only the heading button reacts to hover: the border takes the accent and the title
-turns orange (`--primary`), the clickable hue; a neutral edge takes no glow. Before v0.44.0 the
-hovered title turned yellow (`--accent-text`); the owner changed it (answer B1 2A), see
-[DEPRECATION.md](../../DEPRECATION.md#owner-approved-behavior-changes).
+turns orange (`--primary`), the clickable hue, never yellow (owner answer B1 2A); a neutral edge
+takes no glow.
 
 ```svelte
 <CollapsibleSection title="Service observations" subtitle="Completed week">
@@ -528,8 +528,7 @@ TocPill is the mobile contents drawer and retains consumer-owned openAria and cl
 Both show a position (`SEC n / total` in TocNav, `n/total` in TocPill and its accessible name) by
 default; pass `counter={false}`, or `toc.counter: false` on DetailFrame, on a reading page where the
 position carries no meaning. Below 1024px, when a SurfaceRail pill is on the same page, TocPill
-stacks 8px above it and steps aside while the rail sheet is open (Y-10 fix: the two pills used to
-share one spot, so one hid the other).
+stacks 8px above it and steps aside while the rail sheet is open, so neither pill hides the other.
 TocBadge is a stateless rendering adapter for numeric and icon badges. Both navigation views
 accept a SectionJump controller through navigation; activeId and onNavigate can still be
 explicitly controlled. Without activeId, they read the controller's reactive active id.
@@ -557,13 +556,13 @@ See [the breaking migration](../../docs/migrations/deepen-section-jump.md) for r
 
 Stateless atoms. `CornerMarks` draws four corner ticks and needs a positioned parent. `StatusDot`
 takes a signal aspect (`orange` to `lunar`) or a data status (`early` to `unknown`), with
-optional `pulse` and `ring`. `pulse` remains accepted for compatibility and produces no visual pulse. `MetricDisplay` renders `value` and `label`; the `absent` snippet
+optional `pulse` and `ring`. `pulse` is accepted for compatibility and produces no visual pulse. `MetricDisplay` renders `value` and `label`; the `absent` snippet
 replaces an empty value and `info` follows the label, so absence text and tooltips stay with the
 caller. `SectionHeading` takes `heading` or `overline`, plus `number`, `headingAccent`, and an
 `explainer` snippet. `overline` is signage only: a short board, platform or route name in tracked
 mono uppercase, never a label above a heading. Start a section with `heading`; label data with the
-`.label-reading` role. The Gallery no longer demonstrates the overline as a section label; it stays
-accepted for existing callers. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
+`.label-reading` role. The Gallery does not demonstrate the overline as a section label; the prop
+is accepted for compatibility. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
 
 ### FilterGroup, FilterSection, FilterSummary, and SearchInput
 
@@ -578,7 +577,7 @@ focus shows the standard 2px focus ring from `base.css`, with no glow and no bor
 
 ### CornerMeta, SegmentedChoice, and ToggleChip
 
-`CornerMeta` is deprecated since v0.44.0 (no product use) and stays functional until removal;
+`CornerMeta` is deprecated (no product use) and stays functional until removal;
 put essential text in the content and drop the corner notes (see
 [decorative vocabulary](../../docs/migrations/decorative-vocabulary.md)). It puts decorative mono
 notes in the four corners of its positioned parent (snippets `topLeft` to `bottomRight`,
@@ -608,7 +607,8 @@ omitted), a sentence-case subtitle in reading type, and a neutral line instead o
 The title, the line and the filter column share one left edge.
 
 `rule` overrides the rule under the header in either presentation: `hazard`, `line` or
-`dimension` (THE divider, D22). Without `rule`, each presentation keeps its rule. It is the one
+`dimension` (the dimension line, D22). Without `rule`, each presentation draws its own: hazard
+tape for expressive, the neutral line for reading. It is the one
 line between the header and the list: the search draws no rule of its own.
 
 The filter column holds the `search` snippet and a panel with the `filters` snippet. From 1024px
@@ -649,15 +649,15 @@ The default is a real `h1`; `level` accepts 1–6 and `titleId` labels that head
 width. The orange title dot and metro artwork remain hidden from assistive technology. Use
 `decorative` only beside a separate accessible/mobile heading, as ListingFrame does; that typed
 mode excludes `level` and `titleId` and hides the entire title column below 1024px. No focusable
-elements are added. `clipAtHeader` retains RailTitle's default true; false disables its scroll
-mask without changing fitting, sticky placement or decoration. Existing listing data slots,
-rail dimensions and callers are unchanged. Consumers need no private CSS selectors.
+elements are added. `clipAtHeader` defaults to true, as on RailTitle; false disables its scroll
+mask without changing fitting, sticky placement or decoration. ListingFrame draws its rail through
+the same component. Consumers need no private CSS selectors.
 
 `resultCountText` (optional) is the result count in words, for example from `filterCountText`.
 The frame keeps a visually hidden polite status (`role="status"`) in the results column for as long
 as the prop is set, so screen readers hear the count whenever a search or filter changes it, even
 when the visible `FilterSummary` only shows while filters are active. Without it nothing is
-announced, as before.
+announced.
 
 The frame reads `--chrome-offset`, the height of the fixed site chrome, to pull the header under
 it and to park the sticky column below it. It falls back to `0px`.
@@ -667,8 +667,9 @@ it and to park the sticky column below it. It falls back to `0px`.
 `DetailFrame` is the detail and article page template: the `header` snippet, a rule, an
 optional `toolbar` band, then a grid of an optional left rail, the center (`children`, with an
 optional `summary` on top) and an optional right rail, then `after`. `rule` is `hazard` (the
-default tape), `dimension` (the dimension line, THE divider, D22), `line` (a neutral hairline for
-reading pages) or `none`.
+default tape), `dimension` (the dimension line, D22), `line` (a neutral hairline for
+reading pages) or `none`. A header that draws its own edge, as `ArticleHeader` does, hides the
+frame's rule.
 
 `header` renders first, before the rule and the grid, so it is the place for an opening that must
 come before both rails: the answer, the summary of findings, or the first paragraph a phone reader
@@ -738,8 +739,7 @@ the page's alternating ink sequence.
 ## Reading frame (Experimental)
 
 `ReadingFrame` from `@yesid/ui/layout` is the calm frame for legal pages and long prose. It is
-**Experimental** in its first release (v0.44.0): its shape may change in a minor release, with
-migration notes. It renders an `article` with an Inter `h1` in sentence case as written, the real
+**Experimental**: its shape may change in a minor release, with migration notes. It renders an `article` with an Inter `h1` in sentence case as written, the real
 date of the last change when the text has one, an optional `summary`, the contents and the body
 (`children`), on a measure of about 65 to 70 characters (`--reading-measure`, default `34em` of the
 reading size) with `--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels,
@@ -750,7 +750,7 @@ each a 44px target (`--size-tap-min`).
   optionally with a time and offset) from the text's real revision history, the product's label
   ("Last updated") and the date as the product formats it. Omit it when the text has no authored
   revision date; the frame then renders no update row, time or placeholder, and the title, summary,
-  contents and body are unchanged. A malformed or impossible date or time (`2026-02-31`, `T24:00`)
+  contents and body render as usual. A malformed or impossible date or time (`2026-02-31`, `T24:00`)
   throws during rendering, on the server too, whatever renders the contents. Passing `null` is not
   omission and throws.
 - `sections` (`{ id, title }[]`) with `contentsLabel` renders the built-in contents list under a
@@ -758,9 +758,8 @@ each a 44px target (`--size-tap-min`).
   so `#contact` reaches the same section in English, French and Spanish; a translated, spaced,
   uppercase or repeated id throws. The body's sections carry the same ids.
 - `contents` (snippet) replaces the built-in list for a product that renders its own navigation.
-- `contentsRule` selects the top and bottom contents boundaries: `line` (default) retains the
-  existing solid rules and markup; `hand-drawn` uses the exact shared `Separator` hand-drawn
-  orange stroke. It applies to both the built-in list and a custom `contents` snippet, adds no
+- `contentsRule` selects the top and bottom contents boundaries: `line` (default) draws solid
+  rules; `hand-drawn` uses the shared `Separator` hand-drawn orange stroke. It applies to both the built-in list and a custom `contents` snippet, adds no
   focus targets or announced separators, and preserves the contents box dimensions and reading
   rhythm. With no contents, neither boundary renders. For example, pass
   `contentsRule="hand-drawn"` alongside `sections` and `contentsLabel`.
@@ -872,7 +871,7 @@ required, with an empty footer string hiding it. The header opens with the named
 
 `menuGroups?: readonly SiteHeaderMenuGroup[]` supplies visible group headings and ordered items.
 Each group has `{ label, items }`. When supplied, groups replace `menuItems`, including an empty
-array. `menuItems` is now optional and defaults to an empty array; existing flat menus are unchanged.
+array. `menuItems` is optional and defaults to an empty array.
 Keep every header destination in the selected menu source. Headings use the supplied case and copy.
 Grouped menus lay out as organized columns from 768px (one column per group while they fit, then
 wrapping) and as one column below it; each heading still labels its own list and reading and tab
@@ -885,7 +884,7 @@ brand snippet that draws its own `|` owns that spacing: use `ProductBrand`, or s
 with `var(--nav-split-space)` so it matches. The divider space never changes the 44px targets, the
 pill's fit or the link priorities.
 
-`compactControls` is deprecated since v0.44.0: the theme and language toggles stay in the pill
+`compactControls` is deprecated: the theme and language toggles stay in the pill
 at every width in every product (owner decision of 14 November 2026, `DECISIONS.md` D19). Omit
 the prop; see [compact controls](../../docs/migrations/compact-controls.md). It stays functional
 until removal. `compactControls` defaults to `false`. When enabled, below 600px of header container width the
@@ -895,19 +894,19 @@ Only one copy is rendered. The language control retains `preserveState` and life
 Use `actions` for a labelled button such as Search in the freed pill space.
 
 Before hydration, the menu button opens the existing controls with a native HTML popover,
-including when JavaScript is delayed or disabled. Language remains a real navigation link;
-the theme switch is reachable and retains its existing JavaScript-dependent behavior.
+including when JavaScript is delayed or disabled. Language is a real navigation link; the theme
+switch is reachable and needs JavaScript to act.
 Hydration hands off to the dialog without changing the pill's layout. Compact mode also keeps
 priority-1 links eligible below 375px when they fit, and keeps priority 2 from 500px because
-its controls are in the menu; priority 3 still folds away below 1024px.
-Callers without `compactControls` retain the existing below-375px link folding.
+its controls are in the menu; priority 3 folds away below 1024px. Without `compactControls`,
+links fold away below 375px.
 
 `Wordmark` is the name plus accent dot with the `wordmarkHover` effects (`autoPlay` plays one on
 mount). `LanguageToggle` is a plain signpost link: one board per locale, linking to `href(next)`.
 `LANGUAGE_ORDER`, exported from `@yesid/ui` and `@yesid/ui/brand`, is `['en', 'fr', 'es']`.
 The signpost draws and cycles supported languages in that order, then any other locales in their
 supplied order. For example, `['fr', 'en', 'es']` draws EN, FR, ES and English links to French.
-Products still choose their supported set, default, hrefs and copy. SiteHeader uses the same
+Products choose their supported set, default, hrefs and copy. SiteHeader uses the same
 order in the pill and compact menu, including the compact menu's language names.
 Its required `names` map supplies an autonym for every supported locale; no language names ship
 in the component. `preserveState` keeps scroll and page state (`data-sveltekit-reset="false"`);
@@ -916,13 +915,13 @@ standalone links pass their `bind:ref` to the lifecycle's optional `languageLink
 `reload` asks for a full document load. LanguageToggle registers no router hooks.
 `resetFocusAfterNavigation` is the same reset for `goto(url, { reset: false })`.
 The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.51.0/docs/migrations/navigation-lifecycle.md)
-records the v0.33.0 copy and integration migration for Transit and yesid.dev.
+covers the copy and integration for Transit and yesid.dev.
 
 ## Page sections
 
 `PageSections` and `PageSection` carry the owner's placement rule
-([D22](../../DECISIONS.md#d22-the-divider-and-the-street-edge)): every section ends with the
-dimension line at its bottom, except the last section of the page, so a divider never sits before
+([D22](../../DECISIONS.md#d22-section-edges-and-the-footer-edge)): every section ends with the
+page's divider at its bottom, except the last section of the page, so a divider never sits before
 the footer. A page composes its sections with them and draws no divider itself.
 
 ```svelte
@@ -931,28 +930,28 @@ the footer. A page composes its sections with them and draws no divider itself.
 </script>
 
 <main id="main">
-	<PageSections data-register="expressive">
-		<PageSection aria-labelledby="work">...</PageSection>          <!-- ends with the line -->
+	<PageSections divider="hand-drawn" data-register="expressive">
+		<PageSection aria-labelledby="work">...</PageSection>          <!-- ends with the edge -->
 		<div class="product-wrapper">
-			<PageSection aria-labelledby="services">...</PageSection>  <!-- ends with the line -->
+			<PageSection aria-labelledby="services">...</PageSection>  <!-- ends with the edge -->
 		</div>
-		<PageSection aria-labelledby="contact">...</PageSection>       <!-- last: no line -->
+		<PageSection aria-labelledby="contact">...</PageSection>       <!-- last: no edge -->
 	</PageSections>
 </main>
-<SiteFooter {...footer} />                                         <!-- its street edge -->
+<SiteFooter edge="hazard" {...footer} />                           <!-- its hazard edge -->
 ```
 
 `PageSections` renders a `<div>` and `PageSection` a `<section>`; both forward their attributes.
 Each `PageSection` registers with the nearest `PageSections` at any depth, so product wrappers do
 not matter, and every registered section after the first is preceded by a boundary in the
 `page-section-boundary` slot. `divider` picks that divider for the whole
-page: `dimension` (the default), `hand-drawn` for the owner's drawn page line, or `hazard` for the
-kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
+page: `dimension` (the default), `hand-drawn` for the drawn page edge yesid.dev uses, or `hazard`
+for the kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
 sections. Hand-drawn page boundaries alternate four and five pen strokes from edge to edge,
 with small gaps and a slight wobble. Editorial header edges count in that same document order.
 Only the upper half of the 20px canvas paints at the joined edge, leaving zero layout height.
-Standalone and card separators keep their full 8px canvas and existing stroke. Dimension and hazard
-boundaries retain their existing flow rows.
+Standalone and card separators draw their full 8px canvas with one stroke. Dimension and hazard
+boundaries are rows in the flow.
 Every boundary stays outside the sections and as wide as `PageSections` (make that full-bleed
 for an edge-to-edge line), above section backgrounds. Order is document order, on the server too; a section that mounts later takes
 its place. Plain `<section>`s do not register, and a `PageSection` inside another, or outside
@@ -966,29 +965,31 @@ ListingFrame under their header, TerminalPanel and CodeBlock under their title b
 
 ## Site footer and error page
 
-`SiteFooter` renders the street edge along its top edge (D22: one dashed road marking whose 20px
-dashes alternate yellow and white, edge to edge, with a hairline on the white dashes so they read
-on the light footer; decorative and still; it replaced the hazard strip in v0.45.0), the `brand` snippet with a `tagline`, one labelled
+`SiteFooter` renders a decorative, still edge along its top (D22), the `brand` snippet with a
+`tagline`, one labelled
 navigation per entry in `groups` (`navLabel` when the accessible name differs from the heading;
 `external` links open in a new tab with `rel="noopener noreferrer"`, and `me` adds `rel="me"` for
 the owner's own profiles; `after` adds controls inside the group), and a status row with
 optional `statusStart`, and, when `statusPrefix` is supplied, a live lamp (`liveLabel` for screen
-readers) and today's date. `edge` picks that top edge: `street` (the default) or `hazard`, which
-draws the existing `Separator variant="hazard"` strip (3px, full width) instead of the road
-marking; groups, links, the status row and `data-in-view` behave the same either way. This self-made status pair is deprecated starting with v0.43.0;
+readers) and today's date. `edge` picks the top edge: `hazard`, the diagonal yellow and black
+`Separator variant="hazard"` strip (3px, full width) that every product passes, or `street`, the
+default, one dashed road marking whose 20px dashes alternate yellow and white, edge to edge, with a
+hairline on the white dashes so they read on the light footer. Groups, links, the status row and
+`data-in-view` behave the same either way. Pass `ProductBrand` through `brand` for a product's
+"yesid. | Product" mark. The self-made status pair (`statusPrefix` and `liveLabel`) is deprecated;
 use `statusStart` with a real source, subject and observation time, or omit both props.
 The date describes the visitor's day, not service health. Lamps stay still under the
 no-endless-decorative-loops policy. See [the migration](../../docs/migrations/footer-status.md). The status props form an all-or-nothing union: supply both
 `statusPrefix` and `liveLabel`, or omit both. This keeps every rendered lamp named for screen
 readers. `statusStart` is independent; without it or the status pair, the entire row is omitted.
-An empty string still opts into the status. Existing callers supplying both props keep their output. `data-in-view`
+An empty string still opts into the status. `data-in-view`
 reports whether it is on screen.
 
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
 `statusNote` is given. For 404 the scene's sign shows the code; other statuses announce the code
-with `role="alert"`. The app keeps its copy and `<svelte:head>`. Every part of today's page stays by
-default and each can be turned off: `label` is optional (omit it to start with the heading),
+with `role="alert"`. The app keeps its copy and `<svelte:head>`. Every part renders by default and
+each can be turned off: `label` is optional (omit it to start with the heading),
 `tape={false}` drops the hazard rule (`tape="dimension"` draws the dimension line instead, D22), and `illustration` places the scene: `'large-first'` (the
 default, a large scene above the copy), `'small-after'` (a small scene after the heading, body,
 destinations and terminal line, so the way back comes first) or `'none'`. The scene's lamps are
@@ -1022,7 +1023,9 @@ named by its caption. `frame="card"` draws a rounded card, `headerBand="terminal
 header, `tableClass` styles the table and other attributes go to the frame.
 
 `@yesid/ui/feedback` exports `StateNotice`, the quiet empty, error and status notice: `title`,
-optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `presentation` is
+optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `tone` is
+`neutral` (default), `positive`, `warning` or `error`; the last three use `--success`,
+`--accent-text` and `--destructive`, the interface colours, never the transport status tokens. `presentation` is
 `responsive` (default), `silo`, `card`, `pill` or `row`; a pill or row without snippets renders
 inline. Pass `role` and `aria-live` when the notice reports a change. With a `role`, the title names it.
 
@@ -1083,8 +1086,8 @@ resets in a new tab. `bind:value={state.value}` works directly. Values must be `
 (strings, numbers, booleans, null, and arrays of those), so store ids and flags, never translated
 text. During SSR it returns the seed.
 
-The generic store remains available for search and selection state. Disclosure components and the
-head boot script do not use the generic store. Historical disclosure storage keys are ignored, not deleted.
+The generic store serves search and selection state. Disclosure components and the head boot
+script do not use it. `persisted:*` disclosure keys and `quiet-mode` are ignored, not deleted.
 
 ## Head
 
@@ -1132,7 +1135,7 @@ relies on `'unsafe-inline'` must not add the hash, because any hash switches `'u
 
 `SiteHeader.brand?: Snippet` replaces the default Wordmark area. The caller owns the snippet's
 links, sizing and motion. For example, compose a still house `Wordmark` beside a product link
-reading "login". ThemeToggle and LanguageToggle keep their existing look and behavior.
+reading "login". ThemeToggle and LanguageToggle keep their standard look and behavior.
 `wordmarkAutoPlay` defaults to `true`; pass `false` to stop the default Wordmark's mount animation
 while preserving its hover effect. It has no effect on a supplied `brand` snippet.
 
@@ -1140,16 +1143,16 @@ For the house-plus-product identity, pass `ProductBrand` (below) through this sn
 
 When the effective menu has no items, the menu button is omitted. `menuGroups` takes precedence
 when supplied, including empty groups. With no menu, `compactControls` keeps the controls in the
-pill so they stay reachable. Existing menus retain their controls and behavior.
+pill so they stay reachable.
 The native compact popover before hydration has an 8px gap below the pill and the same visible
-control labels as the hydrated menu. Its toggle artwork remains unchanged. The menu button's
+control labels as the hydrated menu and the same toggle artwork. The menu button's
 focus outline follows its round corner shape.
 
 ### RailTitle (Experimental)
 
-`RailTitle` is a section title on the side rail ([D23](../../DECISIONS.md#d23-rail-titles)), in
-the look of the rotated titles on yesid.dev's home and contact pages. It is Experimental in its
-first release: an incompatible change waits for a minor with migration notes.
+`RailTitle` is a section title on the side rail ([D23](../../DECISIONS.md#d23-rail-titles)), as on
+yesid.dev's home and services pages. It is Experimental: an incompatible change waits for a minor
+with migration notes.
 
 ```svelte
 <section aria-labelledby="work-title">
@@ -1171,10 +1174,10 @@ sticks in (the nearest scrolling ancestor, else the viewport): a longer title sh
 12px; one that would need less reads horizontally above the content instead. It refits when its
 words, `dot`, `size`, `horizontalSize` or `level` change, when the scrollport or the title resizes, at the breakpoint
 and when the web font loads. As its section scrolls away, the part of the title above the
-clearance line is clipped, so it never paints under the header pill. `clipAtHeader={false}` removes
-that scroll-applied clip and lets the title leave naturally with its section; sticky placement,
-scrollport fitting, the 12px horizontal fallback, sizing, fonts and cleanup are unchanged. It
-defaults to true. Below 1024px it reads
+clearance line is clipped, so it never paints under the header pill. `clipAtHeader` (default
+`true`) controls that scroll-applied clip: `false`, as yesid.dev passes, lets the title leave
+naturally with its section, with the same sticky placement, scrollport fitting, 12px horizontal
+fallback and sizing. Below 1024px it reads
 horizontally above the content, in SectionHeading's display type, inset by `--space-page-x`.
 `horizontalSize` optionally sets that horizontal font size, including the too-long-to-rotate
 desktop fallback. For example, `horizontalSize="2rem"` gives a 32px title at a 16px root and
@@ -1191,8 +1194,8 @@ hidden decoration (no heading), as ListingFrame's edge title does beside its rea
 ### ProductBrand (Experimental)
 
 `ProductBrand` is the product-brand cluster: the still house `Wordmark`, a 2px divider and the
-product name as a link, as in "yesid. | Login". It is Experimental in its first release: an
-incompatible change waits for a minor with migration notes. Pass it through SiteHeader's `brand`
+product name as a link, as in "yesid. | Login". It is Experimental: an incompatible change waits
+for a minor with migration notes. Pass it through SiteHeader's `brand`
 snippet for a narrow product navbar, and through SiteFooter's `brand` snippet.
 
 ```svelte
@@ -1213,13 +1216,13 @@ orange on hover, without an underline. The divider is `aria-hidden`. Inside `Sit
 space is the pill's `--nav-split-space`, the same on both sides as every navbar `|`; elsewhere the
 cluster keeps its 0.5em gap. The cluster takes
 `--text-nav-brand-desktop` (18px) unless a caller class sets another size, and a long name wraps
-between words beside the house mark instead of overflowing. The theme and language toggles stay
-unchanged beside it.
+between words beside the house mark instead of overflowing. The theme and language toggles keep
+their standard look beside it.
 
 `houseStyle`, `productStyle` and `dividerStyle` optionally style the two links and decorative
-divider directly. Omit them to retain the existing header and footer defaults. Use `rem` sizes
+divider directly. Omit them for the default header and footer sizes. Use `rem` sizes
 to follow the visitor's text size; keep both links, their full names, minimum 44px targets and
-focus rings. The existing root `style` controls layout. For example, a footer can retain an
+focus rings. The root `style` controls layout. For example, a footer can retain an
 18px house mark and 24px product name, then stack them and hide the divider when its own column
 is narrower than 9.5em, including with enlarged text:
 
@@ -1256,8 +1259,8 @@ breakpoints ship in ProductBrand.
 focus ring, text links (a link without a class is underlined in `--primary`; components
 style their own), scrollbar, circuit grid, shared keyframes, label styles, `.glass-chrome`, the
 `TerminalPanel` and `CodeBlock` classes (`.terminal-*` and `.syn-*`, in the components layer), the
-`SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), the dimension line
-(`.dimension-line`) and the rule that hides kit edge rules inside a page section, a focus outline under forced
+`SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), the dimension and
+hand-drawn lines (`.dimension-line`, `.hand-drawn-line`) and the rule that hides kit edge rules inside a page section, a focus outline under forced
 colors and the
 View Transitions route crossfade (off under reduced motion; pair it with `onNavigate(viewTransition)`
 from `@yesid/motion/utils/viewTransition`). It imports
@@ -1279,8 +1282,8 @@ Like every package stylesheet, it is opt-in; no JavaScript import loads it.
   weight 600, muted reading ink. "Observation period", "Email address", "Last updated".
 - `.label-station`: real signage only (route plates, sign codes, departure boards). Mono, tracked
   uppercase, yellow.
-- `.label-section` and `.label-metric` stay for existing callers; prefer `.label-reading` for new
-  reading and task pages.
+- `.label-section` and `.label-metric` are kept for compatibility; reading and task pages use
+  `.label-reading`.
 
 Numbering, hazard tape and artwork carry meaning only when the content has it: number a real
 sequence (steps, ordered procedures), use hazard tape for a real caution or the page's signature,
@@ -1304,7 +1307,7 @@ look for the pills inside it, so set `scroll-padding-bottom` yourself when the p
 
 Table headers and cells use `word-break: normal` and `overflow-wrap: break-word`: ordinary
 words stay whole, while a single word wider than its cell can wrap. Products with custom table
-wrapping rules should review their cascade when adopting this defect fix.
+wrapping rules should check their cascade against it.
 
 ## Develop
 
@@ -1321,18 +1324,16 @@ its own tests, build and browser checks when it takes a release; a pass here doe
 
 Compose native labelled fields using the [recipe](../../docs/recipes/labelled-field.md).
 The Gallery route /labelled-field demonstrates EN, FR and ES error recovery, busy text
-and the existing input-token boundary. This adds no Field component or token value change.
+and the input-token boundary. There is no Field component.
 
 ### Reading data and search controls
 
-All reading options are additive. MetricDisplay keeps `tone="accent"` (yellow) and
-`layout="stacked"`. Products pass `tone="reading"` for ordinary figures, reserving accent
+MetricDisplay defaults to `tone="accent"` (yellow) and `layout="stacked"`. Products pass `tone="reading"` for ordinary figures, reserving accent
 for the screen's one highlight. Figures use tabular numerals. `layout="phone-row"` places
-the label beside the value below 640px; larger screens retain the stack. `labelBelow`
-continues to control source order. `labelRole="reading"` opts into the existing Inter,
-sentence-case `.label-reading` role; the default `labelRole="metric"` keeps the compact
-uppercase mono label. Label role and value `tone` are independent, so existing callers retain
-their appearance.
+the label beside the value below 640px; larger screens stack them. `labelBelow` controls source
+order. `labelRole="reading"` uses the Inter, sentence-case `.label-reading` role; the default
+`labelRole="metric"` is the compact uppercase mono label. Label role and value `tone` are
+independent.
 
 Context recipe: put the unit, full period and comparison in `sublabel`; supply an `info`
 snippet linking to visible evidence and a method, and `absent` with explicit absence words.
@@ -1342,12 +1343,13 @@ service metrics keep their approved content without adding a date, source or too
 SearchInput forwards native input attributes and events to the input, accepts `bind:ref`
 for focus, and composes caller `aria-describedby` with its optional `description`.
 `visibleLabel` associates a visible native label; `textSize="body"` opts into body text.
-The default hidden accessible label and small mono text remain for existing callers.
+By default the label is visually hidden and the text is small mono.
 `label` owns the accessible name. Placeholder remains a hint, never the label.
 
 SegmentedChoice `variant="fit-row"` shares available width among choices and wraps whole
-segments when they no longer fit. Default and joined-grid layouts stay unchanged.
+segments when they do not fit.
 FilterGroup `selectedStyle="consistent"` gives choices and the All reset the same filled
-orange selection, with radio semantics as the non-colour cue. `legacy` remains the default.
+orange selection, with radio semantics as the non-colour cue; yesid.dev's listings use it.
+`legacy` is the default.
 Gallery `/reading-record` composes these contracts with comparison, definition-list and
 25-person in-row confirmation recipes. This fixture never establishes consumer acceptance.
