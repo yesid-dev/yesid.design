@@ -136,6 +136,18 @@ pre, code, table {
 		outline: 2px solid CanvasText !important;
 		outline-offset: 2px;
 	}
+
+	/* Status marks keep their glyph and word and take the system text colour, so no mark disappears. */
+	:root,
+	[data-theme],
+	.theme-dark,
+	.theme-light {
+		--dataviz-status-early: CanvasText !important;
+		--dataviz-status-on-time: CanvasText !important;
+		--dataviz-status-late: CanvasText !important;
+		--dataviz-status-severe: CanvasText !important;
+		--dataviz-status-unknown: CanvasText !important;
+	}
 }
 
 * {
