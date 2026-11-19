@@ -21,8 +21,8 @@ Compact density is opt-in: set `data-density="compact"` on `<html>` or on a subt
 Svelte styles they need postcss-global-data and postcss-custom-media in the product's build.
 
 For ordinary reading, use these explicit roles. They retain their size inside compact-density
-subtrees. Existing `text-body`, `text-small`, `text-mono` and `text-caption` also serve controls,
-data and labels, so they keep their existing values. Display, hero and impact roles are separate.
+subtrees. `text-body`, `text-small`, `text-mono` and `text-caption` also serve controls,
+data and labels at their own sizes. Display, hero and impact roles are separate.
 
 | Reading role | Tailwind size classes | Line height |
 | --- | --- | --- |
@@ -65,5 +65,10 @@ bun run --cwd packages/tokens check
 ```
 
 Text links use `primary` as AA text, including inside `.theme-dark` islands. Yellow is
-wayfinding and highlight; only the conversion button is clickable yellow. See
-[the doctrine](../../docs/DOCTRINE.md) for registers and colour roles. Token values are unchanged.
+wayfinding, hazard and highlight; only the conversion button is clickable yellow. See
+[the doctrine](../../docs/DOCTRINE.md) for registers and colour roles.
+
+The transport status colours (`--dataviz-status-*`) each travel with a word and a glyph: early is
+blue (▼), on time is neutral reading ink (●), late is red (▲) and unknown is grey (○).
+`--dataviz-status-severe` exists for compatibility and equals late. Interface feedback, such as
+StateNotice's tones, uses `--success`, `--accent-text` and `--destructive` instead.

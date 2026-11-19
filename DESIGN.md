@@ -175,13 +175,13 @@ structure. Each holds a named role; every component usage maps to exactly one:
 - **ORANGE — interactive/signage** (`primary` `#E07800`, light `#985000`): nav and component
   links, buttons, CTAs, focus rings, active/hover states, signage accents. The clickable hue for
   everything except conversion (below), text links included: a link without a class is underlined in `primary` ink.
-- **YELLOW: wayfinding and highlight** (`accent` as surface and art; `accent-text` as AA text;
-  `line-amber`; `accent-surface`): the one highlight per screen (the answer figure or the
-  selected item), departure-board signage, map and diagram amber, string colours in highlighted
-  code, and hazard tape for a real caution or the page's signature. Not for ordinary numbers,
-  labels above headings or status: ordinary numbers use reading ink, and status uses the status
-  tokens with a word and a shape. The yellow conversion rule is unchanged: the only clickable
-  yellow surface is the "talk to Yesid" button, at most one per view; every other yellow stays
+- **YELLOW: wayfinding, hazard and highlight** (`accent` as surface and art; `accent-text` as
+  AA text; `line-amber`; `accent-surface`): the one highlight per screen (the answer figure or
+  the selected item), departure-board signage, map and diagram amber, string colours in highlighted
+  code, and hazard tape for a real caution, the footer's hazard edge or the page's signature. Not
+  for ordinary numbers, labels above headings or status: ordinary numbers use reading ink, and
+  status uses the status tokens with a word and a glyph. Under the yellow conversion rule, the only
+  clickable yellow surface is the "talk to Yesid" button, at most one per view; every other yellow stays
   unclickable, text links included (they are orange).
 - **WHITE — reflective** (`reflective` `#F5F5F0`, theme-invariant; dark `foreground`):
   key headline words on dark, catch-lights (`edge-highlight`), white-core métro dots and
@@ -189,6 +189,12 @@ structure. Each holds a named role; every component usage maps to exactly one:
 - **BLACK — tape/structure** (`hazard-b` / `signage-bg` `#1C1814`; light `border-strong`
   joins the family): hazard stripe pairing, signage chip grounds, light-mode strong
   structural rules drawn as black tape on paper. Dark mode's deep board IS the black voice.
+
+**Status colours** (`--dataviz-status-*`) mark transport status only, each with its word and glyph:
+early blue (▼, `#4aa3d4`, light `#1f6f9c`), on time in neutral reading ink (●), late red (▲,
+`#ff5f57`, light `#c62828`) and unknown grey (○). `severe` exists for compatibility and equals
+late. Interface feedback uses `success`, `accent-text` and `destructive` instead, as StateNotice's
+positive, warning and error tones do.
 
 Semantic tokens (`background`, `foreground`, `card`, `muted`, etc.) carry theme-switching
 responsibility. Contrast verified on dark first, then light — all pairs script-computed.
@@ -213,24 +219,31 @@ SiteHeader accepts a caller-owned `brand` snippet and `wordmarkAutoPlay={false}`
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
 The theme and language toggles stay in the pill at every width (D19); priority 2 links show from a
 600px header and links that do not fit leave a whole priority at a time. The Experimental
-`ProductBrand` composes the house wordmark, a divider and the product name for header and footer.
+`ProductBrand` composes the house wordmark, a divider and the product name for header and footer,
+with optional sizes for each part. Grouped menus lay out in columns from 768px and in one column
+below.
 Button `wrap` opts into multiline labels and content-driven height. Table cells preserve whole
 words, wrapping a single word only when it exceeds the cell width.
 `.chrome-clearance` on the scrolling element keeps focus and fragment jumps clear of the fixed
 header and the floating pills; a contents pill stacks above a SurfaceRail pill.
-ReadingFrame (Experimental) holds legal pages and long prose on a 65 to 70 character measure.
-The divider is the dimension line (D22): `Separator variant="dimension"`, a 1px blueprint-ink
-hairline with end ticks and a scale tick every 80px, edge to edge, static. `PageSections` and
-`PageSection` end every section but the last with it, so none sits before the footer; frames and panels take
-`rule="dimension"` (Masthead and ErrorPage `tape="dimension"`). SiteFooter's top edge is the
-street edge: one dashed line of alternating yellow and white dashes. Hazard tape is not a divider.
+ReadingFrame (Experimental) holds legal pages and long prose on a 65 to 70 character measure,
+with its contents. `PageSections` and `PageSection` end every section but the last with a
+divider (D22), so none sits before the footer: `divider="hand-drawn"` is the orange pen edge
+yesid.dev uses, drawn over the joined section edges with zero layout height, and ArticleHeader ends
+with the same edge; the default is the dimension line, a 1px blueprint-ink hairline with end ticks
+and a scale tick every 80px, which frames and panels also take as `rule="dimension"` (Masthead and
+ErrorPage `tape="dimension"`). Every product's SiteFooter passes `edge="hazard"` for the
+diagonal yellow and black strip along its top. TerminalPanel and CodeBlock take `rule="line"`
+for one solid yellow rule. Hazard tape is otherwise not a divider.
 The Experimental `RailTitle` puts a section's real heading on a side rail outside the centred
 content (D23): rotated and sticky under the header pill from 1024px, horizontal above its section
-below. The editorial header band (ArticleHeader) is compact: the title keeps its size, the rows sit
+below; `clipAtHeader={false}` lets a departing title leave unclipped. ListingRail is the same
+title column for a page without a listing. FilterGroup `selectedStyle="consistent"` gives every
+choice and the All reset one selected style. The editorial header band (ArticleHeader) is compact: the title keeps its size, the rows sit
 close and the actions share a row with the controls. A listing search keeps the standard focus
 ring, with no dashed rule above it; ListingFrame's `resultCountText` announces the count politely.
 
-MetricDisplay keeps yellow by default; reading pages pass `tone="reading"` explicitly.
+MetricDisplay is yellow by default; reading pages pass `tone="reading"` explicitly.
 Figures use tabular numerals. Put period, unit and comparison in `sublabel`, evidence in
 `info`, and explicit absence words in `absent`. The Gallery reading record demonstrates
 phone rows, scoped comparison scrolling, narrative facts and in-row confirmation.

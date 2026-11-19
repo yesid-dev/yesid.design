@@ -24,8 +24,8 @@ Use:
 
 Create the SvelteKit app first. Confirm its normal test, check, and build commands pass before adding the design packages.
 
-This Kit 3 setup path applies from v0.35.0 onward. Review the chosen release before installing its
-URLs. Gallery remains workspace evidence, never product acceptance.
+Review the chosen release before installing its URLs. Gallery is workspace evidence, never
+product acceptance.
 
 ## 2. Install one exact release
 
@@ -60,8 +60,8 @@ The wider peer range is a compatibility declaration, not a recommendation to res
 Add `shiki >=4 <5` only if importing the optional server-side `@yesid/seo-kit/highlight` subpath. The packages ship TypeScript and Svelte
 source that Vite compiles (see `ssr.noExternal` in section 4).
 `gh attestation verify <tarball> --repo yesid-dev/yesid.design` proves a tarball came from the
-release workflow. This command applies to releases after v0.39.1.
-For v0.36.1 to v0.39.1, use `gh attestation verify <tarball> --owner mgkdante --signer-repo mgkdante/yesid.design`; for v0.36.0 and earlier, use `--signer-repo mgkdante/yesid.dev-design`.
+release workflow. [RELEASING.md](../RELEASING.md#3-publish) lists the signer flags for releases
+signed under another repository name.
 
 ## 3. Load the tokens and fonts
 
@@ -319,19 +319,21 @@ every locale before enabling those routes.
     {#snippet actions()}<SectionsToggle copy={sectionCopy} />{/snippet}
   </SiteHeader>
   <main id="main">{@render children()}</main>
-  <SiteFooter tagline="Example product" groups={[]}>
+  <SiteFooter edge="hazard" tagline="Example product" groups={[]}>
     {#snippet brand()}<a href={home}>Example product</a>{/snippet}
   </SiteFooter>
 </SiteRoot>
 ```
 
 For grouped menus, pass `menuGroups={[{ label, items }]}` instead of `menuItems`. Groups take
-precedence when both are supplied. The theme and language toggles stay in the pill at every
+precedence when both are supplied, and lay out in columns from 768px and in one column below. The theme and language toggles stay in the pill at every
 width (D19); `compactControls` is deprecated, so omit it. Give your main call to action
 `priority: 1`: priority 2 links show from a 600px header, and links that do not fit leave a whole
 priority at a time. For a product navbar such as "yesid. | Login", pass the Experimental
-`ProductBrand` through the `brand` snippets of SiteHeader and SiteFooter. A complete example of
-what each snippet renders:
+`ProductBrand` through the `brand` snippets of SiteHeader and SiteFooter; `houseStyle`,
+`productStyle` and `dividerStyle` size its parts where a footer needs it. Every product passes
+`edge="hazard"` to SiteFooter for the diagonal yellow and black strip along its top. A complete
+example of what each brand snippet renders:
 
 ```svelte
 <script lang="ts">
@@ -344,10 +346,10 @@ what each snippet renders:
 Read [the doctrine](DOCTRINE.md) before composing a page and apply its five-minute review
 before completion. Declare the page register; keep the theme and language toggles unchanged.
 
-The footer status pair is deprecated starting with v0.43.0. Use `statusStart` only for a real
+The footer status pair is deprecated. Use `statusStart` only for a real
 status with its source, subject and observation time, or omit status entirely. See
 [the migration](migrations/footer-status.md). Supply both footer status props (`statusPrefix` and `liveLabel`) or omit both. Omit both to hide
-its lamp and date. The status row remains only if `statusStart` is supplied. Existing callers can keep their props unchanged.
+its lamp and date. The status row then renders only if `statusStart` is supplied.
 
 `SiteHeader.language` renders `LanguageToggle`; a second language control is unnecessary.
 Standalone `LanguageToggle` from `@yesid/ui/brand` accepts the same `locale`, `locales`,
@@ -662,7 +664,7 @@ lifecycle has no-op hook adapters because each navigation unloads the document:
 </script>
 <SiteHeader {navigation} {home} {labels} language={{ ...language, reload: true }} links={[]} menuItems={[]} />
 <main id="main">{@render children()}</main>
-<SiteFooter {groups} {tagline}>
+<SiteFooter edge="hazard" {groups} {tagline}>
   {#snippet brand()}<a href={home}>Example product</a>{/snippet}
 </SiteFooter>
 ```
@@ -689,12 +691,15 @@ register with `data-register`, starting from the default the
 dashboard and task pages from the shared brand pieces: the header and its toggles, cards and their
 hover, the section dividers, buttons and links. Never draw a divider in page CSS: compose the
 page's sections with `PageSections` and `PageSection`, so every section but the last ends with the
-dimension line and nothing sits before the footer's street edge
-([D22](../DECISIONS.md#d22-the-divider-and-the-street-edge)).
+page's divider (`divider="hand-drawn"` for the drawn edge, or the default dimension line) and
+nothing sits before the footer's hazard edge
+([D22](../DECISIONS.md#d22-section-edges-and-the-footer-edge)). Editorial pages use the shared
+`ArticleHeader`, which draws the same edge; legal pages and long prose use `ReadingFrame`; listing
+pages use `ListingFrame`, or `ListingRail` for the rail on its own.
 
 ## Labelled fields
 
 Follow the [labelled field recipe](recipes/labelled-field.md) for native labels, hints,
-required guidance, error-summary focus, busy text and autocomplete. Use the existing input
+required guidance, error-summary focus, busy text and autocomplete. Use the input
 token for field boundaries. Products own copy, validation and submission; D14 promotion
 awaits a shared contract in yesid.dev and yesid.login.

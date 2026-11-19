@@ -78,8 +78,8 @@ priority 3 link. `site-header-wide.spec.ts` holds hydration at 16px and at a 20p
 size and checks that the brand, links and toggles stay within 0.1px, and the mixed tiers with and
 without JavaScript.
 
-`/masthead` shows Masthead with its kicker (today) and heading first without one, with and without
-the dot, in EN and long FR and ES. `/error-page` renders today's page; `/error-page/[options]`
+`/masthead` shows Masthead with its kicker and heading first without one, with and without
+the dot, in EN and long FR and ES. `/error-page` renders the default page; `/error-page/[options]`
 prerenders option sets so the chosen props are in the first markup. The segment joins an
 illustration (`large-first`, `small-after`, `none`), any of `no-label`, `no-tape` and `unnamed` (no
 `suggestionsLabel`), and a language (`en`, `fr`, `es`) with dots, for example
