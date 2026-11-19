@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.51.1
+
+<!-- release-fragment: status-forced-colors -->
+- `@yesid/ui` (patch): In forced colours, StatusDot keeps a visible dot in the system text colour, and the `--dataviz-status-*` tokens resolve to `CanvasText`, so status marks keep their glyph and word without disappearing. Products no longer need their own forced-colours mapping for status marks.
+
+<!-- release-fragment: status-token-descriptions -->
+- `@yesid/tokens` (patch): The status token descriptions in `tokens.json` describe the three-band palette directly: on time is neutral reading ink, late is red and distinct from the yellow highlight, and severe shares late's red. Values are unchanged.
+
 ## 0.51.0
 
 <!-- release-fragment: status-palette-on-time-neutral -->
