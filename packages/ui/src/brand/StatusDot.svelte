@@ -70,3 +70,13 @@
 >
 	{#if label}<span class="sr-only">{label}</span>{/if}
 </span>
+
+<style>
+	/* Forced colors remove backgrounds, so the dot keeps its shape in the system text colour. */
+	@media (forced-colors: active) {
+		span[data-slot='status-dot'] {
+			forced-color-adjust: none;
+			background-color: CanvasText;
+		}
+	}
+</style>
