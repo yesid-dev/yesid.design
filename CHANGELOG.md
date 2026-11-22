@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.53.0-rc.1
+## 0.53.0
 
 <!-- release-fragment: announcement-banner-signage -->
 - `@yesid/ui` (patch): Use yellow signage and black text, icons and focus rings for `AnnouncementBanner` in both themes.
