@@ -818,6 +818,14 @@
 		inset: 0;
 		z-index: var(--z-sheet);
 	}
+	/* A preceding announcement supplies the initial in-flow offset, including before hydration. */
+	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active) {
+		position: sticky;
+		inset: 0 auto auto;
+	}
+	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active) .nav-root {
+		position: absolute;
+	}
 	.menu-dialog-active {
 		z-index: var(--z-menu);
 		background: var(--background);

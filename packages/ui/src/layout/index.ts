@@ -1,3 +1,6 @@
+export { default as AnnouncementBanner } from './AnnouncementBanner.svelte';
+export type { AnnouncementBannerProps } from './AnnouncementBanner.svelte';
+
 export { default as ArticleHeader } from './ArticleHeader.svelte';
 export type { ArticleHeaderProps, ArticleMetaEntry } from './ArticleHeader.svelte';
 

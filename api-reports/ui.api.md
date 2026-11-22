@@ -144,7 +144,7 @@
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
 - `./base.css` — direct asset `./base.css` (`default`), sha256 `186e7570d54ae7f2f6fa011a173f22105cb7e39d984b6f4f0aed3361ea04ca93`
-- `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `40450a648e4a461734946514b529ca42bc67cd38a813f0c51babd335e5409683`
+- `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
 
@@ -327,6 +327,22 @@ type AnchorOnlyProps_2 = Exclude<keyof HTMLAnchorAttributes, keyof HTMLButtonAtt
 
 // @public (undocumented)
 type AnchorOnlyProps_3 = Exclude<keyof HTMLAnchorAttributes, keyof HTMLButtonAttributes>;
+
+// @public (undocumented)
+const AnnouncementBanner: Component<AnnouncementBannerProps, {}, "">;
+
+// @public (undocumented)
+type AnnouncementBanner = ReturnType<typeof AnnouncementBanner>;
+
+// @public (undocumented)
+interface AnnouncementBannerProps {
+    closeLabel: string;
+    // (undocumented)
+    href: string;
+    id: string;
+    // (undocumented)
+    message: string;
+}
 
 // @public (undocumented)
 const ArticleHeader: Component<ArticleHeaderProps, {}, "">;
@@ -1578,7 +1594,8 @@ declare namespace Head {
         SeoHeadAlternate,
         SeoHeadImage,
         SeoHeadProps,
-        injectThemeBoot
+        injectThemeBoot,
+        injectAnnouncementBannerBoot
     }
 }
 
@@ -1692,6 +1709,9 @@ declare namespace Index {
 }
 
 // @public
+function injectAnnouncementBannerBoot(html: string, id?: string): string;
+
+// @public
 function injectThemeBoot(html: string): string;
 
 // @public
@@ -1721,6 +1741,8 @@ interface LanguageToggleProps {
 
 declare namespace Layout {
     export {
+        AnnouncementBanner,
+        AnnouncementBannerProps,
         ArticleHeader,
         ArticleHeaderProps,
         ArticleMetaEntry,

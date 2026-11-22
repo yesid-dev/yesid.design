@@ -779,6 +779,47 @@ Products keep the legal copy, the schema and server rendering.
 </ReadingFrame>
 ```
 
+## Site announcement banner
+
+Import `AnnouncementBanner` from `@yesid/ui/layout`. Render one in the site shell above the header,
+with the same message ID on every page and in every locale. Render it as a sibling before
+`SiteHeader` so the pill follows the banner's wrapped height before and after hydration. The
+message is the link and names the region. The app supplies all copy, including the close button's
+accessible name.
+
+```svelte
+<script lang="ts">
+  import { AnnouncementBanner } from '@yesid/ui/layout';
+</script>
+
+{#if announcement}
+  <AnnouncementBanner
+    id={announcement.id}
+    message={announcement.message}
+    href={announcement.href}
+    closeLabel={copy.dismissAnnouncement}
+  />
+{/if}
+```
+
+Add `%yesid.announcementBannerBoot%` to `app.html` inside `<head>` before `%sveltekit.head%`.
+Use the same ID for both the head and the rendered banner. For a site-wide message, import its
+ID from the same module in the layout and server hook.
+
+```ts
+import { injectAnnouncementBannerBoot, injectThemeBoot } from '@yesid/ui/head';
+
+// In the existing resolve options in hooks.server.ts:
+transformPageChunk: ({ html }) =>
+  injectAnnouncementBannerBoot(injectThemeBoot(html), announcement?.id),
+```
+
+Pass `undefined` when omitting the banner. If the site uses a hash-based CSP, add
+`announcementHash` from `@yesid/ui/boot.json` to `script-src` alongside the theme boot hash.
+Keep the component CSS so a saved dismissal takes effect before first paint. Dismissal is stored
+per ID on this origin. Change the ID when publishing a new message. Blocked storage leaves the
+banner visible. With JavaScript disabled, the banner and link remain available.
+
 ## Site header
 
 `SiteHeader` is the floating pill header with a full-screen metro-line menu on a bits-ui Dialog.
@@ -1091,7 +1132,8 @@ script do not use it. `persisted:*` disclosure keys and `quiet-mode` are ignored
 
 ## Head
 
-`@yesid/ui/head` exports `SeoHead` and `injectThemeBoot`.
+`@yesid/ui/head` exports `SeoHead`, `injectThemeBoot` and `injectAnnouncementBannerBoot`.
+See [Site announcement banner](#site-announcement-banner) for the banner's head setup.
 
 `SeoHead` writes a page's head tags from resolved values: `title`, `description`, `siteName`,
 `canonical`, `alternates` (`{ hreflang, href }`, x-default included when the app wants one),
