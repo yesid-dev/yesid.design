@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.52.0-rc.1
+## 0.52.0
 
 <!-- release-fragment: announcement-banner -->
 - `@yesid/ui` (minor): Add `AnnouncementBanner` from `@yesid/ui/layout` for a site-wide linked message above the
