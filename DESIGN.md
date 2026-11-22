@@ -133,6 +133,7 @@ components:
   MetroStation: {}
   ProductBrand: {}
   RailTitle: {}
+  RoutePlate: {}
   SectionsToggle: {}
   SearchInput: {}
   SectionHeading: {}
@@ -141,6 +142,7 @@ components:
   SectionLabel: {}
   SegmentedChoice: {}
   StatusDot: {}
+  StatusMark: {}
   StopLabel: {}
   TerminalCursor: {}
   TerminalPanel: {}
@@ -281,7 +283,7 @@ Borders use semantic tokens (`border`, `border-subtle`, `border-strong`).
 
 ## Components
 
-See `@yesid/ui/brand` (35 components: `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `ProductBrand`, `RailTitle`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `LanguageToggle`) and
+See `@yesid/ui/brand` (37 components: `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `ProductBrand`, `RailTitle`, `RoutePlate`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `StatusMark`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `LanguageToggle`) and
 12 primitive subpaths (`@yesid/ui/badge`, `@yesid/ui/button`, `@yesid/ui/card`, `@yesid/ui/collapsible`, `@yesid/ui/combobox`, `@yesid/ui/footer`, `@yesid/ui/resizable`, `@yesid/ui/scroll-area`, `@yesid/ui/separator`, `@yesid/ui/sheet`, `@yesid/ui/skeleton`, `@yesid/ui/tabs`). Design-system documentation:
 the public `@yesid/ui` package documentation and the living Gallery.
 
