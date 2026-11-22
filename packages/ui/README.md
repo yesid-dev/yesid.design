@@ -779,6 +779,33 @@ Products keep the legal copy, the schema and server rendering.
 </ReadingFrame>
 ```
 
+## App controls and frame
+
+Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`.
+
+- **DateRangePicker** takes a controlled `value` with `start`, `end` and optional `presetId`.
+  Supply ready ranges as `{ id, label, start, end }`, with unique nonempty IDs.
+  The picker emits the resolved dates and preset ID through `onValueChange`. Other dates
+  open the native start and end fields. Applying valid custom dates emits the dates without a
+  preset ID. All dates use `YYYY-MM-DD` with inclusive `min` and `max`. Supply localized
+  `legend`, `presets`, `custom`, `start`, `end`, `apply`, `missing`, `bounds` and `order`
+  strings in `labels`. A validation error focuses the field that needs correction.
+- **NetworkPicker** takes a localized `label`, `networks` entries of
+  `{ id, city, name, shortCode }`, a selected ID as `value`, and `onValueChange(id)`.
+  It displays “city · name” and uses the short code below 600px. Native options use the full
+  labels at every width. An empty list omits the control.
+- **AppFrame** takes `header`, optional `controls` and the main `children` snippets. Place
+  `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
+  from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
+  layout and on resize. Within the frame, `--app-frame-chrome-height` and `--chrome-offset` expose
+  the measured clearance. The frame owns `<main id="main">` for the header’s skip link.
+  Pass `evidence={{ rail, label, openAria, closeAria }}` to put a `SurfaceRail` on the right at
+  desktop widths and in its sheet below 1024px. For a map, `fullViewport` sizes the frame to
+  the dynamic viewport and lets the main area fill the remaining height below the chrome.
+
+At narrow available widths with enlarged text, a `ProductBrand` gets a row above the other
+controls inside the header pill. This keeps the product name readable at 200% on a phone.
+
 ## Site announcement banner
 
 Import `AnnouncementBanner` from `@yesid/ui/layout`. Render one in the site shell above the header,

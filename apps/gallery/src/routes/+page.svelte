@@ -26,6 +26,7 @@
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/labelled-field">Labelled field recipe</a></p>
 
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/announcement-banner">Site announcement banner</a></p>
+<p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/app-frame">App frame with network and date controls</a></p>
 
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/reading-record">Public-data reading record and row recipes</a></p>
 
