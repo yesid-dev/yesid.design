@@ -96,20 +96,18 @@
 	.app-frame-chrome {
 		position: sticky;
 		inset-block-start: 0;
-		z-index: var(--z-nav);
+		z-index: var(--z-sheet);
 		flex: none;
 		background: var(--background);
 	}
 	.app-frame-chrome:has(:global([aria-modal='true'])) {
 		z-index: var(--z-menu);
 	}
-	.app-frame:has(.with-evidence > :global([data-slot='surface-rail-mobile'][data-open='true'])) .app-frame-chrome {
-		z-index: var(--z-rail);
-	}
 	.app-frame-chrome:has(:global(.skip-link:focus)) {
 		z-index: var(--z-overlay);
 	}
 	.app-frame-chrome.tall-chrome { position: relative; }
+	.app-frame:has(> .tall-chrome) { --chrome-offset: 0px; }
 	.app-frame-controls {
 		display: flex;
 		flex-wrap: wrap;
@@ -141,6 +139,10 @@
 	.full-viewport .app-frame-main { overflow: auto; }
 	.with-evidence > :global([data-slot='surface-rail-mobile']) {
 		--surface-rail-sheet-clearance: var(--app-frame-header-height);
+	}
+	/* Keep the evidence sheet above the chrome until its exit animation unmounts it. */
+	.with-evidence > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
+		z-index: calc(var(--z-sheet) - 1);
 	}
 	@media (width < 1024px) {
 		.app-frame:has(.with-evidence > :global([data-slot='surface-rail-mobile'])) {

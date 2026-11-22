@@ -39,9 +39,11 @@ test('ready ranges commit resolved dates and custom validation names and focuses
 	await expect(start).toBeFocused();
 	await expect(start).toHaveAttribute('aria-invalid', 'true');
 	await expect(end).toHaveAttribute('aria-invalid', 'true');
+	await start.fill('2025-12-31');
 	await apply.press('Enter');
 	await expect(alert).toHaveText('Enter two valid dates.');
-	await start.fill('2025-12-31');
+	await expect(end).toBeFocused();
+	await expect(start).not.toHaveAttribute('aria-invalid');
 	await end.fill('2026-10-31');
 	await apply.press('Enter');
 	await expect(alert).toHaveText('Choose dates within the record.');
@@ -59,9 +61,41 @@ test('ready ranges commit resolved dates and custom validation names and focuses
 	await expect(end).toBeFocused();
 	await expect(page.getByText('Showing service from 2026-10-01 to 2026-10-31.')).toBeVisible();
 	await end.fill('2026-10-21');
-	await apply.press('Enter');
+	await end.press('Enter');
 	await expect(alert).toHaveText('');
 	await expect(page.getByText('Showing service from 2026-10-20 to 2026-10-21.')).toBeVisible();
+});
+
+test('French preset labels fit at 320px with doubled text', async ({ page }) => {
+	await page.setViewportSize({ width: 320, height: 800 });
+	await openFrame(page);
+	await page.getByRole('button', { name: 'Use French date labels' }).dispatchEvent('click');
+	await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+	const preset = page.getByRole('combobox', { name: 'Plages prédéfinies' });
+	await preset.selectOption({ label: 'Les 30 derniers jours' });
+	await expect(preset).toHaveValue('month');
+	const controls = page.locator('[data-slot="app-frame-controls"]');
+	expect(await controls.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+	expect(await preset.evaluate((el) => el.getBoundingClientRect().right)).toBeLessThanOrEqual(320);
+	await expectNoHorizontalOverflow(page);
+});
+
+test('Enter applies or validates dates inside a consumer form without submitting it', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 800 });
+	await openFrame(page, '/app-frame/viewport');
+	await page.getByRole('combobox', { name: 'Ready ranges' }).selectOption('');
+	const start = page.getByLabel('Start date');
+	const end = page.getByLabel('End date');
+	await start.fill('');
+	await end.press('Enter');
+	await expect(page.getByRole('alert')).toHaveText('Enter two valid dates.');
+	await expect(start).toBeFocused();
+	await start.fill('2026-10-24');
+	await start.press('Enter');
+	await expect(page.getByText('Showing service from 2026-10-24 to 2026-10-31.')).toBeVisible();
+	await expect(page.getByTestId('outer-submissions')).toHaveText('0');
+	await page.getByRole('button', { name: 'Save workspace' }).click();
+	await expect(page.getByTestId('outer-submissions')).toHaveText('1');
 });
 
 test('network selection offers full option names and shows the phone code', async ({ page }) => {
@@ -177,6 +211,63 @@ test('short document viewport lets tall chrome scroll away', async ({ page }) =>
 	await expect.poll(async () => (await stack.boundingBox())!.y).toBeLessThan(0);
 });
 
+test('short desktop viewport clears the evidence rail offset when chrome unsticks', async ({ page }) => {
+	await page.setViewportSize({ width: 1200, height: 185 });
+	await openFrame(page);
+	await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+	await page.getByRole('combobox', { name: 'Ready ranges' }).selectOption('');
+	await expect(page.locator(chrome)).toHaveCSS('position', 'relative');
+	await expect(page.locator(frame)).toHaveCSS('--chrome-offset', '0px');
+	const evidence = page.getByRole('complementary', { name: 'Evidence' });
+	await evidence.scrollIntoViewIfNeeded();
+	expect((await evidence.boundingBox())!.height).toBeGreaterThan(44);
+	await expect(evidence.getByText('Scheduled trips and reported arrivals.')).toBeInViewport();
+});
+
+test('portaled header and control listboxes and the right Sheet paint above chrome', async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await openFrame(page, '/app-frame/overlays');
+	await page.addStyleTag({ content: '[data-slot="app-frame-controls"] { min-block-size: 14rem; align-items: start; align-content: start; }' });
+	const stack = page.locator(chrome);
+	for (const label of ['Header search', 'Control search']) {
+		const search = page.getByRole('combobox', { name: label });
+		await page.getByRole('button', { name: label, exact: true }).click();
+		const option = page.getByRole('listbox', { name: label }).getByRole('option', { name: 'North corridor' });
+		await expect(option).toBeVisible();
+		const optionBox = (await option.boundingBox())!;
+		const stackBox = (await stack.boundingBox())!;
+		expect(optionBox.y + optionBox.height / 2).toBeLessThan(stackBox.y + stackBox.height);
+		await option.click();
+		await expect(search).toHaveValue('North corridor');
+	}
+	await page.getByRole('button', { name: 'Open workspace settings' }).click();
+	const sheet = page.getByRole('dialog', { name: 'Workspace settings' });
+	await expect(sheet).toBeVisible();
+	await sheet.getByRole('button', { name: 'Close workspace settings' }).click();
+	await expect(sheet).toBeHidden();
+});
+
+test('an evidence sheet keeps its layer through its closing animation', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 800 });
+	await openFrame(page);
+	await page.addStyleTag({
+		content: '.surface-rail-sheet[data-state="closed"] { animation-duration: 1s !important; }',
+	});
+	const carrier = page.locator('[data-slot="surface-rail-mobile"]');
+	const sheet = carrier.locator('.surface-rail-sheet');
+	const stack = page.locator(chrome);
+	const layer = await stack.evaluate((element) => Number(getComputedStyle(element).zIndex));
+	await expect.poll(() => carrier.evaluate((element) => Number(getComputedStyle(element).zIndex))).toBeLessThan(layer);
+	await page.getByRole('button', { name: /Open evidence/ }).click();
+	await expect(sheet).toHaveAttribute('data-state', 'open');
+	await expect(carrier).toHaveCSS('z-index', String(layer));
+	await page.keyboard.press('Escape');
+	await expect(sheet).toHaveAttribute('data-state', 'closed');
+	await expect(carrier).toHaveCSS('z-index', String(layer));
+	await expect(sheet).toHaveCount(0);
+	await expect.poll(() => carrier.evaluate((element) => Number(getComputedStyle(element).zIndex))).toBeLessThan(layer);
+});
+
 test.describe('desktop input', () => {
 	test.use({ hasTouch: false, isMobile: false });
 
@@ -190,6 +281,19 @@ test.describe('desktop input', () => {
 		await page.mouse.wheel(0, 400);
 		await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 		expect(await page.evaluate(() => window.scrollY)).toBe(0);
+	});
+
+	test('client navigation activates Lenis only on app-frame routes', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'no-preference' });
+		await page.goto('/');
+		const html = page.locator('html');
+		await expect(html).toHaveAttribute('data-gallery-ready', 'true');
+		await expect(html).not.toHaveClass(/\blenis\b/);
+		await page.getByRole('link', { name: 'App frame with network and date controls' }).click();
+		await expect(html).toHaveClass(/\blenis\b/);
+		await page.getByRole('link', { name: 'Gallery home' }).click();
+		await expect(page).toHaveURL(/\/$/);
+		await expect(html).not.toHaveClass(/\blenis\b/);
 	});
 });
 

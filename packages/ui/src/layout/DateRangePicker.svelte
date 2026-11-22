@@ -110,13 +110,7 @@
 	function validate(): RangeError | undefined {
 		const invalidStart = !isCalendarDate(start);
 		const invalidEnd = !isCalendarDate(end);
-		if (invalidStart || invalidEnd) {
-			return {
-				key: 'missing',
-				start: invalidStart || !withinBounds(start),
-				end: invalidEnd || !withinBounds(end),
-			};
-		}
+		if (invalidStart || invalidEnd) return { key: 'missing', start: invalidStart, end: invalidEnd };
 		const startOutOfBounds = !withinBounds(start);
 		const endOutOfBounds = !withinBounds(end);
 		if (startOutOfBounds || endOutOfBounds) return { key: 'bounds', start: startOutOfBounds, end: endOutOfBounds };
@@ -135,6 +129,12 @@
 		if (!error) return;
 		(issue.start ? startInput : endInput)?.focus();
 		announcement = labels[issue.key];
+	}
+
+	function applyOnEnter(event: KeyboardEvent): void {
+		if (event.key !== 'Enter' || event.isComposing) return;
+		event.preventDefault();
+		void apply();
 	}
 </script>
 
@@ -160,6 +160,7 @@
 				<span>{labels.start}</span>
 				<input
 					bind:this={startInput} bind:value={start} oninput={clearError}
+					onkeydown={applyOnEnter}
 					type="date" {min} {max} required
 					aria-invalid={error?.start ? true : undefined}
 					aria-describedby={error?.start ? id : undefined}
@@ -169,6 +170,7 @@
 				<span>{labels.end}</span>
 				<input
 					bind:this={endInput} bind:value={end} oninput={clearError}
+					onkeydown={applyOnEnter}
 					type="date" {min} {max} required
 					aria-invalid={error?.end ? true : undefined}
 					aria-describedby={error?.end ? id : undefined}
@@ -198,6 +200,7 @@
 	legend { padding: 0; }
 	label {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		min-inline-size: 0;
 		gap: 0.25em;
 	}
@@ -214,7 +217,7 @@
 		font: inherit;
 		font-size: var(--text-control);
 	}
-	.preset-select { position: relative; }
+	.preset-select { position: relative; min-inline-size: 0; }
 	select { padding-inline-end: 2em; }
 	.preset-select :global(.preset-chevron) {
 		position: absolute;
