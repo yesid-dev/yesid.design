@@ -358,11 +358,15 @@ interface AppFrameProps {
     // (undocumented)
     controls?: Snippet;
     // (undocumented)
-    evidence?: Pick<SurfaceRailProps, 'rail' | 'label' | 'openAria' | 'closeAria'>;
+    evidence?: Pick<SurfaceRailProps, 'rail' | 'label' | 'openAria' | 'closeAria' | 'summary' | 'mobileVisible'>;
+    // (undocumented)
+    footer?: Snippet;
     // (undocumented)
     fullViewport?: boolean;
     // (undocumented)
     header: Snippet;
+    // (undocumented)
+    mainLabel?: string;
 }
 
 // @public (undocumented)

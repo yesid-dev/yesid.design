@@ -243,9 +243,12 @@
 		max-height: min(
 			70dvh,
 			32rem,
-			calc(
-				100dvh - var(--chrome-offset, 0px) - var(--surface-rail-bottom) -
-					var(--surface-rail-sheet-bottom)
+			max(
+				var(--size-tap-min),
+				calc(
+					100dvh - var(--surface-rail-sheet-clearance, var(--chrome-offset, 0px)) -
+						var(--surface-rail-bottom) - var(--surface-rail-sheet-bottom)
+				)
 			)
 		);
 		overflow-y: auto;

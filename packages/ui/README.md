@@ -789,17 +789,23 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   open the native start and end fields. Applying valid custom dates emits the dates without a
   preset ID. All dates use `YYYY-MM-DD` with inclusive `min` and `max`. Supply localized
   `legend`, `presets`, `custom`, `start`, `end`, `apply`, `missing`, `bounds` and `order`
-  strings in `labels`. A validation error focuses the field that needs correction.
+  strings in `labels`. Use `missing` for a missing or invalid calendar date. A validation
+  error marks the affected fields and focuses the first one.
 - **NetworkPicker** takes a localized `label`, `networks` entries of
   `{ id, city, name, shortCode }`, a selected ID as `value`, and `onValueChange(id)`.
   It displays “city · name” and uses the short code below 600px. Native options use the full
   labels at every width. An empty list omits the control.
-- **AppFrame** takes `header`, optional `controls` and the main `children` snippets. Place
+- **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
+  Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
   layout and on resize. Within the frame, `--app-frame-chrome-height` and `--chrome-offset` expose
-  the measured clearance. The frame owns `<main id="main">` for the header’s skip link.
-  Pass `evidence={{ rail, label, openAria, closeAria }}` to put a `SurfaceRail` on the right at
+  the measured clearance. `--app-frame-header-height` measures the header row alone. Set
+  `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
+  first-render clearance for a known layout. The frame owns `<main id="main">` for the skip link.
+  In document mode the frame sets the document’s scroll clearance while mounted.
+  Controls can scroll independently when space is tight.
+  Pass `evidence={{ rail, label, openAria, closeAria, summary, mobileVisible }}` to put a `SurfaceRail` on the right at
   desktop widths and in its sheet below 1024px. For a map, `fullViewport` sizes the frame to
   the dynamic viewport and lets the main area fill the remaining height below the chrome.
 

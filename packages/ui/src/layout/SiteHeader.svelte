@@ -754,7 +754,7 @@
 			flex: 0 1 100%;
 			justify-content: center;
 		}
-		.nav-pill :global([data-slot='product-brand'] + .nav-divider) {
+		.nav-pill:has(:global([data-slot='product-brand'])) > .nav-divider {
 			display: none;
 		}
 	}
@@ -875,7 +875,7 @@
 	.menu-overlay {
 		position: fixed;
 		inset: 0;
-		top: calc(var(--chrome-offset, var(--nav-clearance)) + 1rem);
+		top: calc(var(--app-frame-header-height, var(--chrome-offset, var(--nav-clearance))) + 1rem);
 		z-index: 0;
 		display: flex;
 		flex-direction: column;

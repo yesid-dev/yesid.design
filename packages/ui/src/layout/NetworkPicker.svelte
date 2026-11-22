@@ -21,14 +21,20 @@
 	let { label, networks, value, onValueChange }: NetworkPickerProps = $props();
 	const selected = $derived(networks.find((network) => network.id === value) ?? networks[0]);
 	const name = (network: NetworkOption) => `${network.city} · ${network.name}`;
+
+	function selectNetwork(input: HTMLSelectElement): void {
+		const next = input.value;
+		input.value = selected?.id ?? '';
+		onValueChange(next);
+	}
 </script>
 
 {#if selected}
 	<label class="network-picker" data-slot="network-picker" title={name(selected)}>
 		<span class="network-name" aria-hidden="true">{name(selected)}</span>
 		<span class="network-code" aria-hidden="true">{selected.shortCode}</span>
-		<ChevronDown size="1em" aria-hidden="true" />
-		<select aria-label={label} value={selected.id} onchange={(event) => onValueChange(event.currentTarget.value)}>
+		<ChevronDown class="picker-chevron" size="1em" aria-hidden="true" />
+		<select aria-label={label} value={selected.id} onchange={(event) => selectNetwork(event.currentTarget)}>
 			{#each networks as network (network.id)}
 				<option value={network.id}>{name(network)}</option>
 			{/each}
@@ -68,8 +74,13 @@
 	}
 
 	.network-code { display: none; }
+	label :global(.picker-chevron) { flex-shrink: 0; }
+	select, option {
+		background-color: var(--popover);
+		color: var(--popover-foreground);
+	}
 
-	@media (width < 600px) {
+	@media (width < 37.5em) {
 		.network-name { display: none; }
 		.network-code { display: inline; }
 	}
