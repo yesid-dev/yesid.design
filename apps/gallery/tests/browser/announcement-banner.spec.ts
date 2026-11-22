@@ -62,6 +62,16 @@ test('the banner fits 320px at 200% text and follows keyboard order', { tag: '@t
 	await expect(close).toBeEnabled();
 	const banner = page.getByRole('region', { name: message });
 	await expect(banner).toBeVisible();
+	const ink = 'rgb(28, 24, 20)';
+	await expect(banner).toHaveCSS('background-color', 'rgb(255, 182, 39)');
+	await expect(link).toHaveCSS('color', ink);
+	await expect(link.locator('svg')).toHaveCSS('stroke', ink);
+	await expect(close).toHaveCSS('color', ink);
+	await expect(close.locator('svg')).toHaveCSS('stroke', ink);
+	await link.hover();
+	await expect(link).toHaveCSS('color', ink);
+	await close.hover();
+	await expect(close).toHaveCSS('color', ink);
 	const bannerBottom = await banner.evaluate((element) => element.getBoundingClientRect().bottom);
 	const headerTop = await page.getByRole('banner').evaluate((element) => element.getBoundingClientRect().top);
 	expect(headerTop).toBeGreaterThanOrEqual(bannerBottom);
@@ -70,9 +80,11 @@ test('the banner fits 320px at 200% text and follows keyboard order', { tag: '@t
 	await page.keyboard.press('Tab');
 	await expect(link).toBeFocused();
 	await expect(link).toHaveCSS('outline-style', 'solid');
+	await expect(link).toHaveCSS('outline-color', ink);
 	await page.keyboard.press('Tab');
 	await expect(close).toBeFocused();
 	await expect(close).toHaveCSS('outline-style', 'solid');
+	await expect(close).toHaveCSS('outline-color', ink);
 	await page.keyboard.press('Enter');
 	await expect(link).toBeHidden();
 });
