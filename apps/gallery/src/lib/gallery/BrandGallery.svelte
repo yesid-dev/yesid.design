@@ -23,6 +23,7 @@
 		SegmentedChoice,
 		SliderButton,
 		StatusDot,
+		StatusMark,
 		StopLabel,
 		TerminalCursor,
 		TerminalPanel,
@@ -34,6 +35,7 @@
 		Wordmark,
 		ProductBrand,
 		RailTitle,
+		RoutePlate,
 		type SectionIconName,
 		type StatusDotColor,
 		type TocEntry,
@@ -436,6 +438,25 @@
 						{color}
 					</span>
 				{/each}
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:StatusMark">
+			<Card.Header><Card.Title>StatusMark</Card.Title></Card.Header>
+			<Card.Content class="flex flex-wrap gap-4">
+				<StatusMark status="early" label="Early" detail="2 min" />
+				<StatusMark status="on_time" label="On time" />
+				<StatusMark status="late" label="Late" detail="8 min" />
+				<StatusMark status="unknown" label="Delay unknown" />
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:RoutePlate">
+			<Card.Header><Card.Title>RoutePlate</Card.Title></Card.Header>
+			<Card.Content class="flex flex-wrap items-center gap-3">
+				<RoutePlate code="51" size="lg" />
+				<RoutePlate code="A" scheduleOnly />
+				<span>Schedule only</span>
 			</Card.Content>
 		</Card.Root>
 
