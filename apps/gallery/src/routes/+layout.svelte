@@ -25,7 +25,7 @@
 
 <SiteRoot smoothScroll={false}>
 <div class="min-h-screen bg-background text-foreground font-body">
-	{#if page.route.id === '/site-header' || page.route.id === '/header-seams' || page.route.id?.startsWith('/site-header-pill') || page.route.id?.startsWith('/product-brand') || page.route.id?.startsWith('/dividers') || page.route.id === '/page-sections' || page.route.id?.startsWith('/rail-title') || page.route.id?.startsWith('/site-header-wide') || page.route.id === '/site-header-mixed'}
+	{#if page.route.id?.startsWith('/announcement-banner') || page.route.id === '/site-header' || page.route.id === '/header-seams' || page.route.id?.startsWith('/site-header-pill') || page.route.id?.startsWith('/product-brand') || page.route.id?.startsWith('/dividers') || page.route.id === '/page-sections' || page.route.id?.startsWith('/rail-title') || page.route.id?.startsWith('/site-header-wide') || page.route.id === '/site-header-mixed'}
 		{@render children()}
 	{:else}
 	<header
