@@ -118,13 +118,14 @@
 	tabindex={scrollable ? 0 : undefined}
 	onscroll={measure}
 >
-	<table class={cn('data-table', tableClass)} data-slot="data-table">
+	<table class={cn('data-table', tableClass)} data-slot="data-table" role={stackAt ? 'table' : undefined}>
 		<caption class="data-table-caption">{accessibleCaption}</caption>
-		<thead>
-			<tr>
+		<thead role={stackAt ? 'rowgroup' : undefined}>
+			<tr role={stackAt ? 'row' : undefined}>
 				{#each columns as column (column.key)}
 					<th
 						scope="col"
+						role={stackAt ? 'columnheader' : undefined}
 						data-column={column.key}
 						data-align={columnAlignment(column)}
 						data-numeric={column.numeric || undefined}
@@ -135,27 +136,31 @@
 				{/each}
 			</tr>
 		</thead>
-		<tbody>
+		<tbody role={stackAt ? 'rowgroup' : undefined}>
 			{#each rows as row, index (key(row, index))}
-				<tr>
+				<tr role={stackAt ? 'row' : undefined}>
 					{#each columns as column (column.key)}
 						{#if column.rowHeader}
 							<th
 								scope="row"
+								role={stackAt ? 'rowheader' : undefined}
 								data-column={column.key}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
+								{#if stackAt}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
 								<div class="data-table-cell-content">{@render column.cell(row)}</div>
 							</th>
 						{:else}
 							<td
+								role={stackAt ? 'cell' : undefined}
 								data-column={column.key}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
+								{#if stackAt}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
 								<div class="data-table-cell-content">{@render column.cell(row)}</div>
 							</td>
 						{/if}
@@ -273,6 +278,10 @@
 		min-width: 0;
 	}
 
+	.data-table-stack-label {
+		display: none;
+	}
+
 	@media (max-width: 48rem) {
 		.data-table-frame[data-responsive='scroll'] .data-table {
 			min-width: var(--dt-min-width-compact, var(--dt-min-width, 100%));
@@ -306,14 +315,14 @@
 
 		.data-table-frame[data-stack-at='compact'] .data-table tbody :is(th, td) {
 			display: grid;
-			grid-template-columns: minmax(7rem, 0.45fr) minmax(0, 1fr);
-			gap: 1rem;
+			grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr);
+			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
 		}
 
-		.data-table-frame[data-stack-at='compact'] .data-table tbody :is(th, td)::before {
-			content: attr(data-col);
+		.data-table-frame[data-stack-at='compact'] .data-table-stack-label {
+			display: block;
 			grid-column: 1;
 			font-family: var(--font-mono);
 			font-size: var(--text-micro);
@@ -359,14 +368,14 @@
 
 		.data-table-frame[data-stack-at='tablet'] .data-table tbody :is(th, td) {
 			display: grid;
-			grid-template-columns: minmax(7rem, 0.45fr) minmax(0, 1fr);
-			gap: 1rem;
+			grid-template-columns: minmax(0, 0.45fr) minmax(0, 1fr);
+			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
 		}
 
-		.data-table-frame[data-stack-at='tablet'] .data-table tbody :is(th, td)::before {
-			content: attr(data-col);
+		.data-table-frame[data-stack-at='tablet'] .data-table-stack-label {
+			display: block;
 			grid-column: 1;
 			font-family: var(--font-mono);
 			font-size: var(--text-micro);

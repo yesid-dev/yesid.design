@@ -50,6 +50,9 @@ export type { ProductBrandProps } from './ProductBrand.svelte';
 export { default as RailTitle } from './RailTitle.svelte';
 export type { RailTitleProps } from './RailTitle.svelte';
 
+export { default as RoutePlate } from './RoutePlate.svelte';
+export type { RoutePlateProps } from './RoutePlate.svelte';
+
 export { default as SectionsToggle } from './SectionsToggle.svelte';
 export type {
 	SectionsToggleActiveEffect,
@@ -77,6 +80,9 @@ export type { SegmentedChoiceOption, SegmentedChoiceProps } from './SegmentedCho
 
 export { default as StatusDot } from './StatusDot.svelte';
 export type { StatusDotColor, StatusDotProps } from './StatusDot.svelte';
+
+export { default as StatusMark } from './StatusMark.svelte';
+export type { StatusMarkStatus, StatusMarkProps } from './StatusMark.svelte';
 
 
 export { default as StopLabel } from './StopLabel.svelte';
