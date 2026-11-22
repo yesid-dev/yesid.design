@@ -78,7 +78,7 @@
 				{#if overlays}
 					<Combobox options={choices} {fold} label="Header search" clearLabel="Clear search" emptyLabel="No matches" />
 				{:else}
-					<input type="search" aria-label="Search the record" />
+					<input class="min-h-[var(--size-tap-min)]" type="search" aria-label="Search the record" />
 				{/if}
 			{/snippet}
 		</SiteHeader>
