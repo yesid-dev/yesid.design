@@ -112,6 +112,11 @@
       "svelte": "./src/table/index.ts",
       "default": "./src/table/index.ts"
     },
+    "./map": {
+      "types": "./src/map/index.ts",
+      "svelte": "./src/map/index.ts",
+      "default": "./src/map/index.ts"
+    },
     "./station-tabs.css": "./station-tabs.css",
     "./base.css": "./base.css",
     "./boot.json": "./src/head/boot.json"

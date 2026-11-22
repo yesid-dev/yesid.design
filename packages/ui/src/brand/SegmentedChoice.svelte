@@ -126,6 +126,8 @@
 	.segmented-choice {
 		display: inline-flex;
 		flex-wrap: wrap;
+		min-inline-size: 0;
+		max-inline-size: 100%;
 		gap: 0.25rem;
 		padding: 0.25rem;
 		border: 1px solid var(--border);
@@ -133,7 +135,7 @@
 		background-color: var(--card);
 	}
 	.segmented-choice--fit-row { width: 100%; }
-	.segmented-choice--fit-row .segmented-choice-segment { flex: 1 1 auto; overflow-wrap: anywhere; }
+	.segmented-choice--fit-row .segmented-choice-segment { flex: 1 1 auto; }
 	.segmented-choice--joined-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -154,9 +156,6 @@
 		border-radius: 0;
 		scale: 1 !important;
 		transform: none !important;
-		white-space: nowrap;
-		overflow-wrap: normal;
-		word-break: keep-all;
 	}
 	.segmented-choice--joined-grid .segmented-choice-segment:nth-child(even) {
 		border-inline-start: 1px solid var(--border);
@@ -184,7 +183,11 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
+		min-inline-size: 0;
+		max-inline-size: 100%;
 		min-height: 44px;
+		white-space: normal;
+		overflow-wrap: anywhere;
 		padding: 0.375rem 0.8rem;
 		border-radius: var(--radius-md);
 		cursor: pointer;
