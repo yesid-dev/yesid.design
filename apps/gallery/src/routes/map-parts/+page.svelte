@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { FilterSummary, SegmentedChoice } from '@yesid/ui/brand';
+	import { FilterSummary, SearchInput, SegmentedChoice } from '@yesid/ui/brand';
 	import { Button } from '@yesid/ui/button';
 	import { Card } from '@yesid/ui/card';
 	import { MapFrame, MapLegend, StillMap, placeMapLabels, type MapViewport } from '@yesid/ui/map';
 
 	let query = $state('');
-	let search = $state<HTMLInputElement>();
+	let search = $state<HTMLInputElement | null>(null);
 	let selection = $state('incoming');
 	const options = [
 		{ key: 'incoming', label: 'Vers la station Édouard-Montpetit' },
@@ -60,8 +60,7 @@
 			</div>
 		{/snippet}
 		{#snippet panel()}
-			<label for="station-search">Rechercher un arrêt</label>
-			<input id="station-search" bind:this={search} bind:value={query} />
+			<SearchInput bind:ref={search} bind:value={query} label="Rechercher un arrêt" placeholder="" visibleLabel />
 			<FilterSummary count={query ? 1 : 2} countLabel={counts} locale="fr" clearLabel="Effacer la recherche" onClear={clear} canClear={query.trim().length > 0} />
 		{/snippet}
 		{#snippet legend()}
@@ -123,7 +122,6 @@
 		border: 1px solid var(--foreground);
 		border-radius: var(--radius-pill);
 	}
-	input { inline-size: 100%; color: var(--foreground); }
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
