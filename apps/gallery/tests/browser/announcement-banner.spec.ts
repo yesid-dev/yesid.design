@@ -55,6 +55,7 @@ test('blocked storage keeps the announcement readable and clicking close does no
 test('the banner fits 320px at 200% text and follows keyboard order', { tag: '@theme' }, async ({ page }) => {
 	await page.setViewportSize({ width: 320, height: 800 });
 	await page.goto(first);
+	await expectAccessible(page, { include: slot });
 	await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 	const link = page.getByRole('link', { name: message });
 	const close = page.getByRole('button', { name: closeLabel });

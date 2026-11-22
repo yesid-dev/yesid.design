@@ -78,10 +78,15 @@
 		min-block-size: var(--size-tap-min);
 		align-content: center;
 		padding-block: 0.25em;
-		color: var(--foreground);
-		text-decoration: underline;
+		color: var(--primary);
+		text-decoration-line: underline;
+		text-decoration-thickness: 1px;
 		text-underline-offset: 0.2em;
 		overflow-wrap: anywhere;
+	}
+
+	a:hover {
+		text-decoration-thickness: 2px;
 	}
 
 	button {
@@ -104,7 +109,7 @@
 		outline-offset: -2px;
 	}
 
-	a:hover, button:hover {
+	button:hover {
 		color: var(--primary);
 	}
 
