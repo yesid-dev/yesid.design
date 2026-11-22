@@ -62,8 +62,8 @@
 		align-items: center;
 		gap: 0.5em;
 		padding-inline: var(--space-page-x);
-		background: var(--muted);
-		color: var(--foreground);
+		background: var(--signage-text);
+		color: var(--signage-bg);
 		font: var(--text-small) / 1.5 var(--font-body);
 	}
 
@@ -78,7 +78,7 @@
 		min-block-size: var(--size-tap-min);
 		align-content: center;
 		padding-block: 0.25em;
-		color: var(--primary);
+		color: inherit;
 		text-decoration-line: underline;
 		text-decoration-thickness: 1px;
 		text-underline-offset: 0.2em;
@@ -106,11 +106,12 @@
 	}
 
 	a:focus-visible, button:focus-visible {
+		outline-color: currentColor;
 		outline-offset: -2px;
 	}
 
 	button:hover {
-		color: var(--primary);
+		background: color-mix(in srgb, currentColor 10%, transparent);
 	}
 
 	a :global(.announcement-arrow), button :global(.announcement-close-icon) {

@@ -816,6 +816,8 @@ controls inside the header pill. This keeps the product name readable at 200% on
 
 ## Site announcement banner
 
+The banner uses theme-invariant yellow signage with black text, icons and focus rings.
+
 Import `AnnouncementBanner` from `@yesid/ui/layout`. Render one in the site shell above the header,
 with the same message ID on every page and in every locale. Render it as a sibling before
 `SiteHeader` so the pill follows the banner's wrapped height before and after hydration. The
