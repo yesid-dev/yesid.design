@@ -12,6 +12,7 @@
 	import '../gallery.css';
 
 	let { children } = $props();
+	const appFrameRoute = $derived(page.route.id?.startsWith('/app-frame') ?? false);
 	// Kit 3 has no accepted-start event stream. Keep the hook-only lifecycle stable.
 	const navigation = createNavigationLifecycle({ beforeNavigate, onNavigate, afterNavigate });
 	setContext('gallery-navigation', navigation);
@@ -23,9 +24,10 @@
 	});
 </script>
 
-<SiteRoot smoothScroll={false}>
+{#key appFrameRoute}
+<SiteRoot smoothScroll={appFrameRoute}>
 <div class="min-h-screen bg-background text-foreground font-body">
-	{#if page.route.id?.startsWith('/announcement-banner') || page.route.id === '/site-header' || page.route.id === '/header-seams' || page.route.id?.startsWith('/site-header-pill') || page.route.id?.startsWith('/product-brand') || page.route.id?.startsWith('/dividers') || page.route.id === '/page-sections' || page.route.id?.startsWith('/rail-title') || page.route.id?.startsWith('/site-header-wide') || page.route.id === '/site-header-mixed'}
+	{#if page.route.id?.startsWith('/app-frame') || page.route.id?.startsWith('/announcement-banner') || page.route.id === '/site-header' || page.route.id === '/header-seams' || page.route.id?.startsWith('/site-header-pill') || page.route.id?.startsWith('/product-brand') || page.route.id?.startsWith('/dividers') || page.route.id === '/page-sections' || page.route.id?.startsWith('/rail-title') || page.route.id?.startsWith('/site-header-wide') || page.route.id === '/site-header-mixed'}
 		{@render children()}
 	{:else}
 	<header
@@ -48,3 +50,4 @@
 	{/if}
 </div>
 </SiteRoot>
+{/key}

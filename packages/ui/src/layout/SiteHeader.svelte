@@ -742,6 +742,23 @@
 		}
 	}
 
+	/* At enlarged text sizes the brand gets a full first row before its words have to break. */
+	@container site-header (width < 16em) {
+		.nav-pill:has(:global([data-slot='product-brand'])) {
+			flex-wrap: wrap;
+			justify-content: center;
+			max-inline-size: calc(100% - 0.5rem);
+			border-radius: var(--radius-xl);
+		}
+		.nav-pill :global([data-slot='product-brand']) {
+			flex: 0 1 100%;
+			justify-content: center;
+		}
+		.nav-pill:has(:global([data-slot='product-brand'])) > .nav-divider {
+			display: none;
+		}
+	}
+
 	/* The links (and search) fold away while the menu is open. */
 	.nav-collapsible {
 		overflow: visible;
@@ -819,11 +836,11 @@
 		z-index: var(--z-sheet);
 	}
 	/* A preceding announcement supplies the initial in-flow offset, including before hydration. */
-	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active) {
+	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active, :global([data-slot='app-frame-header'] *)) {
 		position: sticky;
 		inset: 0 auto auto;
 	}
-	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active) .nav-root {
+	:global([data-slot='announcement-banner']) ~ .menu-dialog:not(.menu-dialog-active, :global([data-slot='app-frame-header'] *)) .nav-root {
 		position: absolute;
 	}
 	.menu-dialog-active {
@@ -836,12 +853,29 @@
 		background-image: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--glow) 16%, transparent) 0%, transparent 58%);
 	}
 
+	/* AppFrame reserves the in-flow pill and controls together, even before hydration. */
+	:global([data-slot='app-frame-header']) .menu-dialog {
+		position: relative;
+		inset: auto;
+	}
+	:global([data-slot='app-frame-header']) .menu-dialog .nav-root {
+		position: relative;
+		inset: auto;
+		padding-block-start: var(--nav-top);
+	}
+	:global([data-slot='app-frame-header']) .menu-dialog-active::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		background: inherit;
+	}
+
 	/* Starts below the pill. Auto margins on the list and footer centre them as a group but collapse to
 	   zero when the group is taller than the overlay, so the first item never rides under the pill. */
 	.menu-overlay {
 		position: fixed;
 		inset: 0;
-		top: calc(var(--chrome-offset, var(--nav-clearance)) + 1rem);
+		top: calc(var(--app-frame-header-height, var(--chrome-offset, var(--nav-clearance))) + 1rem);
 		z-index: 0;
 		display: flex;
 		flex-direction: column;

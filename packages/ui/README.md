@@ -779,6 +779,41 @@ Products keep the legal copy, the schema and server rendering.
 </ReadingFrame>
 ```
 
+## App controls and frame
+
+Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`.
+
+- **DateRangePicker** takes a controlled `value` with `start`, `end` and optional `presetId`.
+  Supply ready ranges as `{ id, label, start, end }`, with unique nonempty IDs.
+  The picker emits the resolved dates and preset ID through `onValueChange`. Other dates
+  open the native start and end fields. Applying valid custom dates emits the dates without a
+  preset ID. Apply dates with the button or Enter in either date field. All dates use
+  `YYYY-MM-DD` with inclusive `min` and `max`. Supply localized
+  `legend`, `presets`, `custom`, `start`, `end`, `apply`, `missing`, `bounds` and `order`
+  strings in `labels`. Use `missing` for a missing or invalid calendar date. A validation
+  error marks the affected fields and focuses the first one.
+- **NetworkPicker** takes a localized `label`, `networks` entries of
+  `{ id, city, name, shortCode }`, a selected ID as `value`, and `onValueChange(id)`.
+  It displays “city · name” and uses the short code below 600px. Native options use the full
+  labels at every width. An empty list omits the control.
+- **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
+  Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
+  `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
+  from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
+  layout and on resize. Within the frame, `--app-frame-chrome-height` exposes that measurement.
+  `--chrome-offset` is the sticky clearance and becomes zero when tall chrome scrolls away.
+  `--app-frame-header-height` measures the header row alone. Set
+  `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
+  first-render clearance for a known layout. The frame owns `<main id="main">` for the skip link.
+  In document mode the frame sets the document’s scroll clearance while mounted.
+  Controls can scroll independently when space is tight.
+  Pass `evidence={{ rail, label, openAria, closeAria, summary, mobileVisible }}` to put a `SurfaceRail` on the right at
+  desktop widths and in its sheet below 1024px. For a map, `fullViewport` sizes the frame to
+  the dynamic viewport and lets the main area fill the remaining height below the chrome.
+
+At narrow available widths with enlarged text, a `ProductBrand` gets a row above the other
+controls inside the header pill. This keeps the product name readable at 200% on a phone.
+
 ## Site announcement banner
 
 Import `AnnouncementBanner` from `@yesid/ui/layout`. Render one in the site shell above the header,

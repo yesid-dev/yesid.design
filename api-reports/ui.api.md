@@ -345,6 +345,31 @@ interface AnnouncementBannerProps {
 }
 
 // @public (undocumented)
+const AppFrame: Component<AppFrameProps, {}, "chromeHeight">;
+
+// @public (undocumented)
+type AppFrame = ReturnType<typeof AppFrame>;
+
+// @public (undocumented)
+interface AppFrameProps {
+    // (undocumented)
+    children: Snippet;
+    chromeHeight?: number;
+    // (undocumented)
+    controls?: Snippet;
+    // (undocumented)
+    evidence?: Pick<SurfaceRailProps, 'rail' | 'label' | 'openAria' | 'closeAria' | 'summary' | 'mobileVisible'>;
+    // (undocumented)
+    footer?: Snippet;
+    // (undocumented)
+    fullViewport?: boolean;
+    // (undocumented)
+    header: Snippet;
+    // (undocumented)
+    mainLabel?: string;
+}
+
+// @public (undocumented)
 const ArticleHeader: Component<ArticleHeaderProps, {}, "">;
 
 // @public (undocumented)
@@ -1354,6 +1379,68 @@ type DataTableResponsive = {
     minWidthCompact?: string;
 };
 
+// @public (undocumented)
+interface DateRange {
+    end: string;
+    start: string;
+}
+
+// @public (undocumented)
+const DateRangePicker: Component<DateRangePickerProps, {}, "">;
+
+// @public (undocumented)
+type DateRangePicker = ReturnType<typeof DateRangePicker>;
+
+// @public (undocumented)
+interface DateRangePickerLabels {
+    // (undocumented)
+    apply: string;
+    // (undocumented)
+    bounds: string;
+    // (undocumented)
+    custom: string;
+    // (undocumented)
+    end: string;
+    // (undocumented)
+    legend: string;
+    // (undocumented)
+    missing: string;
+    // (undocumented)
+    order: string;
+    // (undocumented)
+    presets: string;
+    // (undocumented)
+    start: string;
+}
+
+// @public (undocumented)
+interface DateRangePickerProps {
+    // (undocumented)
+    labels: DateRangePickerLabels;
+    // (undocumented)
+    max: string;
+    min: string;
+    // (undocumented)
+    onValueChange: (value: DateRangeSelection) => void;
+    // (undocumented)
+    presets: readonly DateRangePreset[];
+    // (undocumented)
+    value: DateRangeSelection;
+}
+
+// @public (undocumented)
+interface DateRangePreset extends DateRange {
+    id: string;
+    // (undocumented)
+    label: string;
+}
+
+// @public (undocumented)
+interface DateRangeSelection extends DateRange {
+    // (undocumented)
+    presetId?: string;
+}
+
 // @public
 const desktop: MediaQuery;
 
@@ -1743,6 +1830,8 @@ declare namespace Layout {
     export {
         AnnouncementBanner,
         AnnouncementBannerProps,
+        AppFrame,
+        AppFrameProps,
         ArticleHeader,
         ArticleHeaderProps,
         ArticleMetaEntry,
@@ -1773,6 +1862,15 @@ declare namespace Layout {
         Breadcrumb,
         BreadcrumbItem,
         BreadcrumbProps,
+        DateRangePicker,
+        DateRange,
+        DateRangePickerLabels,
+        DateRangePickerProps,
+        DateRangePreset,
+        DateRangeSelection,
+        NetworkPicker,
+        NetworkOption,
+        NetworkPickerProps,
         ControlsRail,
         ControlsRailProps,
         DashboardGrid,
@@ -1986,6 +2084,35 @@ interface NavigationMenu {
 
 // @public (undocumented)
 type NavigationResult = void | (() => void) | Promise<void | (() => void)>;
+
+// @public (undocumented)
+interface NetworkOption {
+    // (undocumented)
+    city: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    shortCode: string;
+}
+
+// @public (undocumented)
+const NetworkPicker: Component<NetworkPickerProps, {}, "">;
+
+// @public (undocumented)
+type NetworkPicker = ReturnType<typeof NetworkPicker>;
+
+// @public (undocumented)
+interface NetworkPickerProps {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    networks: readonly NetworkOption[];
+    // (undocumented)
+    onValueChange: (id: string) => void;
+    value: string;
+}
 
 // @public (undocumented)
 type OnNavigate = (callback: (navigation: NavigationEvent) => NavigationResult) => void;
