@@ -88,6 +88,11 @@
 		ref = $bindable(null),
 		...elementProps
 	}: ButtonProps = $props();
+	const classes = $derived(cn(
+		buttonVariants({ variant, size }),
+		wrap && 'h-auto min-h-[var(--size-tap-min)] min-w-0 max-w-full shrink whitespace-normal py-2 [overflow-wrap:anywhere] [word-break:normal]',
+		className,
+	));
 </script>
 
 {#if elementProps.href != null}
@@ -96,7 +101,7 @@
 		data-slot="button"
 		{...anchorProps}
 		bind:this={ref}
-		class={cn(buttonVariants({ variant, size }), wrap && 'h-auto whitespace-normal py-2 [overflow-wrap:break-word] [word-break:normal]', className)}
+		class={classes}
 		href={disabled ? undefined : href}
 		aria-disabled={disabled || undefined}
 		role={disabled ? 'link' : undefined}
@@ -111,7 +116,7 @@
 		data-slot="button"
 		{...buttonProps}
 		bind:this={ref}
-		class={cn(buttonVariants({ variant, size }), wrap && 'h-auto whitespace-normal py-2 [overflow-wrap:break-word] [word-break:normal]', className)}
+		class={classes}
 		{type}
 		{disabled}
 		use:pressBounce

@@ -72,3 +72,8 @@ The transport status colours (`--dataviz-status-*`) each travel with a word and 
 blue (▼), on time is neutral reading ink (●), late is red (▲) and unknown is grey (○).
 `--dataviz-status-severe` exists for compatibility and equals late. Interface feedback, such as
 StateNotice's tones, uses `--success`, `--accent-text` and `--destructive` instead.
+
+For a neutral heatmap, use `--dataviz-heatmap-neutral-0` through `--dataviz-heatmap-neutral-4`.
+Match each fill with `--dataviz-heatmap-neutral-ink-0` through `--dataviz-heatmap-neutral-ink-4`
+for text. The light and dark ramps move from the calmest to the strongest magnitude. Keep a
+visible value or range in each cell and give missing data its own label and pattern.

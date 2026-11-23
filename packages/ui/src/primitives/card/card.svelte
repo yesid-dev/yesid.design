@@ -10,6 +10,7 @@
 		interactive = false,
 		edge = 'brand',
 		textSize = 'small',
+		spread = false,
 		...restProps
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
 		size?: 'default' | 'sm';
@@ -19,6 +20,8 @@
 		edge?: 'brand' | 'neutral';
 		/** `inherit` drops the 14px base so text and fields inside keep the page size (16px or more). */
 		textSize?: 'small' | 'inherit';
+		/** Shares extra height between the children when the card stretches. */
+		spread?: boolean;
 	} = $props();
 </script>
 
@@ -28,6 +31,7 @@
 	data-size={size}
 	data-interactive={interactive ? 'true' : undefined}
 	data-edge={edge === 'neutral' ? 'neutral' : undefined}
+	data-spread={spread || undefined}
 	class={cn(
 		'card-surface text-card-foreground gap-4 overflow-hidden py-4',
 		textSize === 'small' && 'text-sm',
@@ -57,6 +61,9 @@
 	}
 	.card-surface[data-edge='neutral'] {
 		border-color: var(--border);
+	}
+	.card-surface[data-spread] {
+		justify-content: space-between;
 	}
 	.card-surface[data-interactive='true']:is(:hover, :focus-visible, :has(:global(:focus-visible))),
 	:global(:focus-visible) > .card-surface[data-interactive='true'] {

@@ -31,6 +31,9 @@ const PAIRS: ContrastPair[] = [
 			// Non-text contrast (WCAG 1.4.11).
 			...['input', 'line-amber', 'signal-lunar'].flatMap((fg) => ['background', 'card'].map((bg) => on(fg, bg, 3))),
 			on('signal-lunar', 'muted', 3),
+			...[0, 1, 2, 3, 4].map((step) =>
+				on(`dataviz.heatmap.neutral.ink-${step}`, `dataviz.heatmap.neutral.${step}`),
+			),
 		];
 	}),
 	...['background', 'card'].map((bg) => pair(['light', 'border-strong'], ['light', bg], 3)),

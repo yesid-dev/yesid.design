@@ -128,6 +128,12 @@
 - `svelte` → `./src/table/index.ts`
 - `default` → `./src/table/index.ts`
 
+### `./map`
+
+- `types` → `./src/map/index.ts`
+- `svelte` → `./src/map/index.ts`
+- `default` → `./src/map/index.ts`
+
 ### `./chart`
 
 - `types` → `./src/chart/index.ts`
@@ -175,6 +181,7 @@
 - `Head` → `./src/head/index.ts` (`./head`)
 - `Feedback` → `./src/feedback/index.ts` (`./feedback`)
 - `Table` → `./src/table/index.ts` (`./table`)
+- `Map` → `./src/map/index.ts` (`./map`)
 - `Chart` → `./src/chart/index.ts` (`./chart`)
 
 ## API Report File for "@yesid/ui"
@@ -231,6 +238,7 @@ type $$ComponentProps_4 = WithElementRef<HTMLAttributes<HTMLDivElement>> & {
     interactive?: boolean;
     edge?: 'brand' | 'neutral';
     textSize?: 'small' | 'inherit';
+    spread?: boolean;
 };
 
 // @public (undocumented)
@@ -1809,6 +1817,7 @@ type FilterSummary = ReturnType<typeof FilterSummary>;
 
 // @public (undocumented)
 interface FilterSummaryProps {
+    canClear?: boolean;
     // (undocumented)
     clearLabel: string;
     // (undocumented)
@@ -2170,6 +2179,116 @@ interface ManifestoCanvasProps {
     containerEl?: HTMLElement;
 }
 
+declare namespace Map_2 {
+    export {
+        MapFrame,
+        MapFrameProps,
+        MapLegend,
+        MapLegendItem,
+        MapLegendProps,
+        StillMap,
+        StillMapProps,
+        placeMapLabels,
+        MapLabel,
+        MapLabelLayout,
+        MapLabelPlacement,
+        MapRect,
+        MapViewport
+    }
+}
+
+// @public (undocumented)
+const MapFrame: Component<MapFrameProps, {}, "">;
+
+// @public (undocumented)
+type MapFrame = ReturnType<typeof MapFrame>;
+
+// @public (undocumented)
+interface MapFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    // (undocumented)
+    children: Snippet<[MapViewport]>;
+    // (undocumented)
+    details?: {
+        label: string;
+        content: Snippet;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    legend?: Snippet;
+    // (undocumented)
+    panel?: Snippet;
+}
+
+// @public (undocumented)
+interface MapLabel {
+    readonly candidates: readonly MapRect[];
+    // (undocumented)
+    readonly id: string;
+}
+
+// @public (undocumented)
+interface MapLabelLayout {
+    // (undocumented)
+    readonly bounds: MapRect;
+    // (undocumented)
+    readonly gap?: number;
+    // (undocumented)
+    readonly labels: readonly MapLabel[];
+    readonly obstacles: readonly MapRect[];
+}
+
+// @public (undocumented)
+interface MapLabelPlacement {
+    // (undocumented)
+    readonly bounds: MapRect;
+    // (undocumented)
+    readonly id: string;
+}
+
+// @public (undocumented)
+const MapLegend: Component<MapLegendProps, {}, "">;
+
+// @public (undocumented)
+type MapLegend = ReturnType<typeof MapLegend>;
+
+// @public (undocumented)
+interface MapLegendItem {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    symbol: Snippet;
+}
+
+// @public (undocumented)
+interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'title'> {
+    // (undocumented)
+    items: readonly MapLegendItem[];
+    // (undocumented)
+    title: string;
+}
+
+// @public (undocumented)
+interface MapRect {
+    // (undocumented)
+    readonly height: number;
+    // (undocumented)
+    readonly width: number;
+    // (undocumented)
+    readonly x: number;
+    // (undocumented)
+    readonly y: number;
+}
+
+// @public (undocumented)
+interface MapViewport {
+    readonly exclusions: readonly MapRect[];
+    // (undocumented)
+    readonly height: number;
+    // (undocumented)
+    readonly width: number;
+}
+
 // @public (undocumented)
 const Masthead: Component<MastheadProps, {}, "">;
 
@@ -2354,6 +2473,9 @@ interface Persisted<T extends LocaleFree> {
 
 // @public (undocumented)
 const persisted: <T extends LocaleFree>(key: string, initial: T) => Persisted<Widen<T>>;
+
+// @public
+function placeMapLabels(input: MapLabelLayout): MapLabelPlacement[];
 
 // @public (undocumented)
 const Portal: Component<PortalProps, {}, "">;
@@ -3347,6 +3469,23 @@ interface StatusMarkProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'childre
 
 // @public (undocumented)
 type StatusMarkStatus = 'early' | 'on_time' | 'late' | 'severe' | 'unknown';
+
+// @public (undocumented)
+const StillMap: Component<StillMapProps, {}, "">;
+
+// @public (undocumented)
+type StillMap = ReturnType<typeof StillMap>;
+
+// @public (undocumented)
+interface StillMapProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    // (undocumented)
+    children: Snippet;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    overlay?: Snippet;
+    viewBox: readonly [number, number, number, number];
+}
 
 // @public (undocumented)
 const StopLabel: Component<StopLabelProps, {}, "">;
