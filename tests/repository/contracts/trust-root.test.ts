@@ -41,10 +41,10 @@ function topLevelBlock(yaml: string, key: string): string {
 }
 
 describe('distribution workflow trust root', () => {
-	it('runs three browser shards with one worker and keeps the authority aggregate', () => {
+	it('runs four browser shards with one worker and keeps the authority aggregate', () => {
 		const workflow = readText(CI_WORKFLOW_PATH);
-		expect(workflow).toContain('shard: [1, 2, 3]');
-		expect(workflow).toContain('--shard=${{ matrix.shard }}/3');
+		expect(workflow).toContain('shard: [1, 2, 3, 4]');
+		expect(workflow).toContain('--shard=${{ matrix.shard }}/4');
 		expect(workflow).toContain('needs: [classify, browser-shards]');
 		const config = readText(join(REPOSITORY_ROOT, 'apps/gallery/playwright.config.ts'));
 		expect(config).toContain('workers: 1');

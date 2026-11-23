@@ -8,6 +8,8 @@
 		locale: string;
 		clearLabel: string;
 		onClear: () => void;
+		/** Whether any filter can be cleared. Defaults to true for existing callers. */
+		canClear?: boolean;
 	}
 
 	/**
@@ -26,21 +28,23 @@
 </script>
 
 <script lang="ts">
-	let { count, countLabel, locale, clearLabel, onClear }: FilterSummaryProps = $props();
+	let { count, countLabel, locale, clearLabel, onClear, canClear = true }: FilterSummaryProps = $props();
 
 	const summaryText = $derived(filterCountText(count, countLabel, locale));
 </script>
 
-<div class="mb-3 flex items-center gap-2" data-slot="filter-summary">
+<div class="mb-3 flex flex-wrap items-center gap-x-2" data-slot="filter-summary">
 	<span class="text-xs text-[var(--muted-foreground)]" data-slot="filter-summary-count">
 		{summaryText}
 	</span>
-	<button
-		type="button"
-		class="tap-feedback inline-flex items-center min-h-11 px-2 font-mono text-caption text-primary underline transition-colors hover:text-[var(--foreground)] active:text-[var(--foreground)]"
-		data-slot="clear-filters"
-		onclick={onClear}
-	>
-		{clearLabel}
-	</button>
+	{#if canClear}
+		<button
+			type="button"
+			class="tap-feedback inline-flex min-w-0 max-w-full items-center min-h-11 px-2 font-mono text-caption text-primary underline transition-colors hover:text-[var(--foreground)] active:text-[var(--foreground)]"
+			data-slot="clear-filters"
+			onclick={onClear}
+		>
+			{clearLabel}
+		</button>
+	{/if}
 </div>

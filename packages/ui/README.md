@@ -192,9 +192,9 @@ of the outline, preserving at least 3:1 contrast on page and card backgrounds in
 Forced colours use the system `CanvasText` outline. Focus does not change layout; pointer focus
 continues to follow `:focus-visible`. No caller changes are needed.
 
-`wrap` defaults to `false`. Set `wrap` on either a button or an anchor to allow labels
-on multiple lines with a content-driven height and vertical padding. Keep a constrained width
-(for example 200px) on the button or its parent; fixed caller heights still override this option.
+`wrap` defaults to `false`. Set `wrap` on a button or anchor to shrink within the available
+width and wrap labels over multiple lines, using content-driven height with a minimum touch
+target. Fixed caller heights still override this option.
 Button transitions name color, background-color, border-color, box-shadow and translate explicitly.
 
 ### Card
@@ -212,6 +212,8 @@ keeps them as separate targets; never wrap them in a whole-card link.
   same way.
 - `textSize="inherit"` drops the card's 14px base (`text-sm`), so text and form fields inside keep
   the page size (16px or more). The default `small` keeps the 14px base.
+- `spread` distributes spare vertical room between direct children when the card stretches in
+  a row alongside taller content.
 
 ```svelte
 <Card edge="neutral" textSize="inherit">…</Card>
@@ -571,6 +573,8 @@ with an "All" reset (`allLabel`) mapped to `null`; choosing the active item agai
 unless `allowDeselect={false}`. With `collapsible` it gets a header toggle and starts at `startOpen` (true) on every mount. `FilterSection` wraps one block of a filter
 panel with the dashed rule. `FilterSummary` shows `countLabel.singular` or `countLabel.plural`
 (each with a `{count}` placeholder) by the plural rule of `locale`, plus a `clearLabel` button.
+Set `canClear={query.trim().length > 0}` for a search-only list, or pass whether any filter is
+active. If clearing removes the focused button, return focus to the input or filter control.
 `filterCountText(count, countLabel, locale)` returns the same words, for ListingFrame's
 `resultCountText`. `SearchInput` is the listing search field; `label` is its accessible name. Its
 focus shows the standard 2px focus ring from `base.css`, with no glow and no border change.
@@ -585,7 +589,7 @@ notes in the four corners of its positioned parent (snippets `topLeft` to `botto
 arrow keys move and select, and disabled options are skipped. It is controlled: every pick,
 the current option included, calls `onSelect`, and the caller sets `value`. `compactLabel` shows
 a short label and keeps `label` as the name, and `variant="joined-grid"` lays options out two per
-row. `ToggleChip` is a controlled pill button:
+row with labels that wrap at enlarged text. `ToggleChip` is a controlled pill button:
 the caller sets `pressed` (rendered as `aria-pressed`) and changes it in `onclick`.
 
 ## Listing frame
@@ -1106,6 +1110,29 @@ optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `
 `--accent-text` and `--destructive`, the interface colours, never the transport status tokens. `presentation` is
 `responsive` (default), `silo`, `card`, `pill` or `row`; a pill or row without snippets renders
 inline. Pass `role` and `aria-live` when the notice reports a change. With a `role`, the title names it.
+
+## Map surfaces
+
+`@yesid/ui/map` exports three presentation parts for a caller-owned map:
+
+- `MapFrame` takes a localized `label` and a map snippet. Optional `panel` and `legend`
+  snippets float at the start edge. A `details={{ label, content }}` snippet floats at the end.
+  In a narrow frame those panels follow the map in reading order. The map snippet receives
+  its measured `width`, `height` and the rectangles it needs to avoid, in CSS pixels relative
+  to the map. The first render has zero measured dimensions. Render the base map with a
+  fallback during that render and wait for the measurements before placing labels.
+- `MapLegend` takes a localized `title` and `items` of `{ label, symbol }`. Pass a decorative
+  snippet for each symbol and describe it in the visible label.
+- `StillMap` takes a localized `label`, a `viewBox` tuple `[x, y, width, height]`, an SVG snippet
+  and optional HTML `overlay`. The whole view box stays visible as the card stretches. Give the
+  same location or route information in the label or surrounding text.
+
+Call `placeMapLabels({ bounds, labels, obstacles, gap })` with the map bounds and the measured
+panel rectangles plus any visible marks to avoid. Supply labels in priority order. Each label
+has an `id` and an ordered list of candidate rectangles sized to the whole label. The helper
+returns the first clear placement per label and leaves out labels without room. Use the same
+coordinate space for every rectangle. The app owns geographic projection and candidate
+positions.
 
 ## Site root and shared state
 
