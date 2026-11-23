@@ -1102,14 +1102,52 @@ required and names the table. `responsive` stacks each row into label and value 
 (`at: 'compact'`) or 1024px (`at: 'tablet'`), or scrolls sideways (`mode: 'scroll'`, with
 `minWidth` and `minWidthCompact`); a scrolling table that overflows becomes a focusable region
 named by its caption. `frame="card"` draws a rounded card, `headerBand="terminal"` tints the
-header, `tableClass` styles the table and other attributes go to the frame.
+header, `tableClass` styles the table and other attributes go to the frame. Stacked rows wrap
+localized headings and keep the native table roles at enlarged text.
 
 `@yesid/ui/feedback` exports `StateNotice`, the quiet empty, error and status notice: `title`,
 optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `tone` is
 `neutral` (default), `positive`, `warning` or `error`; the last three use `--success`,
 `--accent-text` and `--destructive`, the interface colours, never the transport status tokens. `presentation` is
-`responsive` (default), `silo`, `card`, `pill` or `row`; a pill or row without snippets renders
+`responsive` (default), `silo`, `card`, `frameless`, `pill` or `row`. Use `frameless` for
+a notice with a glyph and copy inside an existing card. A pill or row without snippets renders
 inline. Pass `role` and `aria-live` when the notice reports a change. With a `role`, the title names it.
+
+## Status marks, route plates and charts
+
+From `@yesid/ui/brand`, `StatusMark` takes a `status` (`early`, `on_time`, `late`, `severe` or
+`unknown`), a localized `label` and optional `detail`. Its decorative shape and token colour
+support the visible label. `RoutePlate` takes a `code`, optional `size="lg"` and optional
+`scheduleOnly`. Pair a schedule-only plate with localized status text where the distinction
+matters.
+
+From `@yesid/ui/chart`, `ChartFrame` takes a localized `label`, `xDomain` and `yDomain` pairs, a
+plot snippet and an optional `legend` snippet. The frame fills spare space in a flex-column card.
+The plot snippet receives the same pixel scales for every SVG part. Use compact, localized tick
+labels. Put the exact values in a nearby `DataTable` so they remain readable without the drawing.
+
+```svelte
+<ChartFrame label={copy.hoursByDay} xDomain={[-0.5, 6.5]} yDomain={[0, 24]}>
+  {#snippet children(plot)}
+    <ChartAxis {plot} axis="y" ticks={hourTicks} />
+    <ChartAxis {plot} axis="x" ticks={dayTicks} />
+    <ChartBarSeries {plot} {points} bandWidth={1} />
+  {/snippet}
+  {#snippet legend()}
+    <ChartLegend label={copy.legend} items={[{ label: copy.hours, kind: 'bar' }]} />
+  {/snippet}
+</ChartFrame>
+```
+
+`ChartBarSeries` and `ChartLineSeries` take ordered `{ x, y }` points. `y: null` omits a bar or
+breaks a line. Give bars their band width in x-domain units and room for half a band at the
+ends. Set `reference` on a line and select the corresponding legend kind for a dashed comparison.
+
+`DayStrip` takes a localized list `label`, `reportedLabel`, `missingLabel` and ordered `cells`.
+Each cell has an `id`, short `label`, optional full `dateLabel`, and either
+`report: { value, fraction }` or `report: null`. Give the formatted figure as `value` and a
+fraction between zero and one for the bar. A null report renders a dashed empty track and
+announces the supplied missing label. A reported zero still presents its figure.
 
 ## Map surfaces
 

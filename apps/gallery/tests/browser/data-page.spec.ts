@@ -51,9 +51,12 @@ test('filter chips narrow the table and say so when nothing matches', async ({ p
 
 	await filters.getByRole('button', { name: late.label }).click();
 	await expect(filters.getByRole('button', { name: late.label })).toHaveAttribute('aria-pressed', 'true');
-	await expect(table.getByRole('rowheader')).toHaveText(
-		stopRows.filter((row) => row.status === late.key).map((row) => row.stop),
-	);
+	const matchingStops = stopRows.filter((row) => row.status === late.key);
+	const rowHeaders = table.getByRole('rowheader');
+	await expect(rowHeaders).toHaveCount(matchingStops.length);
+	for (const [index, row] of matchingStops.entries()) {
+		await expect(rowHeaders.nth(index)).toHaveAccessibleName(row.stop);
+	}
 
 	await filters.getByRole('button', { name: late.label }).click();
 	await filters.getByRole('button', { name: empty.label }).click();

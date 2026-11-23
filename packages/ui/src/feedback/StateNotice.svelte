@@ -7,7 +7,7 @@
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
-	export type StateNoticePresentation = 'row' | 'pill' | 'silo' | 'card' | 'responsive';
+	export type StateNoticePresentation = 'row' | 'pill' | 'silo' | 'card' | 'responsive' | 'frameless';
 	export type StateNoticeTone = 'neutral' | 'positive' | 'warning' | 'error';
 
 	export interface StateNoticeProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'title'> {
@@ -139,6 +139,11 @@
 		display: inline;
 		width: auto;
 		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+
+	.state-notice--frameless .state-notice-surface {
 		border: 0;
 		background: transparent;
 	}

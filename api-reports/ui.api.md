@@ -134,6 +134,12 @@
 - `svelte` → `./src/map/index.ts`
 - `default` → `./src/map/index.ts`
 
+### `./chart`
+
+- `types` → `./src/chart/index.ts`
+- `svelte` → `./src/chart/index.ts`
+- `default` → `./src/chart/index.ts`
+
 ### `./station-tabs.css`
 
 - `default` → `./station-tabs.css`
@@ -176,6 +182,7 @@
 - `Feedback` → `./src/feedback/index.ts` (`./feedback`)
 - `Table` → `./src/table/index.ts` (`./table`)
 - `Map` → `./src/map/index.ts` (`./map`)
+- `Chart` → `./src/chart/index.ts` (`./chart`)
 
 ## API Report File for "@yesid/ui"
 
@@ -845,6 +852,8 @@ declare namespace Brand {
         ProductBrandProps,
         RailTitle,
         RailTitleProps,
+        RoutePlate,
+        RoutePlateProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -865,6 +874,9 @@ declare namespace Brand {
         StatusDot,
         StatusDotColor,
         StatusDotProps,
+        StatusMark,
+        StatusMarkStatus,
+        StatusMarkProps,
         StopLabel,
         StopLabelProps,
         TerminalCursor,
@@ -1016,6 +1028,155 @@ const Card: Component<$$ComponentProps_4, {}, "ref">;
 
 // @public (undocumented)
 type Card = ReturnType<typeof Card>;
+
+declare namespace Chart {
+    export {
+        ChartFrame,
+        ChartFrameProps,
+        ChartAxis,
+        ChartAxisProps,
+        ChartTick,
+        ChartBarSeries,
+        ChartBarSeriesProps,
+        ChartLineSeries,
+        ChartLineSeriesProps,
+        ChartLegend,
+        ChartLegendItem,
+        ChartLegendProps,
+        DayStrip,
+        DayStripCell,
+        DayStripProps,
+        ChartPlot,
+        ChartPoint
+    }
+}
+
+// @public (undocumented)
+const ChartAxis: Component<ChartAxisProps, {}, "">;
+
+// @public (undocumented)
+type ChartAxis = ReturnType<typeof ChartAxis>;
+
+// @public (undocumented)
+interface ChartAxisProps {
+    // (undocumented)
+    axis: 'x' | 'y';
+    // (undocumented)
+    grid?: boolean;
+    // (undocumented)
+    plot: ChartPlot;
+    // (undocumented)
+    ticks: readonly ChartTick[];
+}
+
+// @public (undocumented)
+const ChartBarSeries: Component<ChartBarSeriesProps, {}, "">;
+
+// @public (undocumented)
+type ChartBarSeries = ReturnType<typeof ChartBarSeries>;
+
+// @public (undocumented)
+interface ChartBarSeriesProps {
+    bandWidth: number;
+    // (undocumented)
+    baseline?: number;
+    // (undocumented)
+    plot: ChartPlot;
+    // (undocumented)
+    points: readonly ChartPoint[];
+}
+
+// @public (undocumented)
+const ChartFrame: Component<ChartFrameProps, {}, "">;
+
+// @public (undocumented)
+type ChartFrame = ReturnType<typeof ChartFrame>;
+
+// @public (undocumented)
+interface ChartFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+    // (undocumented)
+    children: Snippet<[ChartPlot]>;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    legend?: Snippet;
+    // (undocumented)
+    xDomain: readonly [number, number];
+    // (undocumented)
+    yDomain: readonly [number, number];
+}
+
+// @public (undocumented)
+const ChartLegend: Component<ChartLegendProps, {}, "">;
+
+// @public (undocumented)
+type ChartLegend = ReturnType<typeof ChartLegend>;
+
+// @public (undocumented)
+interface ChartLegendItem {
+    // (undocumented)
+    kind: 'bar' | 'line' | 'reference';
+    // (undocumented)
+    label: string;
+}
+
+// @public (undocumented)
+interface ChartLegendProps {
+    // (undocumented)
+    items: readonly ChartLegendItem[];
+    // (undocumented)
+    label: string;
+}
+
+// @public (undocumented)
+const ChartLineSeries: Component<ChartLineSeriesProps, {}, "">;
+
+// @public (undocumented)
+type ChartLineSeries = ReturnType<typeof ChartLineSeries>;
+
+// @public (undocumented)
+interface ChartLineSeriesProps {
+    // (undocumented)
+    plot: ChartPlot;
+    // (undocumented)
+    points: readonly ChartPoint[];
+    reference?: boolean;
+}
+
+// @public
+interface ChartPlot {
+    // (undocumented)
+    readonly bottom: number;
+    // (undocumented)
+    readonly clipId: string;
+    // (undocumented)
+    readonly left: number;
+    // (undocumented)
+    readonly right: number;
+    // (undocumented)
+    readonly top: number;
+    // (undocumented)
+    readonly unit: number;
+    // (undocumented)
+    readonly x: (value: number) => number;
+    // (undocumented)
+    readonly y: (value: number) => number;
+}
+
+// @public (undocumented)
+interface ChartPoint {
+    // (undocumented)
+    readonly x: number;
+    readonly y: number | null;
+}
+
+// @public (undocumented)
+interface ChartTick {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: number;
+}
 
 // @public (undocumented)
 const ChevronToggle: Component<ChevronToggleProps, {}, "">;
@@ -1449,6 +1610,38 @@ interface DateRangeSelection extends DateRange {
     presetId?: string;
 }
 
+// @public (undocumented)
+const DayStrip: Component<DayStripProps, {}, "">;
+
+// @public (undocumented)
+type DayStrip = ReturnType<typeof DayStrip>;
+
+// @public (undocumented)
+interface DayStripCell {
+    dateLabel?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    report: {
+        value: string;
+        fraction: number;
+    } | null;
+}
+
+// @public (undocumented)
+interface DayStripProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+    // (undocumented)
+    cells: readonly DayStripCell[];
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    missingLabel: string;
+    // (undocumented)
+    reportedLabel: string;
+}
+
 // @public
 const desktop: MediaQuery;
 
@@ -1746,6 +1939,8 @@ declare namespace Index {
         ProductBrandProps,
         RailTitle,
         RailTitleProps,
+        RoutePlate,
+        RoutePlateProps,
         SectionsToggle,
         SectionsToggleActiveEffect,
         SectionsToggleCopy,
@@ -1766,6 +1961,9 @@ declare namespace Index {
         StatusDot,
         StatusDotColor,
         StatusDotProps,
+        StatusMark,
+        StatusMarkStatus,
+        StatusMarkProps,
         StopLabel,
         StopLabelProps,
         TerminalCursor,
@@ -2525,6 +2723,21 @@ type ResizablePaneGroup = ReturnType<typeof ResizablePaneGroup>;
 const Root: Component<AlertDialogRootPropsWithoutHTML, {}, "open">;
 
 // @public (undocumented)
+const RoutePlate: Component<RoutePlateProps, {}, "">;
+
+// @public (undocumented)
+type RoutePlate = ReturnType<typeof RoutePlate>;
+
+// @public (undocumented)
+interface RoutePlateProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    // (undocumented)
+    code: string;
+    scheduleOnly?: boolean;
+    // (undocumented)
+    size?: 'md' | 'lg';
+}
+
+// @public (undocumented)
 const ScrollArea: Component<$$ComponentProps_7, {}, "ref" | "viewportRef">;
 
 // @public (undocumented)
@@ -3190,7 +3403,7 @@ const StateNotice: Component<StateNoticeProps, {}, "">;
 type StateNotice = ReturnType<typeof StateNotice>;
 
 // @public (undocumented)
-type StateNoticePresentation = 'row' | 'pill' | 'silo' | 'card' | 'responsive';
+type StateNoticePresentation = 'row' | 'pill' | 'silo' | 'card' | 'responsive' | 'frameless';
 
 // @public (undocumented)
 interface StateNoticeProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'title'> {
@@ -3237,6 +3450,25 @@ interface StatusDotProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     size?: 'sm' | 'md';
 }
+
+// @public (undocumented)
+const StatusMark: Component<StatusMarkProps, {}, "">;
+
+// @public (undocumented)
+type StatusMark = ReturnType<typeof StatusMark>;
+
+// @public (undocumented)
+interface StatusMarkProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+    // (undocumented)
+    detail?: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    status: StatusMarkStatus;
+}
+
+// @public (undocumented)
+type StatusMarkStatus = 'early' | 'on_time' | 'late' | 'severe' | 'unknown';
 
 // @public (undocumented)
 const StillMap: Component<StillMapProps, {}, "">;
