@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.54.0-rc.1
+## 0.54.0
 
 <!-- release-fragment: r5-map-controls -->
 - `@yesid/tokens` (minor), `@yesid/ui` (minor): Add StillMap, MapFrame, MapLegend and the obstacle-aware placeMapLabels helper in `@yesid/ui/map`. Add the five-step neutral heatmap ramp and matching text tokens for both themes. FilterSummary can hide its clear action with `canClear`, SegmentedChoice wraps long labels, wrapped Button actions shrink in narrow cards, and Card accepts `spread` to share spare height.
