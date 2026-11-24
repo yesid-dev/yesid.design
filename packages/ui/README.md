@@ -554,6 +554,18 @@ may mount/select content asynchronously; later requests and cleanup cancel stale
 boolean result tells the consumer whether it landed, allowing app-owned restoration fallbacks.
 See [the breaking migration](../../docs/migrations/deepen-section-jump.md) for removed helpers.
 
+### AnswerLead and Stamp
+
+Import `AnswerLead` and `Stamp` from `@yesid/ui/brand`. `AnswerLead` pairs a `value` with
+its localized `sentence` in a named section. Use `value={null}` and the `absent` snippet to show
+a missing observation. Pass the date or freshness stamp, metadata and actions as snippets. A
+short `comparison` adds context below the answer. The layout stacks when the content needs room.
+
+`Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
+and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
+seconds from the shared clock. Pass `late` with the supplied stale-since `label` to show a ring
+and keep the label stable. Clock updates are ordinary text changes.
+
 ### CornerMarks, StatusDot, MetricDisplay, SectionHeading, and SectionIcon
 
 Stateless atoms. `CornerMarks` draws four corner ticks and needs a positioned parent. `StatusDot`
@@ -801,6 +813,10 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   It displays “city · name” and uses the short code below 600px. Native options use the full
   labels at every width. An empty list omits the control.
 - **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
+  Pass `controlsRail={{ rail, label, summary, openAria, closeAria, mobileVisible }}` for a
+  start-side controls column from 1024 px and a bottom-sheet trigger below 1024 px. The `rail`
+  snippet receives `SurfaceRailContext` and can render `ControlsRail`. In `fullViewport` the
+  controls rail floats over `main`. `chromeHeight` measures the header and any retained strip.
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
@@ -864,6 +880,9 @@ banner visible. With JavaScript disabled, the banner and link remain available.
 ## Site header
 
 `SiteHeader` is the floating pill header with a full-screen metro-line menu on a bits-ui Dialog.
+Pass a `network` snippet to place a network control after inline search at desktop widths and
+below the pill when the header is narrower than 1024 px. Use `NetworkPicker` for the compact
+short code and the full accessible option names.
 The pill renders inside the dialog, so it stays above the open menu and inside its focus trap.
 Call `createNavigationLifecycle` from `@yesid/ui/brand` once during the persistent app layout's
 initialization with `beforeNavigate`, `onNavigate` and `afterNavigate` from `$app/navigation`,
@@ -1112,6 +1131,17 @@ optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `
 `responsive` (default), `silo`, `card`, `frameless`, `pill` or `row`. Use `frameless` for
 a notice with a glyph and copy inside an existing card. A pill or row without snippets renders
 inline. Pass `role` and `aria-live` when the notice reports a change. With a `role`, the title names it.
+
+For controlled sorting, mark columns `sortable` and pass the current `sort` and `onSort`.
+Sort the `rows` in the consumer and use `sortLabels.by` for an optional localized button name.
+To reveal rows in pages, pass `pageSize` and `pageLabels.showing` and `pageLabels.more` formatters.
+The first new row receives focus when a page is revealed. A changed sort starts at page one.
+Key the table by query when a dataset change should reset the page. To use the same count and
+action for a card list, import `ShowMore` from `@yesid/ui/table` and supply `shown`, `total`,
+`pageSize`, `labels` and `onMore`. The list owns insertion and focus.
+
+Use `responsive={{ mode: 'rows', primary: 'name', value: 'total' }}` to put two named
+columns on the first line at compact widths. The remaining values reflow below with labels.
 
 ## Status marks, route plates and charts
 

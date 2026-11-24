@@ -5,6 +5,7 @@
 	export interface AppFrameProps {
 		header: Snippet;
 		controls?: Snippet;
+		controlsRail?: Pick<SurfaceRailProps, 'rail' | 'label' | 'summary' | 'openAria' | 'closeAria' | 'mobileVisible'>;
 		children: Snippet;
 		footer?: Snippet;
 		mainLabel?: string;
@@ -16,9 +17,11 @@
 </script>
 
 <script lang="ts">
+	import Button from '../primitives/button/button.svelte';
 	import SurfaceRail from './SurfaceRail.svelte';
+	import type { SurfaceRailContext } from './SurfaceRail.svelte';
 
-	let { header, controls, children, footer, mainLabel, evidence, fullViewport = false, chromeHeight = $bindable() }: AppFrameProps = $props();
+	let { header, controls, controlsRail, children, footer, mainLabel, evidence, fullViewport = false, chromeHeight = $bindable() }: AppFrameProps = $props();
 	let headerHeight = $state<number>();
 	let tallChrome = $state(false);
 
@@ -74,7 +77,17 @@
 			<div class="app-frame-controls" data-slot="app-frame-controls" data-lenis-prevent>{@render controls()}</div>
 		{/if}
 	</div>
-	<div class="app-frame-body" class:with-evidence={!!evidence}>
+	<div class="app-frame-body" class:with-evidence={!!evidence} class:with-controls-rail={!!controlsRail}>
+		{#if controlsRail}
+			<SurfaceRail {...controlsRail} class="app-frame-controls-rail">
+				{#snippet rail(context: SurfaceRailContext)}
+					{#if context.presentation === 'mobile'}
+						<Button class="self-end" variant="outline" wrap onclick={context.closeSheet}>{controlsRail.closeAria}</Button>
+					{/if}
+					{@render controlsRail.rail(context)}
+				{/snippet}
+			</SurfaceRail>
+		{/if}
 		<main id="main" class="app-frame-main" aria-label={mainLabel} tabindex="-1" data-lenis-prevent={fullViewport ? '' : undefined}>
 			{@render children()}
 		</main>
@@ -137,19 +150,25 @@
 	}
 	.full-viewport .app-frame-body { min-block-size: var(--app-frame-main-min); }
 	.full-viewport .app-frame-main { overflow: auto; }
-	.with-evidence > :global([data-slot='surface-rail-mobile']) {
+	.app-frame-body > :global([data-slot='surface-rail-mobile']) {
 		--surface-rail-sheet-clearance: var(--app-frame-header-height);
 	}
 	/* Keep the evidence sheet above the chrome until its exit animation unmounts it. */
-	.with-evidence > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
+	.app-frame-body > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
 		z-index: calc(var(--z-sheet) - 1);
 	}
 	@media (width < 1024px) {
-		.app-frame:has(.with-evidence > :global([data-slot='surface-rail-mobile'])) {
+		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) {
 			--app-frame-main-min: var(--floating-pill-clearance);
 		}
-		.full-viewport .with-evidence:has(> :global([data-slot='surface-rail-mobile'])) .app-frame-main {
-			scroll-padding-block-end: var(--floating-pill-clearance);
+		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) {
+			--app-frame-main-min: calc(var(--floating-pill-clearance) + max(3.25rem, 52px));
+		}
+		.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile']) {
+			--surface-rail-stack-offset: max(3.25rem, 52px);
+		}
+		.full-viewport .app-frame-body:has(> :global([data-slot='surface-rail-mobile'])) .app-frame-main {
+			scroll-padding-block-end: var(--app-frame-main-min);
 		}
 	}
 
@@ -157,6 +176,27 @@
 		.with-evidence {
 			grid-template-columns: minmax(0, 1fr) minmax(0, min(28rem, 30%));
 			gap: 1rem;
+		}
+		.with-controls-rail {
+			grid-template-columns: minmax(0, min(17rem, 27%)) minmax(0, 1fr);
+			gap: 1rem;
+		}
+		.with-controls-rail.with-evidence {
+			grid-template-columns: minmax(0, min(17rem, 27%)) minmax(0, 1fr) minmax(0, min(28rem, 30%));
+		}
+		.full-viewport .with-controls-rail {
+			position: relative;
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.full-viewport .with-controls-rail.with-evidence {
+			grid-template-columns: minmax(0, 1fr) minmax(0, min(28rem, 30%));
+		}
+		.full-viewport :global(.app-frame-controls-rail) {
+			position: absolute;
+			inset-block-start: 1rem;
+			inset-inline-start: 1rem;
+			inline-size: min(17rem, 36%);
+			max-block-size: calc(100% - 2rem);
 		}
 		.full-viewport :global(.app-frame-evidence) {
 			inset-block-start: 0;

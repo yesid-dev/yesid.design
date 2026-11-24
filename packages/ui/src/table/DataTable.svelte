@@ -7,12 +7,14 @@
 <script module lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
+	import type { ShowMoreLabels } from './ShowMore.svelte';
 
 	export type DataTableAlign = 'start' | 'end';
 	export type DataTableResponsive =
 		| { mode: 'none' }
 		| { mode: 'stack'; at: 'compact' | 'tablet' }
-		| { mode: 'scroll'; minWidth?: string; minWidthCompact?: string };
+		| { mode: 'scroll'; minWidth?: string; minWidthCompact?: string }
+		| { mode: 'rows'; primary: string; value: string };
 
 	export interface DataTableColumn<T> {
 		readonly key: string;
@@ -21,6 +23,7 @@
 		readonly numeric?: boolean;
 		readonly width?: string;
 		readonly rowHeader?: true;
+		readonly sortable?: boolean;
 		readonly cell: Snippet<[T]>;
 	}
 
@@ -30,6 +33,11 @@
 		readonly key: (row: T, index: number) => string;
 		readonly caption: string;
 		readonly responsive?: DataTableResponsive;
+		readonly sort?: { key: string; direction: 'asc' | 'desc' };
+		readonly onSort?: (key: string) => void;
+		readonly sortLabels?: { by: (column: string) => string };
+		readonly pageSize?: number;
+		readonly pageLabels?: ShowMoreLabels;
 		/** `card` draws a rounded, bordered card around the table. */
 		readonly frame?: 'none' | 'card';
 		readonly borderCollapse?: 'collapse' | 'separate';
@@ -42,7 +50,12 @@
 </script>
 
 <script lang="ts" generics="T">
+	import { tick } from 'svelte';
+	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import { cn } from '../cn/index.js';
+	import ShowMore from './ShowMore.svelte';
 
 	let {
 		rows,
@@ -50,6 +63,11 @@
 		key,
 		caption,
 		responsive = DEFAULT_RESPONSIVE,
+		sort,
+		onSort,
+		sortLabels,
+		pageSize,
+		pageLabels,
 		frame = 'none',
 		borderCollapse = 'collapse',
 		headerBand = 'none',
@@ -59,7 +77,10 @@
 	}: DataTableProps<T> = $props();
 
 	let frameElement = $state<HTMLDivElement | null>(null);
+	let body = $state<HTMLTableSectionElement>();
 	let scrollable = $state(false);
+	let requestedCount = $state(0);
+	let pageContext = '';
 
 	const accessibleCaption = $derived.by(() => {
 		const value = caption.trim();
@@ -68,7 +89,12 @@
 		}
 		return value;
 	});
-	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : undefined);
+	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : responsive.mode === 'rows' ? 'compact' : undefined);
+	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
+	const hasSortButtons = $derived(!!onSort && columns.some((column) => column.sortable));
+	const paging = $derived(pageLabels && pageSize && pageSize > 0 && Number.isInteger(pageSize) ? pageSize : 0);
+	const shown = $derived(paging ? Math.min(Math.max(requestedCount, paging), rows.length) : rows.length);
+	const visibleRows = $derived(paging ? rows.slice(0, shown) : rows);
 	const scrollMinWidth = $derived(responsive.mode === 'scroll' ? responsive.minWidth : undefined);
 	const scrollMinWidthCompact = $derived(
 		responsive.mode === 'scroll' ? responsive.minWidthCompact : undefined,
@@ -76,6 +102,25 @@
 
 	function columnAlignment(column: DataTableColumn<T>): DataTableAlign {
 		return column.numeric ? 'end' : (column.align ?? 'start');
+	}
+
+	function rowPosition(key: string): 'primary' | 'value' | undefined {
+		if (!rowLayout) return undefined;
+		if (key === rowLayout.primary) return 'primary';
+		return key === rowLayout.value ? 'value' : undefined;
+	}
+
+	$effect.pre(() => {
+		const context = `${paging}:${sort?.direction ?? ''}:${sort?.key ?? ''}`;
+		if (context !== pageContext) requestedCount = 0;
+		pageContext = context;
+	});
+
+	async function showMore(count: number): Promise<void> {
+		const firstNew = shown;
+		requestedCount = shown + count;
+		await tick();
+		body?.rows[firstNew]?.focus();
 	}
 
 	function measure(): void {
@@ -107,6 +152,7 @@
 	{...restProps}
 	data-responsive={responsive.mode}
 	data-stack-at={stackAt}
+	data-sortable={hasSortButtons || undefined}
 	data-frame={frame}
 	data-collapse={borderCollapse}
 	data-header-band={headerBand}
@@ -123,28 +169,39 @@
 		<thead role={stackAt ? 'rowgroup' : undefined}>
 			<tr role={stackAt ? 'row' : undefined}>
 				{#each columns as column (column.key)}
+					{@const direction = sort?.key === column.key ? sort.direction : undefined}
 					<th
 						scope="col"
 						role={stackAt ? 'columnheader' : undefined}
 						data-column={column.key}
 						data-align={columnAlignment(column)}
 						data-numeric={column.numeric || undefined}
+						data-sortable={column.sortable && hasSortButtons || undefined}
+						aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : undefined}
 						style:width={column.width}
 					>
-						{column.header}
+						{#if column.sortable && onSort}
+							<button type="button" class="data-table-sort" aria-label={sortLabels?.by(column.header)} onclick={() => onSort?.(column.key)}>
+								<span>{column.header}</span>
+								{#if direction === 'asc'}<ArrowUp size="1em" aria-hidden="true" />
+								{:else if direction === 'desc'}<ArrowDown size="1em" aria-hidden="true" />
+								{:else}<ArrowDownUp size="1em" aria-hidden="true" />{/if}
+							</button>
+						{:else}{column.header}{/if}
 					</th>
 				{/each}
 			</tr>
 		</thead>
-		<tbody role={stackAt ? 'rowgroup' : undefined}>
-			{#each rows as row, index (key(row, index))}
-				<tr role={stackAt ? 'row' : undefined}>
+		<tbody bind:this={body} role={stackAt ? 'rowgroup' : undefined}>
+			{#each visibleRows as row, index (key(row, index))}
+				<tr role={stackAt ? 'row' : undefined} tabindex={paging ? -1 : undefined}>
 					{#each columns as column (column.key)}
 						{#if column.rowHeader}
 							<th
 								scope="row"
 								role={stackAt ? 'rowheader' : undefined}
 								data-column={column.key}
+								data-row-position={rowPosition(column.key)}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
@@ -156,6 +213,7 @@
 							<td
 								role={stackAt ? 'cell' : undefined}
 								data-column={column.key}
+								data-row-position={rowPosition(column.key)}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
@@ -170,6 +228,9 @@
 		</tbody>
 	</table>
 </div>
+{#if paging && pageLabels}
+	<ShowMore {shown} total={rows.length} pageSize={paging} labels={pageLabels} onMore={showMore} />
+{/if}
 
 <style>
 	.data-table-frame,
@@ -181,6 +242,7 @@
 		width: 100%;
 		max-width: 100%;
 	}
+	.data-table-frame[data-stack-at] { container: yesid-table / inline-size; }
 
 	.data-table-frame[data-responsive='scroll'] {
 		overflow-x: auto;
@@ -282,6 +344,25 @@
 		display: none;
 	}
 
+	.data-table-sort {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		min-block-size: var(--size-tap-min);
+		min-inline-size: var(--size-tap-min);
+		max-inline-size: 100%;
+		padding-inline: 0.35em;
+		font: inherit;
+		text-align: start;
+		overflow-wrap: anywhere;
+		cursor: pointer;
+	}
+	.data-table-sort :global(svg) { flex: none; }
+	.data-table-sort:focus-visible, .data-table tr[tabindex]:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: -2px;
+	}
+
 	@media (max-width: 48rem) {
 		.data-table-frame[data-responsive='scroll'] .data-table {
 			min-width: var(--dt-min-width-compact, var(--dt-min-width, 100%));
@@ -296,7 +377,8 @@
 			white-space: normal;
 		}
 
-		.data-table-frame[data-stack-at='compact'] .data-table thead {
+		.data-table-frame[data-stack-at='compact']:not([data-sortable]) .data-table thead,
+		.data-table-frame[data-stack-at='compact'][data-sortable] .data-table thead th:not([data-sortable]) {
 			position: absolute;
 			width: 1px;
 			height: 1px;
@@ -339,6 +421,21 @@
 		.data-table-frame[data-stack-at='compact'] [data-align='end'] .data-table-cell-content {
 			text-align: right;
 		}
+		.data-table-frame[data-responsive='rows'] .data-table tbody tr {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr);
+			column-gap: 0.75rem;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table tbody :is(th, td) {
+			grid-column: 1 / -1;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position] {
+			display: block;
+			grid-row: 1;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position='primary'] { grid-column: 1; }
+		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position='value'] { grid-column: 2; }
+		.data-table-frame[data-responsive='rows'] [data-row-position='primary'] .data-table-stack-label { display: none; }
 	}
 
 	@media (max-width: 1023px) {
@@ -349,7 +446,8 @@
 			white-space: normal;
 		}
 
-		.data-table-frame[data-stack-at='tablet'] .data-table thead {
+		.data-table-frame[data-stack-at='tablet']:not([data-sortable]) .data-table thead,
+		.data-table-frame[data-stack-at='tablet'][data-sortable] .data-table thead th:not([data-sortable]) {
 			position: absolute;
 			width: 1px;
 			height: 1px;
@@ -413,6 +511,16 @@
 			border: 1px solid var(--border);
 			border-radius: var(--radius-lg);
 			background: var(--card);
+		}
+	}
+	@container yesid-table (max-width: 16rem) {
+		.data-table-frame[data-stack-at] .data-table tbody :is(th, td):not([data-row-position]) {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0.125rem;
+		}
+		.data-table-frame[data-stack-at] .data-table tbody tr > :is(th, td) > .data-table-cell-content {
+			grid-column: 1;
+			text-align: start;
 		}
 	}
 </style>

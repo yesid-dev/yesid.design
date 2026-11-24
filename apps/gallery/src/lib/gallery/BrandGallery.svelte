@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Card from '#lib/card/index.js';
 	import {
+		AnswerLead,
 		BlueprintShell,
 		ChevronToggle,
 		CodeBlock,
@@ -22,6 +23,7 @@
 		SectionLabel,
 		SegmentedChoice,
 		SliderButton,
+		Stamp,
 		StatusDot,
 		StatusMark,
 		StopLabel,
@@ -469,6 +471,23 @@
 				<MetricDisplay value="94.2%" label="On time" sublabel="Line 1" />
 				<MetricDisplay value={null} label="Delay" absent={noReading} />
 				<MetricDisplay value="3 min" label="Headway" info={medianNote} labelBelow />
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:AnswerLead">
+			<Card.Header><Card.Title>AnswerLead</Card.Title></Card.Header>
+			<Card.Content class="grid gap-4">
+				<AnswerLead value="94.2%" sentence="of scheduled visits arrived on time." size="md" />
+				<AnswerLead value={null} sentence="Saturday’s results are missing." absent={noReading} />
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:Stamp">
+			<Card.Header><Card.Title>Stamp</Card.Title></Card.Header>
+			<Card.Content class="flex flex-wrap items-start gap-3">
+				<Stamp kind="record" label="Record · 16 to 22 Nov" />
+				<Stamp kind="live" label="Live · updated 20 s ago" />
+				<Stamp kind="live" late label="Live · no update since 2 p.m." />
 			</Card.Content>
 		</Card.Root>
 
