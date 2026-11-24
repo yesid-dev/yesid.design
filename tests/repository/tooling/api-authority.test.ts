@@ -412,21 +412,19 @@ describe('deterministic package API reports', () => {
 	}, 0);
 
 	it('reports Combobox component bindings and detects open binding loss', async () => {
+		const bindings = (report: string) => report
+			.match(/^const Combobox: Component<ComboboxProps, \{\}, ([^>\r\n]+)>;$/mu)?.[1]
+			?.split(' | ')
+			.sort();
 		const baseline = readFileSync(join(REPOSITORY_ROOT, 'api-reports/ui.api.md'), 'utf8');
-		expect(baseline).toContain(
-			'const Combobox: Component<ComboboxProps, {}, "open" | "value">;',
-		);
+		expect(bindings(baseline)).toEqual(['"open"', '"value"']);
 
 		const root = createPackageScratch('ui');
 		const comboboxPath = join(root, 'packages/ui/src/primitives/combobox/combobox.svelte');
 		replaceInFile(comboboxPath, 'open = $bindable(false),', 'open = false,');
 
 		const mutated = await createApiReport(root, '@yesid/ui');
-		expect(mutated).not.toBe(baseline);
-		expect(mutated).toContain('const Combobox: Component<ComboboxProps, {}, "value">;');
-		expect(mutated).not.toContain(
-			'const Combobox: Component<ComboboxProps, {}, "open" | "value">;',
-		);
+		expect(bindings(mutated)).toEqual(['"value"']);
 	}, 0);
 
 	it('writes exact report paths and fails closed on stale committed bytes', () => {
