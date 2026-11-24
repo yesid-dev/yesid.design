@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.56.0-rc.2
+
+<!-- release-fragment: site-header-network-clearance -->
+- `@yesid/ui` (patch): SiteHeader uses its measured picker placement to set desktop document clearance directly. Pages without a network picker avoid the extra style recalculation from a document-wide selector.
+
 ## 0.56.0-rc.1
 
 <!-- release-fragment: app-frame-rail-fit -->
