@@ -66,9 +66,11 @@
 
 	select {
 		position: absolute;
-		inset: 0;
-		inline-size: 100%;
-		block-size: 100%;
+		/* Absolute sizing starts inside the label's 1px border. The native control covers it too. */
+		inset: -1px;
+		inline-size: calc(100% + 2px);
+		block-size: calc(100% + 2px);
+		border-radius: inherit;
 		opacity: 0;
 		cursor: pointer;
 	}
@@ -89,6 +91,8 @@
 		:global([data-slot='site-header-network']) .network-name { display: none; }
 		:global([data-slot='site-header-network']) .network-code { display: inline; }
 	}
+	:global([data-network-below]:not([data-network-measuring]) [data-slot='site-header-network']) .network-name { display: none; }
+	:global([data-network-below]:not([data-network-measuring]) [data-slot='site-header-network']) .network-code { display: inline; }
 
 	@media (forced-colors: active) {
 		label:has(select:focus-visible) { outline-color: CanvasText; }
