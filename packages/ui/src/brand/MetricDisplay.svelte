@@ -25,6 +25,7 @@
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import MetricValue from './MetricValue.svelte';
 
 	let {
 		value,
@@ -41,13 +42,6 @@
 		...restProps
 	}: MetricDisplayProps = $props();
 
-	const valueClass = {
-		sm: 'text-subheading',
-		md: 'text-heading',
-		lg: 'text-title',
-	} as const;
-
-	const isEmpty = $derived(value == null || value === '');
 </script>
 
 {#snippet labelRow(extra: string)}
@@ -61,16 +55,10 @@
 	{#if !labelBelow}
 		{@render labelRow('')}
 	{/if}
-	{#if isEmpty}
+	{#if value == null || value === ''}
 		{@render absent?.()}
 	{:else}
-		<span
-			class={cn(
-				'metric-value font-heading font-extrabold leading-none tabular-nums',
-				valueClass[size],
-				tone === 'reading' ? 'text-foreground' : 'text-accent-text',
-			)}>{value}</span
-		>
+		<MetricValue {value} {size} {tone} />
 	{/if}
 	{#if labelBelow}
 		{@render labelRow('mt-2')}

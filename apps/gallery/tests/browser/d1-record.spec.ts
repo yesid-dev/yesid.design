@@ -1,0 +1,64 @@
+import { expect, test } from '@playwright/test';
+import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
+
+test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
+	for (const [width, textSize] of [[320, 100], [320, 200], [390, 200], [1440, 100], [1440, 200]]) {
+		test(`${width}px and ${textSize}% text`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto('/d1-record');
+			await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` });
+			const scope = page.getByTestId('d1-record');
+			await expect(scope.getByRole('region', { name: 'Les données du dimanche restent inconnues.' })).toContainText('Aucun signalement');
+			await expect(scope.getByRole('region', { name: 'trajet annulé dans le secteur du Lac.' })).toContainText('0');
+			await expect(scope.locator('[data-slot="stamp"][data-late="true"]')).toHaveText('En direct · interrompu depuis 14 h');
+			const figures = scope.getByRole('list', { name: 'Signalements par jour' }).locator('.day-strip-value');
+			await expect(figures).toHaveCount(6);
+			const lineCounts = await figures.evaluateAll((values) => values.map((value) => {
+				const range = document.createRange();
+				range.selectNodeContents(value);
+				return range.getClientRects().length;
+			}));
+			expect(lineCounts).toEqual(Array(6).fill(1));
+			const download = scope.getByRole('link', { name: 'Télécharger les signalements d’arrivées' });
+			const buttonBox = (await download.boundingBox())!;
+			const cardBox = (await download.locator('..').boundingBox())!;
+			expect(buttonBox.height).toBeGreaterThanOrEqual(44);
+			expect(buttonBox.x + buttonBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width + 1);
+			await expectNoHorizontalOverflow(page);
+			await expectAccessible(page, { include: '[data-testid="d1-record"]' });
+		});
+	}
+});
+
+test('a compact table sorts and pages by keyboard, including the final row', async ({ page }) => {
+	await page.setViewportSize({ width: 320, height: 900 });
+	await page.goto('/d1-record');
+	await page.locator('html[data-gallery-ready]').waitFor();
+	const table = page.getByRole('table', { name: 'Résultats par secteur' });
+	const card = table.locator('xpath=../..');
+	const header = table.getByRole('columnheader', { name: 'Part à l’heure' });
+	await header.getByRole('button').press('Enter');
+	await expect(header).toHaveAttribute('aria-sort', 'ascending');
+	await expect(table.locator('tbody tr')).toHaveCount(2);
+	await expect(table.getByRole('rowheader').first().getByRole('link')).toHaveText('Carrefour');
+	await card.getByRole('button', { name: 'Afficher 2 de plus' }).press('Enter');
+	await expect(table.locator('tbody tr').nth(2)).toBeFocused();
+	await expect(card.getByRole('status')).toHaveText('4 sur 5');
+	await card.getByRole('button', { name: 'Afficher 1 de plus' }).press('Enter');
+	await expect(table.locator('tbody tr').last()).toBeFocused();
+	await expect(card.getByRole('status')).toHaveText('5 sur 5');
+	await expect(card.getByRole('button', { name: /Afficher/ })).toHaveCount(0);
+	await header.getByRole('button').press('Enter');
+	await expect(header).toHaveAttribute('aria-sort', 'descending');
+	await expect(table.locator('tbody tr')).toHaveCount(2);
+	await expect(table.getByRole('rowheader').first().getByRole('link')).toHaveText('Rivière');
+});
+
+test('live stamp updates from the shared clock without a live announcement', async ({ page }) => {
+	await page.goto('/d1-record');
+	await page.locator('html[data-gallery-ready]').waitFor();
+	await page.getByRole('button', { name: 'Actualiser l’heure' }).click();
+	const stamp = page.locator('[data-slot="stamp"][data-kind="live"][data-late="false"]');
+	await expect(stamp).toHaveText(/En direct · il y a \d+ s/);
+	await expect(stamp).not.toHaveAttribute('aria-live');
+});

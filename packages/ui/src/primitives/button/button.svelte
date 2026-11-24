@@ -90,7 +90,7 @@
 	}: ButtonProps = $props();
 	const classes = $derived(cn(
 		buttonVariants({ variant, size }),
-		wrap && 'h-auto min-h-[var(--size-tap-min)] min-w-0 max-w-full shrink whitespace-normal py-2 [overflow-wrap:anywhere] [word-break:normal]',
+		wrap && 'h-auto min-h-[var(--size-tap-min)] min-w-[var(--size-tap-min)] max-w-full shrink whitespace-normal py-2 [overflow-wrap:anywhere] [word-break:normal] [&>span]:min-w-0',
 		className,
 	));
 </script>

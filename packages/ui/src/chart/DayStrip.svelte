@@ -57,7 +57,7 @@
 	}
 	.day-strip-cells {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, max(2.3rem, calc((100% - 1.5rem) / 7))), 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, max(4.25rem, calc((100% - 1.5rem) / 7))), 1fr));
 		gap: 0.25rem;
 		margin: 0;
 		padding: 0;

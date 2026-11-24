@@ -1,3 +1,6 @@
+export { default as AnswerLead } from './AnswerLead.svelte';
+export type { AnswerLeadProps } from './AnswerLead.svelte';
+
 export { default as BlueprintShell } from './BlueprintShell.svelte';
 export type { BlueprintShellProps } from './BlueprintShell.svelte';
 
@@ -80,6 +83,9 @@ export type { SegmentedChoiceOption, SegmentedChoiceProps } from './SegmentedCho
 
 export { default as StatusDot } from './StatusDot.svelte';
 export type { StatusDotColor, StatusDotProps } from './StatusDot.svelte';
+
+export { default as Stamp } from './Stamp.svelte';
+export type { StampProps } from './Stamp.svelte';
 
 export { default as StatusMark } from './StatusMark.svelte';
 export type { StatusMarkStatus, StatusMarkProps } from './StatusMark.svelte';

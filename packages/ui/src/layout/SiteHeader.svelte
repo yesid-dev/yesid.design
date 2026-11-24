@@ -91,6 +91,8 @@
 		language?: Omit<LanguageToggleProps, 'ref' | 'class'>;
 		/** Shown from a 1024px header; folds away with the links while the menu is open. */
 		search?: Snippet;
+		/** Network control after search on desktop and below the pill at compact widths. */
+		network?: Snippet;
 		/** Rendered before the theme, language and menu controls. */
 		actions?: Snippet;
 	}
@@ -108,7 +110,7 @@
 	import Wordmark from '../brand/Wordmark.svelte';
 	import { linksFit } from './links-fit.js';
 
-	let { navigation, home, wordmark, brand, wordmarkAutoPlay = true, links, menuItems = [], menuGroups, linkTiers, compactControls = false, labels, language, search, actions }: SiteHeaderProps =
+	let { navigation, home, wordmark, brand, wordmarkAutoPlay = true, links, menuItems = [], menuGroups, linkTiers, compactControls = false, labels, language, search, network, actions }: SiteHeaderProps =
 		$props();
 
 	const hasMenu = $derived(menuGroups !== undefined
@@ -360,6 +362,11 @@
 								{@render search()}
 							</div>
 						{/if}
+						{#if network}
+							<div inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
+								{@render network()}
+							</div>
+						{/if}
 
 						<span class="nav-divider" aria-hidden="true"></span>
 						{@render actions?.()}
@@ -583,6 +590,12 @@
 		align-items: center;
 		min-width: 0;
 	}
+	.nav-network {
+		display: flex;
+		align-items: center;
+		min-inline-size: 0;
+		margin-inline-start: 0.5rem;
+	}
 
 	/* Link tiers. Widths are in em, so they follow the reader's font size: 64em is 1024px at the
 	   default 16px and 1280px at 20px. They are static rules, so they decide the same before
@@ -613,6 +626,18 @@
 	@container site-header (width < 1024px) {
 		.nav-search {
 			display: none;
+		}
+		.nav-pill:has(.nav-network:not(.nav-collapsed) > :global(*)) {
+			position: relative;
+			margin-block-end: var(--nav-network-clearance);
+		}
+		.nav-network {
+			position: absolute;
+			inset-block-start: calc(100% + 0.5rem);
+			inset-inline-start: 50%;
+			translate: -50% 0;
+			margin-inline: 0;
+			max-inline-size: calc(100vw - 1rem);
 		}
 	}
 	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */

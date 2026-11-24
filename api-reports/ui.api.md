@@ -155,7 +155,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `186e7570d54ae7f2f6fa011a173f22105cb7e39d984b6f4f0aed3361ea04ca93`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `c9331f8c703c52c95aff9935e8ed3a4dfee340e24b95b98dc11920bb8b53a1b8`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
@@ -360,6 +360,32 @@ interface AnnouncementBannerProps {
 }
 
 // @public (undocumented)
+const AnswerLead: Component<AnswerLeadProps, {}, "">;
+
+// @public (undocumented)
+type AnswerLead = ReturnType<typeof AnswerLead>;
+
+// @public (undocumented)
+interface AnswerLeadProps {
+    // (undocumented)
+    absent?: Snippet;
+    // (undocumented)
+    actions?: Snippet;
+    // (undocumented)
+    comparison?: string;
+    // (undocumented)
+    meta?: Snippet;
+    // (undocumented)
+    sentence: string;
+    // (undocumented)
+    size?: 'md' | 'lg';
+    // (undocumented)
+    stamp?: Snippet;
+    // (undocumented)
+    value: string | null;
+}
+
+// @public (undocumented)
 const AppFrame: Component<AppFrameProps, {}, "chromeHeight">;
 
 // @public (undocumented)
@@ -372,6 +398,8 @@ interface AppFrameProps {
     chromeHeight?: number;
     // (undocumented)
     controls?: Snippet;
+    // (undocumented)
+    controlsRail?: Pick<SurfaceRailProps, 'rail' | 'label' | 'summary' | 'openAria' | 'closeAria' | 'mobileVisible'>;
     // (undocumented)
     evidence?: Pick<SurfaceRailProps, 'rail' | 'label' | 'openAria' | 'closeAria' | 'summary' | 'mobileVisible'>;
     // (undocumented)
@@ -815,6 +843,8 @@ type BlueprintVentShaft = ReturnType<typeof BlueprintVentShaft>;
 
 declare namespace Brand {
     export {
+        AnswerLead,
+        AnswerLeadProps,
         BlueprintShell,
         BlueprintShellProps,
         ChevronToggle,
@@ -874,6 +904,8 @@ declare namespace Brand {
         StatusDot,
         StatusDotColor,
         StatusDotProps,
+        Stamp,
+        StampProps,
         StatusMark,
         StatusMarkStatus,
         StatusMarkProps,
@@ -1313,7 +1345,7 @@ const CollapsibleTrigger: Component<Collapsible_2.TriggerProps, {}, "ref">;
 type CollapsibleTrigger = ReturnType<typeof CollapsibleTrigger>;
 
 // @public (undocumented)
-const Combobox: Component<ComboboxProps, {}, "open" | "value">;
+const Combobox: Component<ComboboxProps, {}, "value" | "open">;
 
 // @public (undocumented)
 type Combobox = ReturnType<typeof Combobox>;
@@ -1510,6 +1542,8 @@ interface DataTableColumn<T> {
     // (undocumented)
     readonly rowHeader?: true;
     // (undocumented)
+    readonly sortable?: boolean;
+    // (undocumented)
     readonly width?: string;
 }
 
@@ -1529,9 +1563,24 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     // (undocumented)
     readonly key: (row: T, index: number) => string;
     // (undocumented)
+    readonly onSort?: (key: string) => void;
+    // (undocumented)
+    readonly pageLabels?: ShowMoreLabels;
+    // (undocumented)
+    readonly pageSize?: number;
+    // (undocumented)
     readonly responsive?: DataTableResponsive;
     // (undocumented)
     readonly rows: readonly T[];
+    // (undocumented)
+    readonly sort?: {
+        key: string;
+        direction: 'asc' | 'desc';
+    };
+    // (undocumented)
+    readonly sortLabels?: {
+        by: (column: string) => string;
+    };
     // (undocumented)
     readonly tableClass?: string;
 }
@@ -1546,6 +1595,10 @@ type DataTableResponsive = {
     mode: 'scroll';
     minWidth?: string;
     minWidthCompact?: string;
+} | {
+    mode: 'rows';
+    primary: string;
+    value: string;
 };
 
 // @public (undocumented)
@@ -1902,6 +1955,8 @@ declare namespace Index {
         WithoutChildren,
         WithoutChildrenOrChild,
         WithElementRef,
+        AnswerLead,
+        AnswerLeadProps,
         BlueprintShell,
         BlueprintShellProps,
         ChevronToggle,
@@ -1961,6 +2016,8 @@ declare namespace Index {
         StatusDot,
         StatusDotColor,
         StatusDotProps,
+        Stamp,
+        StampProps,
         StatusMark,
         StatusMarkStatus,
         StatusMarkProps,
@@ -2750,7 +2807,7 @@ const ScrollAreaScrollbar: Component<Omit<ScrollArea_2.ScrollbarProps, "child">,
 type ScrollAreaScrollbar = ReturnType<typeof ScrollAreaScrollbar>;
 
 // @public (undocumented)
-const SearchInput: Component<SearchInputProps, {}, "ref" | "value">;
+const SearchInput: Component<SearchInputProps, {}, "value" | "ref">;
 
 // @public (undocumented)
 type SearchInput = ReturnType<typeof SearchInput>;
@@ -3187,6 +3244,34 @@ bottom: string;
 }, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", unknown, unknown, undefined>>;
 
 // @public (undocumented)
+const ShowMore: Component<ShowMoreProps, {}, "">;
+
+// @public (undocumented)
+type ShowMore = ReturnType<typeof ShowMore>;
+
+// @public (undocumented)
+interface ShowMoreLabels {
+    // (undocumented)
+    more: (count: number) => string;
+    // (undocumented)
+    showing: (shown: number, total: number) => string;
+}
+
+// @public (undocumented)
+interface ShowMoreProps {
+    // (undocumented)
+    labels: ShowMoreLabels;
+    // (undocumented)
+    onMore: (count: number) => void;
+    // (undocumented)
+    pageSize: number;
+    // (undocumented)
+    shown: number;
+    // (undocumented)
+    total: number;
+}
+
+// @public (undocumented)
 const SiteFooter: Component<SiteFooterProps, {}, "">;
 
 // @public (undocumented)
@@ -3316,6 +3401,7 @@ interface SiteHeaderProps {
     // (undocumented)
     menuItems?: readonly SiteHeaderMenuItem[];
     navigation: NavigationLifecycle;
+    network?: Snippet;
     search?: Snippet;
     // (undocumented)
     wordmark?: string;
@@ -3376,6 +3462,26 @@ type SliderButtonProps = Omit<HTMLButtonAttributes, 'children' | 'class' | 'type
     'aria-label': string;
     class?: string;
 };
+
+// @public (undocumented)
+const Stamp: Component<StampProps, {}, "">;
+
+// @public (undocumented)
+type Stamp = ReturnType<typeof Stamp>;
+
+// @public (undocumented)
+interface StampProps {
+    // (undocumented)
+    agoLabel?: (seconds: number) => string;
+    // (undocumented)
+    kind: 'record' | 'live';
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    late?: boolean;
+    // (undocumented)
+    updatedAt?: Date;
+}
 
 declare namespace State {
     export {
@@ -3563,12 +3669,15 @@ declare namespace Table {
         DataTableAlign,
         DataTableColumn,
         DataTableProps,
-        DataTableResponsive
+        DataTableResponsive,
+        ShowMore,
+        ShowMoreLabels,
+        ShowMoreProps
     }
 }
 
 // @public (undocumented)
-const Tabs: Component<Tabs_2.RootProps, {}, "ref" | "value">;
+const Tabs: Component<Tabs_2.RootProps, {}, "value" | "ref">;
 
 // @public (undocumented)
 type Tabs = ReturnType<typeof Tabs>;

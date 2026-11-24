@@ -74,6 +74,7 @@
 	}
 
 	.network-code { display: none; }
+	.network-name, .network-code { min-inline-size: 0; overflow-wrap: anywhere; }
 	label :global(.picker-chevron) { flex-shrink: 0; }
 	select, option {
 		background-color: var(--popover);
@@ -83,6 +84,10 @@
 	@media (width < 37.5em) {
 		.network-name { display: none; }
 		.network-code { display: inline; }
+	}
+	@container site-header (width < 1024px) {
+		:global([data-slot='site-header-network']) .network-name { display: none; }
+		:global([data-slot='site-header-network']) .network-code { display: inline; }
 	}
 
 	@media (forced-colors: active) {

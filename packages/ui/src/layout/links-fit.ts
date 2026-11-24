@@ -9,7 +9,7 @@
 const MIN_GAP = 4;
 const OVERFLOW = 'data-links-overflow';
 const DROPPED = 'data-links-dropped';
-const WATCHED = '.nav-wordmark, [data-slot="product-brand"], .nav-links > [data-priority]';
+const WATCHED = '.nav-wordmark, [data-slot="product-brand"], .nav-links > [data-priority], .nav-network';
 
 export interface LinksFitParams {
 	/** Keep the current state, for example while the open menu collapses the links. */

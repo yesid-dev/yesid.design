@@ -122,6 +122,7 @@
 	class={cn('surface-rail', className)}
 	class:surface-rail--mobile={presentation === 'mobile' && sheetPresent}
 	data-slot="surface-rail"
+	data-lenis-prevent
 	aria-label={label}
 	tabindex="-1"
 >
@@ -200,8 +201,8 @@
 
 	.surface-rail-mobile {
 		--scrim: transparent;
-		--surface-rail-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-		--surface-rail-sheet-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+		--surface-rail-bottom: calc(20px + env(safe-area-inset-bottom, 0px) + var(--surface-rail-stack-offset, 0px));
+		--surface-rail-sheet-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--surface-rail-stack-offset, 0px));
 		position: fixed;
 		bottom: var(--surface-rail-bottom);
 		left: 50%;
