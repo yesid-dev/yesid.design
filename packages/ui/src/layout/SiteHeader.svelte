@@ -665,6 +665,7 @@
 			inset-inline-start: 50%;
 			translate: -50% 0;
 			margin-inline: 0;
+			inline-size: max-content;
 			max-inline-size: calc(100vw - 1rem);
 		}
 	}
@@ -678,6 +679,7 @@
 		inset-inline-start: 50%;
 		translate: -50% 0;
 		margin-inline: 0;
+		inline-size: max-content;
 		max-inline-size: calc(100vw - 1rem);
 	}
 	@media (width >= 1024px) {
