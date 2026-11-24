@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.55.0-rc.2
+## 0.55.0
 
 <!-- release-fragment: d1-record-reflow -->
 - `@yesid/ui` (patch): Let `DayStrip` cells size to their figures so short values can share a row at enlarged text sizes.
