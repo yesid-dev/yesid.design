@@ -14,6 +14,7 @@ export const GALLERY_COVERAGE = {
 		'tabs',
 	],
 	brand: [
+		'AnswerLead',
 		'BlueprintShell',
 		'ChevronToggle',
 		'CodeBlock',
@@ -38,6 +39,7 @@ export const GALLERY_COVERAGE = {
 		'SectionLabel',
 		'SegmentedChoice',
 		'SliderButton',
+		'Stamp',
 		'StatusDot',
 		'StatusMark',
 		'StopLabel',
