@@ -1220,15 +1220,26 @@ Also from `@yesid/ui/chart`:
 
 - `MapFrame` takes a localized `label` and a map snippet. Optional `panel` and `legend`
   snippets float at the start edge. A `details={{ label, content }}` snippet floats at the end.
-  In a narrow frame those panels follow the map in reading order. The map snippet receives
-  its measured `width`, `height` and the rectangles it needs to avoid, in CSS pixels relative
-  to the map. The first render has zero measured dimensions. Render the base map with a
-  fallback during that render and wait for the measurements before placing labels.
-- `MapLegend` takes a localized `title` and `items` of `{ label, symbol }`. Pass a decorative
-  snippet for each symbol and describe it in the visible label.
+  Pass a localized `legendLabel` alongside `legend` to place it below the panel at 1024 px
+  and wider, and behind a round floating button in compact frames. Escape closes that card
+  and returns focus to the trigger. Without `legendLabel`, narrow frames place the panels
+  after the map in reading order. The map snippet receives its measured `width`, `height`
+  and the visible overlay rectangles it needs to avoid, in CSS pixels relative to the map.
+  The first render has zero measured dimensions. Render the base map first and wait for
+  measurements before placing labels.
+- `MapLegend` takes a localized `title`, optional flat `items`, titled `groups`, and an ordered
+  `scale` with labeled color steps and optional states. Each item has a `label`, decorative
+  `symbol` snippet and optional `detail`. Use `collapsible` for a title button, `bind:open`
+  for caller state, and a unique `persistKey` to remember the visitor’s choice.
 - `StillMap` takes a localized `label`, a `viewBox` tuple `[x, y, width, height]`, an SVG snippet
   and optional HTML `overlay`. The whole view box stays visible as the card stretches. Give the
   same location or route information in the label or surrounding text.
+
+Import `statusGlyph` and `statusGlyphSvg` from `@yesid/ui/brand` or `@yesid/ui` to reuse
+the geometry shown by `StatusMark`. The first returns the path and view box. The second
+serializes a square SVG at a pixel size with a supplied ink and optional halo. Give a map
+using these marks its own accessible descriptions. The `severe` status remains available
+during deprecation. Use `late` when the product classifies the old severe case as late.
 
 Call `placeMapLabels({ bounds, labels, obstacles, gap })` with the map bounds and the measured
 panel rectangles plus any visible marks to avoid. Supply labels in priority order. Each label
