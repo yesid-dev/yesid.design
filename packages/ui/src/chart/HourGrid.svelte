@@ -70,6 +70,7 @@
 	.scroll {
 		overflow-x: auto;
 		max-inline-size: 100%;
+		min-block-size: var(--size-tap-min);
 	}
 	.scroll:focus-visible {
 		outline: 2px solid var(--ring);
@@ -95,6 +96,7 @@
 		background: var(--background);
 		text-align: start;
 	}
+	:global([data-slot='card']) tbody th { background: var(--surface-2); }
 	.cell {
 		display: grid;
 		min-block-size: 1.75em;

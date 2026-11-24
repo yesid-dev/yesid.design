@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { BandBar, HourGrid, RangeMark, StopLadder, type BandBarBand, type HourGridCell, type StopLadderStop } from '@yesid/ui/chart';
+	import { Card } from '@yesid/ui/card';
 
 	const mix: readonly BandBarBand[] = [
 		{ id: 'early', label: 'Early', share: 8, valueLabel: '8%', status: 'early' },
@@ -26,7 +27,7 @@
 		{ id: 'a', name: 'Main Street', code: '201', href: '#main-street', timingPoint: true, value: 0, valueLabel: 'On time' },
 		{ id: 'b', name: 'City Library', code: '202', value: 7, valueLabel: '7 minutes late' },
 		{ id: 'c', name: 'Riverside Station', code: '203', value: null, valueLabel: 'No value', state: 'Too few trips' },
-		{ id: 'd', name: 'North Terminal', code: '204', timingPoint: true, value: 3, valueLabel: '3 minutes late' },
+		{ id: 'd', name: 'Pier', code: '204', href: '#pier', timingPoint: true, value: 3, valueLabel: '3 minutes late' },
 	];
 </script>
 
@@ -37,15 +38,18 @@
 	<section>
 		<h2>Departures by status</h2>
 		<BandBar label="8% early, 83% on time, 8% late, 1% unknown" bands={mix} />
+		<BandBar label="Early 8%, on time 83%, late 8%, unknown 1%" bands={mix} rows={false} />
 		<BandBar label="No status measurements" bands={[]}>
 			{#snippet absent()}<p>No measured departures.</p>{/snippet}
 		</BandBar>
 	</section>
 	<section>
 		<h2>Departures by hour</h2>
-		<HourGrid label="Late departures by hour" {columns} rows={hours}
-			scale={{ label: 'Delay scale', steps: ['0 late', '1 late', '2 late', '3 late', '4 late'] }}
-			stateLabels={{ few: 'Too few trips', none: 'No service', unmeasured: 'No measurement' }} />
+		<Card edge="neutral" textSize="inherit" class="p-3" data-testid="hour-grid-card">
+			<HourGrid label="Late departures by hour" {columns} rows={hours}
+				scale={{ label: 'Delay scale', steps: ['0 late', '1 late', '2 late', '3 late', '4 late'] }}
+				stateLabels={{ few: 'Too few trips', none: 'No service', unmeasured: 'No measurement' }} />
+		</Card>
 	</section>
 	<section>
 		<h2>Estimated wait</h2>
@@ -60,6 +64,7 @@
 			highlight={{ fromId: 'b', toId: 'c', label: 'River crossing' }}
 			columns={{ stop: 'Stop', value: 'Delay' }} />
 		<p id="main-street">Main Street is the first stop.</p>
+		<p id="pier">Pier is the last stop.</p>
 	</section>
 </main>
 

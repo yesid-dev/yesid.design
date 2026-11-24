@@ -45,6 +45,11 @@ test.describe('D2 service charts', { tag: '@theme' }, () => {
 		await expectNoHorizontalOverflow(page);
 		const grid = page.getByRole('region', { name: 'Late departures by hour' });
 		const rowHeader = grid.getByRole('rowheader', { name: 'Monday' });
+		const card = page.getByTestId('hour-grid-card');
+		const surface = await card.evaluate((element) => getComputedStyle(element).backgroundColor);
+		const canvas = await page.locator('html').evaluate((element) => getComputedStyle(element).backgroundColor);
+		expect(surface).not.toBe(canvas);
+		await expect(rowHeader).toHaveCSS('background-color', surface);
 		await grid.focus();
 		await expect(grid).toBeFocused();
 		const before = (await rowHeader.boundingBox())!.x;
@@ -52,6 +57,40 @@ test.describe('D2 service charts', { tag: '@theme' }, () => {
 		await expect.poll(() => grid.evaluate((region) => region.scrollLeft)).toBeGreaterThan(0);
 		const after = (await rowHeader.boundingBox())!.x;
 		expect(Math.abs(before - after)).toBeLessThanOrEqual(8);
+		await expect(rowHeader).toHaveCSS('background-color', surface);
 		await expectAccessible(page);
+	});
+
+	for (const width of [320, 1440]) {
+		test(`chart targets meet the kit tap minimum at ${width}px`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 850 });
+			await page.goto(path);
+			if (width === 320) await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+			const stops = page.getByRole('list', { name: 'Stops along route 24' });
+			const grid = page.getByRole('region', { name: 'Late departures by hour' });
+			for (const target of [...await stops.getByRole('link').all(), grid]) {
+				const bounds = await target.boundingBox();
+				expect(bounds?.width).toBeGreaterThanOrEqual(44);
+				expect(bounds?.height).toBeGreaterThanOrEqual(44);
+			}
+		});
+	}
+
+	test('forced colors preserve band gaps and the full label without rows', async ({ page }) => {
+		await page.emulateMedia({ forcedColors: 'active' });
+		await page.goto(path);
+		const label = 'Early 8%, on time 83%, late 8%, unknown 1%';
+		const share = page.getByRole('img', { name: label });
+		await expect(share).toHaveAccessibleName(label);
+		await expect(share.locator('..').locator('dl')).toHaveCount(0);
+		const bands = await share.locator(':scope > span').evaluateAll((elements) => elements.map((element) => {
+			const { left, right } = element.getBoundingClientRect();
+			return { left, right, ink: getComputedStyle(element).backgroundColor };
+		}));
+		expect(bands).toHaveLength(4);
+		expect(new Set(bands.map((band) => band.ink)).size).toBe(1);
+		for (let index = 1; index < bands.length; index++) {
+			expect(bands[index].left - bands[index - 1].right).toBeCloseTo(2, 1);
+		}
 	});
 });

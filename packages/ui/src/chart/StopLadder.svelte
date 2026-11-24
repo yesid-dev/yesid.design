@@ -107,6 +107,13 @@
 	}
 	li:first-child .point { inset-block-start: 0; }
 	[data-timing-point] .point { scale: 1.45; }
+	.stop a {
+		display: inline-flex;
+		align-items: center;
+		min-inline-size: var(--size-tap-min);
+		min-block-size: var(--size-tap-min);
+		max-inline-size: 100%;
+	}
 	.code,
 	.highlight-label {
 		display: block;
