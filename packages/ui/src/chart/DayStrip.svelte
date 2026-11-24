@@ -56,19 +56,20 @@
 		--day-strip-ink: var(--foreground);
 	}
 	.day-strip-cells {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, max(4.25rem, calc((100% - 1.5rem) / 7))), 1fr));
+		display: flex;
+		flex-wrap: wrap;
 		gap: 0.25rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 	.day-strip-cells > li {
+		flex: 1 0 min(100%, max(2.3rem, calc((100% - 1.5rem) / 7)));
 		display: grid;
 		grid-template-rows: auto 3rem auto;
 		gap: 0.25rem;
 		justify-items: center;
-		min-inline-size: 0;
+		max-inline-size: 100%;
 		padding: 0.375rem 0.25rem;
 		border: 1px solid var(--border);
 		border-radius: var(--radius-sm);
@@ -99,6 +100,8 @@
 		background: var(--day-strip-ink);
 	}
 	.day-strip-value {
+		inline-size: max-content;
+		max-inline-size: 100%;
 		font-size: var(--text-small);
 		font-variant-numeric: tabular-nums;
 		font-weight: 600;

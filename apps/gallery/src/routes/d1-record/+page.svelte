@@ -83,6 +83,12 @@
 	<Card edge="neutral" class="p-4 gap-3" id="reflow">
 		<h2>Relevé détaillé</h2>
 		<DayStrip label="Signalements par jour" {cells} reportedLabel="Signalements reçus" missingLabel="Aucun signalement" />
+		<div class="short-day-strip">
+			<DayStrip label="Relevé sur deux jours" cells={[
+				{ id: '16', label: '16', report: { value: '92 %', fraction: 0.92 } },
+				{ id: '17', label: '17', report: { value: '87 %', fraction: 0.87 } },
+			]} reportedLabel="Signalements reçus" missingLabel="Aucun signalement" />
+		</div>
 		<DataTable rows={data.slice(0, 1)} {columns} key={(row) => row.id} caption="Détails des signalements" responsive={{ mode: 'stack', at: 'tablet' }} />
 		<div class="narrow-card-actions">
 			<Button variant="outline" wrap href="#reflow"><span>Télécharger les signalements d’arrivées</span></Button>
@@ -102,4 +108,5 @@
 		min-inline-size: var(--size-tap-min);
 	}
 	.narrow-card-actions { display: flex; max-inline-size: min(100%, 12rem); }
+	.short-day-strip { max-inline-size: 226px; }
 </style>

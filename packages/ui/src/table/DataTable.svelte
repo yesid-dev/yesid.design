@@ -242,7 +242,7 @@
 		width: 100%;
 		max-width: 100%;
 	}
-	.data-table-frame[data-stack-at] { container: yesid-table / inline-size; }
+	.data-table-frame[data-responsive='rows'] { container: yesid-table / inline-size; }
 
 	.data-table-frame[data-responsive='scroll'] {
 		overflow-x: auto;
@@ -342,6 +342,8 @@
 
 	.data-table-stack-label {
 		display: none;
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
 	}
 
 	.data-table-sort {
@@ -514,11 +516,11 @@
 		}
 	}
 	@container yesid-table (max-width: 16rem) {
-		.data-table-frame[data-stack-at] .data-table tbody :is(th, td):not([data-row-position]) {
+		.data-table-frame[data-responsive='rows'] .data-table tbody :is(th, td):not([data-row-position]) {
 			grid-template-columns: minmax(0, 1fr);
 			gap: 0.125rem;
 		}
-		.data-table-frame[data-stack-at] .data-table tbody tr > :is(th, td) > .data-table-cell-content {
+		.data-table-frame[data-responsive='rows'] .data-table tbody tr > :is(th, td) > .data-table-cell-content {
 			grid-column: 1;
 			text-align: start;
 		}
