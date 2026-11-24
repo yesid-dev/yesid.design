@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.55.1-rc.1
+
+<!-- release-fragment: site-header-network-focus-order -->
+- `@yesid/ui` (patch): Keep the SiteHeader network control after the navbar in keyboard order when it is shown below the pill, and beside search on desktop. The same control keeps its selection and focus when the header changes width.
+
 ## 0.55.0
 
 <!-- release-fragment: d1-record-reflow -->
