@@ -1,6 +1,6 @@
 # D2 chart API review · v0.56.0
 
-Proposed additions for Y4–Y7 of the Transit design pass. All four parts and their prop and data types export from `@yesid/ui/chart` and the package root. The generated API report follows the implementation.
+Proposed additions for Y4–Y7 of the Transit design pass. All four parts and their prop and data types export from `@yesid/ui/chart`, alongside the existing chart parts. The generated API report follows the implementation.
 
 ## Y4 · BandBar
 
@@ -94,5 +94,7 @@ Gallery pages will show the examples and their missing, too-few and none states,
 ## D1 style recalculation follow-up
 
 The yesid.dev fixture at 390 px on cold Chromium 147 measured a median of 365 ms in style recalculation at 4× CPU on v0.54.0 and 431 ms on both v0.55.0 candidates. Across the paired timing series, rc.2 reached reel readiness 104 ms later than v0.54.0 at 4× CPU, with a paired interval of +30 to +141 ms. Disabling the two new root selectors did not reduce readiness time in the preliminary probe.
+
+The compiled yesid.dev fixture has 36 stylesheets in each version. After normalizing Svelte scope names, only the root bundle changes. Its additions are the shared clearance and header-network rules and three utility classes. The rail, table rows and DayStrip rules are absent from this fixture. A 12-round cold 4× probe reverted the shared clearance and header-network CSS together in the rc.2 response, while keeping the scripts and the three utilities fixed. Rc.2 took a paired median of 62 ms more style time than v0.54.0 and 74 ms more than the CSS probe (95% bootstrap interval +5 to +250 ms). The probe was 10 ms above v0.54.0 (−48 to +66 ms). The grouped probe narrows the search. Individual rules and a production fix still need verification.
 
 D2 will isolate the CSS cost across the D1 changes and check any fix on the same fixture with paired cold 390 px runs at 4× against v0.54.0. The release evidence will record the measured attribution and either restore the earlier cost or explain the remaining difference in this report and R5.6.
