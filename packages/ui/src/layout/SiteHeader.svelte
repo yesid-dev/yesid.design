@@ -145,6 +145,33 @@
 	let hydrated = $state(false);
 	let fallbackControls = $state<HTMLSpanElement>();
 	let headerElement: HTMLElement;
+	let networkInline = $state(false);
+	let networkElement = $state<HTMLDivElement>();
+	let networkDivider = $state<HTMLSpanElement>();
+
+	// The server renders the compact order. Move the same control when the header has room for it inline.
+	$effect(() => {
+		const control = networkElement;
+		const divider = networkDivider;
+		const inline = networkInline;
+		const pill = control?.parentElement as (HTMLElement & {
+			moveBefore?: (node: Node, before: Node | null) => void;
+		}) | null | undefined;
+		if (!control || !divider || !pill) return;
+
+		const before = inline ? divider : null;
+		if (control.nextElementSibling === before) return;
+		if (typeof pill.moveBefore === 'function') {
+			pill.moveBefore(control, before);
+		} else {
+			const focused = control.ownerDocument.activeElement;
+			pill.insertBefore(control, before);
+			if ((focused instanceof HTMLElement || focused instanceof SVGElement) && control.contains(focused)) {
+				focused.focus({ preventScroll: true });
+			}
+		}
+	});
+
 	onMount(() => {
 		if (!compactMenuControls) {
 			hydrated = true;
@@ -161,7 +188,11 @@
 	const controlsInMenu = $derived(compactMenuControls && narrow);
 	let pillLanguageLink = $state<HTMLAnchorElement | null>(null);
 	function measureHeader(node: HTMLElement) {
-		const observer = new ResizeObserver(([entry]) => { narrow = entry.contentRect.width < 600; });
+		const observer = new ResizeObserver(([entry]) => {
+			const width = entry.contentRect.width;
+			narrow = width < 600;
+			networkInline = width >= 1024;
+		});
 		observer.observe(node);
 		return { destroy: () => observer.disconnect() };
 	}
@@ -362,13 +393,7 @@
 								{@render search()}
 							</div>
 						{/if}
-						{#if network}
-							<div inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
-								{@render network()}
-							</div>
-						{/if}
-
-						<span class="nav-divider" aria-hidden="true"></span>
+						<span bind:this={networkDivider} class="nav-divider" aria-hidden="true"></span>
 						{@render actions?.()}
 						{#if !controlsInMenu}
 							<span
@@ -398,6 +423,11 @@
 							<span class="menu-toggle-line menu-toggle-top"></span>
 							<span class="menu-toggle-line menu-toggle-bottom"></span>
 						</button>
+						{/if}
+						{#if network}
+							<div bind:this={networkElement} inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
+								{@render network()}
+							</div>
 						{/if}
 					</nav>
 				</header>
