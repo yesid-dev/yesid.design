@@ -2,6 +2,25 @@ import { expect, test } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
+	test('short day figures and stacked table pairs stay on the same row at 200% text', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 900 });
+		await page.goto('/d1-record');
+		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+		const days = page.getByRole('list', { name: 'Relevé sur deux jours' }).getByRole('listitem');
+		const first = (await days.nth(0).boundingBox())!;
+		const second = (await days.nth(1).boundingBox())!;
+		expect(first.y).toBe(second.y);
+		expect(first.x).toBeLessThan(second.x);
+
+		const table = page.getByRole('table', { name: 'Détails des signalements' });
+		const cell = table.getByRole('cell', { name: '31' });
+		const label = (await cell.locator('.data-table-stack-label').boundingBox())!;
+		const value = (await cell.locator('.data-table-cell-content').boundingBox())!;
+		expect(label.y).toBe(value.y);
+		expect(label.x + label.width).toBeLessThan(value.x);
+		await expectNoHorizontalOverflow(page);
+	});
+
 	for (const [width, textSize] of [[320, 100], [320, 200], [390, 200], [1440, 100], [1440, 200]]) {
 		test(`${width}px and ${textSize}% text`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 900 });
