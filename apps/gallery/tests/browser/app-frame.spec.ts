@@ -212,7 +212,7 @@ test('short document viewport lets tall chrome scroll away', async ({ page }) =>
 });
 
 test('short desktop viewport clears the evidence rail offset when chrome unsticks', async ({ page }) => {
-	await page.setViewportSize({ width: 1200, height: 185 });
+	await page.setViewportSize({ width: 2100, height: 185 });
 	await openFrame(page);
 	await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 	await page.getByRole('combobox', { name: 'Ready ranges' }).selectOption('');
