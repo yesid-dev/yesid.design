@@ -3,31 +3,40 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 
 test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 	test('half-width cards keep a sentence beside the answer only when there is room', async ({ page }) => {
-		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.setViewportSize({ width: 1280, height: 900 });
 		await page.goto('/d1-record');
 		await page.evaluate(() => document.fonts.ready);
+		const cards = page.getByTestId('d1-record').locator('.answer-example');
+		const setContentWidth = (width: number) => cards.evaluateAll((elements, px) => {
+			for (const element of elements as HTMLElement[]) {
+				element.style.inlineSize = `min(100%, calc(${px}px + 2rem + 4px))`;
+			}
+		}, width);
 		const examples = [
 			{ name: 'des arrêts prévus ont été desservis à l’heure.', figure: '.answer-value' },
 			{ name: 'Les données du dimanche restent inconnues.', figure: '.answer-absent' },
 		];
-		for (const { name, figure } of examples) {
-			const region = page.getByRole('region', { name });
-			const bounds = (await region.boundingBox())!;
-			const left = (await region.locator(figure).boundingBox())!;
-			const sentence = (await region.getByText(name, { exact: true }).boundingBox())!;
-			expect(bounds.width).toBeCloseTo(416, 0);
-			expect(left.x + left.width).toBeLessThan(sentence.x);
-			expect(sentence.y).toBeLessThan(left.y + left.height);
-			expect(sentence.width).toBeGreaterThanOrEqual(192);
-			expect(left.width).toBeLessThanOrEqual(bounds.width * 0.55);
+		for (const width of [396, 384]) {
+			await setContentWidth(width);
+			for (const { name, figure } of examples) {
+				const region = page.getByRole('region', { name });
+				const bounds = (await region.boundingBox())!;
+				const left = (await region.locator(figure).boundingBox())!;
+				const sentence = (await region.getByText(name, { exact: true }).boundingBox())!;
+				expect(bounds.width).toBeCloseTo(width, 0);
+				expect(left.x + left.width).toBeLessThan(sentence.x);
+				expect(sentence.y).toBeLessThan(left.y + left.height);
+				expect(sentence.width).toBeGreaterThanOrEqual(192);
+				expect(left.width).toBeLessThanOrEqual(bounds.width * 0.55);
+			}
 		}
 
-		const wide = await page.addStyleTag({ content: '[data-testid="d1-record"] .answer-example { inline-size: min(100%, 640px); }' });
+		await setContentWidth(604);
 		const absent = page.getByRole('region', { name: examples[1].name });
 		const absentWidth = (await absent.locator(examples[1].figure).boundingBox())!.width;
 		expect(absentWidth).toBeLessThanOrEqual((await absent.boundingBox())!.width * 0.55);
-		await wide.evaluate((style) => style.parentNode?.removeChild(style));
 
+		await setContentWidth(396);
 		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 		for (const { name, figure } of examples) {
 			const region = page.getByRole('region', { name });
