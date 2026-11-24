@@ -601,7 +601,8 @@ put essential text in the content and drop the corner notes (see
 [decorative vocabulary](../../docs/migrations/decorative-vocabulary.md)). It puts decorative mono
 notes in the four corners of its positioned parent (snippets `topLeft` to `bottomRight`,
 `crosshair` adds `CornerMarks`); it is `aria-hidden` and hidden below 768px. `SegmentedChoice` is a single choice with radio-group semantics: `label` names the group,
-arrow keys move and select, and disabled options are skipped. It is controlled: every pick,
+arrow keys move and select, and disabled options are skipped. A disabled checked segment
+retains its selected colors. It is controlled: every pick,
 the current option included, calls `onSelect`, and the caller sets `value`. `compactLabel` shows
 a short label and keeps `label` as the name, and `variant="joined-grid"` lays options out two per
 row with labels that wrap at enlarged text. `ToggleChip` is a controlled pill button:

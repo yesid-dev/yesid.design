@@ -199,12 +199,21 @@
 		color: var(--foreground);
 	}
 	.segmented-choice-segment:disabled {
-		opacity: 0.4;
 		cursor: not-allowed;
+	}
+	.segmented-choice-segment:disabled:not(.segmented-choice-segment--active) {
+		opacity: 0.4;
 	}
 	.segmented-choice-segment--active {
 		background-color: var(--primary);
 		color: var(--primary-foreground);
+	}
+	@media (forced-colors: active) {
+		.segmented-choice-segment--active:disabled {
+			forced-color-adjust: none;
+			background-color: Highlight;
+			color: HighlightText;
+		}
 	}
 	.segmented-choice-segment:focus-visible {
 		outline: 2px solid var(--ring);

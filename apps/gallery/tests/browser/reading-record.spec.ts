@@ -1,4 +1,56 @@
 import { expect, test } from '@playwright/test';
+import { ratio } from '../../../../packages/gates/src/engines/contrastPairs.js';
+
+test('a disabled View keeps Record selected and readable without adding a Tab stop', { tag: '@theme' }, async ({ page }, info) => {
+ await page.setViewportSize({ width: 320, height: 900 });
+ await page.goto('/reading-record');
+ await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+ await expect(page.locator('html')).toHaveAttribute('data-theme', info.project.name);
+ await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+ const view = page.getByRole('radiogroup', { name: 'View' });
+ const record = view.getByRole('radio', { name: 'Record', checked: true });
+ const live = view.getByRole('radio', { name: 'Live now', checked: false });
+ await expect(record).toBeDisabled();
+ await expect(live).toBeDisabled();
+ await expect(record).toHaveCSS('opacity', '1');
+ await expect(live).toHaveCSS('opacity', '0.4');
+
+ const period = page.getByRole('radiogroup').first().getByRole('radio', { checked: true });
+ const selectedStyle = await period.evaluate(element => {
+  const style = getComputedStyle(element);
+  return { ink: style.color, fill: style.backgroundColor };
+ });
+ await expect(record).toHaveCSS('color', selectedStyle.ink);
+ await expect(record).toHaveCSS('background-color', selectedStyle.fill);
+ await period.focus();
+ await page.keyboard.press('Tab');
+ await expect(page.locator('[data-selected-style="consistent"]').getByRole('radio', { checked: true })).toBeFocused();
+ await expect(record).toBeChecked();
+ const colors = await record.evaluate(element => {
+  const style = getComputedStyle(element);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 1;
+  const context = canvas.getContext('2d')!;
+  return [style.color, style.backgroundColor].map(color => {
+   context.clearRect(0, 0, 1, 1);
+   context.fillStyle = color;
+   context.fillRect(0, 0, 1, 1);
+   const [r, g, b, alpha] = context.getImageData(0, 0, 1, 1).data;
+   if (alpha !== 255) throw new Error('Expected an opaque selected color');
+   return '#' + [r!, g!, b!].map(channel => channel.toString(16).padStart(2, '0')).join('');
+  });
+ });
+ const contrast = ratio(colors[0]!, colors[1]!);
+ await info.attach('selected-disabled-contrast', { body: JSON.stringify({ colors, contrast }), contentType: 'application/json' });
+ expect(contrast).toBeGreaterThanOrEqual(4.5);
+
+ await page.emulateMedia({ forcedColors: 'active' });
+ await expect(record).toBeChecked();
+ await expect(record).toBeDisabled();
+ const selectedFill = await record.evaluate(element => getComputedStyle(element).backgroundColor);
+ expect(selectedFill).not.toBe('rgba(0, 0, 0, 0)');
+ await expect(live).not.toHaveCSS('background-color', selectedFill);
+});
 
 for (const language of ['en', 'fr', 'es']) {
  for (const theme of ['dark', 'light']) {

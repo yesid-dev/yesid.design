@@ -19,6 +19,10 @@
  <section aria-label={c.window} data-register="task">
   <SearchInput label={c.search} placeholder={c.search} description={c.description} visibleLabel textSize="body" bind:value={search} bind:ref={searchRef} type="search" />
   <SegmentedChoice label={c.window} value={window} onSelect={key => window = key} variant="fit-row" options={[{key:'day',label:c.day},{key:'week',label:c.week},{key:'month',label:c.month}]} />
+  <SegmentedChoice label="View" value="record" variant="fit-row" onSelect={() => {}} options={[
+   { key: 'live', label: 'Live now', disabled: true },
+   { key: 'record', label: 'Record', disabled: true },
+  ]} />
   <FilterGroup label={c.filter} allLabel={c.all} activeKey={direction} selectedStyle="consistent" items={[{key:'east',label:c.east},{key:'west',label:c.west}]} onSelect={key => direction = key} />
   <ul aria-label={c.search}>{#each matches as stop}<li>{stop}</li>{/each}</ul>
  </section>
