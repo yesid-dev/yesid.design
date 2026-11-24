@@ -1179,6 +1179,23 @@ Each cell has an `id`, short `label`, optional full `dateLabel`, and either
 fraction between zero and one for the bar. A null report renders a dashed empty track and
 announces the supplied missing label. A reported zero still presents its figure.
 
+Also from `@yesid/ui/chart`:
+
+- **BandBar** takes ordered bands with a share, status, localized label and formatted value.
+  The picture uses the supplied `label`. A description list shows the status and value for
+  each band by default. Supply an `absent` snippet for a dataset with no positive shares.
+- **HourGrid** takes ordered columns and one cell per column in each row. Supply the visible
+  cell `text`, its accessible `name`, a level from zero to four and an optional state.
+  Use `level: null` for an unmeasured cell. The table scrolls within a named region and
+  keeps row headings in view. The legend uses the five supplied scale labels and state labels.
+- **RangeMark** plots the estimate and its interval within a shared ascending `domain`.
+  Include the estimate and interval in its accessible `label`, and supply a localized
+  `reference.label` when using the comparison tick. Render the surrounding app's empty state
+  when there is no estimate.
+- **StopLadder** shows stops in the supplied order and draws each stop's bar against a common
+  positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
+  A `threshold` names a comparison value. A `highlight` names a span between two stop IDs.
+
 ## Map surfaces
 
 `@yesid/ui/map` exports three presentation parts for a caller-owned map:

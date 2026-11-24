@@ -534,6 +534,40 @@ sm: string;
 }, undefined, "gap-1 rounded-4xl border border-transparent font-mono font-medium transition-all [&>svg]:size-3! focus-visible:border-ring focus-visible:ring-ring/50 group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap transition-colors focus-visible:ring-[3px] [&>svg]:pointer-events-none", unknown, unknown, undefined>>;
 
 // @public (undocumented)
+const BandBar: Component<BandBarProps, {}, "">;
+
+// @public (undocumented)
+type BandBar = ReturnType<typeof BandBar>;
+
+// @public (undocumented)
+interface BandBarBand {
+    // (undocumented)
+    detail?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    share: number;
+    // (undocumented)
+    status: StatusMarkStatus;
+    // (undocumented)
+    valueLabel: string;
+}
+
+// @public (undocumented)
+interface BandBarProps {
+    // (undocumented)
+    absent?: Snippet;
+    // (undocumented)
+    bands: readonly BandBarBand[];
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    rows?: boolean;
+}
+
+// @public (undocumented)
 const BlueprintAccessibleBusCurbSection: Component<BlueprintProps, {}, "">;
 
 // @public (undocumented)
@@ -1078,6 +1112,17 @@ declare namespace Chart {
         DayStrip,
         DayStripCell,
         DayStripProps,
+        BandBar,
+        BandBarBand,
+        BandBarProps,
+        HourGrid,
+        HourGridCell,
+        HourGridProps,
+        RangeMark,
+        RangeMarkProps,
+        StopLadder,
+        StopLadderProps,
+        StopLadderStop,
         ChartPlot,
         ChartPoint
     }
@@ -1941,6 +1986,52 @@ declare namespace Head {
     }
 }
 
+// @public (undocumented)
+const HourGrid: Component<HourGridProps, {}, "">;
+
+// @public (undocumented)
+type HourGrid = ReturnType<typeof HourGrid>;
+
+// @public (undocumented)
+interface HourGridCell {
+    // (undocumented)
+    level: 0 | 1 | 2 | 3 | 4 | null;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    state?: 'few' | 'none' | 'unmeasured';
+    // (undocumented)
+    text: string;
+}
+
+// @public (undocumented)
+interface HourGridProps {
+    // (undocumented)
+    columns: readonly {
+        id: string;
+        label: string;
+    }[];
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    rows: readonly {
+        id: string;
+        label: string;
+        cells: readonly HourGridCell[];
+    }[];
+    // (undocumented)
+    scale: {
+        label: string;
+        steps: readonly string[];
+    };
+    // (undocumented)
+    stateLabels: {
+        few: string;
+        none: string;
+        unmeasured: string;
+    };
+}
+
 declare namespace Index {
     export {
         cn,
@@ -2724,6 +2815,33 @@ interface RailTitleProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'
     side?: 'left' | 'right';
     size?: string;
     titleId?: string;
+}
+
+// @public (undocumented)
+const RangeMark: Component<RangeMarkProps, {}, "">;
+
+// @public (undocumented)
+type RangeMark = ReturnType<typeof RangeMark>;
+
+// @public (undocumented)
+interface RangeMarkProps {
+    // (undocumented)
+    caption?: string;
+    // (undocumented)
+    domain: readonly [number, number];
+    // (undocumented)
+    high: number;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    low: number;
+    // (undocumented)
+    reference?: {
+        value: number;
+        label: string;
+    };
+    // (undocumented)
+    value: number;
 }
 
 // @public (undocumented)
@@ -3613,6 +3731,58 @@ type StopLabelProps = StopLabelElementProps & {
     prefix?: string;
     class?: string;
 };
+
+// @public (undocumented)
+const StopLadder: Component<StopLadderProps, {}, "">;
+
+// @public (undocumented)
+type StopLadder = ReturnType<typeof StopLadder>;
+
+// @public (undocumented)
+interface StopLadderProps {
+    // (undocumented)
+    columns: {
+        stop: string;
+        value: string;
+    };
+    // (undocumented)
+    highlight?: {
+        fromId: string;
+        toId: string;
+        label: string;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    max: number;
+    // (undocumented)
+    stops: readonly StopLadderStop[];
+    // (undocumented)
+    threshold?: {
+        value: number;
+        label: string;
+    };
+}
+
+// @public (undocumented)
+interface StopLadderStop {
+    // (undocumented)
+    code?: string;
+    // (undocumented)
+    href?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    state?: string;
+    // (undocumented)
+    timingPoint?: boolean;
+    // (undocumented)
+    value: number | null;
+    // (undocumented)
+    valueLabel: string;
+}
 
 // @public (undocumented)
 const Surface: Component<SurfaceProps, {}, "">;
