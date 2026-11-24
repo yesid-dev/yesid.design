@@ -63,6 +63,35 @@ test.describe('D3 map legends', { tag: '@theme' }, () => {
 		await expectAccessible(page);
 	});
 
+	test('1440px switches to the compact legend at 200% text', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 950 });
+		await page.goto(path);
+		await page.locator('html[data-gallery-ready]').waitFor();
+		const map = page.getByRole('region', { name: 'Live service map' });
+		const trigger = map.getByRole('button', { name: 'Show map legend' });
+		const title = map.getByRole('button', { name: 'Live legend' });
+		await expect(title).toHaveCount(1);
+		await expect(trigger).toHaveCount(0);
+
+		const enlarged = await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+		await expect(trigger).toBeVisible();
+		await expect(title).toHaveCount(0);
+		await trigger.focus();
+		await page.keyboard.press('Enter');
+		const panel = map.getByRole('region', { name: 'Show map legend' });
+		await expect(panel.getByRole('button', { name: 'Live legend' })).toBeVisible();
+		await expect(title).toHaveCount(1);
+		await expectAccessible(page);
+		await expectNoHorizontalOverflow(page);
+		await page.keyboard.press('Escape');
+		await expect(panel).toBeHidden();
+		await expect(trigger).toBeFocused();
+
+		await enlarged.evaluate((style) => { style.parentNode?.removeChild(style); });
+		await expect(title).toBeVisible();
+		await expect(trigger).toHaveCount(0);
+	});
+
 	test('serializes the same status shapes that the inline marks render', async ({ page }) => {
 		await page.goto(path);
 		for (const status of ['early', 'on_time', 'late', 'severe', 'unknown'] as const) {

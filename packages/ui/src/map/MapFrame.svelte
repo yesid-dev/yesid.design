@@ -25,9 +25,9 @@
 	let legendButton = $state<HTMLButtonElement>();
 	let legendPanel = $state<HTMLDivElement>();
 	let legendOpen = $state(false);
+	let compactLegend = $state(false);
 	let viewport = $state<MapViewport>({ width: 0, height: 0, exclusions: [] });
 	const legendId = $props.id();
-	const compactLegend = $derived(!!legendLabel && viewport.width > 0 && viewport.width < 1024);
 
 	function closeLegendOnEscape(event: KeyboardEvent): void {
 		if (event.key !== 'Escape' || !legendOpen) return;
@@ -43,6 +43,8 @@
 		const overlays = [left, right, legendButton, legendPanel].filter((element) => element !== undefined);
 
 		function measure() {
+			// The observed trigger reports the CSS mode, including font changes at a fixed width.
+			compactLegend = !!legendButton?.getClientRects().length;
 			const root = canvas.getBoundingClientRect();
 			const exclusions: MapRect[] = [];
 			for (const overlay of overlays) {
@@ -127,7 +129,7 @@
 
 <style>
 	.map-frame {
-		container-type: inline-size;
+		container: map-frame / inline-size;
 		display: flex;
 		flex: 1;
 		min-inline-size: 0;
@@ -194,7 +196,7 @@
 	}
 	.legend-trigger:focus-visible,
 	.legend-panel:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-	@container (width < 1024px) {
+	@container map-frame (inline-size < 64rem) {
 		.legend-desktop { display: none; }
 		.legend-dock {
 			position: absolute;
@@ -208,7 +210,7 @@
 			pointer-events: none;
 		}
 	}
-	@container (width < 48rem) {
+	@container map-frame (inline-size < 48rem) {
 		.map-left,
 		.map-details {
 			position: static;

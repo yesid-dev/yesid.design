@@ -1220,8 +1220,9 @@ Also from `@yesid/ui/chart`:
 
 - `MapFrame` takes a localized `label` and a map snippet. Optional `panel` and `legend`
   snippets float at the start edge. A `details={{ label, content }}` snippet floats at the end.
-  Pass a localized `legendLabel` alongside `legend` to place it below the panel at 1024 px
-  and wider, and behind a round floating button in compact frames. Escape closes that card
+  Pass a localized `legendLabel` alongside `legend` to place it below the panel when the map
+  is at least 64 rem wide, and behind a round floating button below that width. The breakpoint
+  follows the root font size. Escape closes that card
   and returns focus to the trigger. Without `legendLabel`, narrow frames place the panels
   after the map in reading order. The map snippet receives its measured `width`, `height`
   and the visible overlay rectangles it needs to avoid, in CSS pixels relative to the map.
