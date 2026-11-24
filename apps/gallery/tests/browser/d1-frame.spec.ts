@@ -64,6 +64,81 @@ test.describe('Header network keyboard order', { tag: '@theme' }, () => {
 	}
 });
 
+test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
+	for (const width of [320, 390, 1440]) {
+		test(`the native select opens at all four border edges at ${width}px`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 850 });
+			await page.goto(path);
+			await page.locator('html[data-gallery-ready]').waitFor();
+			const select = page.getByRole('combobox', { name: 'Network' });
+			const label = select.locator('..');
+			const { x, y, width: inline, height: block } = (await label.boundingBox())!;
+			const edges = [
+				[x + 0.5, y + block / 2],
+				[x + inline - 0.5, y + block / 2],
+				[x + inline / 2, y + 0.5],
+				[x + inline / 2, y + block - 0.5],
+			];
+			for (const [edgeX, edgeY] of edges) {
+				expect(await select.evaluate((element, point) =>
+					document.elementFromPoint(point[0], point[1]) === element, [edgeX, edgeY])).toBe(true);
+				await page.mouse.click(edgeX, edgeY);
+				await expect.poll(() => select.evaluate((element) => element.matches(':open'))).toBe(true);
+				await page.keyboard.press('Escape');
+				await expect.poll(() => select.evaluate((element) => element.matches(':open'))).toBe(false);
+			}
+		});
+	}
+
+	for (const locale of ['en', 'fr'] as const) {
+		for (const width of [1024, 1100, 1280]) {
+			for (const refresh of [false, true]) {
+				test(`${locale}: header fits at ${width}px and 200% text ${refresh ? 'with' : 'without'} Refresh`, async ({ page }) => {
+					const french = locale === 'fr';
+					await page.setViewportSize({ width, height: 850 });
+					await page.goto(`${path}?dense&lang=${locale}${refresh ? '&refresh' : ''}`);
+					await page.locator('html[data-gallery-ready]').waitFor();
+					await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+					await page.evaluate(() => document.fonts.ready);
+					const header = page.getByTestId('nav');
+					const pill = header.getByTestId('nav-pill');
+					const select = header.getByRole('combobox', { name: french ? 'Réseau' : 'Network' });
+					const picker = select.locator('..');
+					const search = header.getByRole('searchbox');
+					await expect(search).toBeVisible();
+					await expect.poll(async () => {
+						const box = (await pill.boundingBox())!;
+						return box.x >= 0 && box.x + box.width <= width;
+					}).toBe(true);
+					await expectNoHorizontalOverflow(page);
+					const pillBox = (await pill.boundingBox())!;
+					const pickerBox = (await picker.boundingBox())!;
+					const below = pickerBox.y >= pillBox.y + pillBox.height;
+					if (width === 1024) expect(below).toBe(true);
+					if (below) {
+						await expect(picker.getByText('STM', { exact: true })).toBeVisible();
+						const root = page.locator('html');
+						const clearance = await root.evaluate((element) =>
+							getComputedStyle(element).getPropertyValue('--nav-network-clearance').trim());
+						await expect(root).toHaveCSS('--nav-extra-clearance', clearance);
+					}
+					const trailing = [
+						...(refresh ? [header.getByRole('button', { name: french ? 'Actualiser les données' : 'Refresh data' })] : []),
+						header.getByRole('switch', { name: french ? 'Thème sombre' : 'Dark theme' }),
+						header.getByRole('link', { name: french ? /^Langue\s*:/ : /^Language:/ }),
+						header.getByRole('button', { name: french ? 'Ouvrir le menu' : 'Open menu' }),
+					];
+					await search.focus();
+					for (const control of below ? [...trailing, select] : [select, ...trailing]) {
+						await page.keyboard.press('Tab');
+						await expect(control).toBeFocused();
+					}
+				});
+			}
+		}
+	}
+});
+
 test.describe('D1 frame and network slot', { tag: '@theme' }, () => {
 	for (const width of [320, 390]) {
 		test(`both rails at ${width}px and 200% text`, async ({ page }) => {
