@@ -10,6 +10,7 @@ const MIN_GAP = 4;
 const OVERFLOW = 'data-links-overflow';
 const DROPPED = 'data-links-dropped';
 const NETWORK_BELOW = 'data-network-below';
+const DOCUMENT_NETWORK_BELOW = 'data-site-header-network-below';
 const NETWORK_MEASURING = 'data-network-measuring';
 const WATCHED = '.nav-wordmark, [data-slot="product-brand"], .nav-links > [data-priority], .nav-network';
 const CONTENT_CHANGES = { subtree: true, childList: true, characterData: true };
@@ -31,6 +32,8 @@ function takeOut(element: HTMLElement, out: boolean): void {
 export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	let paused = params.paused;
 	let onNetworkInline = params.onNetworkInline;
+	let destroyed = false;
+	const document = pill.ownerDocument;
 	const root = pill.closest<HTMLElement>('[data-slot="site-header"]') ?? pill.parentElement!;
 	const parts = () => [...pill.querySelectorAll<HTMLElement>('.nav-links-part')];
 	const items = () => [...pill.querySelectorAll<HTMLElement>('.nav-links > [data-priority]')];
@@ -40,10 +43,20 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 		return root.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
 	}
 
+	function setNetworkBelow(below: boolean): void {
+		if (pill.hasAttribute(NETWORK_BELOW) === below) return;
+		pill.toggleAttribute(NETWORK_BELOW, below);
+		// Document clearance follows measured headers without a document-wide CSS :has().
+		document.documentElement.toggleAttribute(
+			DOCUMENT_NETWORK_BELOW,
+			below || document.querySelector(`[${NETWORK_BELOW}]`) !== null,
+		);
+	}
+
 	function fitNetwork(width: number, fits: () => boolean): void {
 		const network = pill.querySelector('[data-slot="site-header-network"]');
 		if (!network?.firstElementChild) {
-			pill.removeAttribute(NETWORK_BELOW);
+			setNetworkBelow(false);
 			onNetworkInline?.(false);
 			return;
 		}
@@ -56,7 +69,7 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 			inline = fits();
 			if (wasBelow) pill.removeAttribute(NETWORK_MEASURING);
 		}
-		pill.toggleAttribute(NETWORK_BELOW, !inline);
+		setNetworkBelow(!inline);
 		onNetworkInline?.(inline);
 	}
 
@@ -70,7 +83,7 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	}
 
 	function measure(): void {
-		if (paused || folding()) return;
+		if (destroyed || paused || folding()) return;
 		for (const child of pill.querySelectorAll<HTMLElement>(WATCHED)) observer.observe(child);
 		if (onNetworkInline) {
 			for (const child of pill.children) {
@@ -130,18 +143,20 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 				if (next.onNetworkInline) actions.observe(pill, CONTENT_CHANGES);
 			}
 			onNetworkInline = next.onNetworkInline;
-			if (!onNetworkInline) pill.removeAttribute(NETWORK_BELOW);
+			if (!onNetworkInline) setNetworkBelow(false);
 			measure();
 			// Without a transition (reduced motion), the parts are full width by the next frame.
 			cancelAnimationFrame(frame);
 			frame = requestAnimationFrame(measure);
 		},
 		destroy() {
+			destroyed = true;
 			observer.disconnect();
 			actions.disconnect();
 			cancelAnimationFrame(frame);
 			pill.removeEventListener('transitionend', settled);
 			pill.removeEventListener('transitioncancel', settled);
+			setNetworkBelow(false);
 		},
 	};
 }

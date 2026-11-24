@@ -114,13 +114,16 @@ test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
 					const pillBox = (await pill.boundingBox())!;
 					const pickerBox = (await picker.boundingBox())!;
 					const below = pickerBox.y >= pillBox.y + pillBox.height;
+					const root = page.locator('html');
 					if (width === 1024) expect(below).toBe(true);
 					if (below) {
 						await expect(picker.getByText('STM', { exact: true })).toBeVisible();
-						const root = page.locator('html');
+						await expect(root).toHaveAttribute('data-site-header-network-below', '');
 						const clearance = await root.evaluate((element) =>
 							getComputedStyle(element).getPropertyValue('--nav-network-clearance').trim());
 						await expect(root).toHaveCSS('--nav-extra-clearance', clearance);
+					} else {
+						await expect(root).not.toHaveAttribute('data-site-header-network-below');
 					}
 					const trailing = [
 						...(refresh ? [header.getByRole('button', { name: french ? 'Actualiser les données' : 'Refresh data' })] : []),

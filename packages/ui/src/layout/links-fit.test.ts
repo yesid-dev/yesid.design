@@ -114,4 +114,27 @@ describe('linksFit', () => {
 		expect(view.items.some((item) => item.hasAttribute('data-links-dropped'))).toBe(false);
 		view.destroy();
 	});
+
+	it('clears measured document clearance when the picker fits, leaves, or unmounts', () => {
+		const view = header(1024, []);
+		view.pill.insertAdjacentHTML('beforeend', '<div data-slot="site-header-network"><button></button></div>');
+		view.pill.getBoundingClientRect = () => ({ width: 1050 }) as DOMRect;
+		const documentBelow = () => document.documentElement.hasAttribute('data-site-header-network-below');
+		const options = { paused: false, onNetworkInline: vi.fn() };
+		try {
+			view.update(options);
+			expect(documentBelow()).toBe(true);
+			view.resize(1440);
+			expect(documentBelow()).toBe(false);
+			view.resize(1024);
+			expect(documentBelow()).toBe(true);
+			view.update({ paused: false });
+			expect(documentBelow()).toBe(false);
+			view.update(options);
+			expect(documentBelow()).toBe(true);
+		} finally {
+			view.destroy();
+		}
+		expect(documentBelow()).toBe(false);
+	});
 });
