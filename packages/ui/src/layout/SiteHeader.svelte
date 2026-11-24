@@ -696,7 +696,7 @@
 		max-inline-size: calc(100vw - 1rem);
 	}
 	@media (width >= 1024px) {
-		:global(:root:has([data-network-below])) { --nav-extra-clearance: var(--nav-network-clearance); }
+		:global(:root[data-site-header-network-below]) { --nav-extra-clearance: var(--nav-network-clearance); }
 	}
 	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */
 	@container site-header (width < 48em) {
