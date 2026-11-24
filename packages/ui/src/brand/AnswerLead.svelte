@@ -64,9 +64,11 @@
 		min-inline-size: 0;
 	}
 	@media (min-width: 40em) {
-		@container (min-width: 36rem) {
+		/* A 13rem figure, a 1rem gap and at least 12rem for the sentence. */
+		@container (min-width: 26rem) {
 			.answer-statement { display: flex; align-items: baseline; gap: 1rem; }
-			.answer-value, .answer-absent { max-inline-size: 55%; }
+			.answer-value, .answer-absent { min-inline-size: 0; max-inline-size: 55%; }
+			.answer-sentence { min-inline-size: 12rem; }
 		}
 	}
 	@media (min-width: 64em) {

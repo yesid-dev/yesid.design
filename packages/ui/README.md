@@ -559,7 +559,10 @@ See [the breaking migration](../../docs/migrations/deepen-section-jump.md) for r
 Import `AnswerLead` and `Stamp` from `@yesid/ui/brand`. `AnswerLead` pairs a `value` with
 its localized `sentence` in a named section. Use `value={null}` and the `absent` snippet to show
 a missing observation. Pass the date or freshness stamp, metadata and actions as snippets. A
-short `comparison` adds context below the answer. The layout stacks when the content needs room.
+short `comparison` adds context below the answer. At a viewport of at least 40 em and an answer
+width of at least 26 rem, the figure and sentence sit side by side. The sentence keeps at least
+12 rem and the figure uses at most 55% of the available width. The layout stacks below either
+threshold.
 
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
@@ -819,7 +822,8 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   render and after hydration. The first render uses the browser's initial text size. After
   hydration narrower frames use their measured width, and the threshold follows the computed
   root font size, including page overrides. The `rail` snippet receives `SurfaceRailContext` and can
-  render `ControlsRail`. In `fullViewport` the
+  render `ControlsRail`. In a paired reading frame, the rail starts at the page gutter
+  and sits 1 rem below the chrome when sticky. In `fullViewport` the
   controls rail floats over `main`. `chromeHeight` measures the header and any retained strip.
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow

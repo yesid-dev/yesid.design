@@ -228,7 +228,10 @@ test.describe('D1 frame and network slot', { tag: '@theme' }, () => {
 		await expect(page.getByTestId('chrome-size')).toHaveText(String(Math.ceil(headerHeight)));
 		await page.getByRole('button', { name: 'Full viewport' }).click();
 		await expect(rail).toHaveCSS('position', 'absolute');
-		expect((await rail.boundingBox())!.x).toBeGreaterThan((await main.boundingBox())!.x);
+		const floating = (await rail.boundingBox())!;
+		const map = (await main.boundingBox())!;
+		expect(floating.x - map.x).toBeCloseTo(16, 1);
+		expect(floating.y - map.y).toBeCloseTo(16, 1);
 		await expectNoHorizontalOverflow(page);
 		await expectAccessible(page);
 	});

@@ -2,6 +2,44 @@ import { expect, test } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
+	test('half-width cards keep a sentence beside the answer only when there is room', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto('/d1-record');
+		await page.evaluate(() => document.fonts.ready);
+		const examples = [
+			{ name: 'des arrêts prévus ont été desservis à l’heure.', figure: '.answer-value' },
+			{ name: 'Les données du dimanche restent inconnues.', figure: '.answer-absent' },
+		];
+		for (const { name, figure } of examples) {
+			const region = page.getByRole('region', { name });
+			const bounds = (await region.boundingBox())!;
+			const left = (await region.locator(figure).boundingBox())!;
+			const sentence = (await region.getByText(name, { exact: true }).boundingBox())!;
+			expect(bounds.width).toBeCloseTo(416, 0);
+			expect(left.x + left.width).toBeLessThan(sentence.x);
+			expect(sentence.y).toBeLessThan(left.y + left.height);
+			expect(sentence.width).toBeGreaterThanOrEqual(192);
+			expect(left.width).toBeLessThanOrEqual(bounds.width * 0.55);
+		}
+
+		const wide = await page.addStyleTag({ content: '[data-testid="d1-record"] .answer-example { inline-size: min(100%, 640px); }' });
+		const absent = page.getByRole('region', { name: examples[1].name });
+		const absentWidth = (await absent.locator(examples[1].figure).boundingBox())!.width;
+		expect(absentWidth).toBeLessThanOrEqual((await absent.boundingBox())!.width * 0.55);
+		await wide.evaluate((style) => style.parentNode?.removeChild(style));
+
+		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+		for (const { name, figure } of examples) {
+			const region = page.getByRole('region', { name });
+			const above = (await region.locator(figure).boundingBox())!;
+			const sentence = (await region.getByText(name, { exact: true }).boundingBox())!;
+			expect(sentence.x).toBe(above.x);
+			expect(sentence.y).toBeGreaterThan(above.y + above.height);
+		}
+		await expectNoHorizontalOverflow(page);
+		await expectAccessible(page, { include: '[data-testid="d1-record"]' });
+	});
+
 	test('short day figures and stacked table pairs stay on the same row at 200% text', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 900 });
 		await page.goto('/d1-record');

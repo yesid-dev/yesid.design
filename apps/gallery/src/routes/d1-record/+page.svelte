@@ -53,14 +53,18 @@
 
 <div lang="fr-CA" class="record" data-testid="d1-record">
 	<h1>Relevé du service</h1>
-	<AnswerLead value="71,5 %" sentence="des arrêts prévus ont été desservis à l’heure." comparison="2 points de plus que la semaine précédente.">
-		{#snippet stamp()}<Stamp kind="record" label="Relevé · du 16 au 22 novembre 2026" />{/snippet}
-		{#snippet meta()}<p>31 arrêts sur sept jours</p><p>Méthode 3, édition 1</p>{/snippet}
-		{#snippet actions()}<Button variant="outline" wrap href="#reflow">Consulter les chiffres détaillés</Button>{/snippet}
-	</AnswerLead>
-	<AnswerLead value={null} size="md" sentence="Les données du dimanche restent inconnues.">
-		{#snippet absent()}<p>Aucun signalement</p>{/snippet}
-	</AnswerLead>
+	<Card edge="neutral" class="answer-example p-4">
+		<AnswerLead value="71,5 %" sentence="des arrêts prévus ont été desservis à l’heure." comparison="2 points de plus que la semaine précédente.">
+			{#snippet stamp()}<Stamp kind="record" label="Relevé · du 16 au 22 novembre 2026" />{/snippet}
+			{#snippet meta()}<p>31 arrêts sur sept jours</p><p>Méthode 3, édition 1</p>{/snippet}
+			{#snippet actions()}<Button variant="outline" wrap href="#reflow">Consulter les chiffres détaillés</Button>{/snippet}
+		</AnswerLead>
+	</Card>
+	<Card edge="neutral" class="answer-example p-4">
+		<AnswerLead value={null} size="md" sentence="Les données du dimanche restent inconnues.">
+			{#snippet absent()}<p>Aucun signalement ne permet de confirmer le service livré ce jour-là.</p>{/snippet}
+		</AnswerLead>
+	</Card>
 	<AnswerLead value="0" size="md" sentence="trajet annulé dans le secteur du Lac." />
 	<div class="stamps">
 		<Stamp kind="live" label="En direct · à l’instant" {updatedAt} agoLabel={(seconds) => `En direct · il y a ${seconds} s`} />
@@ -98,6 +102,7 @@
 
 <style>
 	.record { display: grid; gap: var(--space-card-gap); min-inline-size: 0; }
+	.record :global(.answer-example) { inline-size: min(100%, calc(416px + 2rem + 4px)); }
 	.stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 	h1 { font-size: var(--text-title); }
 	h2 { font-size: var(--text-heading); }

@@ -37,6 +37,7 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 	const scenarios = [
 		{ width: 800, scale: 100, paired: false },
 		{ width: 1024, scale: 100, paired: true },
+		{ width: 1206, scale: 100, paired: true },
 		{ width: 1280, scale: 100, paired: true },
 		{ width: 1440, scale: 100, paired: true, controlsWidth: 272 },
 		{ width: 1024, scale: 200, paired: false },
@@ -68,7 +69,10 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 				if (paired === firstPaintPaired) expect(after).toEqual(before);
 				else expect(after.width).toBeGreaterThan(before.width);
 				if (controlsWidth !== undefined) {
-					expect((await workspace(page).controls.boundingBox())!.width).toBeCloseTo(controlsWidth, 0);
+					const rail = (await workspace(page).controls.boundingBox())!;
+					const frame = (await page.locator('[data-slot="app-frame"]').boundingBox())!;
+					const available = frame.x + frame.width - rail.x;
+					expect(rail.width).toBeCloseTo(Math.min(controlsWidth, available * 0.27), 0);
 				}
 				await expectNoHorizontalOverflow(page);
 			} finally {
@@ -76,6 +80,50 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 			}
 		});
 	}
+
+	test('paired controls start at the page gutter and stay below the chrome', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		let resume!: () => void;
+		const held = new Promise<void>((resolve) => { resume = resolve; });
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await held;
+			await route.fallback();
+		});
+		try {
+			await page.goto(path, { waitUntil: 'domcontentloaded' });
+			await page.evaluate(() => document.fonts.ready);
+			const rail = workspace(page).controls;
+			const frame = page.locator('[data-slot="app-frame"]');
+			const chrome = page.locator('[data-slot="app-frame-chrome"]');
+			const gutter = await page.locator('#report').evaluate((el) => parseFloat(getComputedStyle(el).paddingInlineEnd));
+			const assertGaps = async () => {
+				const outer = (await frame.boundingBox())!;
+				const bar = (await chrome.boundingBox())!;
+				const bounds = (await rail.boundingBox())!;
+				expect(bounds.x - outer.x).toBeCloseTo(gutter, 1);
+				expect(bounds.y - bar.y - bar.height).toBeCloseTo(16, 1);
+				return bounds;
+			};
+			await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
+			const before = await assertGaps();
+			resume();
+			await page.locator('html[data-gallery-ready]').waitFor();
+			expect(await assertGaps()).toEqual(before);
+			await expectAccessible(page);
+
+			await page.addStyleTag({ content: '#report { min-block-size: 240dvh; } .filter { min-block-size: 160dvh; }' });
+			await page.evaluate(() => window.scrollTo(0, 300));
+			await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+			const stuck = await assertGaps();
+			expect(stuck.y + stuck.height).toBeCloseTo(884, 0);
+			await rail.hover();
+			await page.mouse.wheel(0, 160);
+			await expect.poll(() => rail.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+			await expectNoHorizontalOverflow(page);
+		} finally {
+			resume();
+		}
+	});
 
 	test('a larger browser default starts compact before hydration', async ({ page }) => {
 		await page.setViewportSize({ width: 1440, height: 900 });
