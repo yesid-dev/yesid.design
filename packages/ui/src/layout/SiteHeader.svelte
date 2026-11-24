@@ -147,19 +147,19 @@
 	let headerElement: HTMLElement;
 	let networkInline = $state(false);
 	let networkElement = $state<HTMLDivElement>();
-	let networkDivider = $state<HTMLSpanElement>();
+	let trailingControls = $state<HTMLDivElement>();
 
-	// The server renders the compact order. Move the same control when the header has room for it inline.
+	// CSS already places the picker on the wide row. Move the same node to match keyboard order.
 	$effect(() => {
 		const control = networkElement;
-		const divider = networkDivider;
+		const trailing = trailingControls;
 		const inline = networkInline;
 		const pill = control?.parentElement as (HTMLElement & {
 			moveBefore?: (node: Node, before: Node | null) => void;
 		}) | null | undefined;
-		if (!control || !divider || !pill) return;
+		if (!control || !trailing || !pill) return;
 
-		const before = inline ? divider : null;
+		const before = inline ? trailing : null;
 		if (control.nextElementSibling === before) return;
 		if (typeof pill.moveBefore === 'function') {
 			pill.moveBefore(control, before);
@@ -360,6 +360,7 @@
 						class="nav-pill pointer-events-auto flex items-center"
 						class:nav-pill-compact={active}
 						class:nav-pill-compact-controls={compactMenuControls}
+						class:nav-pill-network={!!network}
 						class:nav-hydrated={hydrated}
 						use:linksFit={{ paused: active, links, onNetworkInline: network ? (inline: boolean) => (networkInline = inline) : undefined }}
 					>
@@ -391,37 +392,39 @@
 								{@render search()}
 							</div>
 						{/if}
-						<span bind:this={networkDivider} class="nav-divider" aria-hidden="true"></span>
-						{@render actions?.()}
-						{#if !controlsInMenu}
-							<span
-								bind:this={fallbackControls}
-								id="{contentId}-controls"
-								popover={compactMenuControls && !hydrated ? 'auto' : undefined}
-								class="pill-controls"
-								class:compact-controls={compactMenuControls}
-							>
-								<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{labels.theme}</span><ThemeToggle label={labels.theme} /></span>
-								{#if language}<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{menuLanguageLabel}</span><LanguageToggle {...language} bind:ref={pillLanguageLink} /></span>{/if}
-							</span>
-						{/if}
-						{#if hasMenu}
-						<button
-							bind:this={menuToggle}
-							type="button"
-							data-testid="nav-menu-toggle"
-							class="menu-toggle"
-							class:menu-toggle-open={active}
-							aria-label={active ? labels.closeMenu : labels.openMenu}
-							aria-expanded={compactMenuControls && !hydrated ? undefined : menuOpen}
-							popovertarget={compactMenuControls && !hydrated ? `${contentId}-controls` : undefined}
-							aria-controls={compactMenuControls && !hydrated ? `${contentId}-controls` : contentId}
-							onclick={toggleMenu}
-						>
-							<span class="menu-toggle-line menu-toggle-top"></span>
-							<span class="menu-toggle-line menu-toggle-bottom"></span>
-						</button>
-						{/if}
+						<div class="nav-trailing" bind:this={trailingControls}>
+							<span class="nav-divider" aria-hidden="true"></span>
+							{@render actions?.()}
+							{#if !controlsInMenu}
+								<span
+									bind:this={fallbackControls}
+									id="{contentId}-controls"
+									popover={compactMenuControls && !hydrated ? 'auto' : undefined}
+									class="pill-controls"
+									class:compact-controls={compactMenuControls}
+								>
+									<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{labels.theme}</span><ThemeToggle label={labels.theme} /></span>
+									{#if language}<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{menuLanguageLabel}</span><LanguageToggle {...language} bind:ref={pillLanguageLink} /></span>{/if}
+								</span>
+							{/if}
+							{#if hasMenu}
+								<button
+									bind:this={menuToggle}
+									type="button"
+									data-testid="nav-menu-toggle"
+									class="menu-toggle"
+									class:menu-toggle-open={active}
+									aria-label={active ? labels.closeMenu : labels.openMenu}
+									aria-expanded={compactMenuControls && !hydrated ? undefined : menuOpen}
+									popovertarget={compactMenuControls && !hydrated ? `${contentId}-controls` : undefined}
+									aria-controls={compactMenuControls && !hydrated ? `${contentId}-controls` : contentId}
+									onclick={toggleMenu}
+								>
+									<span class="menu-toggle-line menu-toggle-top"></span>
+									<span class="menu-toggle-line menu-toggle-bottom"></span>
+								</button>
+							{/if}
+						</div>
 						{#if network}
 							<div bind:this={networkElement} inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
 								{@render network()}
@@ -624,6 +627,16 @@
 		min-inline-size: 0;
 		margin-inline-start: 0.5rem;
 	}
+	.nav-trailing { display: contents; }
+	@container site-header (width >= 1024px) {
+		.nav-pill-network > .nav-network { order: 1; }
+		.nav-pill-network > .nav-trailing {
+			display: flex;
+			flex: none;
+			align-items: center;
+			order: 2;
+		}
+	}
 
 	/* Link tiers. Widths are in em, so they follow the reader's font size: 64em is 1024px at the
 	   default 16px and 1280px at 20px. They are static rules, so they decide the same before
@@ -665,6 +678,7 @@
 			inset-inline-start: 50%;
 			translate: -50% 0;
 			margin-inline: 0;
+			inline-size: max-content;
 			max-inline-size: calc(100vw - 1rem);
 		}
 	}
@@ -678,6 +692,7 @@
 		inset-inline-start: 50%;
 		translate: -50% 0;
 		margin-inline: 0;
+		inline-size: max-content;
 		max-inline-size: calc(100vw - 1rem);
 	}
 	@media (width >= 1024px) {
@@ -822,7 +837,8 @@
 			flex: 0 1 100%;
 			justify-content: center;
 		}
-		.nav-pill:has(:global([data-slot='product-brand'])) > .nav-divider {
+		.nav-pill:has(:global([data-slot='product-brand'])) > .nav-divider,
+		.nav-pill:has(:global([data-slot='product-brand'])) > .nav-trailing > .nav-divider {
 			display: none;
 		}
 	}

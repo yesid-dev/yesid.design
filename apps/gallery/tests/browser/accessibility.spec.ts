@@ -58,6 +58,7 @@ test.describe('accessibility', { tag: '@theme' }, () => {
 
 	test('the site header stays accessible with its menu open', async ({ page }) => {
 		await page.goto(HOME);
+		await page.locator('html[data-gallery-ready]').waitFor();
 		await page.getByRole('navigation', { name: LABELS.nav }).getByRole('button', { name: LABELS.openMenu }).click();
 		await expect(page.getByRole('dialog', { name: LABELS.menu })).toBeVisible();
 		await expectAccessible(page);

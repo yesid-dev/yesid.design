@@ -139,6 +139,42 @@ test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
 	}
 });
 
+test.describe('Compact network labels', { tag: '@theme' }, () => {
+	for (const locale of ['en', 'fr'] as const) {
+		for (const width of [320, 390]) {
+			test(`${locale}: keeps each picker word whole at ${width}px and 200% text`, async ({ page }) => {
+				await page.setViewportSize({ width, height: 850 });
+				await page.goto(`${path}?lang=${locale}&long-code`);
+				await page.locator('html[data-gallery-ready]').waitFor();
+				await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+				await page.evaluate(() => document.fonts.ready);
+				const slot = page.locator('[data-slot="site-header-network"]');
+				const picker = slot.getByRole('combobox');
+				await picker.selectOption('ott');
+				await expect(picker).toHaveValue('ott');
+				const label = slot.getByText('OC Transpo', { exact: true });
+				await expect(label).toBeVisible();
+				const fragments = await label.evaluate((element) => {
+					const node = element.firstChild;
+					if (!(node instanceof Text)) throw new Error('The compact label must contain text');
+					const range = document.createRange();
+					return Array.from(node.data.matchAll(/\S+/gu), (word) => {
+						const start = word.index!;
+						range.setStart(node, start);
+						range.setEnd(node, start + word[0].length);
+						return [word[0], range.getClientRects().length];
+					});
+				});
+				expect(fragments).toEqual([['OC', 1], ['Transpo', 1]]);
+				const box = (await slot.boundingBox())!;
+				expect(box.x).toBeGreaterThanOrEqual(0);
+				expect(box.x + box.width).toBeLessThanOrEqual(width);
+				await expectNoHorizontalOverflow(page);
+			});
+		}
+	}
+});
+
 test.describe('D1 frame and network slot', { tag: '@theme' }, () => {
 	for (const width of [320, 390]) {
 		test(`both rails at ${width}px and 200% text`, async ({ page }) => {

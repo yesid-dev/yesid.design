@@ -12,6 +12,7 @@
 	const french = $derived(locale === 'fr');
 	const dense = $derived(browser && page.url.searchParams.has('dense'));
 	const refresh = $derived(browser && page.url.searchParams.has('refresh'));
+	const longCode = $derived(browser && page.url.searchParams.has('long-code'));
 	const labels = $derived(french ? {
 		skipToContent: 'Aller au contenu',
 		openMenu: 'Ouvrir le menu',
@@ -23,7 +24,7 @@
 	} : LABELS);
 	const networks = $derived([
 		{ id: 'mtl', city: 'Montréal', name: dense ? 'Société de transport' : 'STM', shortCode: 'STM' },
-		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: 'OC' },
+		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: longCode ? 'OC Transpo' : 'OC' },
 	]);
 	let selectedNetwork = $state('mtl');
 	let viewport = $state(false);

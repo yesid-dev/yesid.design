@@ -814,8 +814,12 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   labels at every width. An empty list omits the control.
 - **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
   Pass `controlsRail={{ rail, label, summary, openAria, closeAria, mobileVisible }}` for a
-  start-side controls column from 1024 px and a bottom-sheet trigger below 1024 px. The `rail`
-  snippet receives `SurfaceRailContext` and can render `ControlsRail`. In `fullViewport` the
+  start-side controls column at 64 rem. Controls and evidence use bottom-sheet triggers below
+  that width. Page-width frames use the viewport width, including its scrollbar, on the first
+  render and after hydration. The first render uses the browser's initial text size. After
+  hydration narrower frames use their measured width, and the threshold follows the computed
+  root font size, including page overrides. The `rail` snippet receives `SurfaceRailContext` and can
+  render `ControlsRail`. In `fullViewport` the
   controls rail floats over `main`. `chromeHeight` measures the header and any retained strip.
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
