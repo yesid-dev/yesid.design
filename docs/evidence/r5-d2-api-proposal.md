@@ -97,4 +97,16 @@ The yesid.dev fixture at 390 px on cold Chromium 147 measured a median of 365 ms
 
 The compiled yesid.dev fixture has 36 stylesheets in each version. After normalizing Svelte scope names, only the root bundle changes. Its additions are the shared clearance and header-network rules and three utility classes. The rail, table rows and DayStrip rules are absent from this fixture. A 12-round cold 4× probe reverted the shared clearance and header-network CSS together in the rc.2 response, while keeping the scripts and the three utilities fixed. Rc.2 took a paired median of 62 ms more style time than v0.54.0 and 74 ms more than the CSS probe (95% bootstrap interval +5 to +250 ms). The probe was 10 ms above v0.54.0 (−48 to +66 ms). The grouped probe narrows the search. Individual rules and a production fix still need verification.
 
-D2 will isolate the CSS cost across the D1 changes and check any fix on the same fixture with paired cold 390 px runs at 4× against v0.54.0. The release evidence will record the measured attribution and either restore the earlier cost or explain the remaining difference in this report and R5.6.
+### D2 measured justification
+
+Two further runs used the same fixture and 390 px cold Chromium 147 contexts, with 4× CPU throttling. Each run rotated the order of five variants over ten rounds. Within the rc.2 variants only the served root stylesheet changed. Every variant loaded 69 scripts before readiness. The intervals are paired bootstrap intervals for the median. Positive values mean the unchanged candidate spent more time on style recalculation.
+
+| Comparison against unmodified rc.2 | Paired median savings | 95% interval |
+| --- | ---: | ---: |
+| Disable only the two global D1 clearance selectors | 58.5 ms | 15.2 to 86.5 ms |
+| Revert the other header-network rules and declarations | 6.7 ms | −67.9 to 41.8 ms |
+| Match a nonempty network slot directly | 11.0 ms | −18.1 to 47.9 ms |
+| Match two mobile rails using their immediate frame-body parent | −3.1 ms | −27.3 to 88.7 ms |
+| Apply both narrower selectors | −3.8 ms | −49.6 to 85.5 ms |
+
+In the isolation run, unmodified rc.2 took 41.2 ms more style time than v0.54.0 (11.3 to 73.7 ms). With the two global selectors disabled, it was 3.1 ms faster than v0.54.0 (−60.0 to 30.8 ms for candidate minus control). The disabled rules also remove scroll clearance for the compact network slot and paired mobile rails before hydration. The narrower replacements did not establish a savings while preserving that behavior. D2 retains the existing rules and their measured cost. The measurements are for one yesid.dev fixture at 4× CPU before reel readiness. The fixture does not render a network slot or paired rails.
