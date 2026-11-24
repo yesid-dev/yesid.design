@@ -1,8 +1,8 @@
 <!--
-  A page's controls rail. From 1024px it is a sticky complementary landmark under the site chrome;
-  below that it collapses to a floating pill that opens the same rail in a bottom sheet (the rail
-  element moves into the sheet, so its state survives). `rail` receives `closeSheet` and the current
-  `presentation`; a hash link inside the open sheet closes it. Pass it to `DetailFrame`'s `rail`.
+  A page's controls rail. It is sticky in a wide layout and becomes a floating pill when compact.
+  AppFrame supplies its container breakpoint; a standalone rail uses the viewport. The same rail
+  element moves into the sheet, so its state survives. `rail` receives `closeSheet` and the current
+  `presentation`; a hash link inside the open sheet closes it.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -28,12 +28,13 @@
 </script>
 
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { getContext, onMount, tick } from 'svelte';
 	import { scrollChain } from '@yesid/motion/actions';
 	import { cn } from '../cn/index.js';
 	import ChevronToggle from '../brand/ChevronToggle.svelte';
 	import * as Sheet from '../primitives/sheet/index.js';
 	import { desktop } from '../state/desktop.js';
+	import { frameRailLayout } from './frame-rail-layout.js';
 
 	let {
 		rail,
@@ -53,8 +54,9 @@
 	let desktopRailEl = $state<HTMLElement>();
 	let railHomeParent: Node | undefined;
 	let railHomeNextSibling: Node | null = null;
-	let wasDesktop = desktop.current;
-	const presentation = $derived<SurfaceRailPresentation>(desktop.current ? 'desktop' : 'mobile');
+	const isDesktop = getContext<(() => boolean) | undefined>(frameRailLayout) ?? (() => desktop.current);
+	let wasDesktop = isDesktop();
+	const presentation = $derived<SurfaceRailPresentation>(isDesktop() ? 'desktop' : 'mobile');
 
 	onMount(() => {
 		railHomeParent = desktopRailEl?.parentNode ?? undefined;
@@ -91,9 +93,9 @@
 	});
 
 	$effect(() => {
-		const isDesktop = desktop.current;
-		const crossedToDesktop = isDesktop && !wasDesktop;
-		wasDesktop = isDesktop;
+		const desktopNow = isDesktop();
+		const crossedToDesktop = desktopNow && !wasDesktop;
+		wasDesktop = desktopNow;
 		if (!crossedToDesktop || !sheetPresent) return;
 
 		const focusWasInSheet = sheetEl?.contains(document.activeElement) ?? false;
@@ -102,9 +104,10 @@
 		if (!focusWasInSheet) return;
 
 		void tick().then(() => {
-			const next = desktopRailEl?.querySelector<HTMLElement>(
+			const candidates = desktopRailEl?.querySelectorAll<HTMLElement>(
 				'button, a, select, input, [tabindex]:not([tabindex="-1"])',
 			);
+			const next = Array.from(candidates ?? []).find((candidate) => candidate.getClientRects().length);
 			(next ?? desktopRailEl)?.focus();
 		});
 	});
@@ -156,7 +159,7 @@
 				aria-label={label}
 				onCloseAutoFocus={(event) => {
 					event.preventDefault();
-					if (!desktop.current) pillBtn?.focus();
+					if (!isDesktop()) pillBtn?.focus();
 				}}
 			>
 				<div class="contents" data-rail-slot></div>
@@ -167,36 +170,36 @@
 
 <style>
 	.surface-rail {
-		display: none;
-	}
-	.surface-rail.surface-rail--mobile {
-		display: flex;
+		display: var(--app-frame-rail-display, none);
 		flex-direction: column;
 		gap: 1rem;
-		width: 100%;
 	}
-	.surface-rail--mobile > :global(*) {
+	.surface-rail:not(.surface-rail--mobile) {
+		position: sticky;
+		top: var(--chrome-offset, 0px);
+		align-self: start;
+		max-height: calc(100dvh - var(--chrome-offset, 0px) - 1rem);
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		z-index: var(--z-rail);
+	}
+	.surface-rail > :global(*) {
 		flex: none;
+	}
+	.surface-rail-mobile[data-open='false'] {
+		display: var(--app-frame-pill-display, block);
 	}
 	@media (min-width: 1024px) {
 		.surface-rail-mobile[data-open='false'] {
-			display: none;
+			display: var(--app-frame-pill-display, none);
 		}
 		.surface-rail {
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-			position: sticky;
-			top: var(--chrome-offset, 0px);
-			align-self: start;
-			max-height: calc(100dvh - var(--chrome-offset, 0px) - 1rem);
-			overflow-y: auto;
-			overscroll-behavior: contain;
-			z-index: var(--z-rail);
+			display: var(--app-frame-rail-display, flex);
 		}
-		.surface-rail > :global(*) {
-			flex: none;
-		}
+	}
+	.surface-rail.surface-rail--mobile {
+		display: flex;
+		width: 100%;
 	}
 
 	.surface-rail-mobile {

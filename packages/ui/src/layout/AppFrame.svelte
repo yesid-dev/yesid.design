@@ -17,13 +17,27 @@
 </script>
 
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import Button from '../primitives/button/button.svelte';
 	import SurfaceRail from './SurfaceRail.svelte';
 	import type { SurfaceRailContext } from './SurfaceRail.svelte';
+	import { frameRailLayout } from './frame-rail-layout.js';
 
 	let { header, controls, controlsRail, children, footer, mainLabel, evidence, fullViewport = false, chromeHeight = $bindable() }: AppFrameProps = $props();
 	let headerHeight = $state<number>();
 	let tallChrome = $state(false);
+	let pairedRails = $state(false);
+	let frameBody = $state<HTMLDivElement>();
+	setContext(frameRailLayout, () => pairedRails);
+
+	function observeRailLayout(marker: HTMLElement) {
+		// CSS resolves the container query. Observe its result even when text grows at a fixed width.
+		const measure = () => { pairedRails = marker.getBoundingClientRect().width > 0; };
+		const observer = new ResizeObserver(measure);
+		observer.observe(marker);
+		measure();
+		return { destroy: () => observer.disconnect() };
+	}
 
 	function measureChrome(chrome: HTMLElement) {
 		const headerRow = chrome.querySelector(':scope > [data-slot="app-frame-header"]')!;
@@ -53,11 +67,29 @@
 		const clearance = tallChrome ? '0px' : `${chromeHeight}px`;
 		scroller.classList.add('chrome-clearance');
 		scroller.style.setProperty(property, clearance);
+		const bottomProperty = 'scroll-padding-block-end';
+		const previousBottom = scroller.style.getPropertyValue(bottomProperty);
+		const bottomPriority = scroller.style.getPropertyPriority(bottomProperty);
+		const hasMobileRail = (controlsRail && controlsRail.mobileVisible !== false)
+			|| (evidence && evidence.mobileVisible !== false);
+		const compactPadding = !pairedRails && hasMobileRail && frameBody
+			? getComputedStyle(frameBody).getPropertyValue('--app-frame-main-min').trim()
+			: '';
+		const currentBottom = compactPadding ? getComputedStyle(scroller).scrollPaddingBlockEnd : '';
+		const bottom = compactPadding
+			? `max(${currentBottom && currentBottom !== 'auto' ? currentBottom : '0px'}, ${compactPadding})`
+			: '';
+		if (bottom) scroller.style.setProperty(bottomProperty, bottom);
+		const installedBottom = scroller.style.getPropertyValue(bottomProperty);
 		return () => {
 			if (!hadClass) scroller.classList.remove('chrome-clearance');
 			if (scroller.style.getPropertyValue(property) === clearance) {
 				if (previous) scroller.style.setProperty(property, previous, priority);
 				else scroller.style.removeProperty(property);
+			}
+			if (bottom && scroller.style.getPropertyValue(bottomProperty) === installedBottom) {
+				if (previousBottom) scroller.style.setProperty(bottomProperty, previousBottom, bottomPriority);
+				else scroller.style.removeProperty(bottomProperty);
 			}
 		};
 	});
@@ -71,19 +103,20 @@
 	style:--app-frame-header-height={headerHeight === undefined ? undefined : `${headerHeight}px`}
 	style:--app-frame-chrome-height={chromeHeight === undefined ? undefined : `${chromeHeight}px`}
 >
+	<span class="app-frame-rail-breakpoint" aria-hidden="true" use:observeRailLayout></span>
 	<div class="app-frame-chrome" class:tall-chrome={tallChrome} data-slot="app-frame-chrome" use:measureChrome>
 		<div data-slot="app-frame-header">{@render header()}</div>
 		{#if controls}
 			<div class="app-frame-controls" data-slot="app-frame-controls" data-lenis-prevent>{@render controls()}</div>
 		{/if}
 	</div>
-	<div class="app-frame-body" class:with-evidence={!!evidence} class:with-controls-rail={!!controlsRail}>
+	<div bind:this={frameBody} class="app-frame-body" class:with-evidence={!!evidence} class:with-controls-rail={!!controlsRail}>
 		{#if controlsRail}
 			<SurfaceRail {...controlsRail} class="app-frame-controls-rail">
 				{#snippet rail(context: SurfaceRailContext)}
-					{#if context.presentation === 'mobile'}
-						<Button class="self-end" variant="outline" wrap onclick={context.closeSheet}>{controlsRail.closeAria}</Button>
-					{/if}
+					<div class="app-frame-close-controls">
+						<Button variant="outline" wrap onclick={context.closeSheet}>{controlsRail.closeAria}</Button>
+					</div>
 					{@render controlsRail.rail(context)}
 				{/snippet}
 			</SurfaceRail>
@@ -101,11 +134,25 @@
 		--app-frame-header-height: var(--app-frame-header-height-ssr, var(--nav-clearance, 0px));
 		--chrome-offset: var(--app-frame-chrome-height, var(--app-frame-chrome-height-ssr, var(--app-frame-header-height)));
 		--app-frame-main-min: var(--size-tap-min);
+		container: app-frame / inline-size;
 		display: flex;
 		flex-direction: column;
 		min-block-size: 100dvh;
 		min-inline-size: 0;
 	}
+	.app-frame > :global(*) {
+		--app-frame-rail-display: none;
+		--app-frame-pill-display: block;
+	}
+	.app-frame-rail-breakpoint {
+		position: absolute;
+		inline-size: 0;
+		block-size: 1px;
+		visibility: hidden;
+		pointer-events: none;
+	}
+	.app-frame-close-controls { display: none; }
+	:global(.surface-rail-sheet) .app-frame-close-controls { display: flex; justify-content: flex-end; }
 	.app-frame-chrome {
 		position: sticky;
 		inset-block-start: 0;
@@ -157,11 +204,11 @@
 	.app-frame-body > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
 		z-index: calc(var(--z-sheet) - 1);
 	}
-	@media (width < 1024px) {
-		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) {
+	@container app-frame (inline-size < 64rem) {
+		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
 			--app-frame-main-min: var(--floating-pill-clearance);
 		}
-		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) {
+		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
 			--app-frame-main-min: calc(var(--floating-pill-clearance) + max(3.25rem, 52px));
 		}
 		.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile']) {
@@ -172,7 +219,12 @@
 		}
 	}
 
-	@media (min-width: 1024px) {
+	@container app-frame (inline-size >= 64rem) {
+		.app-frame > :global(*) {
+			--app-frame-rail-display: flex;
+			--app-frame-pill-display: none;
+		}
+		.app-frame-rail-breakpoint { inline-size: 1px; }
 		.with-evidence {
 			grid-template-columns: minmax(0, 1fr) minmax(0, min(28rem, 30%));
 			gap: 1rem;
