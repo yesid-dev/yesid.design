@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { browser } from '$app/env';
+	import { page } from '$app/state';
 	import { ProductBrand, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { Button } from '@yesid/ui/button';
 	import { AppFrame, ControlsRail, NetworkPicker, SiteHeader } from '@yesid/ui/layout';
-	import { LABELS } from '#lib/gallery/site-header-fixture.js';
+	import { LABELS, LANGUAGE_NAMES, LOCALES } from '#lib/gallery/site-header-fixture.js';
 
 	const navigation = getContext<NavigationLifecycle>('gallery-navigation');
+	const locale = $derived(browser && page.url.searchParams.get('lang') === 'fr' ? 'fr' : 'en');
+	const french = $derived(locale === 'fr');
+	const labels = $derived(french ? {
+		skipToContent: 'Aller au contenu',
+		openMenu: 'Ouvrir le menu',
+		closeMenu: 'Fermer le menu',
+		menu: 'Menu du site',
+		menuFooter: 'Toutes les pages',
+		theme: 'Thème sombre',
+		nav: 'Navigation principale',
+	} : LABELS);
 	const networks = [
 		{ id: 'mtl', city: 'Montréal', name: 'STM', shortCode: 'STM' },
 		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: 'OC' },
@@ -32,12 +45,18 @@
 	rail: serviceControls, label: 'Controls', summary: 'Seven days', openAria: 'Open controls', closeAria: 'Close controls'
 }} evidence={{ rail: evidencePane, label: 'Evidence', openAria: 'Open evidence', closeAria: 'Close evidence' }}>
 	{#snippet header()}
-		<SiteHeader {navigation} labels={LABELS} home="/app-frame/controls-rail" links={[{ href: '#report', label: 'Report' }]}
-			menuItems={[{ href: '#report', label: 'Read the report' }]}>
+		<SiteHeader {navigation} {labels} home="/app-frame/controls-rail"
+			links={[{ href: '#report', label: french ? 'Rapport' : 'Report' }]}
+			menuItems={[{ href: '#report', label: french ? 'Lire le rapport' : 'Read the report' }]}
+			language={{ locale, locales: LOCALES, names: LANGUAGE_NAMES, label: french ? 'Langue' : 'Language',
+				href: (lang) => `/app-frame/controls-rail?lang=${lang}` }}>
 			{#snippet brand()}<ProductBrand product="Service" href="/app-frame/controls-rail" houseHref="/" />{/snippet}
-			{#snippet search()}<input class="search" type="search" aria-label="Search reports" />{/snippet}
+			{#snippet search()}<input class="search" type="search" aria-label={french ? 'Chercher des rapports' : 'Search reports'} />{/snippet}
 			{#snippet network()}
-				<NetworkPicker label="Network" {networks} value={selectedNetwork} onValueChange={(id) => (selectedNetwork = id)} />
+				<NetworkPicker label={french ? 'Réseau' : 'Network'} {networks} value={selectedNetwork} onValueChange={(id) => (selectedNetwork = id)} />
+			{/snippet}
+			{#snippet actions()}
+				<a class="inline-flex min-h-11 items-center" href="#report">{french ? 'Chercher' : 'Find'}</a>
 			{/snippet}
 		</SiteHeader>
 	{/snippet}

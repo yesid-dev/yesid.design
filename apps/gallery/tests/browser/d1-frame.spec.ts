@@ -3,6 +3,67 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 
 const path = '/app-frame/controls-rail';
 
+test.describe('Header network keyboard order', { tag: '@theme' }, () => {
+	const copy = {
+		en: { search: 'Search reports', find: 'Find', network: 'Network', theme: 'Dark theme', language: /^Language:/, menu: 'Open menu' },
+		fr: { search: 'Chercher des rapports', find: 'Chercher', network: 'Réseau', theme: 'Thème sombre', language: /^Langue\s*:/, menu: 'Ouvrir le menu' },
+	};
+	for (const locale of ['en', 'fr'] as const) {
+		for (const width of [390, 768, 1023, 1024, 1440]) {
+			test(`${locale}: network is in visual Tab order at ${width}px`, async ({ page }) => {
+				await page.setViewportSize({ width, height: 850 });
+				await page.goto(`${path}?lang=${locale}`);
+				await page.locator('html[data-gallery-ready]').waitFor();
+				const label = copy[locale];
+				const header = page.getByTestId('nav');
+				const search = header.getByRole('searchbox', { name: label.search });
+				const find = header.getByRole('link', { name: label.find, exact: true });
+				const network = header.getByRole('combobox', { name: label.network });
+				const theme = header.getByRole('switch', { name: label.theme });
+				const language = header.getByRole('link', { name: label.language });
+				const menu = header.getByRole('button', { name: label.menu });
+
+				const desktop = width >= 1024;
+				await expect(search).toBeVisible({ visible: desktop });
+				const [first, ...remaining] = desktop
+					? [search, network, find, theme, language, menu]
+					: [find, theme, language, menu, network];
+				await first.focus();
+				for (const control of remaining) {
+					await page.keyboard.press('Tab');
+					await expect(control).toBeFocused();
+				}
+			});
+		}
+	}
+
+	for (const fallback of [false, true]) {
+		test(`resize preserves network identity, selection and focus (${fallback ? 'fallback' : 'native move'})`, async ({ page }) => {
+			if (fallback) await page.addInitScript(() => {
+				Object.defineProperty(Element.prototype, 'moveBefore', { value: undefined, configurable: true });
+			});
+			await page.setViewportSize({ width: 390, height: 850 });
+			await page.goto(path);
+			await page.locator('html[data-gallery-ready]').waitFor();
+			const network = page.getByRole('combobox', { name: 'Network' });
+			const node = await network.elementHandle();
+			await network.selectOption('ott');
+			await network.focus();
+
+			for (const width of [1024, 390]) {
+				await page.setViewportSize({ width, height: 850 });
+				await expect.poll(() => network.evaluate((control) => {
+					const menu = control.closest('nav')?.querySelector('[data-testid="nav-menu-toggle"]');
+					return !!(menu && control.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING);
+				})).toBe(width >= 1024);
+				await expect(network).toBeFocused();
+				await expect(network).toHaveValue('ott');
+				expect(await network.evaluate((control, original) => control === original, node)).toBe(true);
+			}
+		});
+	}
+});
+
 test.describe('D1 frame and network slot', { tag: '@theme' }, () => {
 	for (const width of [320, 390]) {
 		test(`both rails at ${width}px and 200% text`, async ({ page }) => {
