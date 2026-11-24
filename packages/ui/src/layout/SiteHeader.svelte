@@ -189,9 +189,7 @@
 	let pillLanguageLink = $state<HTMLAnchorElement | null>(null);
 	function measureHeader(node: HTMLElement) {
 		const observer = new ResizeObserver(([entry]) => {
-			const width = entry.contentRect.width;
-			narrow = width < 600;
-			networkInline = width >= 1024;
+			narrow = entry.contentRect.width < 600;
 		});
 		observer.observe(node);
 		return { destroy: () => observer.disconnect() };
@@ -363,7 +361,7 @@
 						class:nav-pill-compact={active}
 						class:nav-pill-compact-controls={compactMenuControls}
 						class:nav-hydrated={hydrated}
-						use:linksFit={{ paused: active, links }}
+						use:linksFit={{ paused: active, links, onNetworkInline: network ? (inline: boolean) => (networkInline = inline) : undefined }}
 					>
 						{#if brand}{@render brand()}{:else}
 							<Wordmark href={home} text={wordmark} autoPlay={wordmarkAutoPlay} class="nav-wordmark" />
@@ -670,6 +668,21 @@
 			max-inline-size: calc(100vw - 1rem);
 		}
 	}
+	.nav-pill[data-network-below]:not([data-network-measuring]):has(.nav-network:not(.nav-collapsed) > :global(*)) {
+		position: relative;
+		margin-block-end: var(--nav-network-clearance);
+	}
+	.nav-pill[data-network-below]:not([data-network-measuring]) .nav-network {
+		position: absolute;
+		inset-block-start: calc(100% + 0.5rem);
+		inset-inline-start: 50%;
+		translate: -50% 0;
+		margin-inline: 0;
+		max-inline-size: calc(100vw - 1rem);
+	}
+	@media (width >= 1024px) {
+		:global(:root:has([data-network-below])) { --nav-extra-clearance: var(--nav-network-clearance); }
+	}
 	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */
 	@container site-header (width < 48em) {
 		.nav-pill[data-priority2-from='768'] .nav-links [data-priority='2'] {
@@ -826,6 +839,8 @@
 			opacity var(--duration-normal) var(--ease-default),
 			margin var(--duration-slow) var(--ease-default);
 	}
+	/* Network placement changes in one layout pass. The menu still fades its picker. */
+	.nav-hydrated .nav-network { transition-property: opacity; }
 	.nav-search.nav-collapsible {
 		max-width: 40rem;
 	}

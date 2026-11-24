@@ -9,13 +9,17 @@
 const MIN_GAP = 4;
 const OVERFLOW = 'data-links-overflow';
 const DROPPED = 'data-links-dropped';
+const NETWORK_BELOW = 'data-network-below';
+const NETWORK_MEASURING = 'data-network-measuring';
 const WATCHED = '.nav-wordmark, [data-slot="product-brand"], .nav-links > [data-priority], .nav-network';
+const CONTENT_CHANGES = { subtree: true, childList: true, characterData: true };
 
 export interface LinksFitParams {
 	/** Keep the current state, for example while the open menu collapses the links. */
 	paused: boolean;
 	/** Changing links measures again and watches any new link. */
 	links?: unknown;
+	onNetworkInline?: (inline: boolean) => void;
 }
 
 function takeOut(element: HTMLElement, out: boolean): void {
@@ -26,14 +30,34 @@ function takeOut(element: HTMLElement, out: boolean): void {
 
 export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	let paused = params.paused;
+	let onNetworkInline = params.onNetworkInline;
 	const root = pill.closest<HTMLElement>('[data-slot="site-header"]') ?? pill.parentElement!;
 	const parts = () => [...pill.querySelectorAll<HTMLElement>('.nav-links-part')];
 	const items = () => [...pill.querySelectorAll<HTMLElement>('.nav-links > [data-priority]')];
 
-	function fits(): boolean {
+	function contentWidth(): number {
 		const style = getComputedStyle(root);
-		const room = root.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 2 * MIN_GAP;
-		return pill.getBoundingClientRect().width <= room;
+		return root.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+	}
+
+	function fitNetwork(width: number, fits: () => boolean): void {
+		const network = pill.querySelector('[data-slot="site-header-network"]');
+		if (!network?.firstElementChild) {
+			pill.removeAttribute(NETWORK_BELOW);
+			onNetworkInline?.(false);
+			return;
+		}
+
+		// Try the full picker before hiding links. Measure without moving the focused DOM node.
+		let inline = false;
+		if (width >= 1024) {
+			const wasBelow = pill.hasAttribute(NETWORK_BELOW);
+			if (wasBelow) pill.setAttribute(NETWORK_MEASURING, '');
+			inline = fits();
+			if (wasBelow) pill.removeAttribute(NETWORK_MEASURING);
+		}
+		pill.toggleAttribute(NETWORK_BELOW, !inline);
+		onNetworkInline?.(inline);
 	}
 
 	// True while a folding part is collapsed or still animating its max-width back.
@@ -48,6 +72,11 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	function measure(): void {
 		if (paused || folding()) return;
 		for (const child of pill.querySelectorAll<HTMLElement>(WATCHED)) observer.observe(child);
+		if (onNetworkInline) {
+			for (const child of pill.children) {
+				if (!child.classList.contains('nav-links-part')) observer.observe(child);
+			}
+		}
 		// Start from every link the width tiers show, then drop whole tiers until the pill fits.
 		pill.removeAttribute(OVERFLOW);
 		for (const part of parts()) takeOut(part, false);
@@ -55,6 +84,9 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 			takeOut(item, false);
 			item.removeAttribute(DROPPED);
 		}
+		const width = contentWidth();
+		const fits = () => pill.getBoundingClientRect().width <= width - 2 * MIN_GAP;
+		if (onNetworkInline) fitNetwork(width, fits);
 		if (fits()) return;
 		// Links the width tiers hide (display: none) have no width and stay as they are.
 		let shown = items().filter((item) => item.offsetWidth > 0);
@@ -76,6 +108,8 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	// The first notification for the header measures once the pill is laid out.
 	const observer = new ResizeObserver(measure);
 	observer.observe(root);
+	const actions = new MutationObserver(measure);
+	if (onNetworkInline) actions.observe(pill, CONTENT_CHANGES);
 	void document.fonts?.ready.then(measure);
 
 	// The links grow back after the menu closes; measure the expanded pill once they have.
@@ -91,6 +125,12 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	return {
 		update(next: LinksFitParams) {
 			paused = next.paused;
+			if (!!next.onNetworkInline !== !!onNetworkInline) {
+				actions.disconnect();
+				if (next.onNetworkInline) actions.observe(pill, CONTENT_CHANGES);
+			}
+			onNetworkInline = next.onNetworkInline;
+			if (!onNetworkInline) pill.removeAttribute(NETWORK_BELOW);
 			measure();
 			// Without a transition (reduced motion), the parts are full width by the next frame.
 			cancelAnimationFrame(frame);
@@ -98,6 +138,7 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 		},
 		destroy() {
 			observer.disconnect();
+			actions.disconnect();
 			cancelAnimationFrame(frame);
 			pill.removeEventListener('transitionend', settled);
 			pill.removeEventListener('transitioncancel', settled);
