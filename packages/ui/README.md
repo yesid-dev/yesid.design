@@ -560,7 +560,7 @@ Import `AnswerLead` and `Stamp` from `@yesid/ui/brand`. `AnswerLead` pairs a `va
 its localized `sentence` in a named section. Use `value={null}` and the `absent` snippet to show
 a missing observation. Pass the date or freshness stamp, metadata and actions as snippets. A
 short `comparison` adds context below the answer. At a viewport of at least 40 em and an answer
-width of at least 24 rem, the figure and sentence sit side by side. The sentence keeps at least
+width of at least 26 rem, the figure and sentence sit side by side. The sentence keeps at least
 12 rem and the figure uses at most 55% of the available width. The layout stacks below either
 threshold.
 
