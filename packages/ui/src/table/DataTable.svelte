@@ -342,8 +342,6 @@
 
 	.data-table-stack-label {
 		display: none;
-		min-inline-size: 0;
-		overflow-wrap: anywhere;
 	}
 
 	.data-table-sort {
