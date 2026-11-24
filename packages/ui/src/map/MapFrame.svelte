@@ -8,6 +8,7 @@
 		children: Snippet<[MapViewport]>;
 		panel?: Snippet;
 		legend?: Snippet;
+		legendLabel?: string;
 		details?: { label: string; content: Snippet };
 	}
 </script>
@@ -17,16 +18,29 @@
 	import { Card } from '../primitives/card/index.js';
 	import type { MapRect } from './placement.js';
 
-	let { label, children, panel, legend, details, class: className, ...rest }: MapFrameProps = $props();
+	let { label, children, panel, legend, legendLabel, details, class: className, ...rest }: MapFrameProps = $props();
 	let stage = $state<HTMLDivElement>();
 	let left = $state<HTMLDivElement>();
 	let right = $state<HTMLElement>();
+	let legendButton = $state<HTMLButtonElement>();
+	let legendPanel = $state<HTMLDivElement>();
+	let legendOpen = $state(false);
 	let viewport = $state<MapViewport>({ width: 0, height: 0, exclusions: [] });
+	const legendId = $props.id();
+	const compactLegend = $derived(!!legendLabel && viewport.width > 0 && viewport.width < 1024);
+
+	function closeLegendOnEscape(event: KeyboardEvent): void {
+		if (event.key !== 'Escape' || !legendOpen) return;
+		event.preventDefault();
+		event.stopPropagation();
+		legendOpen = false;
+		legendButton?.focus({ preventScroll: true });
+	}
 
 	$effect(() => {
 		if (!stage || typeof ResizeObserver === 'undefined') return;
 		const canvas = stage;
-		const overlays = [left, right].filter((element) => element !== undefined);
+		const overlays = [left, right, legendButton, legendPanel].filter((element) => element !== undefined);
 
 		function measure() {
 			const root = canvas.getBoundingClientRect();
@@ -54,15 +68,53 @@
 	<div class="map-content">
 		<div class="map-stage" bind:this={stage} data-slot="map-stage">
 			{@render children(viewport)}
+			{#if legend && legendLabel}
+				<div class="legend-dock">
+					<button
+						class="legend-trigger"
+						type="button"
+						bind:this={legendButton}
+						aria-label={legendLabel}
+						aria-expanded={legendOpen}
+						aria-controls={legendId}
+						onclick={() => (legendOpen = !legendOpen)}
+						onkeydown={closeLegendOnEscape}
+					>
+						<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<path d="M3 5h2m3 0h9M3 10h2m3 0h9M3 15h2m3 0h9" />
+						</svg>
+					</button>
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions (the named panel scrolls and Escape returns focus to its trigger) -->
+					<div
+						class="legend-panel"
+						id={legendId}
+						bind:this={legendPanel}
+						role="region"
+						aria-label={legendLabel}
+						tabindex="0"
+						data-lenis-prevent
+						hidden={!legendOpen || !compactLegend}
+						onkeydown={closeLegendOnEscape}
+					>
+						{#if compactLegend}{@render legend()}{/if}
+					</div>
+				</div>
+			{/if}
 		</div>
-		{#if panel || legend}
+		{#if panel || (legend && !compactLegend)}
 			<div class="map-left" bind:this={left} data-slot="map-overlays" data-lenis-prevent>
 				{#if panel}
 					<Card edge="neutral" textSize="inherit" class="gap-2 p-3">
 						{@render panel()}
 					</Card>
 				{/if}
-				{@render legend?.()}
+				{#if legend && !compactLegend}
+					{#if legendLabel}
+						<div class="legend-desktop">{@render legend()}</div>
+					{:else}
+						{@render legend()}
+					{/if}
+				{/if}
 			</div>
 		{/if}
 		{#if details}
@@ -118,6 +170,43 @@
 		border-radius: var(--radius-lg);
 		background: var(--surface-2);
 		overflow-wrap: anywhere;
+	}
+	.legend-dock { display: none; }
+	.legend-trigger,
+	.legend-panel { pointer-events: auto; }
+	.legend-trigger {
+		display: grid;
+		flex: none;
+		place-items: center;
+		inline-size: var(--size-tap-min);
+		block-size: var(--size-tap-min);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface-2);
+		color: var(--foreground);
+	}
+	.legend-panel {
+		inline-size: min(23rem, 100%);
+		min-block-size: 0;
+		overflow: auto;
+		overscroll-behavior: contain;
+		border-radius: var(--radius-lg);
+	}
+	.legend-trigger:focus-visible,
+	.legend-panel:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+	@container (width < 1024px) {
+		.legend-desktop { display: none; }
+		.legend-dock {
+			position: absolute;
+			z-index: 2;
+			inset: 0.75rem;
+			inset-block-end: var(--floating-pill-clearance, 5rem);
+			display: flex;
+			flex-direction: column-reverse;
+			align-items: flex-end;
+			gap: 0.5rem;
+			pointer-events: none;
+		}
 	}
 	@container (width < 48rem) {
 		.map-left,

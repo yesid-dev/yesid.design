@@ -44,7 +44,7 @@
 			toggle theme
 		</button>
 	</header>
-	<main class="mx-auto max-w-5xl px-6 py-10">
+	<main class={['mx-auto px-6 py-10', page.route.id === '/map-legends' ? 'max-w-7xl' : 'max-w-5xl']}>
 		{@render children()}
 	</main>
 	{/if}
