@@ -32,17 +32,27 @@
 
 	function observeRailLayout(marker: HTMLElement) {
 		const frame = marker.parentElement!;
+		const root = frame.ownerDocument.documentElement;
+		const view = frame.ownerDocument.defaultView!;
 		// The CSS media query uses the browser's initial text size. Observe one rem to catch
 		// page-level font-size overrides without putting fixed descendants in a size container.
 		const measure = () => {
 			const rem = marker.getBoundingClientRect().width;
-			if (rem > 0) pairedRails = frame.getBoundingClientRect().width >= 64 * rem;
+			if (rem <= 0) return;
+			const frameWidth = frame.getBoundingClientRect().width;
+			// CSS media queries include the scrollbar in the viewport width.
+			const width = Math.round(frameWidth) === root.clientWidth ? view.innerWidth : frameWidth;
+			pairedRails = width >= 64 * rem;
 		};
 		const observer = new ResizeObserver(measure);
 		observer.observe(marker);
 		observer.observe(frame);
+		view.addEventListener('resize', measure);
 		measure();
-		return { destroy: () => observer.disconnect() };
+		return { destroy() {
+			observer.disconnect();
+			view.removeEventListener('resize', measure);
+		} };
 	}
 
 	function measureChrome(chrome: HTMLElement) {

@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
+test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } });
+
 const path = '/app-frame/controls-rail';
 const workspace = (page: Page) => ({
 	main: page.getByRole('main', { name: 'Service workspace' }),
@@ -84,6 +86,46 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 		await expect(page.locator('html')).toHaveCSS('font-size', '32px');
 		await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
 		await expectClosedLayout(page, false);
+	});
+
+	test('a page-width frame stays paired through hydration', async ({ page }) => {
+		await page.setViewportSize({ width: 1030, height: 900 });
+		let resume!: () => void;
+		const held = new Promise<void>((resolve) => { resume = resolve; });
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await held;
+			await route.fallback();
+		});
+		try {
+			await page.goto(path, { waitUntil: 'domcontentloaded' });
+			await page.addStyleTag({ content: `
+				html { overflow-y: scroll; }
+				html::-webkit-scrollbar { width: 15px; }
+				#report { min-block-size: 200vh; }
+			` });
+			const frame = page.locator('[data-slot="app-frame"]');
+			const widths = await frame.evaluate((element) => ({
+				viewport: window.innerWidth,
+				page: document.documentElement.clientWidth,
+				frame: element.getBoundingClientRect().width,
+			}));
+			expect(widths.viewport).toBeGreaterThanOrEqual(1024);
+			expect(widths.page).toBeLessThan(1024);
+			expect(widths.frame).toBe(widths.page);
+			await expect(frame).not.toHaveAttribute('data-rail-layout');
+			const before = await expectClosedLayout(page, true);
+
+			resume();
+			await page.locator('html[data-gallery-ready]').waitFor();
+			await expect(frame).toHaveAttribute('data-rail-layout', 'paired');
+			expect(await expectClosedLayout(page, true)).toEqual(before);
+
+			await page.setViewportSize({ width: 1023, height: 900 });
+			await expect(frame).toHaveAttribute('data-rail-layout', 'compact');
+			await expectClosedLayout(page, false);
+		} finally {
+			resume();
+		}
 	});
 
 	test('an AppFrame narrower than the viewport keeps its compact controls', async ({ page }) => {
