@@ -26,15 +26,21 @@
 	let { header, controls, controlsRail, children, footer, mainLabel, evidence, fullViewport = false, chromeHeight = $bindable() }: AppFrameProps = $props();
 	let headerHeight = $state<number>();
 	let tallChrome = $state(false);
-	let pairedRails = $state(false);
+	let pairedRails = $state<boolean>();
 	let frameBody = $state<HTMLDivElement>();
-	setContext(frameRailLayout, () => pairedRails);
+	setContext(frameRailLayout, () => pairedRails ?? false);
 
 	function observeRailLayout(marker: HTMLElement) {
-		// CSS resolves the container query. Observe its result even when text grows at a fixed width.
-		const measure = () => { pairedRails = marker.getBoundingClientRect().width > 0; };
+		const frame = marker.parentElement!;
+		// The CSS media query uses the browser's initial text size. Observe one rem to catch
+		// page-level font-size overrides without putting fixed descendants in a size container.
+		const measure = () => {
+			const rem = marker.getBoundingClientRect().width;
+			if (rem > 0) pairedRails = frame.getBoundingClientRect().width >= 64 * rem;
+		};
 		const observer = new ResizeObserver(measure);
 		observer.observe(marker);
+		observer.observe(frame);
 		measure();
 		return { destroy: () => observer.disconnect() };
 	}
@@ -72,8 +78,8 @@
 		const bottomPriority = scroller.style.getPropertyPriority(bottomProperty);
 		const hasMobileRail = (controlsRail && controlsRail.mobileVisible !== false)
 			|| (evidence && evidence.mobileVisible !== false);
-		const compactPadding = !pairedRails && hasMobileRail && frameBody
-			? getComputedStyle(frameBody).getPropertyValue('--app-frame-main-min').trim()
+		const compactPadding = pairedRails === false && hasMobileRail && frameBody
+			? getComputedStyle(frameBody).getPropertyValue('--app-frame-compact-clearance').trim()
 			: '';
 		const currentBottom = compactPadding ? getComputedStyle(scroller).scrollPaddingBlockEnd : '';
 		const bottom = compactPadding
@@ -99,6 +105,7 @@
 	class="app-frame"
 	class:full-viewport={fullViewport}
 	data-slot="app-frame"
+	data-rail-layout={pairedRails === undefined ? undefined : pairedRails ? 'paired' : 'compact'}
 	data-lenis-prevent={fullViewport ? '' : undefined}
 	style:--app-frame-header-height={headerHeight === undefined ? undefined : `${headerHeight}px`}
 	style:--app-frame-chrome-height={chromeHeight === undefined ? undefined : `${chromeHeight}px`}
@@ -134,19 +141,31 @@
 		--app-frame-header-height: var(--app-frame-header-height-ssr, var(--nav-clearance, 0px));
 		--chrome-offset: var(--app-frame-chrome-height, var(--app-frame-chrome-height-ssr, var(--app-frame-header-height)));
 		--app-frame-main-min: var(--size-tap-min);
-		container: app-frame / inline-size;
+		--app-frame-paired: 0;
+		--app-frame-compact: calc(1 - var(--app-frame-paired));
+		--app-frame-rail-display: none;
+		--app-frame-pill-display: block;
 		display: flex;
 		flex-direction: column;
 		min-block-size: 100dvh;
 		min-inline-size: 0;
 	}
-	.app-frame > :global(*) {
-		--app-frame-rail-display: none;
-		--app-frame-pill-display: block;
+	@media (min-width: 64rem) {
+		.app-frame:not([data-rail-layout]) {
+			--app-frame-paired: 1;
+			--app-frame-rail-display: flex;
+			--app-frame-pill-display: none;
+		}
+	}
+	.app-frame[data-rail-layout='paired'] {
+		--app-frame-paired: 1;
+		--app-frame-rail-display: flex;
+		--app-frame-pill-display: none;
 	}
 	.app-frame-rail-breakpoint {
 		position: absolute;
-		inline-size: 0;
+		inset-inline-start: 0;
+		inline-size: 1rem;
 		block-size: 1px;
 		visibility: hidden;
 		pointer-events: none;
@@ -187,9 +206,23 @@
 		min-inline-size: 0;
 	}
 	.app-frame-body {
+		--app-frame-controls-track: minmax(0, calc(var(--app-frame-paired) * min(17rem, 27%)));
+		--app-frame-evidence-track: minmax(0, calc(var(--app-frame-paired) * min(28rem, 30%)));
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		flex: 1;
+	}
+	.with-controls-rail,
+	.with-evidence { gap: calc(var(--app-frame-paired) * 1rem); }
+	.with-controls-rail {
+		grid-template-columns: var(--app-frame-controls-track) minmax(0, 1fr);
+	}
+	.with-controls-rail > .app-frame-main { grid-column: 2; }
+	.with-evidence {
+		grid-template-columns: minmax(0, 1fr) var(--app-frame-evidence-track);
+	}
+	.with-controls-rail.with-evidence {
+		grid-template-columns: var(--app-frame-controls-track) minmax(0, 1fr) var(--app-frame-evidence-track);
 	}
 	.full-viewport {
 		block-size: 100dvh;
@@ -197,6 +230,25 @@
 	}
 	.full-viewport .app-frame-body { min-block-size: var(--app-frame-main-min); }
 	.full-viewport .app-frame-main { overflow: auto; }
+	.full-viewport .with-controls-rail {
+		position: relative;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.full-viewport .with-controls-rail > .app-frame-main { grid-column: 1; }
+	.full-viewport .with-controls-rail.with-evidence {
+		grid-template-columns: minmax(0, 1fr) var(--app-frame-evidence-track);
+	}
+	.full-viewport :global(.app-frame-controls-rail:not(.surface-rail--mobile)) {
+		position: absolute;
+		inset-block-start: 1rem;
+		inset-inline-start: 1rem;
+		inline-size: min(17rem, 36%);
+		max-block-size: calc(100% - 2rem);
+	}
+	.full-viewport :global(.app-frame-evidence:not(.surface-rail--mobile)) {
+		inset-block-start: 0;
+		max-block-size: 100%;
+	}
 	.app-frame-body > :global([data-slot='surface-rail-mobile']) {
 		--surface-rail-sheet-clearance: var(--app-frame-header-height);
 	}
@@ -204,55 +256,17 @@
 	.app-frame-body > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
 		z-index: calc(var(--z-sheet) - 1);
 	}
-	@container app-frame (inline-size < 64rem) {
-		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
-			--app-frame-main-min: var(--floating-pill-clearance);
-		}
-		.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
-			--app-frame-main-min: calc(var(--floating-pill-clearance) + max(3.25rem, 52px));
-		}
-		.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile']) {
-			--surface-rail-stack-offset: max(3.25rem, 52px);
-		}
-		.full-viewport .app-frame-body:has(> :global([data-slot='surface-rail-mobile'])) .app-frame-main {
-			scroll-padding-block-end: var(--app-frame-main-min);
-		}
+	.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
+		--app-frame-compact-clearance: var(--floating-pill-clearance);
+		--app-frame-main-min: max(var(--size-tap-min), calc(var(--app-frame-compact) * var(--app-frame-compact-clearance)));
 	}
-
-	@container app-frame (inline-size >= 64rem) {
-		.app-frame > :global(*) {
-			--app-frame-rail-display: flex;
-			--app-frame-pill-display: none;
-		}
-		.app-frame-rail-breakpoint { inline-size: 1px; }
-		.with-evidence {
-			grid-template-columns: minmax(0, 1fr) minmax(0, min(28rem, 30%));
-			gap: 1rem;
-		}
-		.with-controls-rail {
-			grid-template-columns: minmax(0, min(17rem, 27%)) minmax(0, 1fr);
-			gap: 1rem;
-		}
-		.with-controls-rail.with-evidence {
-			grid-template-columns: minmax(0, min(17rem, 27%)) minmax(0, 1fr) minmax(0, min(28rem, 30%));
-		}
-		.full-viewport .with-controls-rail {
-			position: relative;
-			grid-template-columns: minmax(0, 1fr);
-		}
-		.full-viewport .with-controls-rail.with-evidence {
-			grid-template-columns: minmax(0, 1fr) minmax(0, min(28rem, 30%));
-		}
-		.full-viewport :global(.app-frame-controls-rail) {
-			position: absolute;
-			inset-block-start: 1rem;
-			inset-inline-start: 1rem;
-			inline-size: min(17rem, 36%);
-			max-block-size: calc(100% - 2rem);
-		}
-		.full-viewport :global(.app-frame-evidence) {
-			inset-block-start: 0;
-			max-block-size: 100%;
-		}
+	.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
+		--app-frame-compact-clearance: calc(var(--floating-pill-clearance) + max(3.25rem, 52px));
+	}
+	.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile']) {
+		--surface-rail-stack-offset: calc(var(--app-frame-compact) * max(3.25rem, 52px));
+	}
+	.full-viewport .app-frame-body:has(> :global([data-slot='surface-rail-mobile'])) .app-frame-main {
+		scroll-padding-block-end: calc(var(--app-frame-compact) * var(--app-frame-main-min));
 	}
 </style>

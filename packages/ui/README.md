@@ -815,8 +815,9 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
 - **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
   Pass `controlsRail={{ rail, label, summary, openAria, closeAria, mobileVisible }}` for a
   start-side controls column when the frame is at least 64 rem wide. Controls and evidence use
-  bottom-sheet triggers below that width. The breakpoint follows the root font size, and CSS
-  chooses the layout before hydration. The `rail` snippet receives `SurfaceRailContext` and can
+  bottom-sheet triggers below that width. Before hydration CSS uses the viewport and the browser's
+  initial text size. After hydration the frame uses its measured width and the computed root font
+  size, including page overrides. The `rail` snippet receives `SurfaceRailContext` and can
   render `ControlsRail`. In `fullViewport` the
   controls rail floats over `main`. `chromeHeight` measures the header and any retained strip.
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
