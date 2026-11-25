@@ -157,8 +157,15 @@ test.describe('Compact network page scroll', { tag: '@theme' }, () => {
 			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(networkBox.y, 0);
 			await page.setViewportSize({ width: 1280, height: 900 });
 			await expect(pill.getByRole('searchbox')).toBeVisible();
+			// Search is visible before ResizeObserver can move the picker back into the pill.
+			await expect.poll(() => network.evaluate((control) => {
+				const box = control.getBoundingClientRect();
+				const pillBox = control.closest('nav')!.getBoundingClientRect();
+				return box.top >= pillBox.top && box.bottom <= pillBox.bottom;
+			})).toBe(true);
 			const inline = (await network.boundingBox())!;
 			await scrollTo(900);
+			await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(900);
 			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(inline.y, 0);
 		});
 	}
