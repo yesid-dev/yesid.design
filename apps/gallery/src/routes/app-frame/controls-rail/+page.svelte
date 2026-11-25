@@ -81,7 +81,7 @@
 </AppFrame>
 
 <style>
-	.report { min-block-size: 120dvh; padding: 1rem; overflow-wrap: anywhere; }
+	.report { min-block-size: 120dvh; padding: 1rem var(--space-page-x); overflow-wrap: anywhere; }
 	h1 { font-size: var(--text-title); }
 	.filter { display: grid; gap: 0.5rem; padding: 1rem; min-inline-size: 0; }
 	.filter select { max-inline-size: 100%; }

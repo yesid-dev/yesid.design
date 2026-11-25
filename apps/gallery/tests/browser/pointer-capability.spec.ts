@@ -23,6 +23,7 @@ for (const device of ['mouse', 'touchscreen laptop with mouse', 'touch-only'] as
 				if (device === 'touchscreen laptop with mouse') {
 					expect(await page.evaluate(() => navigator.maxTouchPoints)).toBe(10);
 				}
+				if (canHover) await expect(glow.locator('[data-glow-overlay]')).toHaveCount(1);
 				await glow.hover();
 				await expect(glow.locator('[data-glow-overlay]')).toHaveCount(canHover ? 1 : 0);
 				if (canHover) {

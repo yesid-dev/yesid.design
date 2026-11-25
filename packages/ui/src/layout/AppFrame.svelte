@@ -234,6 +234,16 @@
 	.with-controls-rail.with-evidence {
 		grid-template-columns: var(--app-frame-controls-track) minmax(0, 1fr) var(--app-frame-evidence-track);
 	}
+	.app-frame:not(.full-viewport) > .with-controls-rail {
+		padding-inline-start: calc(var(--app-frame-paired) * var(--space-page-x));
+	}
+	.app-frame:not(.full-viewport) > .with-controls-rail > :global(.app-frame-controls-rail:not(.surface-rail--mobile)) {
+		--reading-rail-gap: calc(var(--app-frame-paired) * 1rem);
+		--reading-rail-top: calc(var(--chrome-offset) + var(--reading-rail-gap));
+		margin-block-start: var(--reading-rail-gap);
+		top: var(--reading-rail-top);
+		max-height: calc(100dvh - var(--reading-rail-top) - 1rem);
+	}
 	.full-viewport {
 		block-size: 100dvh;
 		overflow: auto;
