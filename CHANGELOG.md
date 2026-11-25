@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.57.0-rc.4
+## 0.57.0
 
 <!-- release-fragment: app-frame-shell-clearance -->
 - `@yesid/ui` (patch): Keep compact search out of SiteHeader’s open navigation dialog and preserve the
