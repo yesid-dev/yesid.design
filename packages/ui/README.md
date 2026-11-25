@@ -830,8 +830,6 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
   layout and on resize. Within the frame, `--app-frame-chrome-height` exposes that measurement.
-  If the header's actions include a compact search button marked `data-slot="nav-compact-search"`,
-  the compact frame shows that button in place of the inline search.
   `--chrome-offset` is the sticky clearance and becomes zero when tall chrome scrolls away.
   `--app-frame-header-height` measures the header row alone. Set
   `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
@@ -894,6 +892,10 @@ banner visible. With JavaScript disabled, the banner and link remain available.
 Pass a `network` snippet to place a network control after inline search at desktop widths and
 below the pill when the header is narrower than 1024 px. Use `NetworkPicker` for the compact
 short code and the full accessible option names.
+For search inside an `AppFrame`, provide the inline field in `search` and put the compact search
+button in `actions` with `data-slot="nav-compact-search"`. This marker is the product's hook for
+compact search. The kit shows the marked button in place of the inline field when the frame is
+compact. The product supplies the button's accessible name and opens its search UI.
 The pill renders inside the dialog, so it stays above the open menu and inside its focus trap.
 Call `createNavigationLifecycle` from `@yesid/ui/brand` once during the persistent app layout's
 initialization with `beforeNavigate`, `onNavigate` and `afterNavigate` from `$app/navigation`,

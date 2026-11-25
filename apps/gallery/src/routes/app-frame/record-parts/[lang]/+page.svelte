@@ -55,11 +55,13 @@
 	const rowsLayout = { mode: 'rows', primary: 'line', value: 'ontime' } as const;
 	const hours = [{id:'a',label:'05h'}, {id:'b',label:'06h'}, {id:'c',label:'07h'}, {id:'d',label:'08h'}];
 	const measured: HourGridCell = { text: '19', level: 2, name: '19%' };
+	const few = $derived<HourGridCell>({ text: c.few, level: null, state: 'few', name: c.few });
+	const none = $derived<HourGridCell>({ text: c.none, level: null, state: 'none', name: c.none });
 	const day = $derived(french ? 'Lundi' : 'Monday');
 	const hourlyRows = $derived([{ id: 'mon', label: day, cells: [
 		measured,
-		{ text: c.few, level: null, state: 'few', name: c.few },
-		{ text: c.none, level: null, state: 'none', name: c.none },
+		few,
+		none,
 		{ text: c.unmeasured, level: null, state: 'unmeasured', name: c.unmeasured },
 	] }] satisfies { id: string; label: string; cells: HourGridCell[] }[]);
 	const stateLabels = $derived({ few: c.few, none: c.none, unmeasured: c.unmeasured });
@@ -134,6 +136,12 @@
 		<div data-testid="measured-hour-grid">
 			<HourGrid label={c.measured} columns={hours.slice(0, 1)} rows={[{ id: 'mon', label: day, cells: [measured] }]} {scale} {stateLabels} />
 		</div>
+	<div data-testid="no-unmeasured-hour-grid">
+		<HourGrid label={`${c.measured} · ${c.few}`} columns={hours.slice(0, 2)} rows={[{ id: 'mon', label: day, cells: [measured, few] }]} {scale} {stateLabels} />
+	</div>
+	<div data-testid="none-only-hour-grid">
+		<HourGrid label={c.none} columns={hours.slice(0, 1)} rows={[{ id: 'mon', label: day, cells: [none] }]} {scale} {stateLabels} />
+	</div>
 		<StopLadder label={c.stops} {stops} max={10} columns={{ stop: c.stops, value: c.delay }}
 			threshold={{ value: 5, label: c.threshold }} highlight={{ fromId: 'b', toId: 'c', label: c.stretch }} />
 	</section>

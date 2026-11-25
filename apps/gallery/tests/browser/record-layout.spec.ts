@@ -127,6 +127,14 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				await expect(legend.getByText(name, { exact: true })).toBeVisible();
 				await expect(filtered.getByText(name, { exact: true })).toHaveCount(0);
 			}
+			const noUnmeasured = page.getByTestId('no-unmeasured-hour-grid').getByRole('list', { name: c.scale });
+			await expect(noUnmeasured.getByText(c.few, { exact: true })).toBeVisible();
+			await expect(noUnmeasured.getByText(c.none, { exact: true })).toHaveCount(0);
+			await expect(noUnmeasured.getByText(c.unmeasured, { exact: true })).toHaveCount(0);
+			const noneOnly = page.getByTestId('none-only-hour-grid').getByRole('list', { name: c.scale });
+			await expect(noneOnly.getByText(c.none, { exact: true })).toBeVisible();
+			await expect(noneOnly.getByText(c.few, { exact: true })).toHaveCount(0);
+			await expect(noneOnly.getByText(c.unmeasured, { exact: true })).toHaveCount(0);
 			for (const forcedColors of ['none', 'active'] as const) {
 				await page.emulateMedia({ forcedColors });
 				for (const marker of await mixed.locator('[data-state="few"]').all()) {
