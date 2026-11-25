@@ -104,3 +104,62 @@ test.describe('Network header menu height', { tag: '@theme' }, () => {
 		});
 	}
 });
+
+test.describe('Compact network page scroll', { tag: '@theme' }, () => {
+	for (const fallback of [false, true]) {
+		test(`the network row leaves the viewport while the pill stays fixed (${fallback ? 'scroll listener' : 'scroll timeline'})`, async ({ page }) => {
+			if (fallback) {
+				await page.addInitScript(() => {
+					const supports = CSS.supports.bind(CSS);
+					CSS.supports = (...args: [string] | [string, string]) =>
+						!args[0].includes('animation-timeline') && (args.length === 1 ? supports(args[0]) : supports(...args));
+				});
+			}
+			await page.setViewportSize({ width: 390, height: 900 });
+			await page.goto(`/app-frame/network-paint/${fallback ? 'fr' : 'en'}/quiet`);
+			await page.getByRole('main').evaluate((node) => { node.style.minBlockSize = '240dvh'; });
+			if (fallback) await page.addStyleTag({ content: '.nav-network { animation: none !important; }' });
+			const pill = page.getByTestId('nav-pill');
+			const network = pill.getByRole('combobox');
+			const menu = pill.getByTestId('nav-menu-toggle');
+			await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+			await page.evaluate(() => document.fonts.ready);
+			await network.selectOption('ott');
+			const original = await network.elementHandle();
+			const pillBox = (await pill.boundingBox())!;
+			const networkBox = (await network.boundingBox())!;
+			const scrollTo = (top: number) => page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), top);
+
+			await scrollTo(24);
+			await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(24);
+			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(networkBox.y - 24, 0);
+			await scrollTo(900);
+			await expect.poll(async () => {
+				const box = (await network.boundingBox())!;
+				return box.y + box.height;
+			}).toBeLessThan(0);
+			expect(await pill.boundingBox()).toEqual(pillBox);
+			expect(await page.evaluate((y) => !!document.elementFromPoint(innerWidth / 2, y)?.closest('main'), pillBox.y + pillBox.height + 20)).toBe(true);
+
+			await menu.evaluate((node) => node.focus({ preventScroll: true }));
+			expect(await page.evaluate(() => window.scrollY)).toBe(900);
+			await page.keyboard.press('Tab');
+			await expect(network).toBeFocused();
+			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(networkBox.y, 0);
+			await expect(network).toHaveValue('ott');
+			expect(await network.evaluate((node, original) => node === original, original)).toBe(true);
+			await page.keyboard.press('Shift+Tab');
+			await expect(menu).toBeFocused();
+			await scrollTo(900);
+			await expect.poll(async () => (await network.boundingBox())!.y).toBeLessThan(0);
+
+			await scrollTo(0);
+			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(networkBox.y, 0);
+			await page.setViewportSize({ width: 1280, height: 900 });
+			await expect(pill.getByRole('searchbox')).toBeVisible();
+			const inline = (await network.boundingBox())!;
+			await scrollTo(900);
+			await expect.poll(async () => (await network.boundingBox())!.y).toBeCloseTo(inline.y, 0);
+		});
+	}
+});

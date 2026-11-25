@@ -189,6 +189,16 @@
 		flex: none;
 		background: var(--background);
 	}
+	@media (width < 1024px) {
+		.app-frame-chrome:where(:not(.tall-chrome):has(> [data-slot='app-frame-header'] :global([data-slot='site-header-network']:not([inert])) > :global(*))) {
+			/* Keep the network row's initial space without painting or intercepting the space it vacates. */
+			--pill-end: calc(var(--app-frame-header-height) - var(--nav-network-clearance));
+			background: linear-gradient(var(--background) 0 var(--pill-end), transparent var(--pill-end) var(--app-frame-header-height), var(--background) var(--app-frame-header-height));
+			pointer-events: none;
+			& > .app-frame-controls,
+			& > [data-slot='app-frame-header'] > :global(*) { pointer-events: auto; }
+		}
+	}
 	.app-frame-chrome:has(:global([aria-modal='true'])) {
 		z-index: var(--z-menu);
 	}

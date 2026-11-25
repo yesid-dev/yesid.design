@@ -891,7 +891,8 @@ banner visible. With JavaScript disabled, the banner and link remain available.
 `SiteHeader` is the floating pill header with a full-screen metro-line menu on a bits-ui Dialog.
 Pass a `network` snippet to place a network control after inline search at desktop widths and
 below the pill when the header is narrower than 1024 px. Use `NetworkPicker` for the compact
-short code and the full accessible option names.
+short code and the full accessible option names. Below 1024 px of viewport width, the network row
+scrolls away with the page. Tabbing to the network control brings it back for keyboard use.
 For search inside an `AppFrame`, provide the inline field in `search` and put the compact search
 button in `actions` with `data-slot="nav-compact-search"`. This marker is the product's hook for
 compact search. The kit shows the marked button in place of the inline field when the frame is
