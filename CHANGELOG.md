@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.57.1-rc.1
+
+<!-- release-fragment: data-table-rows-value-and-separators -->
+- `@yesid/ui` (patch): Stack the DataTable rows-mode value over its label so the primary column gets the remaining width. Keep each detail separator attached to the preceding detail when the details wrap.
+
+<!-- release-fragment: hour-grid-compact-columns-and-legend -->
+- `@yesid/ui` (patch): HourGrid omits blank legend entries and hides an empty legend. Tighter inline spacing fits 24 hours with short readings in a reading card while keeping the cell height, hatch and narrow-screen scrolling.
+
+<!-- release-fragment: site-footer-phone-columns -->
+- `@yesid/ui` (patch): Pair SiteFooter link groups below 640px when their labels fit, with a full-width brand row and single-column reflow where space is tight.
+
+<!-- release-fragment: site-header-compact-network-scroll -->
+- `@yesid/ui` (patch): Let the compact SiteHeader network row scroll with the page below 1024px while the pill stays fixed. Keep the same control and reveal it for keyboard focus.
+
+<!-- release-fragment: site-header-menu-band -->
+- `@yesid/ui` (patch): Let grouped SiteHeader menus use the available desktop band. Four or more groups use the existing compact label size and card gap to give long destinations more room.
+
 ## 0.57.0
 
 <!-- release-fragment: app-frame-shell-clearance -->
