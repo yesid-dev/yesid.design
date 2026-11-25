@@ -50,6 +50,7 @@
 				scale={{ label: 'Delay scale', steps: ['0 late', '1 late', '2 late', '3 late', '4 late'] }}
 				stateLabels={{ few: 'Too few trips', none: 'No service', unmeasured: 'No measurement' }} />
 		</Card>
+		<p><a href="/chart-parts/hour-grid">24-hour grid example</a></p>
 	</section>
 	<section>
 		<h2>Estimated wait</h2>

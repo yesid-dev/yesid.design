@@ -44,7 +44,7 @@
 			toggle theme
 		</button>
 	</header>
-	<main class={['mx-auto px-6 py-10', page.route.id === '/map-legends' ? 'max-w-7xl' : 'max-w-5xl']}>
+	<main class={['mx-auto px-6 py-10', page.route.id === '/map-legends' || page.route.id === '/chart-parts/hour-grid' ? 'max-w-7xl' : 'max-w-5xl']}>
 		{@render children()}
 	</main>
 	{/if}

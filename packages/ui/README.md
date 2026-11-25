@@ -1203,8 +1203,8 @@ Also from `@yesid/ui/chart`:
 - **HourGrid** takes ordered columns and one cell per column in each row. Supply the visible
   cell `text`, its accessible `name`, a level from zero to four and an optional state.
   Use `level: null` for an unmeasured cell. The table scrolls within a named region and
-  keeps row headings in view. The key starts with the scale label and includes only the
-  state entries present in the grid.
+  keeps row headings in view. The key skips blank labels and includes only labelled state entries
+  present in the grid. Supply an empty scale label, no steps and empty state labels to omit it.
 - **RangeMark** plots the estimate and its interval within a shared ascending `domain`.
   Include the estimate and interval in its accessible `label`, and supply a localized
   `reference.label` when using the comparison tick. Render the surrounding app's empty state
