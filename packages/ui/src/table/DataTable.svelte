@@ -92,7 +92,8 @@
 	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : undefined);
 	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
 	const reflows = $derived(!!stackAt || !!rowLayout);
-	const firstDetail = $derived(rowLayout && columns.find(({ key }) => key !== rowLayout.primary && key !== rowLayout.value)?.key);
+	const lastDetail = $derived(rowLayout && columns
+		.filter(({ key }) => key !== rowLayout.primary && key !== rowLayout.value).at(-1)?.key);
 	const tableId = $props.id();
 	const rowHeaderColumns = $derived(rowLayout
 		? columns.flatMap((column, index) => column.rowHeader ? [index] : [])
@@ -151,11 +152,12 @@
 </script>
 
 {#snippet cellContent(column: DataTableColumn<T>, row: T)}
-	{#if rowLayout && !rowPosition(column.key) && column.key !== firstDetail}
-		<span class="data-table-row-separator" aria-hidden="true">·</span>
-	{/if}
 	{#if reflows}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
-	<div class="data-table-cell-content">{@render column.cell(row)}</div>
+	<div class="data-table-cell-content">
+		{@render column.cell(row)}{#if rowLayout && !rowPosition(column.key) && column.key !== lastDetail}
+			<span class="data-table-row-separator" aria-hidden="true">&nbsp;·</span>
+		{/if}
+	</div>
 {/snippet}
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
@@ -591,16 +593,19 @@
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] {
 			order: 1;
 			display: flex;
-			flex-wrap: wrap;
-			align-items: baseline;
-			justify-content: end;
-			gap: 0 0.35em;
+			flex-direction: column;
+			align-items: flex-end;
+			align-self: start;
+			inline-size: max-content;
 			max-inline-size: 45%;
 			font-weight: 600;
 			text-align: end;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-cell-content {
 			order: -1;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-stack-label {
+			line-height: 1.25;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) {
 			order: 2;
@@ -621,7 +626,6 @@
 			color: var(--muted-foreground);
 			font-weight: 400;
 		}
-		.data-table-frame[data-responsive='rows'] .data-table-row-separator,
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {
 			margin-inline-end: 0.35em;
 		}

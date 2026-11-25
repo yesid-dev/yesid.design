@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 const path = (lang: string) => `/app-frame/record-parts/${lang}`;
@@ -11,6 +11,24 @@ const copy = {
 		compact: 'Ouvrir la recherche', search: 'Chercher une ligne, un arrêt ou un véhicule', footerLink: 'Télécharger', scale: 'Part en retard, en pourcentage :',
 		few: 'Peu de trajets', none: 'Aucun service', unmeasured: 'Non mesuré' },
 };
+
+async function expectTrailingSeparators(row: Locator) {
+	const details = row.locator(':scope > :is(th, td):not([data-row-position])');
+	await expect(details.last().locator('.data-table-row-separator')).toHaveCount(0);
+	const separators = details.locator('.data-table-row-separator');
+	await expect(separators).toHaveCount((await details.count()) - 1);
+	const attached = await separators.evaluateAll((nodes) => nodes.map((dot) => {
+		const content = dot.closest('.data-table-cell-content');
+		if (!content) return false;
+		const range = document.createRange();
+		range.setStart(content, 0);
+		range.setEndBefore(dot);
+		const last = [...range.getClientRects()].filter((box) => box.width > 0).at(-1);
+		const mark = dot.getBoundingClientRect();
+		return !!last && mark.left >= last.right - 0.5 && mark.top < last.bottom && mark.bottom > last.top;
+	}));
+	expect(attached.every(Boolean)).toBe(true);
+}
 
 test.describe('Record parts reflow', { tag: '@theme' }, () => {
 	for (const lang of ['en', 'fr'] as const) {
@@ -37,6 +55,11 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			expect(await first.ariaSnapshot()).toContain('rowheader');
 			const p = (await primary.boundingBox())!;
 			const v = (await value.boundingBox())!;
+			const figure = (await value.locator('.data-table-cell-content').boundingBox())!;
+			const valueLabel = (await value.locator('.data-table-stack-label').boundingBox())!;
+			expect(valueLabel.y).toBeGreaterThanOrEqual(figure.y + figure.height - 0.5);
+			expect(figure.x + figure.width).toBeCloseTo(valueLabel.x + valueLabel.width, 0);
+			expect(v.width).toBeCloseTo(Math.max(figure.width, valueLabel.width), 0);
 			const detail = (await late.boundingBox())!;
 			expect(p.width).toBeGreaterThan(v.width);
 			expect(p.x + p.width).toBeLessThan(v.x);
@@ -47,6 +70,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			expect(tripsBox.x + tripsBox.width).toBeLessThanOrEqual(p.x + p.width + v.width + 8);
 			await expect(trips.getByText(c.trips, { exact: true })).toBeVisible();
 			await expect(trips.getByText(c.trips, { exact: true })).toHaveCSS('text-transform', 'none');
+			await expectTrailingSeparators(first);
 			const noValue = page.getByRole('table', { name: c.details }).getByRole('rowheader');
 			expect((await noValue.boundingBox())!.width).toBeGreaterThan(p.width);
 
@@ -78,6 +102,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 			await expect(table).toHaveCSS('display', 'block');
 			await expect(table.getByRole('columnheader', { name: c.onTime })).toHaveCSS('word-break', 'normal');
+			await expectTrailingSeparators(first);
 			await expectNoHorizontalOverflow(page);
 			await expectAccessible(page);
 			await page.emulateMedia({ forcedColors: 'active' });
