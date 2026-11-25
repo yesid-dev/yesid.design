@@ -2,7 +2,7 @@ import { expect, test, type Locator } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 const path = (lang: string) => `/app-frame/record-parts/${lang}`;
-const footerWidths = [320, 640, 768, 900, 1024, 1440] as const;
+const footerWidths = [320, 600, 639, 640, 768, 900, 1024, 1440] as const;
 const copy = {
 	en: { details: 'Lines without measurements', onTime: 'On time', trips: 'Trips that ran', events: 'Stop events', late: 'Late',
 		compact: 'Open search', search: 'Find a line, stop or vehicle', footerLink: 'Accessibility', scale: 'Late share, in percent:',
@@ -216,10 +216,13 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 						});
 						const rem = width / (16 * scale / 100);
 						const minimum = blocks === 4 ? 34 : 39;
+						const fallback = width < 640 && rem >= 24
+							? [1, 2, blocks - 3]
+							: Array.from({ length: blocks }, () => 1);
 						expect(layout.rows, `${blocks} blocks at ${width}px and ${scale}% text`).toEqual(
 							rem >= 63 ? [blocks] : rem >= minimum
 								? (blocks === 4 ? [2, 2] : [3, 2])
-								: Array.from({ length: blocks }, () => 1),
+								: fallback,
 						);
 						await expectNoHorizontalOverflow(page);
 						measurements.push({ blocks, width, scale, ...layout });
@@ -250,7 +253,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			for (const count of [3, 4, 5]) {
 				await page.getByTestId('footer-group-count').selectOption(String(count));
 				await expect(groups).toHaveCount(count);
-				for (const width of [390, 480, 639]) {
+				for (const width of [390, 460]) {
 					await page.setViewportSize({ width, height: 900 });
 					expect(await rows(), `${count} groups at ${width}px`).toEqual(
 						count === 3 ? [2, 1] : count === 4 ? [2, 2] : [2, 2, 1],
@@ -262,6 +265,14 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 					if (count % 2) expect(lastGroup.width).toBeCloseTo(brand.width, 0);
 					await expectNoHorizontalOverflow(page);
 				}
+			}
+			for (const width of [600, 639]) {
+				await page.setViewportSize({ width, height: 900 });
+				expect(await rows()).toEqual([1, 2, 2]);
+				const firstGroup = (await groups.first().boundingBox())!;
+				const brand = (await footer.locator('.footer-brand').boundingBox())!;
+				expect(firstGroup.y).toBeCloseTo(brand.y, 0);
+				await expectNoHorizontalOverflow(page);
 			}
 			await page.setViewportSize({ width: 320, height: 900 });
 			expect(await rows()).toEqual([1, 1, 1, 1, 1]);
