@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.57.0-rc.4
+
+<!-- release-fragment: app-frame-shell-clearance -->
+- `@yesid/ui` (patch): Keep compact search out of SiteHeader’s open navigation dialog and preserve the
+  page-section gutter between a taller desktop controls rail and the footer.
+
+<!-- release-fragment: map-frame-unmounted-overlays -->
+- `@yesid/ui` (patch): Keep MapFrame measurements updating when an optional overlay unmounts, including
+  when a resize switches the map to its phone layout.
+
+<!-- release-fragment: site-header-folded-slot-height -->
+- `@yesid/ui` (patch): Keep the site header pill at its normal height when opening the menu folds away search and the network picker.
+
 ## 0.57.0-rc.3
 
 <!-- release-fragment: stop-ladder-reading-wrap -->
