@@ -872,6 +872,8 @@
 	.nav-collapsible.nav-collapsed {
 		overflow: hidden;
 		max-width: 0;
+		/* Folded labels can wrap as their width shrinks. Keep them within the control row. */
+		max-block-size: var(--nav-control);
 		opacity: 0;
 		margin-inline: 0;
 	}
