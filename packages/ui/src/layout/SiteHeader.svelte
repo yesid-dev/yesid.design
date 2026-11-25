@@ -621,6 +621,15 @@
 		align-items: center;
 		min-width: 0;
 	}
+	/* A product can supply its compact search control in the actions snippet. */
+	:global([data-slot='app-frame'][data-rail-layout='compact'])
+		.nav-pill:has(:global([data-slot='nav-compact-search'])) .nav-search {
+		display: none;
+	}
+	:global([data-slot='app-frame'][data-rail-layout='compact'])
+		.nav-trailing :global([data-slot='nav-compact-search']) {
+		display: inline-flex;
+	}
 	.nav-network {
 		display: flex;
 		align-items: center;
