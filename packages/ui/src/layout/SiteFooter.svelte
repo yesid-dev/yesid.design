@@ -86,6 +86,7 @@
 	data-in-view={inView}
 	data-testid="footer"
 	data-slot="footer"
+	data-balanced-blocks={groups.length === 3 || groups.length === 4 ? groups.length + 1 : undefined}
 	class="relative z-[var(--z-content)] bg-[var(--muted)]"
 	style="--footer-groups: {groups.length};"
 >
@@ -96,8 +97,9 @@
 	{/if}
 	<div
 		class="footer-columns grid w-full gap-10 px-6 pb-8 pt-10 sm:px-10 sm:pt-12 lg:gap-8 lg:px-16 lg:pt-14"
+		class:with-status={!!statusStart || statusPrefix !== undefined}
 	>
-		<div class="flex flex-col items-start">
+		<div class="footer-brand flex flex-col items-start">
 			{@render brand()}
 			<span class="mt-2 font-mono text-xs text-[var(--muted-foreground)]">{tagline}</span>
 		</div>
@@ -145,9 +147,62 @@
 	.footer-columns {
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 	}
+	@media (min-width: 64rem) {
+		.footer-columns {
+			display: flex;
+			flex-wrap: wrap;
+		}
+		/* Leave room for a classic scrollbar at the desktop floor. */
+		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
+		.footer-columns > nav { flex: 1 1 min(100%, 6.75rem); }
+		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
+	}
+	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
+		display: grid;
+		padding-block: var(--space-card-gap);
+	}
+	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns.with-status {
+		padding-block-end: calc(var(--space-card-gap) / 2);
+	}
+	@media (min-width: 1024px) {
+		/* Large text can put the footer into rows on desktop. Keep the space for the links. */
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
+			gap: calc(var(--space-card-gap) / 4) var(--space-card-gap);
+			padding: calc(var(--space-card-gap) / 4) var(--space-card-gap);
+		}
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns.with-status {
+			padding-block-end: calc(var(--space-card-gap) / 8);
+		}
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns :global([data-slot='footer-group']) {
+			row-gap: calc(var(--space-card-gap) / 8);
+		}
+	}
 	.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
 		overflow-wrap: normal;
 		word-break: normal;
+	}
+
+	footer[data-balanced-blocks] {
+		container: footer-balance / inline-size;
+	}
+	footer[data-balanced-blocks] > .footer-columns {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	@container footer-balance (inline-size >= 34rem) {
+		footer[data-balanced-blocks='4'] > .footer-columns {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@container footer-balance (inline-size >= 39rem) {
+		footer[data-balanced-blocks='5'] > .footer-columns {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+	@container footer-balance (inline-size >= 63rem) {
+		footer[data-balanced-blocks] > .footer-columns {
+			grid-template-columns: minmax(0, 1.5fr) repeat(var(--footer-groups), minmax(0, 1fr));
+		}
 	}
 
 	/* The street edge (D22): one dashed road marking along the footer's top edge, edge to edge.

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 const path = (lang: string) => `/app-frame/record-parts/${lang}`;
+const footerWidths = [320, 640, 768, 900, 1024, 1440] as const;
 const copy = {
 	en: { details: 'Lines without measurements', onTime: 'On time', trips: 'Trips that ran', events: 'Stop events', late: 'Late',
 		compact: 'Open search', search: 'Find a line, stop or vehicle', footerLink: 'Accessibility', scale: 'Late share, in percent:',
@@ -93,7 +94,24 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expect(page.getByRole('button', { name: c.compact })).toHaveCount(0);
 			const footer = page.getByRole('contentinfo');
 			const groups = footer.getByRole('navigation');
+			await expect(groups).toHaveCount(5);
+			const footerColumns = footer.locator('.footer-columns');
+			await page.setViewportSize({ width: 1024, height: 900 });
+			await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'paired');
+			const desktopRows = await footerColumns.locator(':scope > *').evaluateAll(
+				(elements) => new Set(elements.map((el) => el.getBoundingClientRect().top)).size,
+			);
+			expect(desktopRows).toBe(1);
+			await footer.evaluate((el) => { el.style.inlineSize = 'calc(100% - 15px)'; });
+			expect(await footerColumns.locator(':scope > *').evaluateAll(
+				(elements) => new Set(elements.map((el) => el.getBoundingClientRect().top)).size,
+			)).toBe(1);
+			await footer.evaluate((el) => { el.style.inlineSize = ''; });
 			const desktopColumns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
+			await page.setViewportSize({ width: 320, height: 900 });
+			await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'compact');
+			await expect(footerColumns).toHaveCSS('padding-top', '16px');
+			await expect(footerColumns).toHaveCSS('padding-bottom', lang === 'fr' ? '8px' : '16px');
 			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 			for (const width of [1440, 1280, 1024]) {
 				await page.setViewportSize({ width, height: 900 });
@@ -103,6 +121,8 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				const columns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
 				expect(columns).toBeLessThan(desktopColumns);
 				const link = footer.getByRole('link', { name: c.footerLink });
+				await expect(footerColumns).toHaveCSS('padding-top', '8px');
+				expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 				expect(await link.evaluate((el) => {
 					const range = document.createRange();
 					range.selectNodeContents(el);
@@ -115,6 +135,51 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expect(button).toHaveAttribute('aria-expanded', 'true');
 			await expect(page.getByRole('main').getByRole('searchbox', { name: c.search })).toBeVisible();
 			await expectAccessible(page);
+		});
+
+		test(`${lang}: the standalone footer keeps four or five blocks on balanced rows`, async ({ page }, info) => {
+			await page.goto(path(lang));
+			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+			await page.evaluate(() => document.fonts.ready);
+			const footer = page.getByRole('contentinfo');
+			const measurements = [];
+			for (const scale of [100, 200]) {
+				await page.locator('html').evaluate((html, scale) => {
+					html.style.fontSize = `${scale}%`;
+				}, scale);
+				for (const blocks of [4, 5]) {
+					await page.getByTestId('footer-group-count').selectOption(String(blocks - 1));
+					await expect(footer.getByRole('navigation')).toHaveCount(blocks - 1);
+					for (const width of footerWidths) {
+						await page.setViewportSize({ width, height: 900 });
+						const layout = await footer.evaluate((el) => {
+							const rowCounts = new Map<number, number>();
+							const children = el.querySelectorAll('.footer-columns > *');
+							for (const child of children) {
+								const row = Math.round(child.getBoundingClientRect().top);
+								rowCounts.set(row, (rowCounts.get(row) ?? 0) + 1);
+							}
+							return {
+								rows: [...rowCounts.values()],
+								height: Math.round(el.getBoundingClientRect().height),
+							};
+						});
+						const rem = width / (16 * scale / 100);
+						const minimum = blocks === 4 ? 34 : 39;
+						expect(layout.rows, `${blocks} blocks at ${width}px and ${scale}% text`).toEqual(
+							rem >= 63 ? [blocks] : rem >= minimum
+								? (blocks === 4 ? [2, 2] : [3, 2])
+								: Array.from({ length: blocks }, () => 1),
+						);
+						await expectNoHorizontalOverflow(page);
+						measurements.push({ blocks, width, scale, ...layout });
+					}
+				}
+			}
+			await info.attach('footer-balance-heights', {
+				body: JSON.stringify(measurements),
+				contentType: 'application/json',
+			});
 		});
 
 		test(`${lang}: HourGrid keys distinguish the rendered states in forced colors`, async ({ page }) => {
