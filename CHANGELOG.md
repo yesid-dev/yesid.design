@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.57.1-rc.2
+
+<!-- release-fragment: data-table-keep-wrapped-details-compact -->
+- `@yesid/ui` (patch): Keep wrapped DataTable rows compact with smaller block padding. Paint trailing detail separators in the gap so they no longer take up inline space.
+
+<!-- release-fragment: site-footer-preserve-phone-balance -->
+- `@yesid/ui` (patch): Keep SiteFooter's balanced grid when it fits below 640px, while retaining compact link-group pairs in narrower footers.
+
 ## 0.57.1-rc.1
 
 <!-- release-fragment: data-table-rows-value-and-separators -->
