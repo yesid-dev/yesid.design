@@ -1039,7 +1039,11 @@
 			grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 			column-gap: 3rem;
 			row-gap: 2rem;
-			max-width: 72rem;
+			max-width: none;
+		}
+		.menu-content-grouped:has(> .menu-group:nth-child(4)) {
+			column-gap: var(--space-card-gap);
+			--menu-grouped-label-size: var(--text-menu-label-mobile);
 		}
 	}
 	.menu-item {
@@ -1153,7 +1157,7 @@
 	}
 	@media (min-width: 768px) {
 		.menu-item {
-			font-size: var(--text-menu-label-desktop);
+			font-size: var(--menu-grouped-label-size, var(--text-menu-label-desktop));
 		}
 	}
 	.menu-item-active .menu-label {
