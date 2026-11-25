@@ -21,8 +21,8 @@
 		few: 'Peu de trajets', none: 'Aucun service', unmeasured: 'Non mesuré',
 		stops: 'Arrêts dans l’ordre du trajet', delay: 'Retard médian', threshold: 'En retard dès 5 min',
 		stretch: 'Le retard augmente ici', search: 'Chercher une ligne, un arrêt ou un véhicule',
-		compact: 'Ouvrir la recherche', footer: ['À propos', 'Rapports', 'Données', 'Aide'],
-		links: ['Accessibilité', 'Télécharger', 'Avis de service', 'Confidentialité'],
+		compact: 'Ouvrir la recherche', footer: ['À propos', 'Rapports', 'Données', 'Aide', 'Sources'],
+		links: ['Accessibilité', 'Télécharger', 'Avis de service', 'Confidentialité', 'Sources de données'],
 	} : {
 		title: 'Lines record', details: 'Lines without measurements',
 		line: 'Line', onTime: 'On time', late: 'Late', trips: 'Trips that ran',
@@ -33,8 +33,8 @@
 		few: 'Too few trips', none: 'No service', unmeasured: 'Unmeasured',
 		stops: 'Stops in travel order', delay: 'Median delay', threshold: 'Late from 5 min',
 		stretch: 'Delay widens here', search: 'Find a line, stop or vehicle',
-		compact: 'Open search', footer: ['About', 'Reports', 'Data', 'Help'],
-		links: ['Accessibility', 'Download', 'Service alerts', 'Privacy'],
+		compact: 'Open search', footer: ['About', 'Reports', 'Data', 'Help', 'Sources'],
+		links: ['Accessibility', 'Download', 'Service alerts', 'Privacy', 'Data sources'],
 	});
 	const records = Array.from({ length: 25 }, (_, index) => ({
 		id: String(index + 1),
@@ -91,6 +91,7 @@
 {#snippet trips(_row: RecordRow)}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/snippet}
 {#snippet events(_row: RecordRow)}{french ? '10 000' : '10,000'}{/snippet}
 {#snippet early(_row: RecordRow)}8%{/snippet}
+{#snippet footerStatus()}<span>État du service</span>{/snippet}
 
 <AppFrame mainLabel={c.title}>
 	{#snippet header()}
@@ -104,7 +105,7 @@
 		</SiteHeader>
 	{/snippet}
 	{#snippet footer()}
-		<SiteFooter groups={footerGroups} tagline={c.title}>
+		<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
 			{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
 		</SiteFooter>
 	{/snippet}

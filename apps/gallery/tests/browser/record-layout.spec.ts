@@ -93,7 +93,19 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expect(page.getByRole('button', { name: c.compact })).toHaveCount(0);
 			const footer = page.getByRole('contentinfo');
 			const groups = footer.getByRole('navigation');
+			await expect(groups).toHaveCount(5);
+			const footerColumns = footer.locator('.footer-columns');
+			await page.setViewportSize({ width: 1024, height: 900 });
+			await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'paired');
+			const desktopRows = await footerColumns.locator(':scope > *').evaluateAll(
+				(elements) => new Set(elements.map((el) => el.getBoundingClientRect().top)).size,
+			);
+			expect(desktopRows).toBe(1);
 			const desktopColumns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
+			await page.setViewportSize({ width: 320, height: 900 });
+			await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'compact');
+			await expect(footerColumns).toHaveCSS('padding-top', '16px');
+			await expect(footerColumns).toHaveCSS('padding-bottom', lang === 'fr' ? '8px' : '16px');
 			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 			for (const width of [1440, 1280, 1024]) {
 				await page.setViewportSize({ width, height: 900 });
