@@ -20,6 +20,8 @@
 	const captionId = $props.id();
 	const scaleId = `${captionId}-scale`;
 	const states = ['few', 'none', 'unmeasured'] as const;
+	const hasScaleLabel = $derived(scale.label.trim().length > 0);
+	const scaleSteps = $derived(scale.steps.flatMap((label, level) => label.trim() ? [{ label, level }] : []));
 	const cellState = (cell: HourGridCell | undefined) =>
 		cell?.state ?? (cell?.level == null ? 'unmeasured' : undefined);
 	const visibleStates = $derived.by(() => {
@@ -30,7 +32,7 @@
 				if (state) present.add(state);
 			}
 		}
-		return states.filter((state) => present.has(state));
+		return states.filter((state) => present.has(state) && stateLabels[state].trim());
 	});
 </script>
 
@@ -68,17 +70,21 @@
 			</tbody>
 		</table>
 	</div>
-	<div class="legend">
-		<span id={scaleId}>{scale.label}</span>
-		<ul role="list" aria-labelledby={scaleId}>
-			{#each scale.steps as step, level}
-				<li><span class="key swatch" data-level={level} aria-hidden="true"></span>{step}</li>
-			{/each}
-			{#each visibleStates as state}
-				<li><span class="key swatch" data-state={state} aria-hidden="true"></span>{stateLabels[state]}</li>
-			{/each}
-		</ul>
-	</div>
+	{#if hasScaleLabel || scaleSteps.length || visibleStates.length}
+		<div class="legend">
+			{#if hasScaleLabel}<span id={scaleId}>{scale.label}</span>{/if}
+			{#if scaleSteps.length || visibleStates.length}
+				<ul role="list" aria-labelledby={hasScaleLabel ? scaleId : undefined}>
+					{#each scaleSteps as step (step.level)}
+						<li><span class="key swatch" data-level={step.level} aria-hidden="true"></span>{step.label}</li>
+					{/each}
+					{#each visibleStates as state}
+						<li><span class="key swatch" data-state={state} aria-hidden="true"></span>{stateLabels[state]}</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -95,7 +101,7 @@
 	table {
 		inline-size: 100%;
 		border-collapse: separate;
-		border-spacing: 0.25rem;
+		border-spacing: 0.125rem 0.25rem;
 		font-size: var(--text-small);
 		text-align: center;
 	}
@@ -105,6 +111,7 @@
 		white-space: nowrap;
 		font-weight: 500;
 	}
+	thead th, td { padding-inline: 0; }
 	tbody th {
 		position: sticky;
 		z-index: 1;
@@ -116,12 +123,13 @@
 	.cell {
 		display: grid;
 		min-block-size: 1.75em;
-		min-inline-size: 2.5em;
+		min-inline-size: 2em;
 		place-items: center;
-		padding-inline: 0.375em;
+		padding-inline: 0.25em;
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
+	.cell[data-state='few'] { padding-inline: 0; }
 	.swatch {
 		border: 1px solid transparent;
 		border-radius: var(--radius-sm);

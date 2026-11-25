@@ -37,6 +37,48 @@ test.describe('D2 service charts', { tag: '@theme' }, () => {
 		await expectAccessible(page);
 	});
 
+	test('a full day fits a reading card and empty legend labels omit the legend', async ({ page }) => {
+		await page.goto(`${path}/hour-grid`);
+		await page.evaluate(() => document.fonts.ready);
+		const card = page.getByTestId('hour-grid-full-day');
+		const region = card.getByRole('region', { name: 'Hourly reporting by day' });
+		const last = region.getByRole('columnheader', { name: '23h', exact: true });
+		const widths = () => region.evaluate((node) => [node.clientWidth, node.scrollWidth]);
+		await expect(region.getByRole('columnheader')).toHaveCount(24);
+		await expect(card.locator('.legend')).toHaveCount(0);
+		const sample = region.locator('.cell[data-state="few"]').first();
+		await expect(sample).toHaveCSS('background-image', /repeating-linear-gradient/);
+		await expect(sample).toHaveCSS('white-space', 'nowrap');
+
+		for (const width of [1440, 1280]) {
+			await page.setViewportSize({ width, height: 850 });
+			const [available, content] = await widths();
+			expect(available).toBeGreaterThanOrEqual(860);
+			expect(content, `24 hours at a ${width}px viewport`).toBe(available);
+			const cell = (await last.boundingBox())!;
+			const box = (await region.boundingBox())!;
+			expect(cell.x + cell.width).toBeLessThanOrEqual(box.x + box.width);
+		}
+		await region.evaluate((node) => { node.style.inlineSize = '860px'; });
+		expect(await widths()).toEqual([860, 860]);
+		await page.setViewportSize({ width: 320, height: 850 });
+		const [available, content] = await widths();
+		expect(content).toBeGreaterThan(available);
+		await region.focus();
+		await page.keyboard.press('ArrowRight');
+		await expect.poll(() => region.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+		await expectNoHorizontalOverflow(page);
+	});
+
+	test('HourGrid includes only labelled steps and labelled states present in the grid', async ({ page }) => {
+		await page.goto(`${path}/hour-grid`);
+		const legend = page.getByTestId('hour-grid-partial-legend').getByRole('list');
+		await expect(legend.getByRole('listitem')).toHaveText(['1–4', '5+', 'No service']);
+		await expect(legend).not.toHaveAttribute('aria-labelledby');
+		await expect(legend.getByRole('listitem').nth(0).locator('span')).toHaveAttribute('data-level', '1');
+		await expect(legend.getByRole('listitem').nth(1).locator('span')).toHaveAttribute('data-level', '3');
+	});
+
 	test('reflows at 320px and scrolls the grid at 200% text', async ({ page }) => {
 		await page.setViewportSize({ width: 320, height: 850 });
 		await page.goto(path);
