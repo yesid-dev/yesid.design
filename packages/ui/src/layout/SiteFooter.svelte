@@ -163,6 +163,19 @@
 	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns.with-status {
 		padding-block-end: calc(var(--space-card-gap) / 2);
 	}
+	@media (min-width: 1024px) {
+		/* Large text can put the footer into rows on desktop. Keep the space for the links. */
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
+			gap: calc(var(--space-card-gap) / 4) var(--space-card-gap);
+			padding: calc(var(--space-card-gap) / 4) var(--space-card-gap);
+		}
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns.with-status {
+			padding-block-end: calc(var(--space-card-gap) / 8);
+		}
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns :global([data-slot='footer-group']) {
+			row-gap: calc(var(--space-card-gap) / 8);
+		}
+	}
 	.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
 		overflow-wrap: normal;
 		word-break: normal;

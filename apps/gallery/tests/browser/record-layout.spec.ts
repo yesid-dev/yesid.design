@@ -115,6 +115,8 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				const columns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
 				expect(columns).toBeLessThan(desktopColumns);
 				const link = footer.getByRole('link', { name: c.footerLink });
+				await expect(footerColumns).toHaveCSS('padding-top', '8px');
+				expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 				expect(await link.evaluate((el) => {
 					const range = document.createRange();
 					range.selectNodeContents(el);
