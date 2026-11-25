@@ -2,6 +2,8 @@
 	import { StatusMark, statusGlyph, type StatusMarkStatus } from '@yesid/ui/brand';
 	import { MapFrame, MapLegend, placeMapLabels, type MapLegendItem, type MapViewport } from '@yesid/ui/map';
 
+	let windowWidth = $state<number>();
+
 	const liveStatuses: readonly { id: StatusMarkStatus; label: string; detail: string }[] = [
 		{ id: 'early', label: 'Early', detail: 'More than a minute before schedule' },
 		{ id: 'on_time', label: 'On time', detail: 'Within the scheduled window' },
@@ -26,6 +28,7 @@
 </script>
 
 <svelte:head><title>Map legends · yesid.design</title></svelte:head>
+<svelte:window bind:innerWidth={windowWidth} />
 
 {#snippet liveGlyph(status: StatusMarkStatus)}
 	{@const glyph = statusGlyph(status)}
@@ -50,7 +53,13 @@
 
 <section class="examples">
 	<h1>Map legends</h1>
-	<MapFrame label="Live service map" legendLabel="Show map legend" legend={liveLegend}>
+	{#snippet routeDetails()}<p>Frequency and travel time</p>{/snippet}
+	<MapFrame
+		label="Live service map"
+		legendLabel="Show map legend"
+		legend={liveLegend}
+		details={windowWidth === undefined || windowWidth >= 1024 ? { label: 'Route details', content: routeDetails } : undefined}
+	>
 		{#snippet panel()}<p>Route 24</p>{/snippet}
 		{#snippet children(viewport)}
 			<div class="map-art" aria-hidden="true">
@@ -61,7 +70,7 @@
 					<span class="map-label" style:left={`${bounds.x}px`} style:top={`${bounds.y}px`} data-testid="map-legend-label">{id}</span>
 				{/each}
 			</div>
-			<span hidden data-testid="map-legend-exclusions" data-count={viewport.exclusions.length}></span>
+			<span hidden data-testid="map-legend-exclusions" data-count={viewport.exclusions.length} data-width={viewport.width}></span>
 		{/snippet}
 	</MapFrame>
 

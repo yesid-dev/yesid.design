@@ -92,6 +92,35 @@ test.describe('D3 map legends', { tag: '@theme' }, () => {
 		await expect(trigger).toHaveCount(0);
 	});
 
+	test('keeps measuring the map when route details unmount at phone width', async ({ page }) => {
+		const errors: string[] = [];
+		page.on('pageerror', (error) => errors.push(error.message));
+		await page.setViewportSize({ width: 1440, height: 950 });
+		await page.goto(path);
+		await page.locator('html[data-gallery-ready]').waitFor();
+
+		const map = page.getByRole('region', { name: 'Live service map' });
+		const details = map.getByRole('complementary', { name: 'Route details' });
+		const stage = map.locator('[data-slot="map-stage"]');
+		const measurements = page.getByTestId('map-legend-exclusions');
+		await expect(details).toBeVisible();
+		await expect(measurements).toHaveAttribute('data-count', '2');
+
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(details).toHaveCount(0);
+		await expect(map.getByRole('button', { name: 'Show map legend' })).toBeVisible();
+		await page.setViewportSize({ width: 320, height: 844 });
+		const phoneWidth = await stage.evaluate((element) => element.getBoundingClientRect().width);
+		expect(errors).toEqual([]);
+		await expect(measurements).toHaveAttribute('data-width', String(phoneWidth));
+		await expect(measurements).toHaveAttribute('data-count', '1');
+
+		await page.setViewportSize({ width: 1440, height: 950 });
+		await expect(details).toBeVisible();
+		await expect(measurements).toHaveAttribute('data-count', '2');
+		expect(errors).toEqual([]);
+	});
+
 	test('serializes the same status shapes that the inline marks render', async ({ page }) => {
 		await page.goto(path);
 		for (const status of ['early', 'on_time', 'late', 'severe', 'unknown'] as const) {
