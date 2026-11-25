@@ -17,6 +17,7 @@
 		LINKS,
 		LOCALES,
 		LONG_LINKS,
+		LONG_MENU_LABELS,
 		MENU_ITEMS,
 		SEARCH_LABEL,
 		languageHref,
@@ -47,9 +48,14 @@
 	});
 	const groups = $derived.by(() => {
 		const built = groupCount === 4 ? menuGroupsFor(4, locale) : groupCount === 2 ? menuGroupsFor(2, compact ? 'en' : locale) : undefined;
-		return built?.map(group => ({
+		const useLongLabels = groupCount === 4 && browser && page.url.searchParams.has('long-menu');
+		return built?.map((group, index) => ({
 			...group,
-			items: group.items.map(item => ({ ...item, icon: ICONS[item.href] })),
+			items: group.items.map(item => ({
+				...item,
+				...(useLongLabels ? { label: LONG_MENU_LABELS[index]!, ariaLabel: undefined } : {}),
+				icon: ICONS[item.href],
+			})),
 		}));
 	});
 </script>

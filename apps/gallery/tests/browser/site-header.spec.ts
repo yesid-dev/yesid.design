@@ -7,6 +7,7 @@ import {
 	LANGUAGE_LABEL,
 	LINKS,
 	LOCALES,
+	LONG_MENU_LABELS,
 	MENU_GROUP_LABELS,
 	MENU_ITEMS,
 	SEARCH_LABEL,
@@ -725,6 +726,38 @@ for (const theme of ['dark', 'light'] as const) {
 		await expectAccessible(page);
 	});
 }
+
+test('four menu groups share the desktop band and keep long destination labels on one line', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run sets the viewport width and text scale');
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await visitHeader(page, `${HOME}?groups=4&long-menu`);
+	await page.evaluate(() => document.fonts.ready);
+	await toggle(page).click();
+	const nav = menuLinks(page);
+	const labels = nav.locator('.menu-label');
+	await expect(labels).toHaveText([...LONG_MENU_LABELS]);
+	const band = await nav.evaluate((node) => {
+		const overlay = node.parentElement!;
+		const style = getComputedStyle(overlay);
+		return {
+			available: overlay.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+			width: node.getBoundingClientRect().width,
+		};
+	});
+	expect(band.width).toBeCloseTo(band.available, 0);
+	const lines = () => labels.evaluateAll((elements) => elements.map((node) => {
+		const range = document.createRange();
+		range.selectNodeContents(node);
+		return range.getClientRects().length;
+	}));
+	expect(await lines()).toEqual([1, 1, 1, 1]);
+	await page.locator('html').evaluate((node) => { node.style.fontSize = '200%'; });
+	const groups = nav.locator('[data-slot="menu-group"]');
+	expect(await groups.evaluateAll((nodes) => new Set(nodes.map((node) => node.getBoundingClientRect().top)).size)).toBe(2);
+	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
+	await page.keyboard.press('Escape');
+	await expect(toggle(page)).toBeFocused();
+});
 
 test('compact placement follows the header container and adapts while open', async ({ page }) => {
 	await page.setViewportSize({ width: 1024, height: 900 });
