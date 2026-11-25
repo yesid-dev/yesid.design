@@ -40,7 +40,8 @@
 	$effect(() => {
 		if (!stage || typeof ResizeObserver === 'undefined') return;
 		const canvas = stage;
-		const overlays = [left, right, legendButton, legendPanel].filter((element) => element !== undefined);
+		// An unmounted bind:this target can be null.
+		const overlays = [left, right, legendButton, legendPanel].filter((element) => element != null);
 
 		function measure() {
 			// The observed trigger reports the CSS mode, including font changes at a fixed width.
