@@ -129,7 +129,7 @@
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
 	}
-	.cell[data-state='few'] { padding-inline: 0.125em; }
+	.cell[data-state='few'] { padding-inline: 0; }
 	.swatch {
 		border: 1px solid transparent;
 		border-radius: var(--radius-sm);
