@@ -156,9 +156,11 @@
 		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
 		.footer-columns > nav { flex: 1 1 min(100%, 6.75rem); }
 		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
+			display: grid;
+		}
 	}
 	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
-		display: grid;
 		padding-block: var(--space-card-gap);
 	}
 	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns.with-status {
@@ -202,6 +204,19 @@
 	@container footer-balance (inline-size >= 63rem) {
 		footer[data-balanced-blocks] > .footer-columns {
 			grid-template-columns: minmax(0, 1.5fr) repeat(var(--footer-groups), minmax(0, 1fr));
+		}
+	}
+	@media (width < 40rem) {
+		.footer-columns,
+		footer[data-balanced-blocks] > .footer-columns {
+			display: flex;
+			flex-wrap: wrap;
+			column-gap: var(--space-card-gap);
+		}
+		.footer-brand { flex: 1 0 100%; }
+		/* Pair two groups when each has room for its labels, and let a lone group fill its row. */
+		.footer-columns > nav {
+			flex: 1 0 min(100%, max(10rem, calc((100% - var(--space-card-gap)) / 2)));
 		}
 	}
 

@@ -207,6 +207,63 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			});
 		});
 
+		test(`${lang}: the phone footer pairs groups when their text fits`, async ({ page }) => {
+			await page.setViewportSize({ width: 390, height: 900 });
+			await page.goto(path(lang));
+			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+			await page.evaluate(() => document.fonts.ready);
+			const footer = page.getByRole('contentinfo');
+			const groups = footer.getByRole('navigation');
+			const rows = () => groups.evaluateAll((elements) => {
+				const counts = new Map<number, number>();
+				for (const element of elements) {
+					const y = Math.round(element.getBoundingClientRect().top);
+					counts.set(y, (counts.get(y) ?? 0) + 1);
+				}
+				return [...counts.values()];
+			});
+			for (const count of [3, 4, 5]) {
+				await page.getByTestId('footer-group-count').selectOption(String(count));
+				await expect(groups).toHaveCount(count);
+				for (const width of [390, 480, 639]) {
+					await page.setViewportSize({ width, height: 900 });
+					expect(await rows(), `${count} groups at ${width}px`).toEqual(
+						count === 3 ? [2, 1] : count === 4 ? [2, 2] : [2, 2, 1],
+					);
+					const firstGroup = (await groups.first().boundingBox())!;
+					const brand = (await footer.locator('.footer-brand').boundingBox())!;
+					const lastGroup = (await groups.last().boundingBox())!;
+					expect(brand.y + brand.height).toBeLessThan(firstGroup.y);
+					if (count % 2) expect(lastGroup.width).toBeCloseTo(brand.width, 0);
+					await expectNoHorizontalOverflow(page);
+				}
+			}
+			await page.setViewportSize({ width: 320, height: 900 });
+			expect(await rows()).toEqual([1, 1, 1, 1, 1]);
+			await page.setViewportSize({ width: 390, height: 900 });
+			const links = groups.getByRole('link');
+			await links.first().focus();
+			for (let i = 0; i < 5; i++) {
+				const link = links.nth(i);
+				await expect(link).toBeFocused();
+				const box = (await link.boundingBox())!;
+				expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+				if (i < 4) await page.keyboard.press('Tab');
+			}
+			await expectAccessible(page);
+			const firstLabel = groups.first().locator('[data-slot="footer-group-label"]');
+			const label = await firstLabel.textContent();
+			await firstLabel.evaluate((element) => { element.textContent = 'Intergouvernementalisation'; });
+			expect(await rows()).toEqual([1, 2, 2]);
+			await expectNoHorizontalOverflow(page);
+			await firstLabel.evaluate((element, text) => { element.textContent = text; }, label);
+			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+			expect(await rows()).toEqual([1, 1, 1, 1, 1]);
+			await page.setViewportSize({ width: 320, height: 900 });
+			expect(await rows()).toEqual([1, 1, 1, 1, 1]);
+			await expectNoHorizontalOverflow(page);
+		});
+
 		test(`${lang}: HourGrid keys distinguish the rendered states in forced colors`, async ({ page }) => {
 			await page.goto(path(lang));
 			const mixed = page.getByTestId('mixed-hour-grid');
