@@ -1097,7 +1097,8 @@ no-endless-decorative-loops policy. See [the migration](../../docs/migrations/fo
 `statusPrefix` and `liveLabel`, or omit both. This keeps every rendered lamp named for screen
 readers. `statusStart` is independent; without it or the status pair, the entire row is omitted.
 An empty string still opts into the status. `data-in-view`
-reports whether it is on screen.
+reports whether it is on screen. Below the 640px layout step, link groups pair into two columns
+when each has room for its labels. The brand starts on its own row.
 
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
