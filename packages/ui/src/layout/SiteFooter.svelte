@@ -95,7 +95,7 @@
 		<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
 	{/if}
 	<div
-		class="grid w-full grid-cols-1 gap-10 px-6 pb-8 pt-10 sm:grid-cols-2 sm:px-10 sm:pt-12 lg:grid-cols-[1.5fr_repeat(var(--footer-groups),minmax(0,1fr))] lg:gap-8 lg:px-16 lg:pt-14"
+		class="footer-columns grid w-full gap-10 px-6 pb-8 pt-10 sm:px-10 sm:pt-12 lg:gap-8 lg:px-16 lg:pt-14"
 	>
 		<div class="flex flex-col items-start">
 			{@render brand()}
@@ -140,6 +140,14 @@
 <style>
 	footer {
 		padding-bottom: env(safe-area-inset-bottom, 0px);
+	}
+
+	.footer-columns {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+	}
+	.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
+		overflow-wrap: normal;
+		word-break: normal;
 	}
 
 	/* The street edge (D22): one dashed road marking along the footer's top edge, edge to edge.

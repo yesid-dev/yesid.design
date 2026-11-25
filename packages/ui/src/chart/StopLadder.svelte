@@ -29,13 +29,19 @@
 		if (from < 0 || to < 0) return undefined;
 		return { start: Math.min(from, to), end: Math.max(from, to), label: highlight.label };
 	});
-	const width = (value: number) =>
-		`${Number.isFinite(value) && Number.isFinite(max) && max > 0 ? 100 * Math.min(1, Math.max(0, value / max)) : 0}%`;
+	const fraction = (value: number) =>
+		Number.isFinite(value) && Number.isFinite(max) && max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
 </script>
 
 <div class="stop-ladder" data-slot="stop-ladder">
-	<div class="columns" aria-hidden="true"><span>{columns.stop}</span><span>{columns.value}</span></div>
-	<ol role="list" aria-label={label}>
+	<div class="columns">
+		<span class="column-stop" aria-hidden="true">{columns.stop}</span>
+		{#if threshold}<span class="threshold-label">{threshold.label}</span>{/if}
+		<span class="column-value" aria-hidden="true">{columns.value}</span>
+	</div>
+	<ol role="list" aria-label={label} style:--stop-count={Math.max(1, stops.length)}
+		style:--stop-threshold={threshold && stops.length ? fraction(threshold.value) : undefined}
+		data-threshold={!!(threshold && stops.length) || undefined}>
 		{#each stops as stop, index (stop.id)}
 			<li
 				data-timing-point={stop.timingPoint || undefined}
@@ -43,47 +49,63 @@
 			>
 				<span class="rail" aria-hidden="true"><span class="point"></span></span>
 				<div class="stop">
-					{#if stop.href}<a href={stop.href}>{stop.name}</a>{:else}{stop.name}{/if}
+					{#if stop.href}<a class="stop-name" href={stop.href}>{stop.name}</a>{:else}<span class="stop-name">{stop.name}</span>{/if}
 					{#if stop.code}<span class="code">{stop.code}</span>{/if}
 					{#if range?.start === index}<span class="highlight-label">{range.label}</span>{/if}
 				</div>
-				<div class="reading">
-					<span>{stop.value === null ? stop.state ?? stop.valueLabel : stop.valueLabel}</span>
-					{#if stop.value !== null}
-						<span class="track" aria-hidden="true">
-							<span class="bar" style:inline-size={width(stop.value)}></span>
-							{#if threshold}<span class="threshold" style:inset-inline-start={width(threshold.value)}></span>{/if}
-						</span>
-					{/if}
-				</div>
+				{#if stop.value !== null}
+					<span class="track" aria-hidden="true">
+						<span class="bar" style:inline-size={`${100 * fraction(stop.value)}%`}></span>
+					</span>
+				{/if}
+				<span class="reading">{stop.value === null ? stop.state ?? stop.valueLabel : stop.valueLabel}</span>
 			</li>
 		{/each}
 	</ol>
-	{#if threshold}<p class="key"><span aria-hidden="true"></span>{threshold.label}</p>{/if}
 </div>
 
 <style>
 	.stop-ladder {
+		--stop-indent: 1.75rem;
+		--stop-axis: calc(var(--size-tap-min) / 2);
 		container-type: inline-size;
+		display: grid;
+		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) fit-content(25%);
+		column-gap: 1rem;
 		min-inline-size: 0;
 		overflow-wrap: anywhere;
 	}
+	.columns, ol, li {
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: subgrid;
+	}
 	.columns {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-inline: 1.75rem 0.5rem;
 		color: var(--muted-foreground);
 		font-size: var(--text-small);
 	}
-	ol { list-style: none; margin: 0; padding: 0; }
+	.column-stop { grid-column: 1; padding-inline-start: var(--stop-indent); }
+	.threshold-label { grid-column: 2; text-align: center; }
+	.column-value { grid-column: 3; text-align: end; }
+	ol {
+		position: relative;
+		grid-template-rows: repeat(var(--stop-count), auto);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	ol[data-threshold]::after {
+		content: '';
+		position: absolute;
+		grid-area: 1 / 2 / -1 / 3;
+		inset-block: 0;
+		inset-inline-start: calc(100% * var(--stop-threshold));
+		border-inline-start: 1px solid var(--muted-foreground);
+		pointer-events: none;
+	}
 	li {
 		position: relative;
-		display: grid;
-		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-		align-items: start;
-		gap: 0.35rem 1rem;
-		padding: 0.5rem 0.5rem 0.5rem 1.75rem;
+		align-items: baseline;
 	}
 	[data-highlighted] { background-color: var(--muted); }
 	.rail {
@@ -92,13 +114,14 @@
 		inset-inline-start: 0.69rem;
 		border-inline-start: 2px solid var(--border);
 	}
-	li:first-child > .rail { inset-block-start: 0.85rem; }
-	li:last-child > .rail { inset-block-end: auto; block-size: 0.85rem; }
+	li:first-child > .rail { inset-block-start: var(--stop-axis); }
+	li:last-child > .rail { inset-block-end: auto; block-size: var(--stop-axis); }
 	li:only-child > .rail { block-size: 0; }
 	.point {
 		position: absolute;
-		inset-block-start: 0.85rem;
+		inset-block-start: var(--stop-axis);
 		inset-inline-start: -0.3rem;
+		translate: 0 -50%;
 		inline-size: 0.5rem;
 		block-size: 0.5rem;
 		border: 2px solid var(--muted-foreground);
@@ -107,30 +130,53 @@
 	}
 	li:first-child .point { inset-block-start: 0; }
 	[data-timing-point] .point { scale: 1.45; }
-	.stop a {
+	.stop {
+		grid-area: 1 / 1;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 0.5rem;
+		min-inline-size: 0;
+		padding-inline-start: var(--stop-indent);
+	}
+	.stop-name {
 		display: inline-flex;
 		align-items: center;
-		min-inline-size: var(--size-tap-min);
 		min-block-size: var(--size-tap-min);
 		max-inline-size: 100%;
 	}
+	a.stop-name {
+		min-inline-size: var(--size-tap-min);
+		color: var(--primary);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.2em;
+	}
+	a.stop-name:hover { text-decoration-thickness: 2px; }
 	.code,
 	.highlight-label {
 		display: block;
 		color: var(--muted-foreground);
 		font-size: var(--text-small);
 	}
-	.code { font-variant-numeric: tabular-nums; }
+	.code { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+	.highlight-label { flex-basis: 100%; padding-block-end: 0.5rem; }
 	.reading {
-		display: grid;
-		gap: 0.25rem;
+		grid-area: 1 / 3;
+		display: flex;
+		align-items: center;
+		justify-content: end;
+		min-block-size: var(--size-tap-min);
 		text-align: end;
+		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 	}
 	.track {
-		position: relative;
+		grid-area: 1 / 2;
+		align-self: start;
 		display: block;
 		block-size: 0.375rem;
+		margin-block-start: calc(var(--stop-axis) - 0.1875rem);
 	}
 	.bar {
 		display: block;
@@ -138,21 +184,20 @@
 		border-radius: var(--radius-sm);
 		background: var(--foreground);
 	}
-	.threshold,
-	.key > span { border-inline-start: 2px solid var(--muted-foreground); }
-	.threshold { position: absolute; inset-block: -0.125rem; }
-	.key {
-		display: flex;
-		gap: 0.4em;
-		align-items: center;
-		margin: 0.75rem 0 0;
-		color: var(--muted-foreground);
-		font-size: var(--text-small);
-	}
-	.key > span { block-size: 0.9em; }
 	@container (width < 30rem) {
-		li { display: block; }
-		.reading { margin-block-start: 0.25rem; text-align: start; }
+		.columns { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.5rem; }
+		.threshold-label { order: 1; flex-basis: 100%; text-align: start; padding-inline-start: var(--stop-indent); }
+		ol { display: block; }
+		ol[data-threshold]::after {
+			inset-inline-start: calc(var(--stop-indent) + (100% - var(--stop-indent)) * var(--stop-threshold));
+		}
+		li { grid-template-columns: minmax(0, 1fr) fit-content(35%); column-gap: 0.5rem; }
+		.reading { grid-column: 2; }
+		.track {
+			grid-area: 2 / 1 / auto / -1;
+			margin-block: 0 0.5rem;
+			margin-inline-start: var(--stop-indent);
+		}
 	}
 	@media (forced-colors: active) {
 		[data-highlighted] { outline: 1px dashed CanvasText; outline-offset: -1px; }

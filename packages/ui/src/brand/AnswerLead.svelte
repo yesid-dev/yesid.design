@@ -51,6 +51,9 @@
 		min-inline-size: 0;
 	}
 	p { margin: 0; }
+	.answer-value :global(.metric-value.text-title) {
+		font-size: clamp(2.25rem, var(--text-display), 2.875rem);
+	}
 	.answer-sentence { font-size: var(--text-body); }
 	.answer-meta {
 		font-size: var(--text-small);
@@ -67,8 +70,12 @@
 		/* A 13rem figure, a 1rem gap and at least 12rem for the sentence. */
 		@container (min-width: 26rem) {
 			.answer-statement { display: flex; align-items: baseline; gap: 1rem; }
-			.answer-value, .answer-absent { min-inline-size: 0; max-inline-size: 55%; }
-			.answer-sentence { min-inline-size: 12rem; }
+			.answer-value, .answer-absent {
+				flex: none;
+				min-inline-size: 0;
+				max-inline-size: min(55%, calc(100% - 13rem));
+			}
+			.answer-sentence { flex: 1 1 12rem; min-inline-size: 12rem; }
 		}
 	}
 	@media (min-width: 64em) {

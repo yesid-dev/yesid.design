@@ -89,8 +89,14 @@
 		}
 		return value;
 	});
-	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : responsive.mode === 'rows' ? 'compact' : undefined);
+	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : undefined);
 	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
+	const reflows = $derived(!!stackAt || !!rowLayout);
+	const firstDetail = $derived(rowLayout && columns.find(({ key }) => key !== rowLayout.primary && key !== rowLayout.value)?.key);
+	const tableId = $props.id();
+	const rowHeaderColumns = $derived(rowLayout
+		? columns.flatMap((column, index) => column.rowHeader ? [index] : [])
+		: []);
 	const hasSortButtons = $derived(!!onSort && columns.some((column) => column.sortable));
 	const paging = $derived(pageLabels && pageSize && pageSize > 0 && Number.isInteger(pageSize) ? pageSize : 0);
 	const shown = $derived(paging ? Math.min(Math.max(requestedCount, paging), rows.length) : rows.length);
@@ -144,6 +150,14 @@
 	});
 </script>
 
+{#snippet cellContent(column: DataTableColumn<T>, row: T)}
+	{#if rowLayout && !rowPosition(column.key) && column.key !== firstDetail}
+		<span class="data-table-row-separator" aria-hidden="true">·</span>
+	{/if}
+	{#if reflows}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
+	<div class="data-table-cell-content">{@render column.cell(row)}</div>
+{/snippet}
+
 <!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
 <div
 	bind:this={frameElement}
@@ -164,15 +178,16 @@
 	tabindex={scrollable ? 0 : undefined}
 	onscroll={measure}
 >
-	<table class={cn('data-table', tableClass)} data-slot="data-table" role={stackAt ? 'table' : undefined}>
+	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined}>
 		<caption class="data-table-caption">{accessibleCaption}</caption>
-		<thead role={stackAt ? 'rowgroup' : undefined}>
-			<tr role={stackAt ? 'row' : undefined}>
-				{#each columns as column (column.key)}
+		<thead role={reflows ? 'rowgroup' : undefined}>
+			<tr role={reflows ? 'row' : undefined}>
+				{#each columns as column, columnIndex (column.key)}
 					{@const direction = sort?.key === column.key ? sort.direction : undefined}
 					<th
 						scope="col"
-						role={stackAt ? 'columnheader' : undefined}
+						role={reflows ? 'columnheader' : undefined}
+						id={rowLayout ? `${tableId}-column-${columnIndex}` : undefined}
 						data-column={column.key}
 						data-align={columnAlignment(column)}
 						data-numeric={column.numeric || undefined}
@@ -192,34 +207,39 @@
 				{/each}
 			</tr>
 		</thead>
-		<tbody bind:this={body} role={stackAt ? 'rowgroup' : undefined}>
+		<tbody bind:this={body} role={reflows ? 'rowgroup' : undefined}>
 			{#each visibleRows as row, index (key(row, index))}
-				<tr role={stackAt ? 'row' : undefined} tabindex={paging ? -1 : undefined}>
-					{#each columns as column (column.key)}
+			{@const rowHeaderIds = rowLayout
+				? rowHeaderColumns.map((columnIndex) => `${tableId}-row-${index}-${columnIndex}`).join(' ')
+				: ''}
+				<tr role={reflows ? 'row' : undefined} tabindex={paging ? -1 : undefined}>
+					{#each columns as column, columnIndex (column.key)}
+						{@const headerId = rowLayout ? `${tableId}-column-${columnIndex}` : undefined}
 						{#if column.rowHeader}
 							<th
 								scope="row"
-								role={stackAt ? 'rowheader' : undefined}
+								role={reflows ? 'rowheader' : undefined}
+								id={rowLayout ? `${tableId}-row-${index}-${columnIndex}` : undefined}
+								headers={headerId}
 								data-column={column.key}
 								data-row-position={rowPosition(column.key)}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
-								{#if stackAt}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
-								<div class="data-table-cell-content">{@render column.cell(row)}</div>
+								{@render cellContent(column, row)}
 							</th>
 						{:else}
 							<td
-								role={stackAt ? 'cell' : undefined}
+								role={reflows ? 'cell' : undefined}
+								headers={headerId && rowHeaderIds ? `${headerId} ${rowHeaderIds}` : headerId}
 								data-column={column.key}
 								data-row-position={rowPosition(column.key)}
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
-								{#if stackAt}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
-								<div class="data-table-cell-content">{@render column.cell(row)}</div>
+								{@render cellContent(column, row)}
 							</td>
 						{/if}
 					{/each}
@@ -340,8 +360,15 @@
 		min-width: 0;
 	}
 
-	.data-table-stack-label {
+	.data-table-stack-label,
+	.data-table-row-separator {
 		display: none;
+	}
+
+	.data-table-frame[data-responsive='rows'] > .data-table > thead th {
+		vertical-align: middle;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.data-table-sort {
@@ -421,21 +448,6 @@
 		.data-table-frame[data-stack-at='compact'] [data-align='end'] .data-table-cell-content {
 			text-align: right;
 		}
-		.data-table-frame[data-responsive='rows'] .data-table tbody tr {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr);
-			column-gap: 0.75rem;
-		}
-		.data-table-frame[data-responsive='rows'] .data-table tbody :is(th, td) {
-			grid-column: 1 / -1;
-		}
-		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position] {
-			display: block;
-			grid-row: 1;
-		}
-		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position='primary'] { grid-column: 1; }
-		.data-table-frame[data-responsive='rows'] .data-table tbody [data-row-position='value'] { grid-column: 2; }
-		.data-table-frame[data-responsive='rows'] [data-row-position='primary'] .data-table-stack-label { display: none; }
 	}
 
 	@media (max-width: 1023px) {
@@ -513,14 +525,105 @@
 			background: var(--card);
 		}
 	}
-	@container yesid-table (max-width: 16rem) {
-		.data-table-frame[data-responsive='rows'] .data-table tbody :is(th, td):not([data-row-position]) {
-			grid-template-columns: minmax(0, 1fr);
-			gap: 0.125rem;
+	@container yesid-table (inline-size <= 28rem) {
+		.data-table-frame[data-responsive='rows'] > .data-table {
+			display: block;
+			overflow-wrap: normal;
+			word-break: normal;
 		}
-		.data-table-frame[data-responsive='rows'] .data-table tbody tr > :is(th, td) > .data-table-cell-content {
-			grid-column: 1;
+		.data-table-frame[data-responsive='rows'] > .data-table > :is(thead, tbody) {
+			display: block;
+		}
+		.data-table-frame[data-responsive='rows']:not([data-sortable]) > .data-table > thead,
+		.data-table-frame[data-responsive='rows'][data-sortable] > .data-table > thead th:not([data-sortable]) {
+			position: absolute;
+			inline-size: 1px;
+			block-size: 1px;
+			padding: 0;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+			border: 0;
+		}
+		.data-table-frame[data-responsive='rows'][data-sortable] > .data-table > thead tr {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0 0.25rem;
+			border-block-end: 1px solid var(--border);
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > thead th[data-sortable] {
+			width: auto !important;
+			min-inline-size: 0;
+			padding: 0;
+			border: 0;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table-sort {
+			overflow-wrap: normal;
+			word-break: normal;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			column-gap: 0.5rem;
+			padding: 0.5rem;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr + tr {
+			border-block-start: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+		}
+		/* A zero-height flex item separates the heading pair from the wrapping details. */
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr::after {
+			content: '';
+			order: 1;
+			flex: 0 0 100%;
+			block-size: 0;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td) {
+			min-inline-size: 0;
+			max-inline-size: 100%;
+			padding: 0;
+			border: 0;
 			text-align: start;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'] {
+			flex: 1 1 0%;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] {
+			order: 1;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			justify-content: end;
+			gap: 0 0.35em;
+			max-inline-size: 45%;
+			font-weight: 600;
+			text-align: end;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-cell-content {
+			order: -1;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) {
+			order: 2;
+			display: inline;
+			flex: 0 1 auto;
+			margin-block-start: 0.125rem;
+			color: var(--muted-foreground);
+			font-family: inherit;
+			font-weight: 400;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position])
+			:is(.data-table-row-separator, .data-table-cell-content) {
+			display: inline;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-stack-label,
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {
+			display: inline;
+			color: var(--muted-foreground);
+			font-weight: 400;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table-row-separator,
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {
+			margin-inline-end: 0.35em;
 		}
 	}
 </style>

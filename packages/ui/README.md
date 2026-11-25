@@ -561,8 +561,8 @@ its localized `sentence` in a named section. Use `value={null}` and the `absent`
 a missing observation. Pass the date or freshness stamp, metadata and actions as snippets. A
 short `comparison` adds context below the answer. At a viewport of at least 40 em and an answer
 width of at least 26 rem, the figure and sentence sit side by side. The sentence keeps at least
-12 rem and the figure uses at most 55% of the available width. The layout stacks below either
-threshold.
+12 rem and the figure keeps its natural width up to 55% of the available width. The layout
+stacks below either threshold. The large answer uses the display scale within this component.
 
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
@@ -830,6 +830,8 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
   layout and on resize. Within the frame, `--app-frame-chrome-height` exposes that measurement.
+  If the header's actions include a compact search button marked `data-slot="nav-compact-search"`,
+  the compact frame shows that button in place of the inline search.
   `--chrome-offset` is the sticky clearance and becomes zero when tall chrome scrolls away.
   `--app-frame-header-height` measures the header row alone. Set
   `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
@@ -1150,7 +1152,9 @@ action for a card list, import `ShowMore` from `@yesid/ui/table` and supply `sho
 `pageSize`, `labels` and `onMore`. The list owns insertion and focus.
 
 Use `responsive={{ mode: 'rows', primary: 'name', value: 'total' }}` to put two named
-columns on the first line at compact widths. The remaining values reflow below with labels.
+columns on the first line when the table itself is at most 28 rem wide. The remaining columns
+reflow into a wrapping detail line of label and value pairs. Sort actions stay in the header
+and wrap together above the rows.
 
 ## Status marks, route plates and charts
 
@@ -1196,14 +1200,17 @@ Also from `@yesid/ui/chart`:
 - **HourGrid** takes ordered columns and one cell per column in each row. Supply the visible
   cell `text`, its accessible `name`, a level from zero to four and an optional state.
   Use `level: null` for an unmeasured cell. The table scrolls within a named region and
-  keeps row headings in view. The legend uses the five supplied scale labels and state labels.
+  keeps row headings in view. The key starts with the scale label and includes only the
+  state entries present in the grid.
 - **RangeMark** plots the estimate and its interval within a shared ascending `domain`.
   Include the estimate and interval in its accessible `label`, and supply a localized
   `reference.label` when using the comparison tick. Render the surrounding app's empty state
   when there is no estimate.
 - **StopLadder** shows stops in the supplied order and draws each stop's bar against a common
   positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
-  A `threshold` names a comparison value. A `highlight` names a span between two stop IDs.
+  A `threshold` labels a continuous comparison line. A `highlight` names a span between two
+  stop IDs. Linked stops use the kit's text link treatment and each code sits beside the
+  name when there is room.
 
 ## Map surfaces
 
