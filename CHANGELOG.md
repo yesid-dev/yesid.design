@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.57.0-rc.1
+
+<!-- release-fragment: d3-map-legends -->
+- `@yesid/ui` (minor): MapLegend supports grouped entries, ordered scales, details and a disclosure that can remember its state. Pass a localized `legendLabel` to MapFrame to opt into the floating legend control below 1024 px. Use `statusGlyph` and `statusGlyphSvg` from `@yesid/ui/brand` or `@yesid/ui` for the same marks shown by StatusMark.
+
+  `StatusMarkStatus` value `severe` is deprecated and still draws its diamond. Use `late` when the product classifies that status as late. Removal is eligible no earlier than v0.59.0 and 90 days after stable v0.57.0 publishes.
+
+<!-- release-fragment: record-layout-parts -->
+- `@yesid/ui` (patch): Reflow DataTable rows into a primary line and wrapping details with compact sort controls.
+  Give StopLadder linked stops, inline codes and a continuous threshold line. Refine the
+  AnswerLead figure, distinguish HourGrid states, use compact search in compact frames and
+  let SiteFooter columns reflow with text size. The public API is unchanged.
+
 ## 0.56.1
 
 <!-- release-fragment: app-frame-reading-rail-and-answer-lead -->
