@@ -72,7 +72,10 @@
 		{ id: 'c', name: 'Queen-Mary / Côte-des-Neiges', code: '51055', href: '#record', value: 6.1, valueLabel: '6.1 min' },
 		{ id: 'd', name: 'Édouard-Montpetit / Louis-Colin', code: '52847', value: null, valueLabel: '', state: c.state },
 	]);
-	const footerGroups = $derived(c.footer.map((label, i) => ({ label, links: [{ href: '#record', label: c.links[i]! }] })));
+	let footerCount = $state(5);
+	const footerGroups = $derived(c.footer.slice(0, footerCount).map(
+		(label, i) => ({ label, links: [{ href: '#record', label: c.links[i]! }] }),
+	));
 	const labels = $derived(french ? { ...LABELS, nav: 'Navigation', theme: 'Thème', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu' } : LABELS);
 	const here = $derived('/app-frame/record-parts/' + data.lang);
 	let searchOpen = $state(false);
@@ -92,6 +95,11 @@
 {#snippet events(_row: RecordRow)}{french ? '10 000' : '10,000'}{/snippet}
 {#snippet early(_row: RecordRow)}8%{/snippet}
 {#snippet footerStatus()}<span>État du service</span>{/snippet}
+{#snippet exampleFooter()}
+	<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
+		{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
+	</SiteFooter>
+{/snippet}
 
 <AppFrame mainLabel={c.title}>
 	{#snippet header()}
@@ -105,13 +113,19 @@
 		</SiteHeader>
 	{/snippet}
 	{#snippet footer()}
-		<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
-			{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
-		</SiteFooter>
+		{#if footerCount === 5}{@render exampleFooter()}{/if}
 	{/snippet}
 
 	<section id="record" class="record-parts" data-density="compact" lang={data.lang}>
 		<h1>{c.title}</h1>
+		<label>
+			{french ? 'Groupes de liens du pied de page' : 'Footer link groups'}
+			<select bind:value={footerCount} data-testid="footer-group-count">
+				<option value={3}>3</option>
+				<option value={4}>4</option>
+				<option value={5}>5</option>
+			</select>
+		</label>
 		{#if searchOpen}<input type="search" aria-label={c.search} />{/if}
 		<div data-testid="answer-part">
 			<AnswerLead value={c.range} sentence={c.sentence} />
@@ -147,6 +161,7 @@
 			threshold={{ value: 5, label: c.threshold }} highlight={{ fromId: 'b', toId: 'c', label: c.stretch }} />
 	</section>
 </AppFrame>
+{#if footerCount < 5}{@render exampleFooter()}{/if}
 
 <style>
 	.record-parts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; inline-size: min(100%, 64rem); margin-inline: auto; padding: 1rem; }

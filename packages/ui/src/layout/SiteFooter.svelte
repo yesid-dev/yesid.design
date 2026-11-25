@@ -86,6 +86,7 @@
 	data-in-view={inView}
 	data-testid="footer"
 	data-slot="footer"
+	data-balanced-blocks={groups.length === 3 || groups.length === 4 ? groups.length + 1 : undefined}
 	class="relative z-[var(--z-content)] bg-[var(--muted)]"
 	style="--footer-groups: {groups.length};"
 >
@@ -151,9 +152,9 @@
 			display: flex;
 			flex-wrap: wrap;
 		}
-		/* The brand gets 1.5 shares. The brand and five groups fit at the desktop floor. */
-		.footer-brand { flex: 1.5 1 min(100%, 10.5rem); }
-		.footer-columns > nav { flex: 1 1 min(100%, 7rem); }
+		/* Leave room for a classic scrollbar at the desktop floor. */
+		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
+		.footer-columns > nav { flex: 1 1 min(100%, 6.75rem); }
 		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
 	}
 	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
@@ -179,6 +180,29 @@
 	.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
 		overflow-wrap: normal;
 		word-break: normal;
+	}
+
+	footer[data-balanced-blocks] {
+		container: footer-balance / inline-size;
+	}
+	footer[data-balanced-blocks] > .footer-columns {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	@container footer-balance (inline-size >= 34rem) {
+		footer[data-balanced-blocks='4'] > .footer-columns {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@container footer-balance (inline-size >= 39rem) {
+		footer[data-balanced-blocks='5'] > .footer-columns {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+	@container footer-balance (inline-size >= 63rem) {
+		footer[data-balanced-blocks] > .footer-columns {
+			grid-template-columns: minmax(0, 1.5fr) repeat(var(--footer-groups), minmax(0, 1fr));
+		}
 	}
 
 	/* The street edge (D22): one dashed road marking along the footer's top edge, edge to edge.
