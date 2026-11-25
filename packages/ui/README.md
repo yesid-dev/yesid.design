@@ -1155,9 +1155,10 @@ action for a card list, import `ShowMore` from `@yesid/ui/table` and supply `sho
 `pageSize`, `labels` and `onMore`. The list owns insertion and focus.
 
 Use `responsive={{ mode: 'rows', primary: 'name', value: 'total' }}` to put two named
-columns on the first line when the table itself is at most 28 rem wide. The remaining columns
-reflow into a wrapping detail line of label and value pairs. Sort actions stay in the header
-and wrap together above the rows.
+columns at the top when the table itself is at most 28 rem wide. The value sits above its label
+at the end of the row, leaving the remaining room for the primary column. The other columns
+reflow into wrapping details, with separators attached to the end of each preceding detail.
+Sort actions stay in the header and wrap together above the rows.
 
 ## Status marks, route plates and charts
 
