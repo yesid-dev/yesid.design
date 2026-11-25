@@ -71,3 +71,36 @@ test.describe('Network header first paint', { tag: '@theme' }, () => {
 		}
 	}
 });
+
+test.describe('Network header menu height', { tag: '@theme' }, () => {
+	for (const lang of ['en', 'fr']) {
+		test(`${lang}: folding search and network leaves the pill height unchanged`, async ({ page }) => {
+			await page.goto(`/app-frame/network-paint/${lang}/refresh`);
+			const pill = page.getByTestId('nav-pill');
+			const menu = pill.getByTestId('nav-menu-toggle');
+			const network = pill.getByRole('combobox');
+			const search = pill.getByRole('searchbox');
+			await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+			await page.evaluate(() => document.fonts.ready);
+
+			for (const width of [390, 1024, 1100, 1279, 1440]) {
+				await page.setViewportSize({ width, height: 900 });
+				await expect(network).toBeVisible();
+				if (width >= 1024) await expect(search).toBeVisible();
+				else await expect(search).toBeHidden();
+				const closedHeight = (await pill.boundingBox())!.height;
+
+				await menu.press('Enter');
+				await expect(page.getByRole('dialog')).toBeVisible();
+				expect((await pill.boundingBox())!.height, `open pill at ${width}px`).toBe(closedHeight);
+				await expect(pill.locator('.nav-search')).toHaveAttribute('inert', '');
+				await expect(pill.locator('[data-slot="site-header-network"]')).toHaveAttribute('inert', '');
+
+				await page.keyboard.press('Escape');
+				await expect(menu).toBeFocused();
+				await expect(network).toBeVisible();
+				expect((await pill.boundingBox())!.height).toBe(closedHeight);
+			}
+		});
+	}
+});
