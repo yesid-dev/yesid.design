@@ -64,6 +64,10 @@ the intervening-minor gate above also applies.
 | [v0.43.0](https://github.com/yesid-dev/yesid.design/releases/tag/v0.43.0) | 2026-11-15 01:56:50 | 2027-02-13 01:56:50 |
 | [v0.44.0](https://github.com/yesid-dev/yesid.design/releases/tag/v0.44.0) | 2026-11-15 07:15:18 | 2027-02-13 07:15:18 |
 
+- **`StatusMarkStatus` value `severe`, starting v0.57.0:** Deprecated, retained and functional
+  in `StatusMark`, `statusGlyph` and `statusGlyphSvg`. Use `late` when the product classifies
+  the old severe case as late. Earliest removal is publication plus 90 days and at least
+  one intervening minor (v0.59.0 at the earliest if v0.58.0 retains it).
 - **SiteFooter `statusPrefix` / `liveLabel`, starting v0.43.0:** Deprecated, retained and
   functional. Migrate to omission or the existing `statusStart` snippet with a real source and
   time. The former pulse is already still. See [footer status](docs/migrations/footer-status.md).

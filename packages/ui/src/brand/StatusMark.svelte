@@ -9,17 +9,20 @@
 		detail?: string;
 	}
 
-	const glyphs = { early: '▼', on_time: '●', late: '▲', severe: '◆', unknown: '○' } as const;
 </script>
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import { statusGlyph } from './status-glyph.js';
 
 	let { status, label, detail, class: className, ...rest }: StatusMarkProps = $props();
+	const glyph = $derived(statusGlyph(status));
 </script>
 
 <span {...rest} class={cn('status-mark', className)} data-slot="status-mark" data-status={status}>
-	<span class="status-glyph" aria-hidden="true">{glyphs[status]}</span>
+	<svg class="status-glyph" viewBox={glyph.viewBox} aria-hidden="true" focusable="false">
+		<path d={glyph.path} fill="currentColor" fill-rule="evenodd" />
+	</svg>
 	<span class="status-word">{label}</span>
 	{#if detail}<span class="status-detail">{detail}</span>{/if}
 </span>
@@ -35,10 +38,10 @@
 		overflow-wrap: anywhere;
 	}
 	.status-glyph {
+		flex: none;
+		inline-size: 1em;
+		block-size: 1em;
 		color: var(--dataviz-status-unknown);
-		font-family: var(--font-mono);
-		font-variant-emoji: text;
-		line-height: 1;
 	}
 	[data-status='early'] > .status-glyph { color: var(--dataviz-status-early); }
 	[data-status='on_time'] > .status-glyph { color: var(--dataviz-status-on-time); }

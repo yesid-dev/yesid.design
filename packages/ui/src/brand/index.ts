@@ -89,6 +89,7 @@ export type { StampProps } from './Stamp.svelte';
 
 export { default as StatusMark } from './StatusMark.svelte';
 export type { StatusMarkStatus, StatusMarkProps } from './StatusMark.svelte';
+export { statusGlyph, statusGlyphSvg } from './status-glyph.js';
 
 
 export { default as StopLabel } from './StopLabel.svelte';

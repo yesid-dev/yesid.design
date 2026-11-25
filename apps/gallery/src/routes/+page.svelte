@@ -33,6 +33,7 @@
 <p><a class="inline-flex min-h-11 items-center underline" href="/d1-record">Answer leads, stamps and paged records</a></p>
 <p><a class="inline-flex min-h-11 items-center underline" href="/app-frame/controls-rail">App frame controls rail and network slot</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/map-parts">Map surfaces and responsive controls</a></p>
+<p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/map-legends">Map legends and status glyphs</a></p>
 
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/reading-record">Public-data reading record and row recipes</a></p>
 

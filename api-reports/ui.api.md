@@ -943,6 +943,8 @@ declare namespace Brand {
         StatusMark,
         StatusMarkStatus,
         StatusMarkProps,
+        statusGlyph,
+        statusGlyphSvg,
         StopLabel,
         StopLabelProps,
         TerminalCursor,
@@ -2112,6 +2114,8 @@ declare namespace Index {
         StatusMark,
         StatusMarkStatus,
         StatusMarkProps,
+        statusGlyph,
+        statusGlyphSvg,
         StopLabel,
         StopLabelProps,
         TerminalCursor,
@@ -2365,6 +2369,8 @@ interface MapFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
     // (undocumented)
     legend?: Snippet;
     // (undocumented)
+    legendLabel?: string;
+    // (undocumented)
     panel?: Snippet;
 }
 
@@ -2395,13 +2401,15 @@ interface MapLabelPlacement {
 }
 
 // @public (undocumented)
-const MapLegend: Component<MapLegendProps, {}, "">;
+const MapLegend: Component<MapLegendProps, {}, "open">;
 
 // @public (undocumented)
 type MapLegend = ReturnType<typeof MapLegend>;
 
 // @public (undocumented)
 interface MapLegendItem {
+    // (undocumented)
+    detail?: string;
     // (undocumented)
     label: string;
     // (undocumented)
@@ -2411,7 +2419,27 @@ interface MapLegendItem {
 // @public (undocumented)
 interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'title'> {
     // (undocumented)
-    items: readonly MapLegendItem[];
+    collapsible?: boolean;
+    // (undocumented)
+    groups?: readonly {
+        title: string;
+        items: readonly MapLegendItem[];
+    }[];
+    // (undocumented)
+    items?: readonly MapLegendItem[];
+    // (undocumented)
+    open?: boolean;
+    // (undocumented)
+    persistKey?: string;
+    // (undocumented)
+    scale?: {
+        title: string;
+        steps: readonly {
+            label: string;
+            swatch: string;
+        }[];
+        states?: readonly MapLegendItem[];
+    };
     // (undocumented)
     title: string;
 }
@@ -3674,6 +3702,19 @@ interface StatusDotProps extends HTMLAttributes<HTMLSpanElement> {
     // (undocumented)
     size?: 'sm' | 'md';
 }
+
+// @public (undocumented)
+function statusGlyph(status: StatusMarkStatus): {
+    path: string;
+    viewBox: string;
+};
+
+// @public (undocumented)
+function statusGlyphSvg(status: StatusMarkStatus, options: {
+    size: number;
+    ink: string;
+    halo?: string;
+}): string;
 
 // @public (undocumented)
 const StatusMark: Component<StatusMarkProps, {}, "">;
