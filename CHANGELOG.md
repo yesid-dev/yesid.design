@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.57.0-rc.3
+
+<!-- release-fragment: stop-ladder-reading-wrap -->
+- `@yesid/ui` (patch): Keep complete words in StopLadder readings and value headings at enlarged text sizes.
+  The value column reserves its natural minimum width and the stop name wraps as needed.
+
 ## 0.57.0-rc.2
 
 <!-- release-fragment: footer-reflow-budget -->
