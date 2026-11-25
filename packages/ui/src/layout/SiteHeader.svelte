@@ -194,6 +194,26 @@
 		observer.observe(node);
 		return { destroy: () => observer.disconnect() };
 	}
+	function followPageScroll(node: HTMLElement) {
+		if (CSS.supports('(animation-timeline: scroll(root block)) and (animation-range: 0px 100dvh)')) return;
+		const view = node.ownerDocument.defaultView!;
+		const compact = view.matchMedia('(width < 1024px)');
+		let previous = -1;
+		const update = () => {
+			if (!compact.matches) return;
+			const scroll = Math.min(view.innerHeight, Math.max(0, view.scrollY));
+			if (scroll === previous) return;
+			previous = scroll;
+			node.style.setProperty('--site-header-network-scroll', `${scroll}px`);
+		};
+		view.addEventListener('scroll', update, { passive: true });
+		view.addEventListener('resize', update);
+		update();
+		return { destroy() {
+			view.removeEventListener('scroll', update);
+			view.removeEventListener('resize', update);
+		} };
+	}
 	let languageLink = $state<HTMLAnchorElement | null>(null);
 	let menuToggle = $state<HTMLButtonElement>();
 	let overlay: HTMLElement | undefined = $state();
@@ -426,7 +446,7 @@
 							{/if}
 						</div>
 						{#if network}
-							<div bind:this={networkElement} inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
+							<div bind:this={networkElement} use:followPageScroll inert={active} class="nav-network nav-collapsible" class:nav-collapsed={active} data-slot="site-header-network">
 								{@render network()}
 							</div>
 						{/if}
@@ -706,6 +726,27 @@
 	}
 	@media (width >= 1024px) {
 		:global(:root[data-site-header-network-below]) { --nav-extra-clearance: var(--nav-network-clearance); }
+	}
+	@property --site-header-network-scroll {
+		syntax: '<length>';
+		inherits: false;
+		initial-value: 0px;
+	}
+	@keyframes scroll-compact-network {
+		to { --site-header-network-scroll: 100dvh; }
+	}
+	@media (width < 1024px) {
+		/* Clip the departing row at the pill edge. Keyboard focus brings the same control back. */
+		.nav-pill .nav-network:not(.nav-collapsed, :global(.app-frame-chrome.tall-chrome *)):not(:has(:focus-visible)) {
+			--network-scroll: var(--site-header-network-scroll, 0px);
+			translate: -50% calc(-1 * var(--network-scroll));
+			clip-path: inset(calc(var(--network-scroll) - 0.5rem + var(--nav-border)) -4px -4px);
+			@supports (animation-timeline: scroll(root block)) and (animation-range: 0px 100dvh) {
+				animation: scroll-compact-network auto linear both;
+				animation-timeline: scroll(root block);
+				animation-range: 0px 100dvh;
+			}
+		}
 	}
 	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */
 	@container site-header (width < 48em) {
