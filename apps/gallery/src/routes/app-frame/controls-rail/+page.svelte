@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { ProductBrand, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { Button } from '@yesid/ui/button';
-	import { AppFrame, ControlsRail, NetworkPicker, SiteHeader } from '@yesid/ui/layout';
+	import { AppFrame, ControlsRail, NetworkPicker, SiteFooter, SiteHeader } from '@yesid/ui/layout';
 	import { LABELS, LANGUAGE_NAMES, LOCALES } from '#lib/gallery/site-header-fixture.js';
 
 	const navigation = getContext<NavigationLifecycle>('gallery-navigation');
@@ -13,6 +13,7 @@
 	const dense = $derived(browser && page.url.searchParams.has('dense'));
 	const refresh = $derived(browser && page.url.searchParams.has('refresh'));
 	const longCode = $derived(browser && page.url.searchParams.has('long-code'));
+	const shortReport = $derived(browser && page.url.searchParams.has('short-report'));
 	const labels = $derived(french ? {
 		skipToContent: 'Aller au contenu',
 		openMenu: 'Ouvrir le menu',
@@ -34,7 +35,7 @@
 <svelte:head><title>Controls rail and network slot</title></svelte:head>
 
 {#snippet serviceControls()}
-	<ControlsRail label="Service period">
+	<ControlsRail label="Service period" class={shortReport ? 'min-h-[22rem]' : undefined}>
 		<label class="filter">Record period <select class="min-h-11 border border-border"><option>Seven days</option><option>Twenty-eight days</option></select></label>
 	</ControlsRail>
 {/snippet}
@@ -72,7 +73,14 @@
 			{/snippet}
 		</SiteHeader>
 	{/snippet}
-	<div class="report" id="report">
+	{#snippet footer()}
+		{#if shortReport}
+			<SiteFooter edge="hazard" tagline="Service reports" groups={[]}>
+				{#snippet brand()}<ProductBrand product="Service" href="/app-frame/controls-rail" houseHref="/" />{/snippet}
+			</SiteFooter>
+		{/if}
+	{/snippet}
+	<div class="report" class:short-report={shortReport} id="report">
 		<h1>Service report</h1>
 		<p>Check planned trips and the service that ran.</p>
 		<Button variant="outline" wrap aria-pressed={viewport} onclick={() => (viewport = !viewport)}>Full viewport</Button>
@@ -82,6 +90,7 @@
 
 <style>
 	.report { min-block-size: 120dvh; padding: 1rem var(--space-page-x); overflow-wrap: anywhere; }
+	.short-report { min-block-size: 0; padding-block-end: var(--space-section-y); }
 	h1 { font-size: var(--text-title); }
 	.filter { display: grid; gap: 0.5rem; padding: 1rem; min-inline-size: 0; }
 	.filter select { max-inline-size: 100%; }

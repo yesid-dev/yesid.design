@@ -627,7 +627,7 @@
 		display: none;
 	}
 	:global([data-slot='app-frame'][data-rail-layout='compact'])
-		.nav-trailing :global([data-slot='nav-compact-search']) {
+		.nav-trailing :global([data-slot='nav-compact-search']:not([role='dialog'][aria-modal='true'] *)) {
 		display: inline-flex;
 	}
 	.nav-network {

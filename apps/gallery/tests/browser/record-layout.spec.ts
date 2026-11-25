@@ -137,6 +137,31 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expectAccessible(page);
 		});
 
+		test(`${lang}: compact search stays out of the open site menu`, async ({ page }) => {
+			const openMenu = lang === 'fr' ? 'Ouvrir le menu' : 'Open menu';
+			await page.setViewportSize({ width: 320, height: 900 });
+			await page.goto(path(lang));
+			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+			const trigger = page.locator('[data-slot="nav-compact-search"]');
+			await expect(trigger).toBeVisible();
+			await page.getByRole('button', { name: openMenu, exact: true }).press('Enter');
+			await expect(page.getByRole('dialog')).toBeVisible();
+			await expect(trigger).toBeHidden();
+			await page.keyboard.press('Escape');
+			await expect(trigger).toBeVisible();
+
+			for (const width of [1206, 1280]) {
+				await page.setViewportSize({ width, height: 900 });
+				await expect(page.getByRole('searchbox', { name: c.search })).toBeVisible();
+				await expect(trigger).toBeHidden();
+				await page.getByRole('button', { name: openMenu, exact: true }).press('Enter');
+				await expect(page.getByRole('dialog')).toBeVisible();
+				await expect(trigger).toBeHidden();
+				await page.keyboard.press('Escape');
+				await expect(page.getByRole('dialog')).toHaveCount(0);
+			}
+		});
+
 		test(`${lang}: the standalone footer keeps four or five blocks on balanced rows`, async ({ page }, info) => {
 			await page.goto(path(lang));
 			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
