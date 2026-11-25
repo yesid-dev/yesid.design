@@ -241,6 +241,7 @@
 		--reading-rail-gap: calc(var(--app-frame-paired) * 1rem);
 		--reading-rail-top: calc(var(--chrome-offset) + var(--reading-rail-gap));
 		margin-block-start: var(--reading-rail-gap);
+		margin-block-end: calc(var(--app-frame-paired) * var(--space-section-y));
 		top: var(--reading-rail-top);
 		max-height: calc(100dvh - var(--reading-rail-top) - 1rem);
 	}

@@ -125,6 +125,24 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 		}
 	});
 
+	test('a controls rail taller than the report keeps the section gutter above the hazard edge', async ({ page }) => {
+		for (const width of [1024, 1440]) {
+			await page.setViewportSize({ width, height: 600 });
+			await page.goto(`${path}?short-report`);
+			const view = workspace(page);
+			const card = view.controls.getByRole('group', { name: 'Service period' });
+			const footer = page.locator('[data-slot="app-frame"] [data-slot="footer"]');
+			await expect(card).toBeVisible();
+			await expect(footer).toBeAttached();
+			const cardBounds = (await card.boundingBox())!;
+			const report = page.locator('#report');
+			expect(cardBounds.height).toBeGreaterThan((await report.boundingBox())!.height);
+			const footerBounds = (await footer.boundingBox())!;
+			const gutter = await report.evaluate((element) => parseFloat(getComputedStyle(element).paddingBlockEnd));
+			expect(footerBounds.y - cardBounds.y - cardBounds.height).toBeCloseTo(gutter, 0);
+		}
+	});
+
 	test('a larger browser default starts compact before hydration', async ({ page }) => {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		const cdp = await page.context().newCDPSession(page);
