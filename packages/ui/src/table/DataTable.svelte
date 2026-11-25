@@ -155,7 +155,7 @@
 	{#if reflows}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
 	<div class="data-table-cell-content">
 		{@render column.cell(row)}{#if rowLayout && !rowPosition(column.key) && column.key !== lastDetail}
-			<span class="data-table-row-separator" aria-hidden="true">&nbsp;·</span>
+			<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
 		{/if}
 	</div>
 {/snippet}
@@ -568,7 +568,8 @@
 			flex-wrap: wrap;
 			align-items: baseline;
 			column-gap: 0.5rem;
-			padding: 0.5rem;
+			padding-block: 0.25rem;
+			padding-inline: 0.5rem;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr + tr {
 			border-block-start: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
@@ -619,6 +620,18 @@
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position])
 			:is(.data-table-row-separator, .data-table-cell-content) {
 			display: inline;
+		}
+		/* The word joiner keeps the mark on the preceding line. Paint the dot in the column gap. */
+		.data-table-frame[data-responsive='rows'] .data-table-row-separator {
+			position: relative;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table-row-separator::after {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0.125em;
+			content: '·';
+			line-height: 1;
+			pointer-events: none;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-stack-label,
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {

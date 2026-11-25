@@ -25,7 +25,8 @@ async function expectTrailingSeparators(row: Locator) {
 		range.setEndBefore(dot);
 		const last = [...range.getClientRects()].filter((box) => box.width > 0).at(-1);
 		const mark = dot.getBoundingClientRect();
-		return !!last && mark.left >= last.right - 0.5 && mark.top < last.bottom && mark.bottom > last.top;
+		return !!last && mark.width === 0 && getComputedStyle(dot, '::after').content.includes('·')
+			&& mark.left >= last.right - 0.5 && mark.top < last.bottom && mark.bottom > last.top;
 	}));
 	expect(attached.every(Boolean)).toBe(true);
 }
