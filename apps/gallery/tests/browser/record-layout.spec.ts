@@ -217,6 +217,34 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 		});
 	}
 
+	test('the French stop ladder preserves words in the reading and header at 200% text', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 900 });
+		await page.goto(path('fr'));
+		await page.locator('html').evaluate((el) => { el.style.fontSize = '200%'; });
+		await page.evaluate(() => document.fonts.ready);
+		const ladder = page.locator('[data-slot="stop-ladder"]');
+		await ladder.evaluate((el) => { (el as HTMLElement).style.inlineSize = '7rem'; });
+		const reading = ladder.getByText('5,3 min de retard', { exact: true });
+		const header = ladder.getByText('Retard médian', { exact: true });
+		for (const [label, word] of [[reading, 'retard'], [header, 'médian']] as const) {
+			await expect(label).toBeVisible();
+			const wordRects = await label.evaluate((el, word) => {
+				const text = el.firstChild!;
+				const start = text.textContent!.lastIndexOf(word);
+				const range = document.createRange();
+				range.setStart(text, start);
+				range.setEnd(text, start + word.length);
+				return range.getClientRects().length;
+			}, word);
+			expect(wordRects).toBe(1);
+		}
+		const first = ladder.getByRole('listitem').first();
+		const name = (await first.getByRole('link').boundingBox())!;
+		const value = (await reading.boundingBox())!;
+		expect(name.x + name.width).toBeLessThanOrEqual(value.x);
+		await expectNoHorizontalOverflow(page);
+	});
+
 	test('the answer range and linked ladder occupy one line at wide width', async ({ page }) => {
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto(path('en'));

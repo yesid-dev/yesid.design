@@ -67,7 +67,8 @@
 	const stateLabels = $derived({ few: c.few, none: c.none, unmeasured: c.unmeasured });
 	const scale = $derived({ label: c.scale, steps: ['0–9', '10–14', '15–19', '20–24', '25+'] });
 	const stops = $derived([
-		{ id: 'a', name: 'Gare Montréal-Ouest', code: '50110', href: '#record', timingPoint: true, value: 0.2, valueLabel: '0.2 min' },
+		{ id: 'a', name: 'Gare Montréal-Ouest', code: '50110', href: '#record', timingPoint: true,
+			value: french ? 5.3 : 0.2, valueLabel: french ? '5,3 min de retard' : '0.2 min' },
 		{ id: 'b', name: 'Westminster / Curzon', code: '50147', href: '#record', value: 1.2, valueLabel: '1.2 min' },
 		{ id: 'c', name: 'Queen-Mary / Côte-des-Neiges', code: '51055', href: '#record', value: 6.1, valueLabel: '6.1 min' },
 		{ id: 'd', name: 'Édouard-Montpetit / Louis-Colin', code: '52847', value: null, valueLabel: '', state: c.state },

@@ -87,6 +87,12 @@
 	.column-stop { grid-column: 1; padding-inline-start: var(--stop-indent); }
 	.threshold-label { grid-column: 2; text-align: center; }
 	.column-value { grid-column: 3; text-align: end; }
+	.column-value, .reading {
+		/* Keep complete words in the value track, even with the body wrap fallback. */
+		min-inline-size: min-content;
+		overflow-wrap: normal;
+		word-break: normal;
+	}
 	ol {
 		position: relative;
 		grid-template-rows: repeat(var(--stop-count), auto);
