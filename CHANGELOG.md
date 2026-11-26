@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.58.0-rc.2
+## 0.58.0
 
 <!-- release-fragment: reading-frame-fill -->
 - `@yesid/ui` (patch): `ReadingFrame` (Experimental) fills its parent again when it is a flex or grid item. Since
