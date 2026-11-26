@@ -76,6 +76,10 @@ refitting on prop changes without a resize.
 `header-band.spec.ts` checks the compact ArticleHeader band on `/article-header` and that long
 French and Spanish titles stay uncropped at 320px and 200% text.
 `/site-header-compact` keeps the deprecated `compactControls` only to prove it still works.
+`language-toggle.spec.ts` loads `/site-header` in English, French and three-language Spanish and
+the LanguageToggle card on `/`, at 390px with 200% text and at 1440px. It checks that no box in the
+link crosses the viewport, that the hidden name keeps no box over 1px outside the link, and the
+names in Chromium's own accessibility tree, with the no-break space before the French colon.
 `/site-header-wide/[lang]` (`en`, `fr`) follows Transit's NavPill: "yesid. | Transit", three
 priority 3 links, search at clamp(11rem, 22cqi, 20rem) from 1024px with a compact search link below,
 refresh at every width and a provider choice that moves under the pill below 600px, with
