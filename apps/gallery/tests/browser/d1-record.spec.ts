@@ -52,6 +52,32 @@ test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 		await expectAccessible(page, { include: '[data-testid="d1-record"]' });
 	});
 
+	test('each answer region reads its figure, or what stands in for it, once and before the sentence', async ({ page }) => {
+		await page.goto('/d1-record');
+		const regions = page.getByTestId('d1-record').locator('[data-slot="answer-lead"]');
+		await expect(regions).toHaveCount(5);
+		await expect(regions.and(page.locator('[data-layout="fit"]'))).toHaveCount(2);
+		for (const region of await regions.all()) {
+			const figure = (await region.locator('.answer-value, .answer-absent').innerText()).trim();
+			const sentence = await region.locator('.answer-sentence').innerText();
+			await expect(region).toHaveAccessibleName(`${figure} ${sentence}`);
+			await expect(region.getByText(figure, { exact: true })).toHaveCount(1);
+		}
+		const tree = async (name: string) => page.getByRole('region', { name, exact: true }).ariaSnapshot();
+		expect(await tree('0 trajet annulé dans le secteur du Lac.')).toBe([
+			'- region "0 trajet annulé dans le secteur du Lac.":',
+			'  - paragraph: "0"',
+			'  - paragraph: trajet annulé dans le secteur du Lac.',
+		].join('\n'));
+		const absent = 'Aucun signalement ne permet de confirmer le service livré ce jour-là.';
+		expect(await tree(`${absent} Les données du dimanche restent inconnues.`)).toBe([
+			`- region "${absent} Les données du dimanche restent inconnues.":`,
+			`  - paragraph: ${absent}`,
+			'  - paragraph: Les données du dimanche restent inconnues.',
+		].join('\n'));
+		await expectAccessible(page, { include: '[data-testid="d1-record"]' });
+	});
+
 	test('the fit layout keeps a short figure beside its sentence and breaks a long range between numbers', async ({ page }) => {
 		await page.goto('/d1-record');
 		await page.evaluate(() => document.fonts.ready);

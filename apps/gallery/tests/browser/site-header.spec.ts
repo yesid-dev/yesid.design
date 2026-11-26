@@ -650,7 +650,7 @@ for (const width of [390, 599, 600, 1024, 1440]) {
 			await expect(controls.getByText(LABELS.theme, { exact: true })).toHaveAttribute('aria-hidden', 'true');
 			await expect(controls.getByText('Language: English / Français', { exact: true })).toHaveAttribute('aria-hidden', 'true');
 			await expect(controls.getByRole('switch')).toHaveAccessibleName(LABELS.theme);
-			await expect(language(page)).toHaveAccessibleName('Language: English / Français: English (EN FR)');
+			await expect(language(page)).toHaveAccessibleName('Language: English / Français: Français (EN FR)');
 			const accessible = await controls.ariaSnapshot();
 			expect(accessible.split(LABELS.theme)).toHaveLength(2);
 			expect(accessible.split('Language: English / Français')).toHaveLength(2);
@@ -667,7 +667,8 @@ for (const width of [390, 599, 600, 1024, 1440]) {
 		await language(page).click();
 		await expect(menu(page)).toBeVisible();
 		await expect(language(page)).toBeFocused();
-		await expect(language(page)).toHaveAccessibleName(/Français/);
+		// On the French page the same link now leads back to English.
+		await expect(language(page)).toHaveAccessibleName(/: English \(EN FR\)$/);
 		await page.keyboard.press('Escape');
 		await expect(menu(page)).toBeHidden();
 		await expect(toggle(page)).toBeFocused();
@@ -824,13 +825,20 @@ for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 900 });
         await visitHeader(page, `${HOME}?scrambled&compact`);
         if (width < 600) await toggle(page).click();
-        for (const [current, next] of [['English', 'fr'], ['Français', 'es'], ['Español', 'en']]) {
+        // Each page names the link by the language it leads to, in that language, with no live region.
+        for (const [destination, next] of [['Français', 'fr'], ['Español', 'es'], ['English', 'en']]) {
             const control = language(page);
+            const href = `${languageHref(next)}&scrambled&compact`;
+            const name = width < 600
+                ? `Language: English / Français / Español: ${destination} (EN FR ES)`
+                : `Language: ${destination} (EN FR ES)`;
             await expect(control.locator('svg text')).toHaveText(['EN', 'FR', 'ES']);
-            await expect(control).toHaveAttribute('href', `${languageHref(next)}&scrambled&compact`);
-            await expect(control).toHaveAccessibleName(width < 600
-                ? `Language: English / Français / Español: ${current} (EN FR ES)`
-                : `Language: ${current} (EN FR ES)`);
+            await expect(control).toHaveAttribute('href', href);
+            await expect(control).toHaveAttribute('hreflang', next);
+            await expect(control).toHaveAccessibleName(name);
+            expect(await control.ariaSnapshot()).toBe(`- 'link "${name}"':\n  - /url: ${href}`);
+            await expect(control.locator(`[lang="${next}"]`)).toHaveText(destination);
+            await expect(control.locator('[aria-live], [role="status"], [role="alert"]')).toHaveCount(0);
             await control.click();
             await expect(page).toHaveURL(url => url.searchParams.get('lang') === next);
         }

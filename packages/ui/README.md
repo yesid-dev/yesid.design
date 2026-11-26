@@ -560,9 +560,11 @@ See [the breaking migration](../../docs/migrations/deepen-section-jump.md) for r
 ### AnswerLead and Stamp
 
 Import `AnswerLead` and `Stamp` from `@yesid/ui/brand`. `AnswerLead` pairs a `value` with
-its localized `sentence` in a named section. Use `value={null}` and the `absent` snippet to show
-a missing observation. Pass the date or freshness stamp, metadata and actions as snippets. A
-short `comparison` adds context below the answer. At a viewport of at least 40 em and an answer
+its localized `sentence` in a named section. The section is named by its statement in reading
+order: the figure, or the `absent` snippet's text, then the sentence, as in "78 vehicles are
+reporting now.", with the figure in it once. The visible figure stays in the reading order. Use
+`value={null}` and the `absent` snippet to show a missing observation. Pass the date or freshness
+stamp, metadata and actions as snippets. A short `comparison` adds context below the answer. At a viewport of at least 40 em and an answer
 width of at least 26 rem, the figure and sentence sit side by side. The sentence keeps at least
 12 rem and the figure keeps its natural width up to 55% of the available width. The layout
 stacks below either threshold. The large answer uses the display scale within this component.
@@ -1047,8 +1049,11 @@ supplied order. For example, `['fr', 'en', 'es']` draws EN, FR, ES and English l
 Products choose their supported set, default, hrefs and copy. SiteHeader uses the same
 order in the pill and compact menu, including the compact menu's language names.
 Its required `names` map supplies an autonym for every supported locale; no language names ship
-in the component. `preserveState` keeps scroll and page state (`data-sveltekit-reset="false"`);
-the lifecycle restores focus after landing. Inside SiteHeader this uses a bound native link ref;
+in the component. The link is named by its destination: `label`, the next language's autonym
+marked with that language's `lang`, then the board codes, as in "Language: Français (EN FR)" on
+an English page. `hreflang` gives the same language, and the link holds no live region.
+`preserveState` keeps scroll and page state (`data-sveltekit-reset="false"`); the lifecycle
+restores focus after landing. Inside SiteHeader this uses a bound native link ref;
 standalone links pass their `bind:ref` to the lifecycle's optional `languageLink` getter.
 `reload` asks for a full document load. LanguageToggle registers no router hooks.
 `resetFocusAfterNavigation` is the same reset for `goto(url, { reset: false })`.

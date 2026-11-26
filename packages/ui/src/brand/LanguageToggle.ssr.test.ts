@@ -14,5 +14,7 @@ it.each([
         names: { en: 'English', fr: 'Français', es: 'Español', de: 'Deutsch' },
     } });
     expect(body).toContain(`href="/${next}"`);
+    expect(body).toContain(`hreflang="${next}"`);
+    expect(body).not.toContain('aria-live');
     expect([...body.matchAll(/<text[^>]*>(.*?)<\/text>/g)].map(match => match[1])).toEqual(codes);
 });

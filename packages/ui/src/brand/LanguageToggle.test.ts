@@ -12,11 +12,11 @@ describe('LanguageToggle', () => {
 		expect(queryByRole('link')).toBeNull();
 	});
 
-	it('links to the next locale and names the current one', () => {
+	it('links to the next locale and is named by it', () => {
 		const { getByRole } = render(LanguageToggle, {
 			props: { locale: 'fr', locales: ['en', 'fr', 'es'], href, names, label: 'Langue' },
 		});
-		const link = getByRole('link', { name: 'Langue: Français (EN FR ES)' });
+		const link = getByRole('link', { name: 'Langue: Español (EN FR ES)' });
 		expect(link.getAttribute('href')).toBe('/es/page?q=1#h');
 		expect(link.textContent).toContain('EN');
 		expect(link.textContent).toContain('ES');
@@ -28,13 +28,40 @@ describe('LanguageToggle', () => {
 		const reload = render(LanguageToggle, {
 			props: { locale: 'en', locales: ['en', 'fr'], href, names, label: 'Language', reload: true },
 		});
-		expect(reload.getByRole('link', { name: 'Language: English (EN FR)' }).hasAttribute('data-sveltekit-reload')).toBe(true);
+		expect(reload.getByRole('link', { name: 'Language: Français (EN FR)' }).hasAttribute('data-sveltekit-reload')).toBe(true);
 		reload.unmount();
 
 		const kept = render(LanguageToggle, {
 			props: { locale: 'en', locales: ['en', 'fr'], href, names, label: 'Language', preserveState: true },
 		});
-		expect(kept.getByRole('link', { name: 'Language: English (EN FR)' }).getAttribute('data-sveltekit-reset')).toBe('false');
+		expect(kept.getByRole('link', { name: 'Language: Français (EN FR)' }).getAttribute('data-sveltekit-reset')).toBe('false');
+	});
+
+	// Each page names the link by the page it leads to, in that page's language, and announces nothing.
+	it.each([
+		{ locale: 'en', label: 'Language', next: 'fr', name: 'Language: Français (EN FR ES)' },
+		{ locale: 'fr', label: 'Langue', next: 'es', name: 'Langue: Español (EN FR ES)' },
+		{ locale: 'es', label: 'Idioma', next: 'en', name: 'Idioma: English (EN FR ES)' },
+	])('names the $locale page link by its $next destination', ({ locale, label, next, name }) => {
+		const { getByRole } = render(LanguageToggle, { props: { locale, locales: ['en', 'fr', 'es'], href, names, label } });
+		const link = getByRole('link', { name });
+		expect(link.getAttribute('href')).toBe(href(next));
+		expect(link.getAttribute('hreflang')).toBe(next);
+		expect(link.hasAttribute('aria-label')).toBe(false);
+		const destination = link.querySelector('[lang]')!;
+		expect(destination.getAttribute('lang')).toBe(next);
+		expect(destination.textContent).toBe(names[next as keyof typeof names]);
+		expect(link.querySelectorAll('[lang]')).toHaveLength(1);
+		expect(link.querySelector('[aria-live], [role="status"], [role="alert"]')).toBeNull();
+	});
+
+	it('renames the same link by its new destination after a state-preserving switch', async () => {
+		const view = render(LanguageToggle, { props: { locale: 'en', locales: ['en', 'fr'], href, names, label: 'Language', preserveState: true } });
+		const link = view.getByRole('link', { name: 'Language: Français (EN FR)' });
+		await view.rerender({ locale: 'fr', locales: ['en', 'fr'], href, names, label: 'Langue', preserveState: true });
+		expect(view.getByRole('link', { name: 'Langue: English (EN FR)' })).toBe(link);
+		expect(link.getAttribute('hreflang')).toBe('en');
+		expect(link.querySelector('[lang]')!.getAttribute('lang')).toBe('en');
 	});
 
 });
