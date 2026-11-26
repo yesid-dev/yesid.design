@@ -1,13 +1,14 @@
 import { expect, test, type Locator } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
+import { expectBeside, expectStacked, rowsGeometry } from './rows-layout.js';
 
 const path = (lang: string) => `/app-frame/record-parts/${lang}`;
 const footerWidths = [320, 600, 639, 640, 768, 900, 1024, 1440] as const;
 const copy = {
-	en: { details: 'Lines without measurements', onTime: 'On time', trips: 'Trips that ran', events: 'Stop events', late: 'Late',
+	en: { details: 'Lines without measurements', longNames: 'Stops with long names', onTime: 'On time', trips: 'Trips that ran', events: 'Stop events', late: 'Late',
 		compact: 'Open search', search: 'Find a line, stop or vehicle', footerLink: 'Accessibility', scale: 'Late share, in percent:',
 		few: 'Too few trips', none: 'No service', unmeasured: 'Unmeasured' },
-	fr: { details: 'Lignes sans mesure', onTime: 'À l’heure', trips: 'Trajets effectués', events: 'Événements aux arrêts', late: 'En retard',
+	fr: { details: 'Lignes sans mesure', longNames: 'Arrêts aux noms longs', onTime: 'À l’heure', trips: 'Trajets effectués', events: 'Événements aux arrêts', late: 'En retard',
 		compact: 'Ouvrir la recherche', search: 'Chercher une ligne, un arrêt ou un véhicule', footerLink: 'Télécharger', scale: 'Part en retard, en pourcentage :',
 		few: 'Peu de trajets', none: 'Aucun service', unmeasured: 'Non mesuré' },
 };
@@ -112,6 +113,41 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expect(table.getByRole('columnheader', { name: c.onTime })).toHaveAttribute('aria-sort', 'ascending');
 			await expect(first.getByRole('rowheader').getByRole('link')).toBeVisible();
 			await expectNoHorizontalOverflow(page);
+		});
+
+		test(`${lang}: at 14rem or less, long names and plates sit above the value`, async ({ page }) => {
+			const longNames = page.getByRole('table', { name: c.longNames });
+			const tables = [page.getByTestId('record-table').getByRole('table'), longNames];
+			for (const width of [320, 390]) {
+				await page.setViewportSize({ width, height: 900 });
+				await page.goto(path(lang));
+				await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+				await page.evaluate(() => document.fonts.ready);
+				for (const table of tables) {
+					const { frameRem, rows } = await rowsGeometry(table);
+					expect(frameRem, `${width}px and 100% text`).toBeGreaterThan(14);
+					rows.forEach((row, index) => expectBeside(row, 8, `${width}px and 100% text, row ${index + 1}`));
+				}
+
+				await page.locator('html').evaluate((html) => { html.style.fontSize = '200%'; });
+				for (const table of tables) {
+					const { frameRem, rows } = await rowsGeometry(table);
+					expect(frameRem, `${width}px and 200% text`).toBeLessThanOrEqual(14);
+					rows.forEach((row, index) => expectStacked(row, `${width}px and 200% text, row ${index + 1}`));
+				}
+				const long = await rowsGeometry(longNames);
+				// Each plate, including the 3-digit one, is one line box, and each name fits its row.
+				expect(long.rows.map(({ plates }) => plates)).toEqual(['300', '47', '12'].map((text) => [{ text, lines: 1 }]));
+				for (const row of long.rows) expect(row.text.right).toBeLessThanOrEqual(row.primary.right + 0.5);
+				const first = longNames.locator('tbody').getByRole('row').first();
+				const value = first.locator('[data-row-position="value"]');
+				const valueHeader = await longNames.getByRole('columnheader', { name: c.onTime }).getAttribute('id');
+				const rowHeader = await first.getByRole('rowheader').getAttribute('id');
+				await expect(value).toHaveAttribute('headers', `${valueHeader} ${rowHeader}`);
+				expect(await first.ariaSnapshot()).toMatch(/rowheader[\s\S]*link[\s\S]*cell "(84\.7%|84,7 %)/);
+				await expectNoHorizontalOverflow(page);
+			}
+			await expectAccessible(page, { include: '[data-testid="long-names-table"]' });
 		});
 
 		test(`${lang}: text scaling chooses compact search and wraps footer columns`, async ({ page }) => {

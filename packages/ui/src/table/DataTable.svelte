@@ -650,4 +650,15 @@
 			margin-inline-end: 0.35em;
 		}
 	}
+	/* At 14rem or less a long name or route plate no longer fits beside the value, so the value moves below the primary. */
+	@container yesid-table (inline-size <= 14rem) {
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'] {
+			flex-basis: 100%;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] {
+			align-items: flex-start;
+			max-inline-size: 100%;
+			text-align: start;
+		}
+	}
 </style>
