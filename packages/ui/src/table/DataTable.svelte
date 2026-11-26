@@ -42,6 +42,8 @@
 		readonly frame?: 'none' | 'card';
 		readonly borderCollapse?: 'collapse' | 'separate';
 		readonly headerBand?: 'none' | 'terminal';
+		/** `middle` centres body cells vertically while cells keep table layout; stacked and compact rows ignore it. */
+		readonly rowAlign?: 'top' | 'middle';
 		readonly tableClass?: string;
 		readonly class?: string;
 	}
@@ -71,6 +73,7 @@
 		frame = 'none',
 		borderCollapse = 'collapse',
 		headerBand = 'none',
+		rowAlign = 'top',
 		tableClass,
 		class: className,
 		...restProps
@@ -170,6 +173,7 @@
 	data-frame={frame}
 	data-collapse={borderCollapse}
 	data-header-band={headerBand}
+	data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
 	data-scrollable={scrollable}
 	style:--dt-min-width={scrollMinWidth}
 	style:--dt-min-width-compact={scrollMinWidthCompact}
@@ -322,6 +326,11 @@
 		padding: 0.5rem;
 		text-align: left;
 		vertical-align: top;
+	}
+
+	/* Stacked and compact rows make cells block, grid or flex items, where this has no effect. */
+	.data-table-frame[data-row-align='middle'] .data-table tbody :is(th, td) {
+		vertical-align: middle;
 	}
 
 	.data-table thead th {

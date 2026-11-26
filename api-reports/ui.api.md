@@ -373,6 +373,7 @@ interface AnswerLeadProps {
     actions?: Snippet;
     // (undocumented)
     comparison?: string;
+    layout?: 'threshold' | 'fit';
     // (undocumented)
     meta?: Snippet;
     // (undocumented)
@@ -1617,6 +1618,7 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     readonly pageSize?: number;
     // (undocumented)
     readonly responsive?: DataTableResponsive;
+    readonly rowAlign?: 'top' | 'middle';
     // (undocumented)
     readonly rows: readonly T[];
     // (undocumented)
@@ -2364,12 +2366,14 @@ interface MapFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
         label: string;
         content: Snippet;
     };
+    fillHeight?: boolean;
     // (undocumented)
     label: string;
     // (undocumented)
     legend?: Snippet;
     // (undocumented)
     legendLabel?: string;
+    legendSide?: 'start' | 'end';
     // (undocumented)
     panel?: Snippet;
 }
@@ -2420,6 +2424,7 @@ interface MapLegendItem {
 interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'title'> {
     // (undocumented)
     collapsible?: boolean;
+    detailLayout?: 'below' | 'inline';
     // (undocumented)
     groups?: readonly {
         title: string;
@@ -2440,6 +2445,7 @@ interface MapLegendProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'
         }[];
         states?: readonly MapLegendItem[];
     };
+    scalePlacement?: 'after-groups' | 'before-groups';
     // (undocumented)
     title: string;
 }

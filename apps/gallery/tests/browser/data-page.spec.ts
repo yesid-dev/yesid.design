@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-import { copy, hourTable, statuses, stopRows, stopTable } from '../../src/routes/data-page/fixture.js';
+import { copy, hourTable, statuses, statusTable, stopRows, stopTable } from '../../src/routes/data-page/fixture.js';
 
 const DESKTOP_MIN_WIDTH = 1024;
 const isPhone = (page: Page) => page.viewportSize()!.width < DESKTOP_MIN_WIDTH;
@@ -40,6 +40,28 @@ test('tables stack or scroll to fit this width', async ({ page }) => {
 	expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
 	await expect(page.getByText('Headway on the night route:')).toContainText('no feed');
+});
+
+test('middle row alignment centres right-aligned figures on their row headers', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run sets its own width');
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await open(page);
+	const rows = page.getByRole('table', { name: statusTable.caption }).locator('tbody tr');
+	await expect(rows).toHaveCount(stopRows.length);
+	for (const row of await rows.all()) {
+		const header = (await row.getByRole('rowheader').boundingBox())!;
+		const cells = row.locator('td[data-numeric="true"]');
+		await expect(cells).toHaveCount(2);
+		for (const cell of await cells.all()) {
+			await expect(cell).toHaveCSS('vertical-align', 'middle');
+			await expect(cell).toHaveCSS('text-align', 'right');
+			const figure = (await cell.locator('.data-table-cell-content').boundingBox())!;
+			expect(figure.height).toBeLessThan(header.height - 16);
+			expect(Math.abs(figure.y + figure.height / 2 - (header.y + header.height / 2))).toBeLessThanOrEqual(1);
+		}
+	}
+	const unchanged = page.getByRole('table', { name: stopTable.caption }).locator('tbody td').first();
+	await expect(unchanged).toHaveCSS('vertical-align', 'top');
 });
 
 test('filter chips narrow the table and say so when nothing matches', async ({ page }) => {

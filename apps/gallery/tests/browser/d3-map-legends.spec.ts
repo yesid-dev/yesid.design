@@ -121,6 +121,65 @@ test.describe('D3 map legends', { tag: '@theme' }, () => {
 		expect(errors).toEqual([]);
 	});
 
+	test('a filling frame takes its short host height and docks its legend at the start', async ({ page }) => {
+		await page.setViewportSize({ width: 844, height: 390 });
+		await page.goto(path);
+		await page.locator('html[data-gallery-ready]').waitFor();
+		const host = (await page.getByTestId('short-map-host').boundingBox())!;
+		const filling = page.getByRole('region', { name: 'Map in a short host' });
+		const stage = (await filling.locator('[data-slot="map-stage"]').boundingBox())!;
+		expect(host.height).toBeLessThan(320);
+		expect(stage.y).toBeCloseTo(host.y, 0);
+		expect(stage.height).toBeCloseTo(host.height, 0);
+		const live = page.getByRole('region', { name: 'Live service map' });
+		const liveStage = (await live.locator('[data-slot="map-stage"]').boundingBox())!;
+		expect(liveStage.height).toBeGreaterThanOrEqual(320);
+
+		const inset = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.75);
+		const start = filling.getByRole('button', { name: 'Open the short map legend' });
+		const end = live.getByRole('button', { name: 'Show map legend' });
+		const startBox = (await start.boundingBox())!;
+		const endBox = (await end.boundingBox())!;
+		expect(startBox.x - stage.x).toBeCloseTo(inset, 0);
+		expect(liveStage.x + liveStage.width - (endBox.x + endBox.width)).toBeCloseTo(inset, 0);
+		await start.click();
+		const card = filling.getByRole('region', { name: 'Open the short map legend' });
+		await expect(card.getByText('Short map legend')).toBeVisible();
+		expect((await card.boundingBox())!.x - stage.x).toBeCloseTo(inset, 0);
+		await expectNoHorizontalOverflow(page);
+	});
+
+	test('an inline legend sets each detail on its bold label line, after the scale', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 950 });
+		await page.goto(path);
+		const legend = page.getByTestId('inline-legend');
+		const scale = legend.getByRole('list', { name: 'Crowding by trip' });
+		const groups = legend.getByRole('list', { name: 'Service frequency' });
+		const groupsHandle = await groups.elementHandle();
+		expect(await scale.evaluate(
+			(ramp, list) => Boolean(ramp.compareDocumentPosition(list!) & Node.DOCUMENT_POSITION_FOLLOWING),
+			groupsHandle,
+		)).toBe(true);
+		const layout = await groups.getByRole('listitem').first().evaluate((item) => {
+			const text = item.lastElementChild as HTMLElement;
+			const detail = text.querySelector<HTMLElement>('.detail')!;
+			const range = document.createRange();
+			range.selectNodeContents(text.firstChild!);
+			const label = [...range.getClientRects()].at(-1)!;
+			const first = detail.getClientRects()[0];
+			return {
+				labelWeight: getComputedStyle(text).fontWeight,
+				detailWeight: getComputedStyle(detail).fontWeight,
+				text: text.textContent,
+				sameLine: first.top < label.bottom && first.bottom > label.top && first.left >= label.right,
+			};
+		});
+		expect(layout).toEqual({
+			labelWeight: '600', detailWeight: '400', text: 'Frequent every ten minutes or better, all day', sameLine: true,
+		});
+		await expectAccessible(page, { include: '[data-testid="inline-legend"]' });
+	});
+
 	test('serializes the same status shapes that the inline marks render', async ({ page }) => {
 		await page.goto(path);
 		for (const status of ['early', 'on_time', 'late', 'severe', 'unknown'] as const) {

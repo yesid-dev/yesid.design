@@ -14,7 +14,9 @@
 		SurfaceRail,
 	} from '@yesid/ui/layout';
 	import { DataTable, type DataTableColumn } from '@yesid/ui/table';
-	import { copy, hourTable, statuses, stopRows, stopTable, trail, type Status, type StopRow } from './fixture';
+	import {
+		copy, hourTable, statuses, statusTable, stopRows, stopTable, trail, type Status, type StopRow,
+	} from './fixture';
 
 	interface HourRow {
 		id: string;
@@ -56,6 +58,10 @@
 {#snippet waitCell(row: StopRow)}{row.wait}{/snippet}
 {#snippet headwayCell(row: StopRow)}{row.headway}{/snippet}
 {#snippet routeCell(row: HourRow)}{row.id}{/snippet}
+{#snippet stopStatusCell(row: StopRow)}
+	<span class="block">{row.stop}</span>
+	<span class="block text-muted-foreground">{statuses.find((status) => status.key === row.status)?.label}</span>
+{/snippet}
 
 {#snippet railBody()}
 	<label class="grid gap-1 text-small">
@@ -125,6 +131,20 @@
 					Headway on the night route: <StateNotice title="n/a" body="no feed" presentation="row" />
 				</p>
 			</section>
+
+			<DataTable
+				rows={stopRows}
+				columns={[
+					{ key: 'stop', header: stopTable.headers.stop, rowHeader: true, cell: stopStatusCell },
+					{ key: 'wait', header: stopTable.headers.wait, numeric: true, cell: waitCell },
+					{ key: 'headway', header: stopTable.headers.headway, numeric: true, cell: headwayCell },
+				] satisfies DataTableColumn<StopRow>[]}
+				key={(row) => row.id}
+				caption={statusTable.caption}
+				responsive={{ mode: 'scroll', minWidth: statusTable.minWidth }}
+				frame="card"
+				rowAlign="middle"
+			/>
 
 			<DataTable
 				rows={hourRows}

@@ -13,6 +13,9 @@
 	const scaleSteps = ['0–5%', '5–10%', '10–20%', '20–30%', '30% or more'].map((label, tier) => ({
 		label, swatch: `var(--dataviz-heatmap-neutral-${tier})`,
 	}));
+	const crowdingSteps = ['Seats free', 'Some standing', 'Full'].map((label, tier) => ({
+		label, swatch: `var(--dataviz-heatmap-neutral-${tier * 2})`,
+	}));
 
 	function routeLabels({ width, height, exclusions }: MapViewport) {
 		return placeMapLabels({
@@ -74,6 +77,29 @@
 		{/snippet}
 	</MapFrame>
 
+	{#snippet shortLegend()}
+		<MapLegend title="Short map legend" items={[{ label: 'Route', symbol: route }, { label: 'Stop', symbol: stop }]} />
+	{/snippet}
+	<div class="short-host" data-testid="short-map-host">
+		<MapFrame label="Map in a short host" legendLabel="Open the short map legend" legend={shortLegend} fillHeight legendSide="start">
+			{#snippet children()}
+				<div class="map-art" aria-hidden="true">
+					<svg viewBox="0 0 320 160" preserveAspectRatio="xMidYMid slice">
+						<path d="M0 60 H140 L190 110 H320" fill="none" stroke="var(--line-amber)" stroke-width="3" />
+					</svg>
+				</div>
+			{/snippet}
+		</MapFrame>
+	</div>
+
+	<MapLegend title="Service legend" detailLayout="inline" scalePlacement="before-groups" data-testid="inline-legend"
+		scale={{ title: 'Crowding by trip', steps: crowdingSteps }}
+		groups={[{ title: 'Service frequency', items: [
+			{ label: 'Frequent', detail: 'every ten minutes or better, all day', symbol: route },
+			{ label: 'Regular', detail: 'every fifteen to thirty minutes', symbol: route },
+			{ label: 'Stop', symbol: stop },
+		] }]} />
+
 	<MapLegend title="Stops legend" scale={{ title: 'Late departures by stop', steps: scaleSteps,
 		states: [{ label: 'No observation', detail: 'No service data for this stop', symbol: unavailable }] }}
 		groups={[{ title: 'Map features', items: [{ label: 'Stop', symbol: stop }, { label: 'Route', symbol: route }] }]} />
@@ -107,6 +133,7 @@
 		color: var(--signage-text);
 		background: var(--signage-bg);
 	}
+	.short-host { block-size: 15rem; }
 	.status-examples { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 	.symbol { inline-size: 1em; block-size: 1em; }
 	.route { inline-size: 100%; block-size: 0.2em; background: var(--line-amber); }

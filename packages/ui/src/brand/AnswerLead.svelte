@@ -10,17 +10,26 @@
 		comparison?: string;
 		actions?: Snippet;
 		size?: 'md' | 'lg';
+		/** `fit` sets the figure beside the sentence whenever both fit, at any width. */
+		layout?: 'threshold' | 'fit';
 	}
 </script>
 
 <script lang="ts">
 	import MetricValue from './MetricValue.svelte';
 
-	let { value, sentence, absent, stamp, meta, comparison, actions, size = 'lg' }: AnswerLeadProps = $props();
+	let {
+		value, sentence, absent, stamp, meta, comparison, actions, size = 'lg', layout = 'threshold',
+	}: AnswerLeadProps = $props();
 	const sentenceId = $props.id();
 </script>
 
-<section class="answer-lead" data-slot="answer-lead" aria-labelledby={sentenceId}>
+<section
+	class="answer-lead"
+	data-slot="answer-lead"
+	data-layout={layout === 'fit' ? 'fit' : undefined}
+	aria-labelledby={sentenceId}
+>
 	<div class="answer-layout">
 		<div class="answer-context">
 			<div class="answer-statement">
@@ -77,6 +86,24 @@
 			}
 			.answer-sentence { flex: 1 1 12rem; min-inline-size: 12rem; }
 		}
+	}
+	/* The sentence wraps below once it no longer has 12rem beside the figure. A figure breaks
+	   at spaces between whole numbers, and inside a number only when it is wider than the line. */
+	.answer-lead[data-layout='fit'] .answer-statement {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.75rem 1rem;
+	}
+	.answer-lead[data-layout='fit'] :is(.answer-value, .answer-absent) {
+		flex: 0 1 auto;
+		min-inline-size: 0;
+		max-inline-size: 100%;
+		overflow-wrap: break-word;
+	}
+	.answer-lead[data-layout='fit'] .answer-sentence {
+		flex: 1 1 12rem;
+		min-inline-size: 0;
 	}
 	@media (min-width: 64em) {
 		@container (min-width: 56rem) {
