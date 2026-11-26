@@ -87,6 +87,8 @@ import {
 	type PageSectionsProps,
 	type SiteFooterProps,
 } from '@yesid/ui/layout';
+import type { HourGridProps } from '@yesid/ui/chart';
+import type { DataTableProps, DataTableResponsive } from '@yesid/ui/table';
 
 type BindingsOf<T> = T extends Component<any, any, infer Bindings> ? Bindings : never;
 
@@ -519,5 +521,30 @@ describe('public UI prop contracts', () => {
 		expect(sheetFooter).toEqual({});
 		expect(sheetTitle).toEqual({});
 		expect(sheetDescription).toEqual({});
+
+		type SampleRow = { id: string; name: string; count: number | null };
+		const phoneRowsResponsive: DataTableResponsive = { mode: 'rows', primary: 'name', value: 'count', labels: false };
+		const scrollEndResponsive: DataTableResponsive = { mode: 'scroll', minWidth: '40rem', initialScroll: 'end' };
+		const phoneRowsTable: DataTableProps<SampleRow> = {
+			rows: [],
+			columns: [],
+			key: (row) => row.id,
+			caption: 'Sample',
+			responsive: phoneRowsResponsive,
+			rowDetail: (() => undefined) as unknown as Snippet<[SampleRow]>,
+			rowEmpty: (row) => row.count === null,
+		};
+		const hourGridEnd: HourGridProps = {
+			label: 'Hourly',
+			columns: [],
+			rows: [],
+			scale: { label: '', steps: [] },
+			stateLabels: { few: '', none: '', unmeasured: '' },
+			initialScroll: 'end',
+		};
+		expect(phoneRowsResponsive.mode).toBe('rows');
+		expect(scrollEndResponsive.mode).toBe('scroll');
+		expect(phoneRowsTable.caption).toBe('Sample');
+		expect(hourGridEnd.initialScroll).toBe('end');
 	});
 });

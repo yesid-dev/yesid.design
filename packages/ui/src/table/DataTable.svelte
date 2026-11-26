@@ -1,7 +1,8 @@
 <!--
   A captioned data table built from column definitions and a cell snippet per column. Below a
-  breakpoint it either stacks each row into label/value pairs (`stack`) or scrolls sideways
-  (`scroll`); a scrolling table that overflows becomes a focusable region named by its caption.
+  breakpoint it either stacks each row into label/value pairs (`stack`), reflows into compact rows
+  (`rows`), or scrolls sideways (`scroll`); a scrolling table that overflows becomes a focusable
+  region named by its caption with edge fades on sides where more content is hidden.
   Attributes go to the frame; `tableClass` styles the table itself.
 -->
 <script module lang="ts">
@@ -13,8 +14,20 @@
 	export type DataTableResponsive =
 		| { mode: 'none' }
 		| { mode: 'stack'; at: 'compact' | 'tablet' }
-		| { mode: 'scroll'; minWidth?: string; minWidthCompact?: string }
-		| { mode: 'rows'; primary: string; value: string };
+		| {
+				mode: 'scroll';
+				minWidth?: string;
+				minWidthCompact?: string;
+				/** Which horizontal edge starts in view when the table overflows. Defaults to `'start'`. */
+				initialScroll?: 'start' | 'end';
+		  }
+		| {
+				mode: 'rows';
+				primary: string;
+				value: string;
+				/** Whether compact rows show column labels inside each row. Defaults to `true`. */
+				labels?: boolean;
+		  };
 
 	export interface DataTableColumn<T> {
 		readonly key: string;
@@ -44,6 +57,17 @@
 		readonly headerBand?: 'none' | 'terminal';
 		/** `middle` centres body cells vertically while cells keep table layout; stacked and compact rows ignore it. */
 		readonly rowAlign?: 'top' | 'middle';
+		/**
+		 * Compact `rows` mode only: one muted detail line rendered under the row's first line in
+		 * place of the non-primary, non-value columns when the table is at most 28 rem wide.
+		 * Use text that summarizes the original cells, which remain available to assistive technology.
+		 */
+		readonly rowDetail?: Snippet<[T]>;
+		/**
+		 * Compact `rows` mode only: marks a row with no data so its value cell is visually clipped and its
+		 * detail can read inline beside the primary cell on one line.
+		 */
+		readonly rowEmpty?: (row: T) => boolean;
 		readonly tableClass?: string;
 		readonly class?: string;
 	}
@@ -57,6 +81,10 @@
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import { cn } from '../cn/index.js';
+	import {
+		attachScrollEdges,
+		type ScrollEdgeState,
+	} from '../internal/scroll-edges.js';
 	import ShowMore from './ShowMore.svelte';
 
 	let {
@@ -74,6 +102,8 @@
 		borderCollapse = 'collapse',
 		headerBand = 'none',
 		rowAlign = 'top',
+		rowDetail,
+		rowEmpty,
 		tableClass,
 		class: className,
 		...restProps
@@ -81,7 +111,9 @@
 
 	let frameElement = $state<HTMLDivElement | null>(null);
 	let body = $state<HTMLTableSectionElement>();
-	let scrollable = $state(false);
+	let scrollEdges = $state<ScrollEdgeState>();
+	let fadeBounds = $state({ width: 0, height: 0, start: '0px', bottom: '0px' });
+	let handleScroll = $state<(() => void) | undefined>(undefined);
 	let requestedCount = $state(0);
 	let pageContext = '';
 
@@ -94,7 +126,13 @@
 	});
 	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : undefined);
 	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
+	const scrollLayout = $derived(responsive.mode === 'scroll' ? responsive : undefined);
+	const scrollMode = $derived(responsive.mode === 'scroll');
+	const scrollRegion = $derived(scrollMode && (scrollEdges?.scrollable ?? true));
 	const reflows = $derived(!!stackAt || !!rowLayout);
+	const showRowLabels = $derived(rowLayout?.labels !== false);
+	const showStackLabels = $derived(reflows && showRowLabels);
+	const hasRowDetail = $derived(!!rowLayout && !!rowDetail);
 	const lastDetail = $derived(rowLayout && columns
 		.filter(({ key }) => key !== rowLayout.primary && key !== rowLayout.value).at(-1)?.key);
 	const tableId = $props.id();
@@ -105,10 +143,9 @@
 	const paging = $derived(pageLabels && pageSize && pageSize > 0 && Number.isInteger(pageSize) ? pageSize : 0);
 	const shown = $derived(paging ? Math.min(Math.max(requestedCount, paging), rows.length) : rows.length);
 	const visibleRows = $derived(paging ? rows.slice(0, shown) : rows);
-	const scrollMinWidth = $derived(responsive.mode === 'scroll' ? responsive.minWidth : undefined);
-	const scrollMinWidthCompact = $derived(
-		responsive.mode === 'scroll' ? responsive.minWidthCompact : undefined,
-	);
+	const scrollMinWidth = $derived(scrollLayout?.minWidth);
+	const scrollMinWidthCompact = $derived(scrollLayout?.minWidthCompact);
+	const initialScroll = $derived(scrollLayout?.initialScroll ?? 'start');
 
 	function columnAlignment(column: DataTableColumn<T>): DataTableAlign {
 		return column.numeric ? 'end' : (column.align ?? 'start');
@@ -133,55 +170,44 @@
 		body?.rows[firstNew]?.focus();
 	}
 
-	function measure(): void {
-		const element = frameElement;
-		if (!element || responsive.mode !== 'scroll') {
-			scrollable = false;
+	$effect(() => {
+		const element = scrollMode ? frameElement : null;
+		if (!element) {
+			scrollEdges = undefined;
+			handleScroll = undefined;
 			return;
 		}
-		scrollable = element.scrollWidth - element.clientWidth > 1;
-	}
-
-	$effect(() => {
-		const element = frameElement;
-		if (!element) return;
-		measure();
-		if (typeof ResizeObserver === 'undefined') return;
-		const observer = new ResizeObserver(measure);
-		observer.observe(element);
-		if (element.firstElementChild) observer.observe(element.firstElementChild);
-		return () => observer.disconnect();
+		const controller = attachScrollEdges(element, {
+			initialScroll,
+			onUpdate(next) {
+				scrollEdges = next;
+			},
+			onResize() {
+				const style = getComputedStyle(element);
+				fadeBounds = {
+					width: element.clientWidth,
+					height: element.clientHeight,
+					start: style.paddingInlineStart,
+					bottom: style.paddingBlockEnd,
+				};
+			},
+		});
+		handleScroll = controller.onScroll;
+		return () => {
+			controller.destroy();
+			handleScroll = undefined;
+		};
 	});
 </script>
 
 {#snippet cellContent(column: DataTableColumn<T>, row: T)}
-	{#if reflows}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
-	<div class="data-table-cell-content">{@render column.cell(row)}</div>{#if rowLayout && !rowPosition(column.key) && column.key !== lastDetail}
+	{#if showStackLabels}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
+	<div class="data-table-cell-content">{@render column.cell(row)}</div>{#if rowLayout && !hasRowDetail && !rowPosition(column.key) && column.key !== lastDetail}
 		<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
 	{/if}
 {/snippet}
 
-<!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
-<div
-	bind:this={frameElement}
-	class={cn('data-table-frame', className)}
-	data-slot="data-table-frame"
-	{...restProps}
-	data-responsive={responsive.mode}
-	data-stack-at={stackAt}
-	data-sortable={hasSortButtons || undefined}
-	data-frame={frame}
-	data-collapse={borderCollapse}
-	data-header-band={headerBand}
-	data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
-	data-scrollable={scrollable}
-	style:--dt-min-width={scrollMinWidth}
-	style:--dt-min-width-compact={scrollMinWidthCompact}
-	role={scrollable ? 'region' : undefined}
-	aria-label={scrollable ? accessibleCaption : undefined}
-	tabindex={scrollable ? 0 : undefined}
-	onscroll={measure}
->
+{#snippet tableMarkup()}
 	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined}>
 		<caption class="data-table-caption">{accessibleCaption}</caption>
 		<thead role={reflows ? 'rowgroup' : undefined}>
@@ -216,7 +242,12 @@
 			{@const rowHeaderIds = rowLayout
 				? rowHeaderColumns.map((columnIndex) => `${tableId}-row-${index}-${columnIndex}`).join(' ')
 				: ''}
-				<tr role={reflows ? 'row' : undefined} tabindex={paging ? -1 : undefined}>
+			{@const isRowEmpty = rowLayout ? (rowEmpty?.(row) ?? false) : false}
+				<tr
+					role={reflows ? 'row' : undefined}
+					tabindex={paging ? -1 : undefined}
+					data-row-empty={isRowEmpty || undefined}
+				>
 					{#each columns as column, columnIndex (column.key)}
 						{@const headerId = rowLayout ? `${tableId}-column-${columnIndex}` : undefined}
 						{#if column.rowHeader}
@@ -247,10 +278,57 @@
 							</td>
 						{/if}
 					{/each}
+					{#if hasRowDetail && rowDetail}
+						<td class="data-table-row-detail" aria-hidden="true">{@render rowDetail(row)}</td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>
 	</table>
+{/snippet}
+
+
+<!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
+<div
+		bind:this={frameElement}
+		class={cn('data-table-frame', className)}
+		data-slot="data-table-frame"
+		{...restProps}
+		data-responsive={responsive.mode}
+		data-stack-at={stackAt}
+		data-sortable={hasSortButtons || undefined}
+		data-frame={frame}
+		data-collapse={borderCollapse}
+		data-header-band={headerBand}
+		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
+		data-row-labels={rowLayout?.labels === false ? 'none' : undefined}
+		data-has-row-detail={hasRowDetail || undefined}
+		data-scrollable={scrollMode && (scrollEdges?.scrollable ?? false)}
+		data-scroll-start={scrollEdges?.start || undefined}
+		data-scroll-end={scrollEdges?.end || undefined}
+		data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
+		style:--dt-min-width={scrollMinWidth}
+		style:--dt-min-width-compact={scrollMinWidthCompact}
+		role={scrollRegion ? 'region' : restProps.role}
+		aria-label={scrollRegion ? accessibleCaption : restProps['aria-label']}
+		tabindex={scrollRegion ? 0 : restProps.tabindex}
+		{...(scrollRegion ? { 'data-lenis-prevent': '' } : {})}
+		onscroll={scrollMode ? () => handleScroll?.() : restProps.onscroll}
+>
+	{@render tableMarkup()}
+	{#if scrollMode && scrollEdges?.scrollable}
+		<div
+			class="data-table-fades"
+			aria-hidden="true"
+			style:--dt-scroll-width={`${fadeBounds.width}px`}
+			style:--dt-scroll-height={`${fadeBounds.height}px`}
+			style:--dt-padding-start={fadeBounds.start}
+			style:--dt-padding-bottom={fadeBounds.bottom}
+		>
+			<span class="data-table-scroll-fade data-table-scroll-fade-start" data-slot="scroll-fade-start"></span>
+			<span class="data-table-scroll-fade data-table-scroll-fade-end" data-slot="scroll-fade-end"></span>
+		</div>
+	{/if}
 </div>
 {#if paging && pageLabels}
 	<ShowMore {shown} total={rows.length} pageSize={paging} labels={pageLabels} onMore={showMore} />
@@ -269,11 +347,25 @@
 	.data-table-frame[data-responsive='rows'] { container: yesid-table / inline-size; }
 
 	.data-table-frame[data-responsive='scroll'] {
+		--scroll-fade-surface: var(--background);
 		overflow-x: auto;
 		overflow-y: hidden;
 		scrollbar-width: thin;
 		overscroll-behavior-inline: contain;
 		touch-action: pan-x pan-y;
+	}
+	:global([data-slot='card']) .data-table-frame[data-responsive='scroll'],
+	.data-table-frame[data-responsive='scroll'][data-frame='card'] {
+		--scroll-fade-surface: var(--card);
+	}
+
+	.data-table-frame[data-initial-scroll='end']:not([data-scroll-hydrated]) {
+		display: flex;
+		flex-direction: row-reverse;
+	}
+
+	.data-table-frame[data-initial-scroll='end']:not([data-scroll-hydrated]) > .data-table {
+		flex: 0 0 auto;
 	}
 
 	.data-table-frame:focus-visible {
@@ -281,10 +373,106 @@
 		outline-offset: 2px;
 	}
 
+	/* A zero-size sticky origin stays at the padded content's inline start, even at full scroll. */
+	.data-table-fades {
+		position: sticky;
+		inset-inline-start: 0;
+		inline-size: 0;
+		block-size: 0;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	.data-table-scroll-fade {
+		display: none;
+		position: absolute;
+		inset-block-end: calc(-1 * var(--dt-padding-bottom));
+		block-size: var(--dt-scroll-height);
+		inline-size: min(2rem, calc(var(--dt-scroll-width) * 0.18));
+		box-sizing: border-box;
+		pointer-events: none;
+	}
+
+	.data-table-frame[data-scroll-start='true'] .data-table-scroll-fade-start {
+		display: block;
+		inset-inline-start: calc(-1 * var(--dt-padding-start));
+		border-inline-start: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		background-image:
+			linear-gradient(
+				to right,
+				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				to right,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+
+	.data-table-frame[data-scroll-end='true'] .data-table-scroll-fade-end {
+		display: block;
+		inset-inline-end: calc(var(--dt-padding-start) - var(--dt-scroll-width));
+		border-inline-end: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		background-image:
+			linear-gradient(
+				to left,
+				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				to left,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+
+	.data-table-frame[data-scroll-start='true']:dir(rtl) .data-table-scroll-fade-start {
+		background-image:
+			linear-gradient(
+				to left,
+				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				to left,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+
+	.data-table-frame[data-scroll-end='true']:dir(rtl) .data-table-scroll-fade-end {
+		background-image:
+			linear-gradient(
+				to right,
+				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				transparent 70%
+			),
+			linear-gradient(
+				to right,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+
 	.data-table-frame[data-frame='card'] {
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
 		background: var(--card);
+	}
+
+	.data-table-frame[data-frame='card'] .data-table-scroll-fade-start {
+		border-start-start-radius: calc(var(--radius-lg) - 1px);
+		border-end-start-radius: calc(var(--radius-lg) - 1px);
+	}
+
+	.data-table-frame[data-frame='card'] .data-table-scroll-fade-end {
+		border-start-end-radius: calc(var(--radius-lg) - 1px);
+		border-end-end-radius: calc(var(--radius-lg) - 1px);
 	}
 
 	.data-table {
@@ -370,7 +558,8 @@
 	}
 
 	.data-table-stack-label,
-	.data-table-row-separator {
+	.data-table-row-separator,
+	.data-table-row-detail {
 		display: none;
 	}
 
@@ -397,6 +586,12 @@
 	.data-table-sort:focus-visible, .data-table tr[tabindex]:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: -2px;
+	}
+
+	@media (forced-colors: active) {
+		.data-table-scroll-fade {
+			display: none !important;
+		}
 	}
 
 	@media (max-width: 48rem) {
@@ -563,12 +758,20 @@
 		.data-table-frame[data-responsive='rows'] > .data-table > thead th[data-sortable] {
 			width: auto !important;
 			min-inline-size: 0;
+			max-inline-size: 100%;
 			padding: 0;
 			border: 0;
 		}
+		.data-table-frame:is([data-row-labels='none'], [data-has-row-detail]) > .data-table > thead th[aria-sort] .data-table-sort {
+			color: var(--foreground);
+			font-weight: 600;
+		}
 		.data-table-frame[data-responsive='rows'] .data-table-sort {
-			overflow-wrap: normal;
+			overflow-wrap: anywhere;
 			word-break: normal;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table-sort > span {
+			min-inline-size: 0;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr {
 			display: flex;
@@ -609,13 +812,16 @@
 			font-weight: 600;
 			text-align: end;
 		}
+		.data-table-frame[data-responsive='rows'][data-row-labels='none'] > .data-table > tbody > tr > [data-row-position='value'] {
+			align-self: baseline;
+		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-cell-content {
 			order: -1;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-stack-label {
 			line-height: 1.25;
 		}
-		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) {
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]):not(.data-table-row-detail) {
 			order: 2;
 			display: inline;
 			flex: 0 1 auto;
@@ -623,6 +829,65 @@
 			color: var(--muted-foreground);
 			font-family: inherit;
 			font-weight: 400;
+		}
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr,
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] {
+			position: relative;
+		}
+		/* Keep the real cells in the table and reveal their controls when focused. */
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail, :focus-within),
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='value']:not(:focus-within),
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > [data-row-position='value']:has(> .data-table-cell-content:empty):not(:focus-within) {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 1px;
+			block-size: 1px;
+			margin: 0;
+			overflow: hidden;
+			clip-path: inset(50%);
+			pointer-events: none;
+
+			& > .data-table-cell-content {
+				display: block;
+				inline-size: 1px;
+				block-size: 1px;
+				white-space: normal;
+				overflow-wrap: anywhere;
+				overflow: hidden;
+			}
+		}
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail):focus-within {
+			flex-basis: 100%;
+			overflow-wrap: anywhere;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > .data-table-row-detail {
+			display: block;
+			order: 2;
+			flex: 1 0 100%;
+			margin-block-start: 0.125rem;
+			color: var(--muted-foreground);
+			font-family: inherit;
+			font-weight: 400;
+			line-height: 1.35;
+			overflow-wrap: break-word;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > .data-table-row-detail:empty {
+			display: none;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty]::after,
+		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty)::after {
+			display: none;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='primary'],
+		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty) > [data-row-position='primary'] {
+			flex: 0 1 auto;
+		}
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > .data-table-row-detail,
+		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty) > .data-table-row-detail {
+			order: 1;
+			flex: 0 1 auto;
+			margin-block-start: 0;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position])
 			:is(.data-table-row-separator, .data-table-cell-content) {
@@ -652,7 +917,9 @@
 	}
 	/* At 14rem or less a long name or route plate no longer fits beside the value, so the value moves below the primary. */
 	@container yesid-table (inline-size <= 14rem) {
-		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'] {
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'],
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='primary'],
+		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty) > [data-row-position='primary'] {
 			flex-basis: 100%;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] {

@@ -1637,6 +1637,8 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     // (undocumented)
     readonly responsive?: DataTableResponsive;
     readonly rowAlign?: 'top' | 'middle';
+    readonly rowDetail?: Snippet<[T]>;
+    readonly rowEmpty?: (row: T) => boolean;
     // (undocumented)
     readonly rows: readonly T[];
     // (undocumented)
@@ -1662,10 +1664,12 @@ type DataTableResponsive = {
     mode: 'scroll';
     minWidth?: string;
     minWidthCompact?: string;
+    initialScroll?: 'start' | 'end';
 } | {
     mode: 'rows';
     primary: string;
     value: string;
+    labels?: boolean;
 };
 
 // @public (undocumented)
@@ -2033,6 +2037,7 @@ interface HourGridProps {
         id: string;
         label: string;
     }[];
+    initialScroll?: 'start' | 'end';
     // (undocumented)
     label: string;
     // (undocumented)

@@ -12,11 +12,32 @@
 		rows: readonly { id: string; label: string; cells: readonly HourGridCell[] }[];
 		scale: { label: string; steps: readonly string[] };
 		stateLabels: { few: string; none: string; unmeasured: string };
+		/** Which horizontal edge starts in view when the grid overflows. Defaults to `'start'`. */
+		initialScroll?: 'start' | 'end';
 	}
 </script>
 
 <script lang="ts">
-	let { label, columns, rows, scale, stateLabels }: HourGridProps = $props();
+	import {
+		attachScrollEdges,
+		EMPTY_SCROLL_EDGES,
+		type ScrollEdgeState,
+	} from '../internal/scroll-edges.js';
+
+	let {
+		label,
+		columns,
+		rows,
+		scale,
+		stateLabels,
+		initialScroll = 'start',
+	}: HourGridProps = $props();
+
+	let scrollElement = $state<HTMLDivElement | null>(null);
+	let scrollEdges = $state<ScrollEdgeState>(EMPTY_SCROLL_EDGES);
+	let stickyOffset = $state(0);
+	let handleScroll = $state<(() => void) | undefined>(undefined);
+
 	const captionId = $props.id();
 	const scaleId = `${captionId}-scale`;
 	const states = ['few', 'none', 'unmeasured'] as const;
@@ -34,41 +55,92 @@
 		}
 		return states.filter((state) => present.has(state) && stateLabels[state].trim());
 	});
+
+	function measureStickyOffset(element: HTMLElement): void {
+		const header = element.querySelector('tbody th');
+		if (!header || element.clientWidth <= 0) {
+			stickyOffset = 0;
+			return;
+		}
+		stickyOffset = Math.min(header.getBoundingClientRect().width, element.clientWidth);
+	}
+
+	$effect(() => {
+		const element = scrollElement;
+		if (!element) {
+			scrollEdges = EMPTY_SCROLL_EDGES;
+			stickyOffset = 0;
+			handleScroll = undefined;
+			return;
+		}
+		const controller = attachScrollEdges(element, {
+			initialScroll,
+			onUpdate(next) {
+				scrollEdges = next;
+			},
+			onResize() {
+				measureStickyOffset(element);
+			},
+		});
+		handleScroll = controller.onScroll;
+		return () => {
+			controller.destroy();
+			handleScroll = undefined;
+		};
+	});
 </script>
 
 <div class="hour-grid" data-slot="hour-grid">
-	<!-- svelte-ignore a11y_no_noninteractive_tabindex (the region scrolls horizontally at narrow widths) -->
-	<div class="scroll" role="region" aria-labelledby={captionId} tabindex="0" data-lenis-prevent>
-		<table>
-			<caption id={captionId} class="sr-only">{label}</caption>
-			<thead>
-				<tr>
-					<td></td>
-					{#each columns as column (column.id)}
-						<th scope="col">{column.label}</th>
-					{/each}
-				</tr>
-			</thead>
-			<tbody>
-				{#each rows as row (row.id)}
+	<div
+		class="scroll-wrap"
+		data-scroll-start={scrollEdges.start || undefined}
+		data-scroll-end={scrollEdges.end || undefined}
+		style:--scroll-fade-start-offset={`${stickyOffset}px`}
+	>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex (the region scrolls horizontally at narrow widths) -->
+		<div
+			bind:this={scrollElement}
+			class="scroll"
+			role="region"
+			aria-labelledby={captionId}
+			tabindex="0"
+			data-lenis-prevent
+			data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
+			onscroll={() => handleScroll?.()}
+		>
+			<table>
+				<caption id={captionId} class="sr-only">{label}</caption>
+				<thead>
 					<tr>
-						<th scope="row">{row.label}</th>
-						{#each columns as column, index (column.id)}
-							{@const cell = row.cells[index]}
-							{@const state = cellState(cell)}
-							<td
-								aria-label={cell?.name ?? stateLabels.unmeasured}
-								title={cell?.name ?? stateLabels.unmeasured}
-							>
-								<span class="cell swatch" aria-hidden="true" data-state={state} data-level={state ? undefined : cell?.level}>
-									{cell?.text || (state ? stateLabels[state] : '')}
-								</span>
-							</td>
+						<td></td>
+						{#each columns as column (column.id)}
+							<th scope="col">{column.label}</th>
 						{/each}
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each rows as row (row.id)}
+						<tr>
+							<th scope="row">{row.label}</th>
+							{#each columns as column, index (column.id)}
+								{@const cell = row.cells[index]}
+								{@const state = cellState(cell)}
+								<td
+									aria-label={cell?.name ?? stateLabels.unmeasured}
+									title={cell?.name ?? stateLabels.unmeasured}
+								>
+									<span class="cell swatch" aria-hidden="true" data-state={state} data-level={state ? undefined : cell?.level}>
+										{cell?.text || (state ? stateLabels[state] : '')}
+									</span>
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+		<span class="scroll-fade scroll-fade-start" data-slot="scroll-fade-start" aria-hidden="true"></span>
+		<span class="scroll-fade scroll-fade-end" data-slot="scroll-fade-end" aria-hidden="true"></span>
 	</div>
 	{#if hasScaleLabel || scaleSteps.length || visibleStates.length}
 		<div class="legend">
@@ -88,20 +160,116 @@
 </div>
 
 <style>
-	.hour-grid { min-inline-size: 0; }
+	.hour-grid {
+		--scroll-fade-surface: var(--background);
+		min-inline-size: 0;
+	}
+	:global([data-slot='card']) .hour-grid {
+		--scroll-fade-surface: var(--surface-2);
+	}
+	.scroll-wrap {
+		--hour-grid-column-gap: 0.125rem;
+		position: relative;
+		min-inline-size: 0;
+		max-inline-size: 100%;
+	}
 	.scroll {
 		overflow-x: auto;
 		max-inline-size: 100%;
 		min-block-size: var(--size-tap-min);
 	}
+	.scroll[data-initial-scroll='end']:not([data-scroll-hydrated]) {
+		display: flex;
+		flex-direction: row-reverse;
+	}
+	.scroll[data-initial-scroll='end']:not([data-scroll-hydrated]) > table {
+		flex: 0 0 auto;
+		min-inline-size: 100%;
+		inline-size: auto;
+	}
 	.scroll:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: 2px;
 	}
+	.scroll-fade {
+		display: none;
+		position: absolute;
+		inset-block: 0;
+		z-index: 2;
+		box-sizing: border-box;
+		pointer-events: none;
+	}
+	.scroll-wrap[data-scroll-start='true'] > .scroll-fade-start {
+		display: block;
+		inset-inline-start: var(--scroll-fade-start-offset, 0px);
+		inline-size: min(2rem, 18%, max(0px, calc(100% - var(--scroll-fade-start-offset, 0px))));
+		background-image:
+			linear-gradient(
+				to right,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
+				transparent 70%
+			),
+			linear-gradient(
+				to right,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+	.scroll-wrap[data-scroll-end='true'] > .scroll-fade-end {
+		display: block;
+		inset-inline-end: 0;
+		/* At scroll start the sticky heading still sits one column gap in from the edge. */
+		inline-size: min(2rem, 18%, max(0px, calc(100% - var(--scroll-fade-start-offset, 0px) - var(--hour-grid-column-gap))));
+		background-image:
+			linear-gradient(
+				to left,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
+				transparent 70%
+			),
+			linear-gradient(
+				to left,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+	.scroll-wrap[data-scroll-start='true']:dir(rtl) > .scroll-fade-start {
+		background-image:
+			linear-gradient(
+				to left,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
+				transparent 70%
+			),
+			linear-gradient(
+				to left,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
+	.scroll-wrap[data-scroll-end='true']:dir(rtl) > .scroll-fade-end {
+		background-image:
+			linear-gradient(
+				to right,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
+				transparent 70%
+			),
+			linear-gradient(
+				to right,
+				var(--scroll-fade-surface) 0%,
+				color-mix(in srgb, var(--scroll-fade-surface) 82%, transparent) 40%,
+				transparent 100%
+			);
+	}
 	table {
 		inline-size: 100%;
 		border-collapse: separate;
-		border-spacing: 0.125rem 0.25rem;
+		border-spacing: var(--hour-grid-column-gap) 0.25rem;
 		font-size: var(--text-small);
 		text-align: center;
 	}
@@ -172,6 +340,7 @@
 	.legend li { display: flex; align-items: baseline; gap: 0.375em; overflow-wrap: anywhere; }
 	.key { flex: none; inline-size: 0.8em; block-size: 0.8em; }
 	@media (forced-colors: active) {
+		.scroll-fade { display: none !important; }
 		[data-level], [data-state] { border-color: CanvasText; }
 		[data-state='few'] {
 			--hatch-ink: color-mix(in srgb, CanvasText 45%, Canvas);
