@@ -28,6 +28,8 @@
 	let tallChrome = $state(false);
 	let pairedRails = $state<boolean>();
 	let frameBody = $state<HTMLDivElement>();
+	let frameMain = $state<HTMLElement>();
+	let mainGutters = $state({ left: 0, right: 0 });
 	setContext(frameRailLayout, () => pairedRails ?? false);
 
 	function observeRailLayout(marker: HTMLElement) {
@@ -72,6 +74,21 @@
 			window.removeEventListener('resize', measure);
 		} };
 	}
+
+	$effect(() => {
+		const main = frameMain;
+		if (!main || !fullViewport || pairedRails || !(controlsRail || evidence)) return;
+		// The compact rails are fixed to the viewport, but main owns the scrolling.
+		// Observing its content box also catches a scrollbar appearing or disappearing.
+		const measure = () => {
+			const left = main.clientLeft;
+			mainGutters = { left, right: main.offsetWidth - main.clientWidth - left };
+		};
+		const observer = new ResizeObserver(measure);
+		observer.observe(main);
+		measure();
+		return () => observer.disconnect();
+	});
 
 	$effect(() => {
 		if (fullViewport || chromeHeight === undefined) return;
@@ -127,7 +144,14 @@
 			<div class="app-frame-controls" data-slot="app-frame-controls" data-lenis-prevent>{@render controls()}</div>
 		{/if}
 	</div>
-	<div bind:this={frameBody} class="app-frame-body" class:with-evidence={!!evidence} class:with-controls-rail={!!controlsRail}>
+	<div
+		bind:this={frameBody}
+		class="app-frame-body"
+		class:with-evidence={!!evidence}
+		class:with-controls-rail={!!controlsRail}
+		style:--surface-rail-left={fullViewport && !pairedRails ? `${mainGutters.left}px` : undefined}
+		style:--surface-rail-right={fullViewport && !pairedRails ? `${mainGutters.right}px` : undefined}
+	>
 		{#if controlsRail}
 			<SurfaceRail {...controlsRail} class="app-frame-controls-rail">
 				{#snippet rail(context: SurfaceRailContext)}
@@ -138,7 +162,7 @@
 				{/snippet}
 			</SurfaceRail>
 		{/if}
-		<main id="main" class="app-frame-main" aria-label={mainLabel} tabindex="-1" data-lenis-prevent={fullViewport ? '' : undefined}>
+		<main bind:this={frameMain} id="main" class="app-frame-main" aria-label={mainLabel} tabindex="-1" data-lenis-prevent={fullViewport ? '' : undefined}>
 			{@render children()}
 		</main>
 		{#if evidence}<SurfaceRail {...evidence} class="app-frame-evidence" />{/if}
