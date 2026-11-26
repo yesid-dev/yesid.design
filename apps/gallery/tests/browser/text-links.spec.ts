@@ -35,6 +35,41 @@ for (const theme of ['dark', 'light']) {
     await expect(link).toHaveCSS('outline-style', 'solid');
     await expect(link).toHaveCSS('outline-width', '2px');
   });
+  test(`a link with layout classes opts into the text link look with text-link in ${theme}`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem('theme', value), theme);
+    await page.goto('/text-links');
+    await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+    const link = page.getByTestId('classed-text-link');
+    const classless = page.getByTestId('classless-link');
+    const primary = await link.evaluate((el) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--primary)'; el.append(probe);
+      const color = getComputedStyle(probe).color; probe.remove(); return color;
+    });
+    await expect(link).toHaveCSS('display', 'inline-flex');
+    await expect(link).toHaveCSS('color', primary);
+    await expect(link).toHaveCSS('text-decoration-line', 'underline');
+    await expect(link).toHaveCSS('text-decoration-thickness', '1px');
+    expect(await link.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return parseFloat(style.textUnderlineOffset) / parseFloat(style.fontSize);
+    })).toBeCloseTo(0.2);
+    await link.hover();
+    await expect(link).toHaveCSS('text-decoration-thickness', '2px');
+    await expect(page.getByTestId('component-link')).toHaveCSS('text-decoration-line', 'none');
+
+    await page.mouse.move(0, 0);
+    await page.emulateMedia({ forcedColors: 'active' });
+    const look = (el: Element) => {
+      const style = getComputedStyle(el);
+      return [style.color, style.textDecorationLine, style.textDecorationThickness, style.textDecorationColor,
+        parseFloat(style.textUnderlineOffset) / parseFloat(style.fontSize)];
+    };
+    expect(await link.evaluate(look)).toEqual(await classless.evaluate(look));
+    await link.focus();
+    await expect(link).toHaveCSS('outline-style', 'solid');
+    await expect(link).toHaveCSS('outline-width', '2px');
+  });
   for (const width of [320, 390, 768, 1440, 1920]) {
     test(`fixtures fit ${width}px in ${theme} with reduced motion`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });

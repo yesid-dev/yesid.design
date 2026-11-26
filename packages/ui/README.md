@@ -1482,7 +1482,9 @@ breakpoints ship in ProductBrand.
 
 `@yesid/ui/base.css` is the base layer both products share: resets, the dark variant, selection,
 focus ring, text links (a link without a class is underlined in `--primary`; components
-style their own), scrollbar, circuit grid, shared keyframes, label styles, `.glass-chrome`, the
+style their own; a link that also needs layout classes adds `text-link`, as in
+`class="text-link inline-flex min-h-11"`, for the same look), scrollbar, circuit grid, shared
+keyframes, label styles, `.glass-chrome`, the
 `TerminalPanel` and `CodeBlock` classes (`.terminal-*` and `.syn-*`, in the components layer), the
 `SiteHeader` geometry (`--nav-top`, `--nav-padding-y`, `--nav-clearance`), the dimension and
 hand-drawn lines (`.dimension-line`, `.hand-drawn-line`) and the rule that hides kit edge rules inside a page section, a focus outline under forced

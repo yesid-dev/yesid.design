@@ -25,6 +25,11 @@
       {/each}
     </section>
   {/each}
+  <section aria-label="Links with layout classes" data-fixture="classed-links">
+    <p>A link that also needs layout classes opts in with <code>text-link</code>: <a href="#source" class="text-link inline-flex min-h-11 items-center" data-testid="classed-text-link">Read the source and method</a>.</p>
+    <p>Without it, a classed link is left to its component: <a href="#source" class="inline-flex min-h-11 items-center" data-testid="component-link">Component link</a>.</p>
+    <p>A link without a class, for comparison: <a href="#source" data-testid="classless-link">Read the source</a>.</p>
+  </section>
   <p id="source">Demonstration fixture. These links do not claim a live measurement.</p>
 </div>
 <style>
