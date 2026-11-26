@@ -775,9 +775,10 @@ the page's alternating ink sequence.
 **Experimental**: its shape may change in a minor release, with migration notes. It renders an `article` with an Inter `h1` in sentence case as written, the real
 date of the last change when the text has one, an optional `summary`, the contents and the body
 (`children`), on a measure of about 65 to 70 characters (`--reading-measure`, default `34em` of the
-reading size) with `--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels,
-numbering or glow; the contents are an unnumbered list (`role="list"`) of orange underlined links,
-each a 44px target (`--size-tap-min`). The frame is an inline-size container named `reading-frame`:
+reading size) with `--reading-gutter` (one length or percentage, default `1rem`, `0` allowed) on each
+side. It fills its parent's width up to the measure, in block flow and as a flex or grid item,
+centred or not. No canvas, tape, mono labels, numbering or glow; the contents are an unnumbered
+list (`role="list"`) of orange underlined links, each a 44px target (`--size-tap-min`). The frame is an inline-size container named `reading-frame`:
 below a 12rem measure (enlarged text on a phone, never at the default text size from 320px) the
 title steps down to `--text-heading` and body `h2` to `--text-reading-support`, so a long word such
 as "confidentialité" stays whole. An unnamed `@container` query in the body resolves against the frame.

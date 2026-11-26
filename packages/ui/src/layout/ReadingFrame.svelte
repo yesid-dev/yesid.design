@@ -176,13 +176,25 @@
 </article>
 
 <style>
+	/* The gutter as a typed length, so a unitless `--reading-gutter: 0` still works inside calc(). */
+	@property --reading-frame-gutter {
+		syntax: '<length-percentage>';
+		inherits: false;
+		initial-value: 0px;
+	}
+
 	/* The measure is in em of the reading size: 34em of Inter holds about 65 to 70 characters. */
 	.reading-frame {
+		--reading-frame-gutter: var(--reading-gutter, 1rem);
 		container: reading-frame / inline-size;
 		box-sizing: content-box;
+		/* The width block flow gives, stated outright. Inline-size containment leaves the frame no
+		   content width of its own, so a parent that sizes it to its content (a flex column, a grid,
+		   centred or not) would otherwise collapse it to its gutters. */
+		inline-size: calc(100% - 2 * var(--reading-frame-gutter));
 		max-width: var(--reading-measure, 34em);
 		margin-inline: auto;
-		padding-inline: var(--reading-gutter, 1rem);
+		padding-inline: var(--reading-frame-gutter);
 		padding-block: 2rem 4rem;
 		color: var(--foreground);
 		font-family: var(--font-body);
