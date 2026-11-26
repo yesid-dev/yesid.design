@@ -851,6 +851,9 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
   first-render clearance for a known layout. The frame owns `<main id="main">` for the skip link.
   In document mode the frame sets the document’s scroll clearance while mounted.
+  While mounted, the frame also clips horizontal overflow on `body` instead of `html`, so the
+  scroll lock behind the `SiteHeader` menu and sheets reaches the viewport and the chrome stays
+  put on a scrolled page. Leave `overflow` on `html` unset in app CSS.
   Controls can scroll independently when space is tight.
   Pass `evidence={{ rail, label, openAria, closeAria, summary, mobileVisible }}` to put a `SurfaceRail` on the right at
   desktop widths and in its sheet below 1024px. For a map, `fullViewport` sizes the frame to
