@@ -1,7 +1,113 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 const path = '/app-frame/controls-rail';
+
+// Counts pill changes over 20 frames once the header has settled. A measure loop keeps changing them.
+function pillChanges(page: Page) {
+	return page.getByTestId('nav-pill').evaluate((pill) => new Promise<number>((resolve) => {
+		let changes = 0;
+		const observer = new MutationObserver((records) => { changes += records.length; });
+		let frames = 0;
+		const frame = () => {
+			frames += 1;
+			if (frames === 2) observer.observe(pill, { attributes: true, subtree: true, childList: true });
+			if (frames < 22) requestAnimationFrame(frame);
+			else {
+				observer.disconnect();
+				resolve(changes);
+			}
+		};
+		requestAnimationFrame(frame);
+	}));
+}
+
+function networkRow(page: Page) {
+	const pill = page.getByTestId('nav-pill');
+	const select = pill.getByRole('combobox', { name: 'Network' });
+	const picker = select.locator('..');
+	return {
+		pill,
+		select,
+		name: picker.locator('.network-name'),
+		code: picker.locator('.network-code'),
+		inRow: () => picker.evaluate((label) => {
+			const box = label.getBoundingClientRect();
+			const pillBox = label.closest('nav')!.getBoundingClientRect();
+			return box.top >= pillBox.top && box.bottom <= pillBox.bottom;
+		}),
+	};
+}
+
+test.describe('Header network short code', { tag: '@theme' }, () => {
+	test('shows the short code inline when only the code fits beside the links', async ({ page }) => {
+		await page.setViewportSize({ width: 1120, height: 850 });
+		await page.goto(`${path}?long-name`);
+		await page.locator('html[data-gallery-ready]').waitFor();
+		await page.evaluate(() => document.fonts.ready);
+		const { pill, select, name, code, inRow } = networkRow(page);
+		const root = page.locator('html');
+		const chrome = page.getByTestId('chrome-size');
+		await expect(name).toHaveText('Riverside · Regional Transit');
+		await expect(name).toBeVisible();
+		await expect(code).toBeHidden();
+		expect(await inRow()).toBe(true);
+		const fullPill = (await pill.boundingBox())!.height;
+		const fullChrome = (await chrome.textContent())!;
+		await select.focus();
+		const node = await select.elementHandle();
+
+		// The full name needs about 1066px here; the code fits from 1024px.
+		for (const width of [1040, 1024, 1120]) {
+			await page.setViewportSize({ width, height: 850 });
+			const full = width === 1120;
+			await expect(full ? name : code).toBeVisible();
+			await expect(full ? code : name).toBeHidden();
+			await expect(pill).not.toHaveAttribute('data-network-below');
+			await expect(root).not.toHaveAttribute('data-site-header-network-below');
+			expect(await inRow()).toBe(true);
+			expect((await pill.boundingBox())!.height).toBe(fullPill);
+			await expect(chrome).toHaveText(fullChrome);
+			await expect(select).toHaveAccessibleName('Network');
+			await expect(select).toBeFocused();
+			expect(await select.evaluate((control, original) => control === original, node)).toBe(true);
+			expect(await pillChanges(page)).toBe(0);
+			await expectNoHorizontalOverflow(page);
+		}
+	});
+
+	test('moves the picker below the pill only when the code does not fit either', async ({ page }) => {
+		await page.setViewportSize({ width: 1024, height: 850 });
+		await page.goto(`${path}?long-name`);
+		await page.locator('html[data-gallery-ready]').waitFor();
+		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+		await page.evaluate(() => document.fonts.ready);
+		const { pill, select, name, code, inRow } = networkRow(page);
+		const root = page.locator('html');
+		await select.focus();
+		const node = await select.elementHandle();
+
+		// At 200% text the code fits from about 1208px and the full name from about 1432px.
+		for (const width of [1024, 1300, 1100]) {
+			await page.setViewportSize({ width, height: 850 });
+			const below = width !== 1300;
+			await expect(code).toBeVisible();
+			await expect(name).toBeHidden();
+			if (below) {
+				await expect(pill).toHaveAttribute('data-network-below', '');
+				await expect(root).toHaveAttribute('data-site-header-network-below', '');
+			} else {
+				await expect(pill).not.toHaveAttribute('data-network-below');
+				await expect(root).not.toHaveAttribute('data-site-header-network-below');
+			}
+			await expect.poll(inRow).toBe(!below);
+			await expect(select).toBeFocused();
+			expect(await select.evaluate((control, original) => control === original, node)).toBe(true);
+			expect(await pillChanges(page)).toBe(0);
+			await expectNoHorizontalOverflow(page);
+		}
+	});
+});
 
 test.describe('Header network keyboard order', { tag: '@theme' }, () => {
 	const copy = {
