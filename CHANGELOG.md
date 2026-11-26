@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.58.0-rc.1
+
+<!-- release-fragment: data-table-rows-large-text -->
+- `@yesid/ui` (patch): Keep long names and route plates readable in DataTable `rows` mode with enlarged text. When the table is at most 14rem wide, the primary column takes the whole row and the value moves below it, start-aligned, before the details. Names no longer overlap the value, and a 3-digit route plate stays on one line. Tables wider than 14rem, including a 320px phone at default text size, keep the value beside the primary. Row headers, values and their reading order are unchanged.
+
+<!-- release-fragment: header-menu-scrolled -->
+- `@yesid/ui` (patch): Keep the `SiteHeader` pill and its close button in place when the menu opens on a scrolled
+  `AppFrame` page. The menu's scroll lock sets `overflow: hidden` on `body`, and with the
+  `overflow-x: clip` that `base.css` puts on `html`, `body` became a scroll container: the sticky
+  chrome scrolled away with the page, leaving the pill and close button at 16px minus the scroll
+  offset, off screen. An open sheet moved the chrome the same way.
+
+  `AppFrame` now clips horizontal overflow on `body` instead of `html` while it is mounted. The page
+  still clips horizontally as before, and the lock now reaches the viewport: the chrome stays put
+  under the menu and sheets, and the page behind the open menu no longer scrolls with the keyboard.
+  Closing still restores the scroll position and focus. App CSS that sets `overflow` on `html` keeps
+  the lock from reaching the viewport; set it on `body` instead.
+
+<!-- release-fragment: header-network-code-inline -->
+- `@yesid/ui` (patch): `SiteHeader` with a `NetworkPicker` in its `network` snippet: from 1024 px, when the selected network's full name does not fit beside the links, the picker now shows its short code in the pill instead of moving below it. The row below the pill, which adds height to the header, is used only when the code does not fit either. Widening the header brings the full name back. The select keeps its accessible name and focus, and no props change.
+
+<!-- release-fragment: large-text-and-header-fits -->
+- `@yesid/ui` (patch): Keep long words whole with enlarged text on a phone, and keep the SiteHeader brand clear of its controls at 320px. Layouts at the default text size are unchanged.
+
+  - `ErrorPage`: the heading steps down to 1.25rem when its content is narrower than 12rem.
+  - `ReadingFrame` (Experimental): the frame is an inline-size container named `reading-frame`. Below a 12rem measure the title uses `--text-heading` and body `h2` uses `--text-reading-support`. An unnamed `@container` query inside the frame's body now resolves against the frame.
+  - `CollapsibleSection` with `headerVariant="article-summary"`: the card is an inline-size container named `section-card`. Below 14rem its side inset is 0.5rem and the index or icon sits above a full-width title and subtitle.
+  - `SiteHeader`: below 360px the divider before the controls stays while no links show, so the brand no longer touches the first control.
+
+<!-- release-fragment: opt-in-map-answer-table-layouts -->
+- `@yesid/ui` (minor): Add four opt-in layout props. Each default keeps the current markup and layout, so no migration
+  is needed.
+
+  - `MapFrame` `fillHeight` (default `false`) drops the 20 rem minimum so the map fills a host with a
+    definite height, such as a short landscape phone. `legendSide` (`'end'` by default, or
+    `'start'`) docks the compact legend button and card at the start inset.
+  - `MapLegend` `detailLayout` (`'below'` by default, or `'inline'`) sets each label in semibold
+    with its detail after a space on the same line, with no added punctuation. `scalePlacement`
+    (`'after-groups'` by default, or `'before-groups'`) renders the scale before the groups.
+  - `AnswerLead` `layout` (`'threshold'` by default, or `'fit'`) sets the figure beside the sentence
+    whenever both fit, at any width; a long figure wraps between whole numbers.
+  - `DataTable` `rowAlign` (`'top'` by default, or `'middle'`) centres body cells vertically while
+    the table keeps table layout; stacked rows and compact rows ignore it.
+
+<!-- release-fragment: section-heading-title-size -->
+- `@yesid/ui` (minor): `SectionHeading` takes `size="title"` for the compact title of a task or reading screen: the `--text-title` size, bold, with normal letter spacing, and a subheading in the sentence-case reading label type instead of the mono uppercase label. The `dot`, `number`, `headingAccent`, `explainer` and `level` props work the same, and the root carries `data-size="title"`. The default `size="display"` renders exactly as before, so no migration is needed.
+
+<!-- release-fragment: text-link-class -->
+- `@yesid/ui` (minor): Add the `text-link` class to `base.css`. A link that also needs layout classes, such as `class="text-link inline-flex min-h-11"`, now gets the classless text link look: `--primary` ink, a 1px underline at 0.2em, 2px on hover, and the same forced-colors behavior. Links without a class and component links are unchanged.
+
 ## 0.57.1
 
 <!-- release-fragment: data-table-separate-decoration-from-value -->
