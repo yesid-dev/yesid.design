@@ -119,6 +119,20 @@
 			<TocNav heading="Without counter" entries={toc} activeId="cards" counter={false} collapsible={false} />
 		</div>
 	</div>
+
+	<h2 id="titles" class="text-heading font-heading font-bold">Screen titles</h2>
+	<p>The compact title size for task and reading screens, with and without the dot.</p>
+	<div class="stack">
+		<div data-fixture="title-dot">
+			<SectionHeading size="title" level={3} heading="Check your details before you continue" />
+		</div>
+		<div data-fixture="title-undotted">
+			<SectionHeading size="title" level={3} dot={false} heading="Account settings" />
+		</div>
+		<div data-fixture="title-sub">
+			<SectionHeading size="title" level={3} heading="Weekly summary" subheading="Figures from the last seven days" />
+		</div>
+	</div>
 </div>
 
 <style>

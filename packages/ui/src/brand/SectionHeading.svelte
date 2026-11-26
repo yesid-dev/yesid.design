@@ -1,6 +1,7 @@
 <!--
   Section title with the brand dot, or a mono overline when only `overline` is set.
   The dot stays on the last word's line and is hidden from assistive tech.
+  `size="title"` is the compact screen title for task and reading screens.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -16,6 +17,12 @@
 		 */
 		overline?: string;
 		level?: 1 | 2 | 3 | 4 | 5 | 6;
+		/**
+		 * `display` (default): the large section heading. `title`: the compact screen title for task
+		 * and reading screens, at `--text-title`, bold with normal tracking, and a subheading in the
+		 * reading label type. The overline ignores it.
+		 */
+		size?: 'display' | 'title';
 		dot?: boolean;
 		/** Leading zero-padded section number. */
 		number?: number;
@@ -37,6 +44,7 @@
 		subheading,
 		overline,
 		level = 2,
+		size = 'display',
 		dot = true,
 		number,
 		numberTone = 'rest',
@@ -65,6 +73,7 @@
 <div
 	data-slot="section-heading"
 	data-mode={isOverline ? 'overline' : 'display'}
+	data-size={size === 'title' ? 'title' : undefined}
 	class={cn('section-heading', className)}
 	{...restProps}
 >
@@ -117,6 +126,22 @@
 		letter-spacing: 2px;
 		text-transform: uppercase;
 		margin-block-end: 36px;
+	}
+
+	/* The compact screen title. The dot is a glyph of the heading text, so it scales and keeps the
+	   baseline with it. The subheading takes the reading label role (`.label-reading` in base.css). */
+	.section-heading[data-size='title'] .section-heading-text {
+		font-size: var(--text-title);
+		font-weight: 700;
+		letter-spacing: normal;
+	}
+	.section-heading[data-size='title'] .section-heading-sub {
+		font-family: var(--font-body);
+		font-size: var(--text-small);
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.section-heading-overline {

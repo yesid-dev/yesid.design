@@ -579,7 +579,12 @@ caller. `SectionHeading` takes `heading` or `overline`, plus `number`, `headingA
 `explainer` snippet. `overline` is signage only: a short board, platform or route name in tracked
 mono uppercase, never a label above a heading. Start a section with `heading`; label data with the
 `.label-reading` role. The Gallery does not demonstrate the overline as a section label; the prop
-is accepted for compatibility. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
+is accepted for compatibility. `size` picks the heading size. `display`, the default, is the large
+section heading. `title` is the smaller title for task and reading screens: the `--text-title`
+size, bold, with normal letter spacing, and a `subheading` in the sentence-case `.label-reading`
+type instead of the mono uppercase label. The `dot`, `number`, `headingAccent`, `explainer` and
+`level` props work the same at both sizes, and the root carries `data-size="title"` only at the
+title size. The overline ignores `size`. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
 
 ### FilterGroup, FilterSection, FilterSummary, and SearchInput
 
