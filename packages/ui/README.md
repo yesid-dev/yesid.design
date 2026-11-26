@@ -1192,8 +1192,10 @@ each side where more content is hidden (none when everything fits, updated on sc
 hidden under forced colours). Pass `initialScroll: 'end'` to start scrolled to the inline end so
 the latest columns are in view from first paint without jumping after hydration. `frame="card"`
 draws a rounded card, `headerBand="terminal"` tints the header, `tableClass` styles the table and
-other attributes go to the frame. Stacked rows wrap localized headings and keep the native table
-roles at enlarged text.
+other attributes go to the frame. The frame uses the caller's `role`, `aria-label` and `tabindex`
+when it is outside scroll region mode. An overflowing frame adds a decorative fade wrapper after
+the table. Target the table with `tableClass` or `[data-slot="data-table"]`. Stacked rows wrap
+localized headings and keep the native table roles at enlarged text.
 
 `rowAlign="middle"` centres body cells vertically, so a short figure lines up with the middle of
 a taller row header; numeric and `end` cells stay right-aligned. It applies while the cells keep
@@ -1226,11 +1228,11 @@ Pass `labels: false` to omit the per-row column labels in compact rows, `rowDeta
 receiving the row `T`) to visually summarize the remaining columns in one muted detail line
 under the first line when the table is at most 28 rem wide. Put the information and any links or
 controls in the original cells. Assistive technology reads those cells, and the compact layout
-reveals a concealed cell when a control inside receives focus. Use `rowEmpty` (a predicate on `T`) to mark rows with
-no data so their value cell is omitted in compact rows and their detail reads on one line beside
-the primary cell (rows whose value cell renders empty also collapse to one line when `rowDetail`
-is supplied). Native table roles stay intact, and sortable column headers stay available and
-keyboard-accessible in the header row above the compact rows.
+reveals a concealed cell when a control inside receives focus. Use `rowEmpty` (a predicate on `T`)
+to mark rows with no data. The value cell is visually clipped in compact rows so the detail can
+read inline beside the primary cell. Rows whose value cell renders empty also collapse to one line
+when `rowDetail` is supplied. Native table roles stay intact, and sortable column headers stay
+available and keyboard-accessible in the header row above the compact rows.
 
 ## Status marks, route plates and charts
 
@@ -1277,11 +1279,11 @@ Also from `@yesid/ui/chart`:
   cell `text`, its accessible `name`, a level from zero to four and an optional state.
   Use `level: null` for an unmeasured cell. The table scrolls within a named region, keeps row
   headings in view, and draws token-based edge fades on sides where more content is hidden (none
-  when nothing overflows, updated on scroll and resize, hidden under forced colours). Pass
-  `initialScroll="end"` to start scrolled to the inline end so the most recent columns are in view
-  from first paint without jumping after hydration; the default is `'start'`. The key skips blank
-  labels and includes only labelled state entries present in the grid. Supply an empty scale label,
-  no steps and empty state labels to omit it.
+  when nothing overflows, updated on scroll and resize, hidden under forced colours). Both fades
+  stay clear of the sticky heading. Pass `initialScroll="end"` to start scrolled to the inline end
+  so the most recent columns are in view from first paint without jumping after hydration; the
+  default is `'start'`. The key skips blank labels and includes only labelled state entries present
+  in the grid. Supply an empty scale label, no steps and empty state labels to omit it.
 - **RangeMark** plots the estimate and its interval within a shared ascending `domain`.
   Include the estimate and interval in its accessible `label`, and supply a localized
   `reference.label` when using the comparison tick. Render the surrounding app's empty state

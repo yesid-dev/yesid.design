@@ -168,6 +168,7 @@
 		--scroll-fade-surface: var(--surface-2);
 	}
 	.scroll-wrap {
+		--hour-grid-column-gap: 0.125rem;
 		position: relative;
 		min-inline-size: 0;
 		max-inline-size: 100%;
@@ -219,12 +220,13 @@
 	.scroll-wrap[data-scroll-end='true'] > .scroll-fade-end {
 		display: block;
 		inset-inline-end: 0;
-		inline-size: min(2rem, 18%);
-		border-inline-end: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+		/* At scroll start the sticky heading still sits one column gap in from the edge. */
+		inline-size: min(2rem, 18%, max(0px, calc(100% - var(--scroll-fade-start-offset, 0px) - var(--hour-grid-column-gap))));
 		background-image:
 			linear-gradient(
 				to left,
-				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
 				transparent 70%
 			),
 			linear-gradient(
@@ -253,7 +255,8 @@
 		background-image:
 			linear-gradient(
 				to right,
-				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
 				transparent 70%
 			),
 			linear-gradient(
@@ -266,7 +269,7 @@
 	table {
 		inline-size: 100%;
 		border-collapse: separate;
-		border-spacing: 0.125rem 0.25rem;
+		border-spacing: var(--hour-grid-column-gap) 0.25rem;
 		font-size: var(--text-small);
 		text-align: center;
 	}

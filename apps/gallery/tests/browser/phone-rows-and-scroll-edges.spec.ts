@@ -4,6 +4,7 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 const ROUTE = '/phone-rows-and-scroll-edges';
 const TABLE_SCROLLPORT = '[data-slot="data-table-frame"][data-responsive="scroll"]';
 const REPORTS_SORT = 'Sort by Fahrgastinformationssystemverfügbarkeitsberichte';
+const EMPTY_ROW = 'tbody tr[data-row-empty]';
 
 async function open(page: Page, width: number, textPercent = 100): Promise<void> {
 	await page.setViewportSize({ width, height: 900 });
@@ -44,6 +45,12 @@ async function expectStrictContainment(page: Page): Promise<void> {
 				const rtl = getComputedStyle(table).direction === 'rtl';
 				const offset = start === rtl ? rect.right - right : rect.left - left;
 				if (Math.abs(offset) > 1) issues.push(`table fade misses scrollport edge by ${offset}px`);
+			} else if (rect.width > 0) {
+				const heading = scroller.querySelector('tbody th')?.getBoundingClientRect();
+				const rtl = getComputedStyle(scroller).direction === 'rtl';
+				if (heading && (rtl ? rect.right > heading.left + 1 : rect.left < heading.right - 1)) {
+					issues.push(`HourGrid fade overlaps the sticky heading: ${fade.dataset.slot}`);
+				}
 			}
 			if (style.pointerEvents !== 'none') issues.push(`fade intercepts pointer events: ${fade.dataset.slot}`);
 			if (rect.left < -1 || rect.right > viewportRight + 1) {
@@ -51,12 +58,10 @@ async function expectStrictContainment(page: Page): Promise<void> {
 			}
 		}
 
-		// Check every visible descendant outside horizontally scrolling regions against the viewport.
+		// Check descendant boxes outside horizontally scrolling regions, including clipped cells.
 		for (const el of root.querySelectorAll<HTMLElement>('*')) {
 			const scroller = el.closest(`.scroll, ${tableScrollport}`);
 			if (scroller && scroller !== el) continue;
-			const cell = el.closest('th, td');
-			if (cell && getComputedStyle(cell).clipPath !== 'none') continue;
 			const style = getComputedStyle(el);
 			if (style.display === 'none' || style.visibility === 'hidden') continue;
 			const rect = el.getBoundingClientRect();
@@ -68,6 +73,18 @@ async function expectStrictContainment(page: Page): Promise<void> {
 		return issues;
 	}, TABLE_SCROLLPORT);
 	expect(violations).toEqual([]);
+}
+
+async function expectEmptyRowSemantics(row: Locator): Promise<void> {
+	await expect(row).toMatchAriaSnapshot(`
+		- row:
+		  - /children: equal
+		  - rowheader "West Depot":
+		    - link "West Depot"
+		  - cell "—"
+		  - rowheader "No reports in this period."
+		  - cell "0"
+	`);
 }
 
 async function fadeVisibility(container: Locator): Promise<{ start: boolean; end: boolean }> {
@@ -138,25 +155,29 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		expect(normalLayout.detail.top).toBeGreaterThanOrEqual(normalLayout.primary.bottom - 1);
 		const primaryLink = firstRow.getByRole('link', { name: 'North Ridge' });
 		const directionLink = firstRow.getByRole('link', { name: 'Westbound' });
+		await expect(directionLink).toHaveCSS('pointer-events', 'none');
 		await primaryLink.press('Tab');
 		await expect(directionLink).toBeFocused();
 		await expect(directionLink).toBeInViewport();
 		await expect(directionLink.locator('xpath=ancestor::th')).toHaveCSS('clip-path', 'none');
+		await expect(directionLink).toHaveCSS('pointer-events', 'auto');
 
 		// Empty row: value hidden, primary + detail read on ONE line.
-		const emptyRow = table.locator('tbody tr[data-row-empty]');
+		const emptyRow = table.locator(EMPTY_ROW);
 		await expect(emptyRow).toHaveCount(1);
+		await expectEmptyRowSemantics(emptyRow);
 		const emptyLayout = await emptyRow.evaluate((row) => {
 			const primary = row.querySelector<HTMLElement>('[data-row-position="primary"]')!.getBoundingClientRect();
 			const value = row.querySelector<HTMLElement>('[data-row-position="value"]')!;
 			const detail = row.querySelector<HTMLElement>('.data-table-row-detail')!.getBoundingClientRect();
 			return {
-				valueHidden: getComputedStyle(value).display === 'none',
+				valueClipped: getComputedStyle(value).clipPath !== 'none' &&
+					value.getBoundingClientRect().width === 1 && value.getBoundingClientRect().height === 1,
 				primary,
 				detail,
 			};
 		});
-		expect(emptyLayout.valueHidden).toBe(true);
+		expect(emptyLayout.valueClipped).toBe(true);
 		expect(emptyLayout.detail.left).toBeGreaterThanOrEqual(emptyLayout.primary.right - 1);
 		expect(emptyLayout.detail.top).toBeLessThan(emptyLayout.primary.bottom);
 
@@ -222,6 +243,11 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		await expect(startScroller).toBeFocused();
 		await expect(startScroller.locator(':scope > table')).toHaveCount(1);
 		await expect.poll(() => fadeVisibility(startTableCard)).toEqual({ start: false, end: true });
+		const decoration = startScroller.locator(':scope > [aria-hidden="true"]');
+		await expect(decoration).toHaveCount(1);
+		await expect(decoration).toHaveCSS('pointer-events', 'none');
+		await expect(decoration).toHaveCSS('width', '0px');
+		await expect(decoration).toHaveCSS('height', '0px');
 
 		// Token-based fade image is painted in both themes.
 		const endBg = await startTableCard.locator('[data-slot="scroll-fade-end"]').evaluate((el) => getComputedStyle(el).backgroundImage);
@@ -290,16 +316,38 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		await expect.poll(() => fadeVisibility(endTableCard)).toEqual({ start: false, end: false });
 		await expect.poll(() => fadeVisibility(hourGridEndCard)).toEqual({ start: false, end: false });
 		await expect(startScroller).not.toHaveAttribute('tabindex');
+		await expect(decoration).toHaveCount(0);
+	});
+
+	test('keeps the HourGrid end fade clear of its sticky heading at 320px', async ({ page }) => {
+		await open(page, 320);
+		await expectEmptyRowSemantics(page.locator(EMPTY_ROW));
+		const card = page.getByTestId('hour-grid-end-card');
+		const scroller = card.getByRole('region', { name: 'Recent 14-day reporting grid' });
+		await expect.poll(() => fadeVisibility(card)).toEqual({ start: true, end: false });
+		await scroller.evaluate((el) => { el.scrollLeft = 0; });
+		await expect.poll(() => fadeVisibility(card)).toEqual({ start: false, end: true });
+		const endFade = card.locator('[data-slot="scroll-fade-end"]');
+		expect((await endFade.boundingBox())!.width).toBeGreaterThan(0);
+		await expectStrictContainment(page);
 	});
 
 	for (const width of [320, 390]) {
 		test(`keeps strict containment and accessibility at ${width}px with 200% text`, async ({ page }) => {
 			await open(page, width, 200);
-			const startFade = page.getByTestId('hour-grid-end-card').locator('[data-slot="scroll-fade-start"]');
+			await expectEmptyRowSemantics(page.locator(EMPTY_ROW));
+			const card = page.getByTestId('hour-grid-end-card');
+			const startFade = card.locator('[data-slot="scroll-fade-start"]');
 			await expect(startFade).toHaveCSS('display', 'block');
 			await expect.poll(() => startFade.evaluate((el) => el.getBoundingClientRect().width)).toBe(0);
 			await expectStrictContainment(page);
 			await expectAccessible(page);
+			const scroller = card.getByRole('region', { name: 'Recent 14-day reporting grid' });
+			await scroller.evaluate((el) => { el.scrollLeft = 0; });
+			const endFade = card.locator('[data-slot="scroll-fade-end"]');
+			await expect(endFade).toHaveCSS('display', 'block');
+			await expect.poll(() => endFade.evaluate((el) => el.getBoundingClientRect().width)).toBe(0);
+			await expectStrictContainment(page);
 		});
 	}
 

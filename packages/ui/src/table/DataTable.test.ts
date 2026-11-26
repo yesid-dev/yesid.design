@@ -60,6 +60,24 @@ describe('DataTable', () => {
 		expect(screen.queryByRole('region')).toBeNull();
 	});
 
+	it('applies caller accessibility attributes outside scroll region mode', () => {
+		render(DataTable<Row>, {
+			props: {
+				rows,
+				columns,
+				key: (row) => row.id,
+				caption: 'Waits by route',
+				role: 'group',
+				'aria-label': 'Current waits',
+				tabindex: -1,
+			},
+		});
+
+		const frame = screen.getByRole('group', { name: 'Current waits' });
+		expect(frame.getAttribute('tabindex')).toBe('-1');
+		expect(within(frame).getByRole('table', { name: 'Waits by route' })).toBeDefined();
+	});
+
 	it('refuses a blank caption', () => {
 		expect(() => table('   ')).toThrow(/caption/);
 	});

@@ -64,7 +64,7 @@
 		 */
 		readonly rowDetail?: Snippet<[T]>;
 		/**
-		 * Compact `rows` mode only: marks a row with no data so its value cell is hidden and its
+		 * Compact `rows` mode only: marks a row with no data so its value cell is visually clipped and its
 		 * detail can read inline beside the primary cell on one line.
 		 */
 		readonly rowEmpty?: (row: T) => boolean;
@@ -830,11 +830,14 @@
 			font-family: inherit;
 			font-weight: 400;
 		}
-		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr {
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr,
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] {
 			position: relative;
 		}
 		/* Keep the real cells in the table and reveal their controls when focused. */
-		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail, :focus-within) {
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail, :focus-within),
+		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='value']:not(:focus-within),
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > [data-row-position='value']:has(> .data-table-cell-content:empty):not(:focus-within) {
 			position: absolute;
 			inset-block-start: 0;
 			inset-inline-start: 0;
@@ -843,7 +846,16 @@
 			margin: 0;
 			overflow: hidden;
 			clip-path: inset(50%);
-			white-space: nowrap;
+			pointer-events: none;
+
+			& > .data-table-cell-content {
+				display: block;
+				inline-size: 1px;
+				block-size: 1px;
+				white-space: normal;
+				overflow-wrap: anywhere;
+				overflow: hidden;
+			}
 		}
 		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail):focus-within {
 			flex-basis: 100%;
@@ -865,10 +877,6 @@
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty]::after,
 		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty)::after {
-			display: none;
-		}
-		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='value'],
-		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr:has(> [data-row-position='value'] > .data-table-cell-content:empty) > [data-row-position='value'] {
 			display: none;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] > [data-row-position='primary'],

@@ -286,6 +286,9 @@
 		display: grid;
 		gap: 0.25rem;
 	}
+	.showcase button {
+		min-block-size: var(--size-tap-min);
+	}
 	.showcase :global(tbody a) {
 		display: inline-flex;
 		align-items: center;
