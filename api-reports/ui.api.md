@@ -92,6 +92,12 @@
 - `svelte` → `./src/primitives/skeleton/index.ts`
 - `default` → `./src/primitives/skeleton/index.ts`
 
+### `./switch`
+
+- `types` → `./src/primitives/switch/index.ts`
+- `svelte` → `./src/primitives/switch/index.ts`
+- `default` → `./src/primitives/switch/index.ts`
+
 ### `./tabs`
 
 - `types` → `./src/primitives/tabs/index.ts`
@@ -181,6 +187,7 @@
 - `PrimitivesSeparator` → `./src/primitives/separator/index.ts` (`./separator`)
 - `PrimitivesSheet` → `./src/primitives/sheet/index.ts` (`./sheet`)
 - `PrimitivesSkeleton` → `./src/primitives/skeleton/index.ts` (`./skeleton`)
+- `PrimitivesSwitch` → `./src/primitives/switch/index.ts` (`./switch`)
 - `PrimitivesTabs` → `./src/primitives/tabs/index.ts` (`./tabs`)
 - `PrimitivesTooltip` → `./src/primitives/tooltip/index.ts` (`./tooltip`)
 - `Layout` → `./src/layout/index.ts` (`./layout`)
@@ -1638,6 +1645,8 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     // (undocumented)
     readonly responsive?: DataTableResponsive;
     readonly rowAlign?: 'top' | 'middle';
+    readonly rowDetail?: Snippet<[T]>;
+    readonly rowEmpty?: (row: T) => boolean;
     // (undocumented)
     readonly rows: readonly T[];
     // (undocumented)
@@ -1663,10 +1672,12 @@ type DataTableResponsive = {
     mode: 'scroll';
     minWidth?: string;
     minWidthCompact?: string;
+    initialScroll?: 'start' | 'end';
 } | {
     mode: 'rows';
     primary: string;
     value: string;
+    labels?: boolean;
 };
 
 // @public (undocumented)
@@ -2034,6 +2045,7 @@ interface HourGridProps {
         id: string;
         label: string;
     }[];
+    initialScroll?: 'start' | 'end';
     // (undocumented)
     label: string;
     // (undocumented)
@@ -2816,6 +2828,13 @@ declare namespace PrimitivesSkeleton {
     export {
         Skeleton as Root,
         Skeleton
+    }
+}
+
+declare namespace PrimitivesSwitch {
+    export {
+        Switch,
+        SwitchProps
     }
 }
 
@@ -3674,6 +3693,8 @@ interface StampProps {
     // (undocumented)
     late?: boolean;
     // (undocumented)
+    paused?: boolean;
+    // (undocumented)
     updatedAt?: Date;
 }
 
@@ -3920,6 +3941,31 @@ interface SurfaceRailProps {
     // (undocumented)
     rail: Snippet<[SurfaceRailContext]>;
     summary?: string;
+}
+
+// @public (undocumented)
+const Switch: Component<SwitchProps, {}, "checked">;
+
+// @public (undocumented)
+type Switch = ReturnType<typeof Switch>;
+
+// @public (undocumented)
+interface SwitchProps {
+    // (undocumented)
+    checked?: boolean;
+    // (undocumented)
+    class?: string;
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    onCheckedChange?: (checked: boolean) => void;
+    // (undocumented)
+    stateLabels: {
+        on: string;
+        off: string;
+    };
 }
 
 declare namespace Table {

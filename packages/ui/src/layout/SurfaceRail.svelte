@@ -208,8 +208,11 @@
 		--surface-rail-sheet-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--surface-rail-stack-offset, 0px));
 		position: fixed;
 		bottom: var(--surface-rail-bottom);
-		left: 50%;
-		transform: translateX(-50%);
+		left: var(--surface-rail-left, 0px);
+		right: var(--surface-rail-right, 0px);
+		/* Keep the sheet positioned above the pill in this containing block. */
+		transform: translateX(0);
+		pointer-events: none;
 		z-index: var(--z-sheet);
 	}
 	.surface-rail-pill {
@@ -218,13 +221,18 @@
 		gap: 0.5rem;
 		padding: 0.625rem 1.125rem;
 		min-height: 44px;
-		max-width: calc(100vw - 2rem);
+		max-width: calc(100% - 2rem);
+		margin-inline: auto;
+		pointer-events: auto;
 		border-radius: var(--radius-pill);
 		cursor: pointer;
 		white-space: nowrap;
 		font-family: var(--font-mono);
 	}
 	.surface-rail-pill-label {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		font-size: var(--text-caption);
 		color: var(--foreground);
 	}
@@ -241,9 +249,11 @@
 	:global(.surface-rail-sheet) {
 		position: fixed;
 		left: 50%;
+		right: auto;
 		translate: -50% 0;
 		bottom: var(--surface-rail-sheet-bottom);
-		width: min(28rem, calc(100vw - 1.5rem));
+		width: min(28rem, calc(100% - 1.5rem));
+		pointer-events: auto;
 		max-height: min(
 			70dvh,
 			32rem,

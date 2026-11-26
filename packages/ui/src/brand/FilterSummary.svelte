@@ -14,8 +14,8 @@
 
 	/**
 	 * The count in words, as FilterSummary shows it: `countLabel`'s singular or plural template for
-	 * `locale`'s plural rule, with `{count}` filled in. Pass it to ListingFrame's `resultCountText`
-	 * so screen readers hear the same words when the count changes.
+	 * `locale`'s plural rule, with `{count}` formatted by `Intl.NumberFormat(locale)`. Pass it to
+	 * ListingFrame's `resultCountText` so screen readers hear the same words when the count changes.
 	 */
 	export function filterCountText(
 		count: number,
@@ -23,7 +23,10 @@
 		locale: string,
 	): string {
 		const singular = new Intl.PluralRules(locale).select(count) === 'one';
-		return (singular ? countLabel.singular : countLabel.plural).replace('{count}', String(count));
+		return (singular ? countLabel.singular : countLabel.plural).replace(
+			'{count}',
+			new Intl.NumberFormat(locale).format(count),
+		);
 	}
 </script>
 

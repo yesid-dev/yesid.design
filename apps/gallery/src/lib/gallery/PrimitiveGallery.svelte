@@ -14,10 +14,12 @@
 	import { Separator } from '@yesid/ui/separator';
 	import * as Sheet from '@yesid/ui/sheet';
 	import { Skeleton } from '@yesid/ui/skeleton';
+	import { Switch } from '@yesid/ui/switch';
 	import * as Tabs from '@yesid/ui/tabs';
 	import { Tooltip } from '@yesid/ui/tooltip';
 
 	let collapsibleOpen = $state(true);
+	let liveUpdatesPaused = $state(false);
 	let comboboxValue = $state<string | null>('operations');
 	let rankMeasure = $state<string | null>('response-time');
 	let footerStatusRefreshes = $state(0);
@@ -352,6 +354,16 @@
 						<a {...props} type={undefined} href="/app-frame" class="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-2 text-small hover:border-primary">Service guide</a>
 					{/snippet}
 				</Tooltip>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="primitive:switch">
+			<Card.Header>
+				<Card.Title>Switch</Card.Title>
+				<Card.Description>An on/off setting that states its state in words, not colour alone.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<Switch label="Pause live updates" stateLabels={{ on: 'Paused', off: 'Live' }} bind:checked={liveUpdatesPaused} />
 			</Card.Content>
 		</Card.Root>
 

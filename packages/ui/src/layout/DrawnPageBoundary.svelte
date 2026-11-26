@@ -6,11 +6,11 @@
 		slot?: 'page-section-boundary' | 'article-header-boundary';
 	} = $props();
 
-	// Different lengths and pauses, using the original pen curve for every mark.
-	// The outer curves start lifting just beyond the edge to keep the ends fine.
+	// Visible spans in the 1000-unit canvas. The outside marks reach past the
+	// frame so the page edge stays inked as the pen lifts.
 	const strokes = [
-		[[-29, 245], [255, 495], [505, 755], [767, 1002]],
-		[[-25, 181], [188, 386], [397, 595], [610, 810], [819, 1002]],
+		[[-16, 257], [261, 504], [508, 763], [767, 1016]],
+		[[-16, 183], [190, 389], [397, 600], [608, 812], [820, 1016]],
 	] as const;
 	const segments = $derived(strokes[inkIndex % strokes.length]);
 	const decorativeAttributes = { role: 'none', 'aria-hidden': 'true' } as const;

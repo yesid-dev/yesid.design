@@ -11,6 +11,7 @@ export const GALLERY_COVERAGE = {
 		'separator',
 		'sheet',
 		'skeleton',
+		'switch',
 		'tabs',
 		'tooltip',
 	],

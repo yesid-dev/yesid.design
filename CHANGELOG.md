@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.59.0-rc.1
+## 0.59.0
 
 <!-- release-fragment: combobox-required-choice -->
 - `@yesid/ui` (minor): `Combobox` accepts `clearable={false}` for a choice that must always keep a value, such as the

@@ -1,6 +1,6 @@
 {
   "name": "@yesid/ui",
-  "version": "0.59.0-rc.1",
+  "version": "0.59.0",
   "private": true,
   "type": "module",
   "svelte": "./src/index.ts",
@@ -81,6 +81,11 @@
       "types": "./src/primitives/skeleton/index.ts",
       "svelte": "./src/primitives/skeleton/index.ts",
       "default": "./src/primitives/skeleton/index.ts"
+    },
+    "./switch": {
+      "types": "./src/primitives/switch/index.ts",
+      "svelte": "./src/primitives/switch/index.ts",
+      "default": "./src/primitives/switch/index.ts"
     },
     "./tabs": {
       "types": "./src/primitives/tabs/index.ts",

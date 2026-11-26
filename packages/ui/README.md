@@ -193,7 +193,7 @@ The first `cn` use, including a primitive's first class merge, locks the zero-co
 default. Products with custom vocabulary must initialize before any primitive renders. Use one
 shared initializer imported by both SvelteKit `hooks.client.ts` (`ClientInit`) and
 `hooks.server.ts` (`ServerInit`), not a root layout instance script. See the
-[product guide](https://github.com/yesid-dev/yesid.design/blob/v0.59.0-rc.1/docs/BUILD-A-YESID-PRODUCT.md)
+[product guide](https://github.com/yesid-dev/yesid.design/blob/v0.59.0/docs/BUILD-A-YESID-PRODUCT.md)
 for the complete hook pattern.
 
 The state boundary is the loaded ESM module graph. Browser and SSR bundles, separately bundled
@@ -241,6 +241,26 @@ continues to follow `:focus-visible`. No caller changes are needed.
 width and wrap labels over multiple lines, using content-driven height with a minimum touch
 target. Fixed caller heights still override this option.
 Button transitions name color, background-color, border-color, box-shadow and translate explicitly.
+
+### Switch
+
+Use `Switch` from `@yesid/ui/switch` for an on/off setting. Supply a stable, localized `label`
+and localized `stateLabels.on` and `stateLabels.off`. The label is visible and names the control.
+The state word is visible, and `aria-checked` announces the state separately.
+
+```svelte
+<script lang="ts">
+	import { Switch } from '@yesid/ui/switch';
+	let paused = $state(false);
+</script>
+
+<Switch label="Pause live updates" stateLabels={{ on: 'Paused', off: 'Live' }} bind:checked={paused} />
+```
+
+To migrate from a Button with `role="switch"`, move its label and state words into these props
+and replace its click handler and `aria-checked` bookkeeping with `bind:checked` or
+`checked` and `onCheckedChange`. The callback receives the new boolean on user activation.
+`checked` defaults to `false`. `disabled` prevents activation.
 
 ### Card
 
@@ -622,7 +642,10 @@ does). The default is `layout="threshold"`.
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
 seconds from the shared clock. Pass `late` with the supplied stale-since `label` to show a ring
-and keep the label stable. Clock updates are ordinary text changes.
+and keep the label stable. Pass `paused` on a live stamp with a localized paused `label`,
+such as `Paused · last updated at 2 p.m.`, to show a neutral pause mark and hold that label
+steady. If both `late` and `paused` are set, the pause mark takes precedence. Clock updates
+are ordinary text changes.
 
 ### CornerMarks, StatusDot, MetricDisplay, SectionHeading, and SectionIcon
 
@@ -656,7 +679,9 @@ The listing filter family; every label comes from the caller. `FilterGroup` is a
 with an "All" reset (`allLabel`) mapped to `null`; choosing the active item again clears it
 unless `allowDeselect={false}`. With `collapsible` it gets a header toggle and starts at `startOpen` (true) on every mount. `FilterSection` wraps one block of a filter
 panel with the dashed rule. `FilterSummary` shows `countLabel.singular` or `countLabel.plural`
-(each with a `{count}` placeholder) by the plural rule of `locale`, plus a `clearLabel` button.
+(each with a `{count}` placeholder) by the plural rule of `locale`, formatting `{count}` with
+`new Intl.NumberFormat(locale)` while choosing singular or plural from the raw number, plus a
+`clearLabel` button.
 Set `canClear={query.trim().length > 0}` for a search-only list, or pass whether any filter is
 active. If clearing removes the focused button, return focus to the input or filter control.
 `filterCountText(count, countLabel, locale)` returns the same words, for ListingFrame's
@@ -1113,7 +1138,7 @@ restores focus after landing. Inside SiteHeader this uses a bound native link re
 standalone links pass their `bind:ref` to the lifecycle's optional `languageLink` getter.
 `reload` asks for a full document load. LanguageToggle registers no router hooks.
 `resetFocusAfterNavigation` is the same reset for `goto(url, { reset: false })`.
-The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.59.0-rc.1/docs/migrations/navigation-lifecycle.md)
+The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.59.0/docs/migrations/navigation-lifecycle.md)
 covers the copy and integration for Transit and yesid.dev.
 
 ## Page sections
@@ -1212,7 +1237,8 @@ a card that groups controls under `label`. `DashboardGrid` fits as many `minTile
 the width allows; with `label` (and not `as="ul"` or `as="ol"`) it is a named region.
 `SurfaceRail` is a page's controls rail: a landmark that sticks below `--chrome-offset` from 1024px, and below that a pill
 (`label`, `summary`, `openAria`, `closeAria`) that opens the same rail in a bottom sheet. The
-`rail` snippet receives `closeSheet` and the current `presentation`; pass the rail to
+`rail` snippet receives `closeSheet` and the current `presentation`. The pill and sheet centre over
+the scrollable content area, excluding any classic scrollbar. Pass the rail to
 `DetailFrame`'s `rail`. With a TocPill on the same page the two pills stack (see TocPill); put
 `.chrome-clearance` on the scrolling element so focused controls stay clear of both.
 
@@ -1220,9 +1246,15 @@ the width allows; with `label` (and not `as="ul"` or `as="ol"`) it is a named re
 `align`, `numeric` (right-aligned tabular figures), `width` and `rowHeader`. `caption` is
 required and names the table. `responsive` stacks each row into label and value pairs below 448px
 (`at: 'compact'`) or 1024px (`at: 'tablet'`), or scrolls sideways (`mode: 'scroll'`, with
-`minWidth` and `minWidthCompact`); a scrolling table that overflows becomes a focusable region
-named by its caption. `frame="card"` draws a rounded card, `headerBand="terminal"` tints the
-header, `tableClass` styles the table and other attributes go to the frame. Stacked rows wrap
+`minWidth`, `minWidthCompact` and optional `initialScroll: 'start' | 'end'`); a scrolling table
+that overflows becomes a focusable region named by its caption and draws token-based edge fades on
+each side where more content is hidden (none when everything fits, updated on scroll and resize,
+hidden under forced colours). Pass `initialScroll: 'end'` to start scrolled to the inline end so
+the latest columns are in view from first paint without jumping after hydration. `frame="card"`
+draws a rounded card, `headerBand="terminal"` tints the header, `tableClass` styles the table and
+other attributes go to the frame. The frame uses the caller's `role`, `aria-label` and `tabindex`
+when it is outside scroll region mode. An overflowing frame adds a decorative fade wrapper after
+the table. Target the table with `tableClass` or `[data-slot="data-table"]`. Stacked rows wrap
 localized headings and keep the native table roles at enlarged text.
 
 `rowAlign="middle"` centres body cells vertically, so a short figure lines up with the middle of
@@ -1252,7 +1284,15 @@ at the end of the row, leaving the remaining room for the primary column. When t
 most 14 rem wide, such as a phone card at 200% text, the primary takes the whole row and the
 value moves below it, start-aligned, so long names and route plates keep whole words. The other
 columns reflow into wrapping details, with separators attached to the end of each preceding detail.
-Sort actions stay in the header and wrap together above the rows.
+Pass `labels: false` to omit the per-row column labels in compact rows, `rowDetail` (a snippet
+receiving the row `T`) to visually summarize the remaining columns in one muted detail line
+under the first line when the table is at most 28 rem wide. Put the information and any links or
+controls in the original cells. Assistive technology reads those cells, and the compact layout
+reveals a concealed cell when a control inside receives focus. Use `rowEmpty` (a predicate on `T`)
+to mark rows with no data. The value cell is visually clipped in compact rows so the detail can
+read inline beside the primary cell. Rows whose value cell renders empty also collapse to one line
+when `rowDetail` is supplied. Native table roles stay intact, and sortable column headers stay
+available and keyboard-accessible in the header row above the compact rows.
 
 ## Status marks, route plates and charts
 
@@ -1297,9 +1337,13 @@ Also from `@yesid/ui/chart`:
   each band by default. Supply an `absent` snippet for a dataset with no positive shares.
 - **HourGrid** takes ordered columns and one cell per column in each row. Supply the visible
   cell `text`, its accessible `name`, a level from zero to four and an optional state.
-  Use `level: null` for an unmeasured cell. The table scrolls within a named region and
-  keeps row headings in view. The key skips blank labels and includes only labelled state entries
-  present in the grid. Supply an empty scale label, no steps and empty state labels to omit it.
+  Use `level: null` for an unmeasured cell. The table scrolls within a named region, keeps row
+  headings in view, and draws token-based edge fades on sides where more content is hidden (none
+  when nothing overflows, updated on scroll and resize, hidden under forced colours). Both fades
+  stay clear of the sticky heading. Pass `initialScroll="end"` to start scrolled to the inline end
+  so the most recent columns are in view from first paint without jumping after hydration; the
+  default is `'start'`. The key skips blank labels and includes only labelled state entries present
+  in the grid. Supply an empty scale label, no steps and empty state labels to omit it.
 - **RangeMark** plots the estimate and its interval within a shared ascending `domain`.
   Include the estimate and interval in its accessible `label`, and supply a localized
   `reference.label` when using the comparison tick. Render the surrounding app's empty state
@@ -1307,8 +1351,10 @@ Also from `@yesid/ui/chart`:
 - **StopLadder** shows stops in the supplied order and draws each stop's bar against a common
   positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
   A `threshold` labels a continuous comparison line. A `highlight` names a span between two
-  stop IDs. Linked stops use the kit's text link treatment and each code sits beside the
-  name when there is room.
+  stop IDs. Linked stops use the kit's text link treatment with a 44px minimum tap target.
+  Each code sits beside the name when there is room. Stop names and readings stay side by side.
+  Labels wrap at word boundaries, with breaks inside a word reserved for words wider than the
+  available line.
 
 ## Map surfaces
 
