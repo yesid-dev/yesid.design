@@ -89,10 +89,11 @@ test('backward Tab keeps the focused link below the header', async ({ page }) =>
 test('a contents jump still lands on the 25% line under the clearance padding', async ({ page }) => {
 	await open(page);
 	await tocPill(page).click();
+	// Sample before the click that starts the jump; on a fast runner it lands before the section reads expanded.
+	const startY = await page.evaluate(() => scrollY);
 	await page.locator('.toc-drawer-item', { hasText: 'Section limits' }).click();
 	const target = page.locator('[data-toc="limits"]');
 	await expect(target.locator('[data-section-trigger]')).toHaveAttribute('aria-expanded', 'true');
-	const startY = await page.evaluate(() => scrollY);
 	// The jump settles layout over a few frames before it lands, so wait for the landing itself.
 	await expect
 		.poll(async () => Math.abs(await target.evaluate((element) => element.getBoundingClientRect().top - innerHeight * 0.25)))
