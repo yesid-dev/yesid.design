@@ -182,6 +182,13 @@
 	}
 	.app-frame-close-controls { display: none; }
 	:global(.surface-rail-sheet) .app-frame-close-controls { display: flex; justify-content: flex-end; }
+	/* base.css clips the root's inline overflow. A root overflow other than visible keeps body's
+	   overflow off the viewport, so the scroll lock behind the SiteHeader menu and the sheets
+	   (overflow: hidden on body) would make body a scroll container that never scrolls, and the
+	   sticky chrome would stick to body and leave with the page. Clipping body instead clips the
+	   viewport the same way and lets the lock reach it. */
+	:global(html:has([data-slot='app-frame'])) { overflow-x: visible; }
+	:global(body:has([data-slot='app-frame'])) { overflow-x: clip; }
 	.app-frame-chrome {
 		position: sticky;
 		inset-block-start: 0;
