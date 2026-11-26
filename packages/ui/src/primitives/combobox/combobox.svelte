@@ -214,6 +214,7 @@
 			data-slot="combobox-content"
 			class="combobox-content"
 			sideOffset={6}
+			strategy="fixed"
 		>
 			{#snippet child({ props, wrapperProps })}
 				<div {...wrapperProps}>
