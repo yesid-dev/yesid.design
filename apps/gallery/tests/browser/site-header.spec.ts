@@ -22,7 +22,8 @@ const toggle = (page: Page) =>
 	header(page).getByRole('button', { name: new RegExp(`^(${literal(LABELS.openMenu)}|${literal(LABELS.closeMenu)})$`) });
 const menu = (page: Page) => page.getByRole('dialog', { name: LABELS.menu });
 const menuLinks = (page: Page) => page.getByRole('navigation', { name: LABELS.menu });
-const language = (page: Page) => page.getByRole('link', { name: new RegExp(`^${literal(LANGUAGE_LABEL)}:`) });
+// French pages put a no-break space before the colon; Playwright reads it as a space.
+const language = (page: Page) => page.getByRole('link', { name: new RegExp(`^${literal(LANGUAGE_LABEL)}\\s?:`) });
 
 async function visitHeader(page: Page, url = HOME) {
 	await page.goto(url);
@@ -826,17 +827,19 @@ for (const width of [390, 1440]) {
         await visitHeader(page, `${HOME}?scrambled&compact`);
         if (width < 600) await toggle(page).click();
         // Each page names the link by the language it leads to, in that language, with no live region.
-        for (const [destination, next] of [['Français', 'fr'], ['Español', 'es'], ['English', 'en']]) {
+        // The French page puts a no-break space before the colon.
+        for (const [destination, next, colon] of [['Français', 'fr', ': '], ['Español', 'es', '\u00a0: '], ['English', 'en', ': ']]) {
             const control = language(page);
             const href = `${languageHref(next)}&scrambled&compact`;
             const name = width < 600
-                ? `Language: English / Français / Español: ${destination} (EN FR ES)`
-                : `Language: ${destination} (EN FR ES)`;
+                ? `Language: English / Français / Español${colon}${destination} (EN FR ES)`
+                : `Language${colon}${destination} (EN FR ES)`;
             await expect(control.locator('svg text')).toHaveText(['EN', 'FR', 'ES']);
             await expect(control).toHaveAttribute('href', href);
             await expect(control).toHaveAttribute('hreflang', next);
             await expect(control).toHaveAccessibleName(name);
-            expect(await control.ariaSnapshot()).toBe(`- 'link "${name}"':\n  - /url: ${href}`);
+            // The snapshot reads the no-break space as a space; language-toggle.spec.ts checks it in Chromium's own tree.
+            expect(await control.ariaSnapshot()).toBe(`- 'link "${name.replace(/\s/g, ' ')}"':\n  - /url: ${href}`);
             await expect(control.locator(`[lang="${next}"]`)).toHaveText(destination);
             await expect(control.locator('[aria-live], [role="status"], [role="alert"]')).toHaveCount(0);
             await control.click();

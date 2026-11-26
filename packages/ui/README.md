@@ -1060,7 +1060,9 @@ order in the pill and compact menu, including the compact menu's language names.
 Its required `names` map supplies an autonym for every supported locale; no language names ship
 in the component. The link is named by its destination: `label`, the next language's autonym
 marked with that language's `lang`, then the board codes, as in "Language: Français (EN FR)" on
-an English page. `hreflang` gives the same language, and the link holds no live region.
+an English page. When `locale` is `fr` or `fr-*`, a no-break space precedes the colon, as French
+typography asks: "Langue : English (EN FR)". The hidden name has no element box over 1px outside
+the link. `hreflang` gives the same language, and the link holds no live region.
 `preserveState` keeps scroll and page state (`data-sveltekit-reset="false"`); the lifecycle
 restores focus after landing. Inside SiteHeader this uses a bound native link ref;
 standalone links pass their `bind:ref` to the lifecycle's optional `languageLink` getter.

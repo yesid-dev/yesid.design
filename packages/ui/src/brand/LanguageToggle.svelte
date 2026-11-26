@@ -43,6 +43,8 @@
 	const nextHref = $derived(href(next));
 	const name = $derived(names[locale]);
 	const nextName = $derived(names[next]);
+	// French typography puts a no-break space before the colon.
+	const separator = $derived(/^fr(?:-|$)/i.test(locale) ? '\u00a0: ' : ': ');
 
 	// Every board keeps the two-board geometry, so a third board grows the post rather than shrinking the letters.
 	const SPAN = 18;
@@ -107,7 +109,7 @@
 			{/key}
 		</svg>
 		<!-- Named by its destination, the language's own name in that language. -->
-		<span class="sr-only">{label}: <span lang={next}>{nextName}</span> ({codes})</span>
+		<span class="sr-only">{label}{separator}<span class="destination" lang={next}>{nextName}</span> ({codes})</span>
 	</a>
 {/if}
 
@@ -138,6 +140,12 @@
 	.lang-post svg {
 		flex: none;
 		overflow: visible;
+	}
+
+	/* Marks the destination's language without a box of its own: an inline box would run past the
+	   1px hidden name, and past the viewport near its edge. */
+	.destination {
+		display: contents;
 	}
 
 	.pole {
