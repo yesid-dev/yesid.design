@@ -60,6 +60,7 @@
 		/**
 		 * Compact `rows` mode only: one muted detail line rendered under the row's first line in
 		 * place of the non-primary, non-value columns when the table is at most 28 rem wide.
+		 * Use text that summarizes the original cells, which remain available to assistive technology.
 		 */
 		readonly rowDetail?: Snippet<[T]>;
 		/**
@@ -82,7 +83,6 @@
 	import { cn } from '../cn/index.js';
 	import {
 		attachScrollEdges,
-		EMPTY_SCROLL_EDGES,
 		type ScrollEdgeState,
 	} from '../internal/scroll-edges.js';
 	import ShowMore from './ShowMore.svelte';
@@ -110,9 +110,9 @@
 	}: DataTableProps<T> = $props();
 
 	let frameElement = $state<HTMLDivElement | null>(null);
-	let scrollElement = $state<HTMLDivElement | null>(null);
 	let body = $state<HTMLTableSectionElement>();
-	let scrollEdges = $state<ScrollEdgeState>(EMPTY_SCROLL_EDGES);
+	let scrollEdges = $state<ScrollEdgeState>();
+	let fadeBounds = $state({ width: 0, height: 0, start: '0px', bottom: '0px' });
 	let handleScroll = $state<(() => void) | undefined>(undefined);
 	let requestedCount = $state(0);
 	let pageContext = '';
@@ -127,6 +127,8 @@
 	const stackAt = $derived(responsive.mode === 'stack' ? responsive.at : undefined);
 	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
 	const scrollLayout = $derived(responsive.mode === 'scroll' ? responsive : undefined);
+	const scrollMode = $derived(responsive.mode === 'scroll');
+	const scrollRegion = $derived(scrollMode && (scrollEdges?.scrollable ?? true));
 	const reflows = $derived(!!stackAt || !!rowLayout);
 	const showRowLabels = $derived(rowLayout?.labels !== false);
 	const showStackLabels = $derived(reflows && showRowLabels);
@@ -136,12 +138,6 @@
 	const tableId = $props.id();
 	const rowHeaderColumns = $derived(rowLayout
 		? columns.flatMap((column, index) => column.rowHeader ? [index] : [])
-		: []);
-	const detailColumnIds = $derived(hasRowDetail
-		? columns.flatMap((column, index) => !rowPosition(column.key) ? [`${tableId}-column-${index}`] : [])
-		: []);
-	const valueColumnIds = $derived(hasRowDetail
-		? columns.flatMap((column, index) => rowPosition(column.key) === 'value' ? [`${tableId}-column-${index}`] : [])
 		: []);
 	const hasSortButtons = $derived(!!onSort && columns.some((column) => column.sortable));
 	const paging = $derived(pageLabels && pageSize && pageSize > 0 && Number.isInteger(pageSize) ? pageSize : 0);
@@ -161,15 +157,6 @@
 		return key === rowLayout.value ? 'value' : undefined;
 	}
 
-	function rowDetailHeaders(rowHeaderIds: string, isRowEmpty: boolean): string | undefined {
-		const ids = [
-			...detailColumnIds,
-			...(isRowEmpty ? valueColumnIds : []),
-			...(rowHeaderIds ? [rowHeaderIds] : []),
-		];
-		return ids.length > 0 ? ids.join(' ') : undefined;
-	}
-
 	$effect.pre(() => {
 		const context = `${paging}:${sort?.direction ?? ''}:${sort?.key ?? ''}`;
 		if (context !== pageContext) requestedCount = 0;
@@ -184,9 +171,9 @@
 	}
 
 	$effect(() => {
-		const element = scrollLayout ? scrollElement : null;
+		const element = scrollMode ? frameElement : null;
 		if (!element) {
-			scrollEdges = EMPTY_SCROLL_EDGES;
+			scrollEdges = undefined;
 			handleScroll = undefined;
 			return;
 		}
@@ -194,6 +181,15 @@
 			initialScroll,
 			onUpdate(next) {
 				scrollEdges = next;
+			},
+			onResize() {
+				const style = getComputedStyle(element);
+				fadeBounds = {
+					width: element.clientWidth,
+					height: element.clientHeight,
+					start: style.paddingInlineStart,
+					bottom: style.paddingBlockEnd,
+				};
 			},
 		});
 		handleScroll = controller.onScroll;
@@ -283,12 +279,7 @@
 						{/if}
 					{/each}
 					{#if hasRowDetail && rowDetail}
-						<td
-							role="cell"
-							class="data-table-row-detail"
-							colspan={detailColumnIds.length > 1 ? detailColumnIds.length : undefined}
-							headers={rowDetailHeaders(rowHeaderIds, isRowEmpty)}
-						>{@render rowDetail(row)}</td>
+						<td class="data-table-row-detail" aria-hidden="true">{@render rowDetail(row)}</td>
 					{/if}
 				</tr>
 			{/each}
@@ -296,43 +287,9 @@
 	</table>
 {/snippet}
 
-{#if scrollLayout}
-	<div
-		bind:this={frameElement}
-		class={cn('data-table-frame', className)}
-		data-slot="data-table-frame"
-		{...restProps}
-		data-responsive={responsive.mode}
-		data-sortable={hasSortButtons || undefined}
-		data-frame={frame}
-		data-collapse={borderCollapse}
-		data-header-band={headerBand}
-		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
-		data-scrollable={scrollEdges.scrollable}
-		data-scroll-start={scrollEdges.start || undefined}
-		data-scroll-end={scrollEdges.end || undefined}
-		style:--dt-min-width={scrollMinWidth}
-		style:--dt-min-width-compact={scrollMinWidthCompact}
-	>
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
-		<div
-			bind:this={scrollElement}
-			class="data-table-scroll"
-			data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
-			role={scrollEdges.scrollable ? 'region' : undefined}
-			aria-label={scrollEdges.scrollable ? accessibleCaption : undefined}
-			tabindex={scrollEdges.scrollable ? 0 : undefined}
-			data-lenis-prevent={scrollEdges.scrollable ? '' : undefined}
-			onscroll={() => handleScroll?.()}
-		>
-			{@render tableMarkup()}
-		</div>
-		<span class="data-table-scroll-fade data-table-scroll-fade-start" data-slot="scroll-fade-start" aria-hidden="true"></span>
-		<span class="data-table-scroll-fade data-table-scroll-fade-end" data-slot="scroll-fade-end" aria-hidden="true"></span>
-	</div>
-{:else}
-	<!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
-	<div
+
+<!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->
+<div
 		bind:this={frameElement}
 		class={cn('data-table-frame', className)}
 		data-slot="data-table-frame"
@@ -346,20 +303,39 @@
 		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
 		data-row-labels={rowLayout?.labels === false ? 'none' : undefined}
 		data-has-row-detail={hasRowDetail || undefined}
-		data-scrollable={false}
+		data-scrollable={scrollMode && (scrollEdges?.scrollable ?? false)}
+		data-scroll-start={scrollEdges?.start || undefined}
+		data-scroll-end={scrollEdges?.end || undefined}
+		data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
 		style:--dt-min-width={scrollMinWidth}
 		style:--dt-min-width-compact={scrollMinWidthCompact}
-	>
-		{@render tableMarkup()}
-	</div>
-{/if}
+		role={scrollRegion ? 'region' : restProps.role}
+		aria-label={scrollRegion ? accessibleCaption : restProps['aria-label']}
+		tabindex={scrollRegion ? 0 : restProps.tabindex}
+		{...(scrollRegion ? { 'data-lenis-prevent': '' } : {})}
+		onscroll={scrollMode ? () => handleScroll?.() : restProps.onscroll}
+>
+	{@render tableMarkup()}
+	{#if scrollMode && scrollEdges?.scrollable}
+		<div
+			class="data-table-fades"
+			aria-hidden="true"
+			style:--dt-scroll-width={`${fadeBounds.width}px`}
+			style:--dt-scroll-height={`${fadeBounds.height}px`}
+			style:--dt-padding-start={fadeBounds.start}
+			style:--dt-padding-bottom={fadeBounds.bottom}
+		>
+			<span class="data-table-scroll-fade data-table-scroll-fade-start" data-slot="scroll-fade-start"></span>
+			<span class="data-table-scroll-fade data-table-scroll-fade-end" data-slot="scroll-fade-end"></span>
+		</div>
+	{/if}
+</div>
 {#if paging && pageLabels}
 	<ShowMore {shown} total={rows.length} pageSize={paging} labels={pageLabels} onMore={showMore} />
 {/if}
 
 <style>
 	.data-table-frame,
-	.data-table-scroll,
 	.data-table {
 		min-width: 0;
 	}
@@ -372,51 +348,54 @@
 
 	.data-table-frame[data-responsive='scroll'] {
 		--scroll-fade-surface: var(--background);
-		position: relative;
-	}
-	:global([data-slot='card']) .data-table-frame[data-responsive='scroll'],
-	.data-table-frame[data-responsive='scroll'][data-frame='card'] {
-		--scroll-fade-surface: var(--card);
-	}
-
-	.data-table-scroll {
-		width: 100%;
-		max-width: 100%;
 		overflow-x: auto;
 		overflow-y: hidden;
 		scrollbar-width: thin;
 		overscroll-behavior-inline: contain;
 		touch-action: pan-x pan-y;
 	}
+	:global([data-slot='card']) .data-table-frame[data-responsive='scroll'],
+	.data-table-frame[data-responsive='scroll'][data-frame='card'] {
+		--scroll-fade-surface: var(--card);
+	}
 
-	.data-table-scroll[data-initial-scroll='end']:not([data-scroll-hydrated]) {
+	.data-table-frame[data-initial-scroll='end']:not([data-scroll-hydrated]) {
 		display: flex;
 		flex-direction: row-reverse;
 	}
 
-	.data-table-scroll[data-initial-scroll='end']:not([data-scroll-hydrated]) > .data-table {
+	.data-table-frame[data-initial-scroll='end']:not([data-scroll-hydrated]) > .data-table {
 		flex: 0 0 auto;
 	}
 
-	.data-table-frame:focus-visible,
-	.data-table-scroll:focus-visible {
+	.data-table-frame:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: 2px;
+	}
+
+	/* A zero-size sticky origin stays at the padded content's inline start, even at full scroll. */
+	.data-table-fades {
+		position: sticky;
+		inset-inline-start: 0;
+		inline-size: 0;
+		block-size: 0;
+		z-index: 2;
+		pointer-events: none;
 	}
 
 	.data-table-scroll-fade {
 		display: none;
 		position: absolute;
-		inset-block: 0;
-		z-index: 2;
-		inline-size: min(2rem, 18%);
+		inset-block-end: calc(-1 * var(--dt-padding-bottom));
+		block-size: var(--dt-scroll-height);
+		inline-size: min(2rem, calc(var(--dt-scroll-width) * 0.18));
 		box-sizing: border-box;
 		pointer-events: none;
 	}
 
-	.data-table-frame[data-scroll-start='true'] > .data-table-scroll-fade-start {
+	.data-table-frame[data-scroll-start='true'] .data-table-scroll-fade-start {
 		display: block;
-		inset-inline-start: 0;
+		inset-inline-start: calc(-1 * var(--dt-padding-start));
 		border-inline-start: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 		background-image:
 			linear-gradient(
@@ -432,9 +411,9 @@
 			);
 	}
 
-	.data-table-frame[data-scroll-end='true'] > .data-table-scroll-fade-end {
+	.data-table-frame[data-scroll-end='true'] .data-table-scroll-fade-end {
 		display: block;
-		inset-inline-end: 0;
+		inset-inline-end: calc(var(--dt-padding-start) - var(--dt-scroll-width));
 		border-inline-end: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 		background-image:
 			linear-gradient(
@@ -450,7 +429,7 @@
 			);
 	}
 
-	.data-table-frame[data-scroll-start='true']:dir(rtl) > .data-table-scroll-fade-start {
+	.data-table-frame[data-scroll-start='true']:dir(rtl) .data-table-scroll-fade-start {
 		background-image:
 			linear-gradient(
 				to left,
@@ -465,7 +444,7 @@
 			);
 	}
 
-	.data-table-frame[data-scroll-end='true']:dir(rtl) > .data-table-scroll-fade-end {
+	.data-table-frame[data-scroll-end='true']:dir(rtl) .data-table-scroll-fade-end {
 		background-image:
 			linear-gradient(
 				to right,
@@ -486,12 +465,12 @@
 		background: var(--card);
 	}
 
-	.data-table-frame[data-frame='card'] > .data-table-scroll-fade-start {
+	.data-table-frame[data-frame='card'] .data-table-scroll-fade-start {
 		border-start-start-radius: calc(var(--radius-lg) - 1px);
 		border-end-start-radius: calc(var(--radius-lg) - 1px);
 	}
 
-	.data-table-frame[data-frame='card'] > .data-table-scroll-fade-end {
+	.data-table-frame[data-frame='card'] .data-table-scroll-fade-end {
 		border-start-end-radius: calc(var(--radius-lg) - 1px);
 		border-end-end-radius: calc(var(--radius-lg) - 1px);
 	}
@@ -783,13 +762,16 @@
 			padding: 0;
 			border: 0;
 		}
-		.data-table-frame[data-responsive='rows'] > .data-table > thead th[aria-sort] .data-table-sort {
+		.data-table-frame:is([data-row-labels='none'], [data-has-row-detail]) > .data-table > thead th[aria-sort] .data-table-sort {
 			color: var(--foreground);
 			font-weight: 600;
 		}
 		.data-table-frame[data-responsive='rows'] .data-table-sort {
-			overflow-wrap: break-word;
+			overflow-wrap: anywhere;
 			word-break: normal;
+		}
+		.data-table-frame[data-responsive='rows'] .data-table-sort > span {
+			min-inline-size: 0;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr {
 			display: flex;
@@ -848,8 +830,24 @@
 			font-family: inherit;
 			font-weight: 400;
 		}
-		.data-table-frame[data-responsive='rows'][data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position]):not(.data-table-row-detail) {
-			display: none;
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr {
+			position: relative;
+		}
+		/* Keep the real cells in the table and reveal their controls when focused. */
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail, :focus-within) {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 1px;
+			block-size: 1px;
+			margin: 0;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail):focus-within {
+			flex-basis: 100%;
+			overflow-wrap: anywhere;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > .data-table-row-detail {
 			display: block;

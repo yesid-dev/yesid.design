@@ -62,8 +62,7 @@
 			stickyOffset = 0;
 			return;
 		}
-		const width = Math.round(header.getBoundingClientRect().width);
-		stickyOffset = Math.min(Math.max(0, width), Math.floor(element.clientWidth * 0.5));
+		stickyOffset = Math.min(header.getBoundingClientRect().width, element.clientWidth);
 	}
 
 	$effect(() => {
@@ -203,11 +202,11 @@
 		display: block;
 		inset-inline-start: var(--scroll-fade-start-offset, 0px);
 		inline-size: min(2rem, 18%, max(0px, calc(100% - var(--scroll-fade-start-offset, 0px))));
-		border-inline-start: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 		background-image:
 			linear-gradient(
 				to right,
-				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
 				transparent 70%
 			),
 			linear-gradient(
@@ -239,7 +238,8 @@
 		background-image:
 			linear-gradient(
 				to left,
-				color-mix(in srgb, var(--border) 22%, transparent) 0%,
+				color-mix(in srgb, var(--border) 70%, transparent) 0 1px,
+				color-mix(in srgb, var(--border) 22%, transparent) 1px,
 				transparent 70%
 			),
 			linear-gradient(

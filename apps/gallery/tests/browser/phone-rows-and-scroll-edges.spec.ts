@@ -2,6 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
 const ROUTE = '/phone-rows-and-scroll-edges';
+const TABLE_SCROLLPORT = '[data-slot="data-table-frame"][data-responsive="scroll"]';
+const REPORTS_SORT = 'Sort by Fahrgastinformationssystemverfügbarkeitsberichte';
 
 async function open(page: Page, width: number, textPercent = 100): Promise<void> {
 	await page.setViewportSize({ width, height: 900 });
@@ -17,20 +19,33 @@ async function open(page: Page, width: number, textPercent = 100): Promise<void>
 /** Asserts that no visible element or scroll fade extends more than 1px past the viewport or its scroll container. */
 async function expectStrictContainment(page: Page): Promise<void> {
 	await expectNoHorizontalOverflow(page);
-	const violations = await page.evaluate(() => {
+	const violations = await page.evaluate((tableScrollport) => {
 		const viewportRight = window.innerWidth;
 		const issues: string[] = [];
 		const root = document.querySelector('[data-testid="phone-rows-and-scroll-edges"]')!;
 
-		// Check all fade overlays against both their parent scroll container and the viewport.
+		// Compare each fade to the actual scrollport, including borders and scrollbars.
 		for (const fade of root.querySelectorAll<HTMLElement>('[data-slot="scroll-fade-start"], [data-slot="scroll-fade-end"]')) {
 			const style = getComputedStyle(fade);
 			if (style.display === 'none') continue;
 			const rect = fade.getBoundingClientRect();
-			const host = fade.parentElement!.getBoundingClientRect();
-			if (rect.left < host.left - 0.5 || rect.right > host.right + 0.5) {
-				issues.push(`fade outside host: ${fade.dataset.slot} [${rect.left}, ${rect.right}] vs [${host.left}, ${host.right}]`);
+			const table = fade.closest<HTMLElement>(tableScrollport);
+			const scroller = table ?? fade.parentElement!.querySelector<HTMLElement>('.scroll')!;
+			const box = scroller.getBoundingClientRect();
+			const left = box.left + scroller.clientLeft;
+			const right = left + scroller.clientWidth;
+			const top = box.top + scroller.clientTop;
+			const bottom = top + scroller.clientHeight;
+			if (rect.left < left - 1 || rect.right > right + 1 || rect.top < top - 1 || rect.bottom > bottom + 1) {
+				issues.push(`fade outside scrollport: ${fade.dataset.slot} [${rect.left}, ${rect.right}] vs [${left}, ${right}]`);
 			}
+			if (table) {
+				const start = fade.dataset.slot === 'scroll-fade-start';
+				const rtl = getComputedStyle(table).direction === 'rtl';
+				const offset = start === rtl ? rect.right - right : rect.left - left;
+				if (Math.abs(offset) > 1) issues.push(`table fade misses scrollport edge by ${offset}px`);
+			}
+			if (style.pointerEvents !== 'none') issues.push(`fade intercepts pointer events: ${fade.dataset.slot}`);
 			if (rect.left < -1 || rect.right > viewportRight + 1) {
 				issues.push(`fade crosses viewport: ${fade.dataset.slot} [${rect.left}, ${rect.right}] vs [0, ${viewportRight}]`);
 			}
@@ -38,7 +53,10 @@ async function expectStrictContainment(page: Page): Promise<void> {
 
 		// Check every visible descendant outside horizontally scrolling regions against the viewport.
 		for (const el of root.querySelectorAll<HTMLElement>('*')) {
-			if (el.closest('.scroll, .data-table-scroll') && !el.matches('.scroll, .data-table-scroll')) continue;
+			const scroller = el.closest(`.scroll, ${tableScrollport}`);
+			if (scroller && scroller !== el) continue;
+			const cell = el.closest('th, td');
+			if (cell && getComputedStyle(cell).clipPath !== 'none') continue;
 			const style = getComputedStyle(el);
 			if (style.display === 'none' || style.visibility === 'hidden') continue;
 			const rect = el.getBoundingClientRect();
@@ -48,7 +66,7 @@ async function expectStrictContainment(page: Page): Promise<void> {
 			}
 		}
 		return issues;
-	});
+	}, TABLE_SCROLLPORT);
 	expect(violations).toEqual([]);
 }
 
@@ -75,9 +93,9 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		// Sortable header row stays visible and interactive on a phone.
 		const onTimeSort = table.getByRole('button', { name: 'Sort by On time' });
 		const stationSort = table.getByRole('button', { name: 'Sort by Station' });
-		const reportsSort = table.getByRole('button', { name: 'Sort by Reports' });
+		const reportsSort = table.getByRole('button', { name: REPORTS_SORT });
 		const onTimeHeader = table.getByRole('columnheader', { name: 'Sort by On time' });
-		const reportsHeader = table.getByRole('columnheader', { name: 'Sort by Reports' });
+		const reportsHeader = table.getByRole('columnheader', { name: REPORTS_SORT });
 		await expect(onTimeHeader).toHaveAttribute('aria-sort', 'descending');
 		await expect(stationSort).toBeVisible();
 		await expect(reportsSort).toBeVisible();
@@ -90,18 +108,40 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 
 		// Normal row: primary + bold value on line 1, single muted detail sentence on line 2, other columns hidden.
 		const firstRow = table.locator('tbody tr').first();
-		await expect(firstRow.getByRole('rowheader')).toContainText('North Ridge');
+		await expect(firstRow.getByRole('rowheader', { name: 'North Ridge' })).toContainText('North Ridge');
+		await expect(firstRow).toMatchAriaSnapshot(`
+			- row:
+			  - /children: equal
+			  - rowheader "North Ridge":
+			    - link "North Ridge"
+			  - cell "93%"
+			  - rowheader "Westbound · 820 m":
+			    - link "Westbound"
+			    - text: · 820 m
+			  - cell "184"
+		`);
 		const normalLayout = await firstRow.evaluate((row) => {
 			const primary = row.querySelector<HTMLElement>('[data-row-position="primary"]')!.getBoundingClientRect();
 			const value = row.querySelector<HTMLElement>('[data-row-position="value"]')!.getBoundingClientRect();
 			const detail = row.querySelector<HTMLElement>('.data-table-row-detail')!.getBoundingClientRect();
-			const hiddenOther = [...row.querySelectorAll<HTMLElement>('td:not([data-row-position]):not(.data-table-row-detail)')]
-				.every((cell) => getComputedStyle(cell).display === 'none');
+			const rowBox = row.getBoundingClientRect();
+			const hiddenOther = [...row.querySelectorAll<HTMLElement>(':is(th, td):not([data-row-position], .data-table-row-detail)')]
+				.every((cell) => {
+					const box = cell.getBoundingClientRect();
+					return getComputedStyle(cell).clipPath !== 'none' && box.width === 1 && box.height === 1 &&
+						box.left >= rowBox.left && box.right <= rowBox.right;
+				});
 			return { primary, value, detail, hiddenOther };
 		});
 		expect(normalLayout.hiddenOther).toBe(true);
 		expect(normalLayout.value.top).toBeLessThan(normalLayout.primary.bottom);
 		expect(normalLayout.detail.top).toBeGreaterThanOrEqual(normalLayout.primary.bottom - 1);
+		const primaryLink = firstRow.getByRole('link', { name: 'North Ridge' });
+		const directionLink = firstRow.getByRole('link', { name: 'Westbound' });
+		await primaryLink.press('Tab');
+		await expect(directionLink).toBeFocused();
+		await expect(directionLink).toBeInViewport();
+		await expect(directionLink.locator('xpath=ancestor::th')).toHaveCSS('clip-path', 'none');
 
 		// Empty row: value hidden, primary + detail read on ONE line.
 		const emptyRow = table.locator('tbody tr[data-row-empty]');
@@ -123,11 +163,11 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		// Keyboard sort toggles direction and switches columns cleanly.
 		await onTimeSort.press('Enter');
 		await expect(onTimeHeader).toHaveAttribute('aria-sort', 'ascending');
-		await expect(table.locator('tbody tr').first().getByRole('rowheader')).toContainText('West Depot');
+		await expect(table.locator('tbody tr').first().getByRole('rowheader', { name: 'West Depot' })).toContainText('West Depot');
 
 		await reportsSort.press('Space');
 		await expect(reportsHeader).toHaveAttribute('aria-sort', 'descending');
-		await expect(table.locator('tbody tr').first().getByRole('rowheader')).toContainText('Central Station');
+		await expect(table.locator('tbody tr').first().getByRole('rowheader', { name: 'Central Station' })).toContainText('Central Station');
 
 		// Formatted filter counts render in en, fr, es.
 		await expect(page.getByTestId('count-en')).toContainText('8,630 stops');
@@ -175,7 +215,12 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 
 		// DataTable starting at start: end fade only -> both -> start fade only.
 		const startTableCard = page.getByTestId('scroll-table-start-card');
-		const startScroller = startTableCard.locator('.data-table-scroll');
+		const startScroller = startTableCard.locator('#corridor-scrollport');
+		await expect(startScroller).toHaveAccessibleName('Corridor performance by day');
+		await expect(startScroller).toHaveAccessibleDescription('Scrollable DataTable starting at the start');
+		await startScroller.focus();
+		await expect(startScroller).toBeFocused();
+		await expect(startScroller.locator(':scope > table')).toHaveCount(1);
 		await expect.poll(() => fadeVisibility(startTableCard)).toEqual({ start: false, end: true });
 
 		// Token-based fade image is painted in both themes.
@@ -184,9 +229,11 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 
 		await startScroller.evaluate((el) => { el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2); });
 		await expect.poll(() => fadeVisibility(startTableCard)).toEqual({ start: true, end: true });
+		await expectStrictContainment(page);
 
 		await startScroller.evaluate((el) => { el.scrollLeft = el.scrollWidth - el.clientWidth; });
 		await expect.poll(() => fadeVisibility(startTableCard)).toEqual({ start: true, end: false });
+		await expectStrictContainment(page);
 
 		// HourGrid with initialScroll="end": starts at end with start fade only and most recent day in view.
 		const hourGridEndCard = page.getByTestId('hour-grid-end-card');
@@ -202,12 +249,15 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 				maxScroll: el.scrollWidth - el.clientWidth,
 				lastVisible: lastCol.right <= box.right + 1 && lastCol.left >= box.left,
 				fadeAfterSticky: startFade.left >= rowHeader.right - 2,
+				stickyWidth: rowHeader.width,
+				scrollportWidth: el.clientWidth,
 			};
 		});
 		expect(hourState.scrollLeft).toBeGreaterThan(0);
 		expect(Math.abs(hourState.scrollLeft - hourState.maxScroll)).toBeLessThanOrEqual(2);
 		expect(hourState.lastVisible).toBe(true);
 		expect(hourState.fadeAfterSticky).toBe(true);
+		expect(hourState.stickyWidth).toBeGreaterThan(hourState.scrollportWidth / 2);
 
 		// Scrolling HourGrid back to start flips fades.
 		await hourScroller.evaluate((el) => { el.scrollLeft = 0; });
@@ -215,7 +265,7 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 
 		// DataTable with initialScroll="end": starts at end with start fade only and last day in view.
 		const endTableCard = page.getByTestId('scroll-table-end-card');
-		const endScroller = endTableCard.locator('.data-table-scroll');
+		const endScroller = endTableCard.locator(TABLE_SCROLLPORT);
 		await expect.poll(() => fadeVisibility(endTableCard)).toEqual({ start: true, end: false });
 		const endTableState = await endScroller.evaluate((el) => {
 			const lastCol = el.querySelector('thead th:last-child')!.getBoundingClientRect();
@@ -227,17 +277,27 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		});
 		expect(endTableState.scrollLeft).toBeGreaterThan(0);
 		expect(endTableState.lastVisible).toBe(true);
+		await endScroller.evaluate((el) => { el.scrollLeft = 120; });
+		const oldScrollWidth = await endScroller.evaluate((el) => el.scrollWidth);
+		await endTableCard.getByRole('button', { name: 'Widen recent table' }).click();
+		await expect.poll(() => endScroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(oldScrollWidth);
+		expect(await endScroller.evaluate((el) => el.scrollLeft)).toBe(120);
+		await expect.poll(() => fadeVisibility(endTableCard)).toEqual({ start: true, end: true });
 
 		// Widening viewport removes fades when content fits.
 		await page.setViewportSize({ width: 1440, height: 900 });
 		await expect.poll(() => fadeVisibility(startTableCard)).toEqual({ start: false, end: false });
 		await expect.poll(() => fadeVisibility(endTableCard)).toEqual({ start: false, end: false });
 		await expect.poll(() => fadeVisibility(hourGridEndCard)).toEqual({ start: false, end: false });
+		await expect(startScroller).not.toHaveAttribute('tabindex');
 	});
 
 	for (const width of [320, 390]) {
 		test(`keeps strict containment and accessibility at ${width}px with 200% text`, async ({ page }) => {
 			await open(page, width, 200);
+			const startFade = page.getByTestId('hour-grid-end-card').locator('[data-slot="scroll-fade-start"]');
+			await expect(startFade).toHaveCSS('display', 'block');
+			await expect.poll(() => startFade.evaluate((el) => el.getBoundingClientRect().width)).toBe(0);
 			await expectStrictContainment(page);
 			await expectAccessible(page);
 		});
@@ -248,23 +308,38 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		const noJsPage = await context.newPage();
 		await noJsPage.goto(ROUTE);
 		const preHydration = await noJsPage.evaluate(() => {
-			const check = (selector: string) => {
+			const check = (selector: string, direction: 'ltr' | 'rtl') => {
 				const scroller = document.querySelector<HTMLElement>(selector)!;
-				const last = scroller.querySelector('thead th:last-child')!.getBoundingClientRect();
+				scroller.dir = direction;
+				scroller.scrollLeft = 0;
 				const box = scroller.getBoundingClientRect();
+				const inView = (cell: Element) => {
+					const rect = cell.getBoundingClientRect();
+					return rect.right <= box.right + 1 && rect.left >= box.left - 1;
+				};
+				const lastInView = inView(scroller.querySelector('thead th:last-child')!);
+				const travel = scroller.scrollWidth - scroller.clientWidth;
+				scroller.scrollLeft = direction === 'rtl' ? travel : -travel;
 				return {
-					overflows: scroller.scrollWidth > scroller.clientWidth + 1,
-					lastInView: last.right <= box.right + 1 && last.left >= box.left - 1,
+					overflows: travel > 1,
+					lastInView,
+					firstReachable: inView(scroller.querySelector('thead tr > :first-child')!),
 				};
 			};
-			return {
-				hourGrid: check('[data-testid="hour-grid-end-card"] .scroll'),
-				dataTable: check('[data-testid="scroll-table-end-card"] .data-table-scroll'),
-			};
+			return (['ltr', 'rtl'] as const).map((direction) => ({
+				hourGrid: check('[data-testid="hour-grid-end-card"] .scroll', direction),
+				dataTable: check('[data-testid="scroll-table-end-card"] [data-slot="data-table-frame"]', direction),
+			}));
 		});
+		const preHydrationTable = noJsPage.getByRole('region', { name: 'Recent corridor performance' });
+		await expect(preHydrationTable).toHaveAttribute('tabindex', '0');
+		await preHydrationTable.focus();
+		await expect(preHydrationTable).toBeFocused();
 		await context.close();
-		expect(preHydration.hourGrid).toEqual({ overflows: true, lastInView: true });
-		expect(preHydration.dataTable).toEqual({ overflows: true, lastInView: true });
+		for (const { hourGrid, dataTable } of preHydration) {
+			expect(hourGrid).toEqual({ overflows: true, lastInView: true, firstReachable: true });
+			expect(dataTable).toEqual({ overflows: true, lastInView: true, firstReachable: true });
+		}
 
 		// Forced colors: fades are hidden, scroll regions stay focusable.
 		await page.emulateMedia({ forcedColors: 'active' });

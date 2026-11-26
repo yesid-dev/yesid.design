@@ -1221,8 +1221,10 @@ most 14 rem wide, such as a phone card at 200% text, the primary takes the whole
 value moves below it, start-aligned, so long names and route plates keep whole words. The other
 columns reflow into wrapping details, with separators attached to the end of each preceding detail.
 Pass `labels: false` to omit the per-row column labels in compact rows, `rowDetail` (a snippet
-receiving the row `T`) to replace the remaining columns with one muted detail line under the first
-line when the table is at most 28 rem wide, and `rowEmpty` (a predicate on `T`) to mark rows with
+receiving the row `T`) to visually summarize the remaining columns in one muted detail line
+under the first line when the table is at most 28 rem wide. Put the information and any links or
+controls in the original cells. Assistive technology reads those cells, and the compact layout
+reveals a concealed cell when a control inside receives focus. Use `rowEmpty` (a predicate on `T`) to mark rows with
 no data so their value cell is omitted in compact rows and their detail reads on one line beside
 the primary cell (rows whose value cell renders empty also collapse to one line when `rowDetail`
 is supplied). Native table roles stay intact, and sortable column headers stay available and

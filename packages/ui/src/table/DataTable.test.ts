@@ -139,11 +139,11 @@ describe('DataTable', () => {
 		expect(bodyRows[2]!.hasAttribute('data-row-empty')).toBe(true);
 		const detailCell = bodyRows[2]!.querySelector<HTMLTableCellElement>('.data-table-row-detail')!;
 		expect(detailCell.textContent?.trim()).toBe('Did not report on these dates.');
-		const headersAttr = detailCell.getAttribute('headers') ?? '';
+		expect(detailCell.getAttribute('aria-hidden')).toBe('true');
 		const sectorColId = compact.container.querySelector('thead th[data-column="sector"]')?.id;
 		const waitColId = compact.container.querySelector('thead th[data-column="wait"]')?.id;
-		expect(headersAttr).toContain(sectorColId!);
-		expect(headersAttr).toContain(waitColId!);
+		expect(bodyRows[2]!.querySelector('[data-column="sector"]')?.getAttribute('headers')).toContain(sectorColId!);
+		expect(bodyRows[2]!.querySelector('[data-column="wait"]')?.getAttribute('headers')).toContain(waitColId!);
 	});
 
 	it('updates scroll edge fades on scroll and resize, and supports initialScroll end', async () => {
@@ -171,7 +171,7 @@ describe('DataTable', () => {
 			},
 		});
 		const frame = scrollView.container.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
-		const scroller = scrollView.container.querySelector<HTMLElement>('.data-table-scroll')!;
+		const scroller = frame;
 		expect(frame.dataset.scrollStart).toBeUndefined();
 		expect(frame.dataset.scrollEnd).toBeUndefined();
 
@@ -223,7 +223,7 @@ describe('DataTable', () => {
 			},
 		});
 		const endFrame = endView.container.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
-		const endScroller = endView.container.querySelector<HTMLElement>('.data-table-scroll')!;
+		const endScroller = endFrame;
 		expect(endScroller.dataset.initialScroll).toBe('end');
 		mockScrollMetrics(endScroller, endMetrics);
 		endResize?.();

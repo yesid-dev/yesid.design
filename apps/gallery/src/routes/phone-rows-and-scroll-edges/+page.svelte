@@ -52,6 +52,7 @@
 	];
 
 	let sort = $state<{ key: string; direction: 'asc' | 'desc' }>({ key: 'onTime', direction: 'desc' });
+	let recentTableWidth = $state('46rem');
 
 	const sortedStations = $derived(
 		initialStations.toSorted((a, b) => {
@@ -80,8 +81,8 @@
 	const stationColumns: DataTableColumn<StationRow>[] = [
 		{ key: 'name', header: 'Station', rowHeader: true, sortable: true, cell: stationName },
 		{ key: 'onTime', header: 'On time', numeric: true, sortable: true, cell: stationOnTime },
-		{ key: 'direction', header: 'Direction', cell: stationDirection },
-		{ key: 'reports', header: 'Reports', numeric: true, sortable: true, cell: stationReports },
+		{ key: 'direction', header: 'Direction and distance', rowHeader: true, cell: stationDirection },
+		{ key: 'reports', header: 'Fahrgastinformationssystemverfügbarkeitsberichte', numeric: true, sortable: true, cell: stationReports },
 	];
 
 	const days = Array.from({ length: 14 }, (_, index) => ({
@@ -104,6 +105,9 @@
 	}));
 
 	const shortDays = days.slice(0, 3);
+	const localizedGridRows = gridRows.map((row, index) =>
+		index === 0 ? { ...row, label: 'Verkehr am Werktagmorgen' } : row,
+	);
 	const shortGridRows = gridRows.map((row) => ({ ...row, cells: row.cells.slice(0, 3) }));
 
 	interface DailyRow {
@@ -136,7 +140,13 @@
 
 {#snippet stationName(row: StationRow)}<a href="#phone-rows">{row.name}</a>{/snippet}
 {#snippet stationOnTime(row: StationRow)}{row.onTime === null ? '—' : `${row.onTime}%`}{/snippet}
-{#snippet stationDirection(row: StationRow)}{row.direction}{/snippet}
+{#snippet stationDirection(row: StationRow)}
+	{#if row.emptyNote}
+		{row.emptyNote}
+	{:else}
+		<a href="#phone-rows">{row.direction}</a> · {row.distance}
+	{/if}
+{/snippet}
 {#snippet stationReports(row: StationRow)}{row.reports}{/snippet}
 {#snippet stationDetail(row: StationRow)}{row.emptyNote ?? `${row.direction} · ${row.distance} · ${row.reports} reports`}{/snippet}
 {#snippet corridorLabel(row: DailyRow)}{row.label}{/snippet}
@@ -201,7 +211,7 @@
 		<HourGrid
 			label="Recent 14-day reporting grid"
 			columns={days}
-			rows={gridRows}
+			rows={localizedGridRows}
 			scale={{ label: 'Late count', steps: ['0–4', '5–9', '10–14', '15–19', '20+'] }}
 			stateLabels={{ few: 'Few', none: 'None', unmeasured: 'Unmeasured' }}
 			initialScroll="end"
@@ -220,8 +230,11 @@
 	</Card>
 
 	<Card edge="neutral" textSize="inherit" class="p-4 gap-3" data-testid="scroll-table-start-card">
-		<h2>Scrollable DataTable starting at the start</h2>
+		<h2 id="corridor-description">Scrollable DataTable starting at the start</h2>
 		<DataTable
+			id="corridor-scrollport"
+			aria-describedby="corridor-description"
+			style="padding: 16px"
 			rows={dailyRows}
 			columns={dailyColumns}
 			key={(row) => row.id}
@@ -238,9 +251,10 @@
 			columns={dailyColumns}
 			key={(row) => row.id}
 			caption="Recent corridor performance"
-			responsive={{ mode: 'scroll', minWidth: '46rem', initialScroll: 'end' }}
+			responsive={{ mode: 'scroll', minWidth: recentTableWidth, initialScroll: 'end' }}
 			frame="card"
 		/>
+		<button type="button" onclick={() => recentTableWidth = '54rem'}>Widen recent table</button>
 	</Card>
 
 	<Card edge="neutral" textSize="inherit" class="p-4 gap-3" data-testid="scroll-table-fit-card">
