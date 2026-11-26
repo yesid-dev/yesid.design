@@ -141,8 +141,12 @@ Use `Tooltip` from `@yesid/ui/tooltip` for a short, supplemental text hint. The 
 own accessible name, and essential information belongs in visible UI. Pass a `trigger` snippet
 and spread the supplied props onto the focusable element so it receives tooltip events and the
 accessible description. The hint opens on keyboard focus or after 400 ms of pointer hover.
-It stays open when hovered or while the trigger keeps keyboard focus. Escape dismisses it while
-focus stays on the trigger. To keep an existing help or error description, pass its ID or
+It stays open when hovered or while the trigger keeps keyboard focus. Escape or activating the
+trigger dismisses the hint. A fresh hover or keyboard refocus can reopen it. When an open hint
+overflows, use Arrow Down, Arrow Up, Page Down, Page Up, Home or End on the focused trigger to
+scroll the hint.
+
+To keep an existing help or error description, pass its ID or
 space-separated list of IDs as `aria-describedby` on `Tooltip`. The supplied trigger props combine
 those IDs with the hint's ID while it is open.
 

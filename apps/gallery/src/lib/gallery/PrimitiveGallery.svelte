@@ -341,7 +341,12 @@
 
 		<Card.Root data-gallery-family="primitive:tooltip">
 			<Card.Header><Card.Title>Tooltip</Card.Title></Card.Header>
-			<Card.Content class="flex justify-end">
+			<Card.Content class="flex flex-wrap justify-end gap-2">
+				<Tooltip content="Check for active disruptions and delays.">
+					{#snippet trigger({ props })}
+						<Button {...props} variant="outline" size="cta-sm">Service alerts</Button>
+					{/snippet}
+				</Tooltip>
 				<Tooltip content="Read how planned service changes affect connections and accessible boarding.">
 					{#snippet trigger({ props })}
 						<a {...props} type={undefined} href="/app-frame" class="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-2 text-small hover:border-primary">Service guide</a>

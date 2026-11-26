@@ -4,9 +4,12 @@ import { GALLERY_THEMES, openGallery } from './gallery.js';
 
 const hint = 'Read how planned service changes affect connections and accessible boarding.';
 
-test.beforeEach(({}, testInfo) => {
-	test.skip(testInfo.project.name !== 'desktop', 'One run sets every width and text size');
-});
+async function scrollPage(page: Page) {
+	await page.evaluate(() => new Promise<void>(resolve => {
+		window.addEventListener('scroll', () => requestAnimationFrame(() => resolve()), { once: true });
+		window.scrollBy({ top: 2, behavior: 'instant' });
+	}));
+}
 
 async function focusCenteredTrigger(page: Page, width: number, height: number) {
 	await page.setViewportSize({ width, height });
@@ -25,10 +28,7 @@ for (const incidentalClose of ['page scroll', 'pointer exit'] as const) {
 	test(`a focused hint persists after ${incidentalClose}`, async ({ page }) => {
 		const { trigger, tooltip } = await focusCenteredTrigger(page, 390, 900);
 		if (incidentalClose === 'page scroll') {
-			await page.evaluate(() => new Promise<void>(resolve => {
-				window.addEventListener('scroll', () => requestAnimationFrame(() => resolve()), { once: true });
-				window.scrollBy({ top: 2, behavior: 'instant' });
-			}));
+			await scrollPage(page);
 		} else {
 			await trigger.hover();
 			await page.mouse.move(0, 0, { steps: 12 });
@@ -43,6 +43,7 @@ for (const incidentalClose of ['page scroll', 'pointer exit'] as const) {
 		await expect(trigger).toBeFocused();
 		await expect(trigger).toHaveAccessibleDescription('');
 		await page.mouse.move(1, 1);
+		await scrollPage(page);
 		await expect(tooltip).toBeHidden();
 		if (incidentalClose === 'page scroll') {
 			await page.keyboard.press('Tab');
@@ -53,11 +54,55 @@ for (const incidentalClose of ['page scroll', 'pointer exit'] as const) {
 			await trigger.hover();
 		}
 		await expect(tooltip).toBeVisible();
+		if (incidentalClose === 'pointer exit') {
+			await page.mouse.move(0, 0, { steps: 12 });
+			await expect(trigger).toBeFocused();
+			await expect(trigger).toHaveAccessibleDescription(hint);
+			await expect(tooltip).toBeVisible();
+		}
 	});
 }
 
+test('trigger activation dismisses the hint while the button keeps focus', async ({ page }) => {
+	await openGallery(page);
+	const button = page.getByRole('button', { name: 'Service alerts' });
+	const guide = page.getByRole('link', { name: 'Service guide' });
+	const tooltip = page.getByRole('tooltip');
+
+	for (const activate of [
+		() => page.keyboard.press('Enter'),
+		() => page.keyboard.press('Space'),
+		() => button.evaluate(node => (node as HTMLButtonElement).click()),
+		() => button.click(),
+	]) {
+		await guide.focus();
+		await expect(tooltip).toHaveText(hint);
+		await page.keyboard.press('Shift+Tab');
+		await expect(button).toBeFocused();
+		await expect(tooltip).toHaveText('Check for active disruptions and delays.');
+		await activate();
+		await expect(button).toBeFocused();
+		await expect(tooltip).toBeHidden();
+		await scrollPage(page);
+		await expect(tooltip).toBeHidden();
+	}
+	await page.mouse.move(0, 0, { steps: 12 });
+	await button.hover();
+	await expect(tooltip).toBeVisible();
+});
+
+test('touch activation leaves the hint closed', async ({ page }, testInfo) => {
+	test.skip(!testInfo.project.use.hasTouch, 'Requires a touch context');
+	await openGallery(page);
+	const button = page.getByRole('button', { name: 'Service alerts' });
+	await button.tap();
+	await expect(page.getByRole('tooltip')).toBeHidden();
+	await expect(button).toHaveAttribute('data-state', 'closed');
+});
+
 for (const [width, height] of [[320, 568], [390, 667]] as const) {
 	test(`a short viewport (${width}×${height}) fits the full hint at 200% text`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run sets every width and text size');
 		const { trigger, tooltip } = await focusCenteredTrigger(page, width, height);
 		const anchor = (await trigger.boundingBox())!;
 		expect(Math.abs(anchor.y + anchor.height / 2 - height / 2)).toBeLessThanOrEqual(1);
@@ -71,11 +116,34 @@ for (const [width, height] of [[320, 568], [390, 667]] as const) {
 		}).toBeLessThanOrEqual(0);
 		await expect(tooltip).toHaveText(hint);
 		const bounds = await measure();
+		const scrollTop = () => tooltip.evaluate(node => node.scrollTop);
+		const remaining = () => tooltip.evaluate(node => node.scrollHeight - node.clientHeight - node.scrollTop);
+		const arrowDown = () => trigger.evaluate(node => node.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+		));
+		if (width === 320) {
+			expect(bounds.scrollHeight).toBeGreaterThan(bounds.clientHeight);
+			const pageScroll = await page.evaluate(() => window.scrollY);
+			await page.keyboard.press('ArrowDown');
+			await expect.poll(scrollTop).toBeGreaterThan(0);
+			await page.keyboard.press('ArrowUp');
+			await expect.poll(scrollTop).toBe(0);
+			await page.keyboard.press('PageDown');
+			await expect.poll(remaining).toBeLessThanOrEqual(1);
+			await page.keyboard.press('PageUp');
+			await expect.poll(scrollTop).toBe(0);
+			await page.keyboard.press('End');
+			await expect.poll(remaining).toBeLessThanOrEqual(1);
+			await page.keyboard.press('Home');
+			await expect.poll(scrollTop).toBe(0);
+			expect(await page.evaluate(() => window.scrollY)).toBe(pageScroll);
+		}
 		if (bounds.scrollHeight > bounds.clientHeight) {
 			await tooltip.hover();
 			await page.mouse.wheel(0, bounds.scrollHeight);
-			await expect.poll(() => tooltip.evaluate(node => node.scrollHeight - node.clientHeight - node.scrollTop))
-				.toBeLessThanOrEqual(1);
+			await expect.poll(remaining).toBeLessThanOrEqual(1);
+		} else {
+			expect(await arrowDown()).toBe(true);
 		}
 		await expect(trigger).toBeFocused();
 		await expect(trigger).toHaveAccessibleDescription(hint);
@@ -83,12 +151,16 @@ for (const [width, height] of [[320, 568], [390, 667]] as const) {
 			body: JSON.stringify({ width, height, ...bounds }),
 			contentType: 'application/json',
 		});
+		await page.keyboard.press('Escape');
+		await expect(tooltip).toBeHidden();
+		expect(await arrowDown()).toBe(true);
 	});
 }
 
 for (const theme of GALLERY_THEMES) {
 	for (const [width, textSize] of [[320, 200], [390, 100], [390, 200], [1440, 100]] as const) {
 		test(`${theme}, ${width}px, ${textSize}% text: sheet insets and tooltip interaction`, async ({ page }, testInfo) => {
+			test.skip(testInfo.project.name !== 'desktop', 'One run sets every width and text size');
 			await page.setViewportSize({ width, height: 900 });
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await openGallery(page, theme);
