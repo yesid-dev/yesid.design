@@ -18,11 +18,10 @@ async function expectTrailingSeparators(row: Locator) {
 	const separators = details.locator('.data-table-row-separator');
 	await expect(separators).toHaveCount((await details.count()) - 1);
 	const attached = await separators.evaluateAll((nodes) => nodes.map((dot) => {
-		const content = dot.closest('.data-table-cell-content');
-		if (!content) return false;
+		const content = dot.previousElementSibling;
+		if (!content?.classList.contains('data-table-cell-content')) return false;
 		const range = document.createRange();
-		range.setStart(content, 0);
-		range.setEndBefore(dot);
+		range.selectNodeContents(content);
 		const last = [...range.getClientRects()].filter((box) => box.width > 0).at(-1);
 		const mark = dot.getBoundingClientRect();
 		return !!last && mark.width === 0 && getComputedStyle(dot, '::after').content.includes('·')
@@ -42,6 +41,8 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			const table = host.getByRole('table');
 			const rows = table.locator('tbody').getByRole('row');
 			await expect(rows).toHaveCount(20);
+			const missingTrips = rows.nth(1).locator('[data-column="trips"] .data-table-cell-content');
+			await expect(missingTrips).toBeEmpty();
 			const first = rows.first();
 			const primary = first.getByRole('rowheader');
 			const value = first.getByRole('cell', { name: '73.2%', exact: true });
@@ -91,6 +92,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			await expect(table).toHaveCSS('display', 'block');
 			await host.evaluate((el) => { (el as HTMLElement).style.inlineSize = '100%'; });
 			await expect(table).toHaveCSS('display', 'table');
+			await expect(missingTrips).toBeEmpty();
 			const sorted = table.getByRole('columnheader', { name: c.onTime });
 			const plain = table.getByRole('columnheader', { name: c.events });
 			await expect(sorted).toHaveCSS('vertical-align', 'middle');
