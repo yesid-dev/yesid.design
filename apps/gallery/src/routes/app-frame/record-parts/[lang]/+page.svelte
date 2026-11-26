@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import Search from '@lucide/svelte/icons/search';
 	import { AnswerLead, MetricDisplay, ProductBrand, RoutePlate, type NavigationLifecycle } from '@yesid/ui/brand';
+	import { Card } from '@yesid/ui/card';
 	import { HourGrid, StopLadder, type HourGridCell } from '@yesid/ui/chart';
 	import { AppFrame, SiteFooter, SiteHeader } from '@yesid/ui/layout';
 	import { DataTable, type DataTableColumn } from '@yesid/ui/table';
@@ -12,7 +13,7 @@
 	const navigation = getContext<NavigationLifecycle>('gallery-navigation');
 	const french = $derived(data.lang === 'fr');
 	const c = $derived(french ? {
-		title: 'Relevé des lignes', details: 'Lignes sans mesure',
+		title: 'Relevé des lignes', details: 'Lignes sans mesure', longNames: 'Arrêts aux noms longs',
 		line: 'Ligne', onTime: 'À l’heure', late: 'En retard', trips: 'Trajets effectués',
 		events: 'Événements aux arrêts', early: 'En avance', state: 'Trop peu pour juger',
 		name: 'Édouard-Montpetit / Côte-des-Neiges', range: '73,2 % à 84,7 %',
@@ -24,7 +25,7 @@
 		compact: 'Ouvrir la recherche', footer: ['À propos', 'Rapports', 'Données', 'Aide', 'Sources'],
 		links: ['Accessibilité', 'Télécharger', 'Avis de service', 'Confidentialité', 'Sources de données'],
 	} : {
-		title: 'Lines record', details: 'Lines without measurements',
+		title: 'Lines record', details: 'Lines without measurements', longNames: 'Stops with long names',
 		line: 'Line', onTime: 'On time', late: 'Late', trips: 'Trips that ran',
 		events: 'Stop events', early: 'Early', state: 'Too few to judge',
 		name: 'Waller / Elmvale and Hospital via North Rideau', range: '73.2% to 84.7%',
@@ -53,6 +54,18 @@
 		{ key: 'early', header: c.early, numeric: true, cell: early },
 	]);
 	const rowsLayout = { mode: 'rows', primary: 'line', value: 'ontime' } as const;
+	const longNames = $derived([
+		{ id: '300', name: 'Édouard-Montpetit', ontime: french ? '84,7 %' : '84.7%' },
+		{ id: '47', name: 'Station Côte-des-Neiges', ontime: french ? '73,2 %' : '73.2%' },
+		{ id: '12', name: 'Lionel-Groulx', ontime: c.state },
+	]);
+	type LongNameRow = (typeof longNames)[number];
+	const longNameColumns = $derived<DataTableColumn<LongNameRow>[]>([
+		{ key: 'line', header: c.line, rowHeader: true, cell: longName },
+		{ key: 'ontime', header: c.onTime, numeric: true, cell: longNameOntime },
+		{ key: 'late', header: c.late, numeric: true, cell: longNameLate },
+		{ key: 'trips', header: c.trips, numeric: true, cell: longNameTrips },
+	]);
 	const hours = [{id:'a',label:'05h'}, {id:'b',label:'06h'}, {id:'c',label:'07h'}, {id:'d',label:'08h'}];
 	const measured: HourGridCell = { text: '19', level: 2, name: '19%' };
 	const few = $derived<HourGridCell>({ text: c.few, level: null, state: 'few', name: c.few });
@@ -95,6 +108,12 @@
 {#snippet trips(row: RecordRow)}{#if !row.state}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/if}{/snippet}
 {#snippet events(_row: RecordRow)}{french ? '10 000' : '10,000'}{/snippet}
 {#snippet early(_row: RecordRow)}8%{/snippet}
+{#snippet longName(row: LongNameRow)}
+	<a class="line-link" href="#record"><RoutePlate code={row.id} /> <span>{row.name}</span></a>
+{/snippet}
+{#snippet longNameOntime(row: LongNameRow)}{row.ontime}{/snippet}
+{#snippet longNameLate(_row: LongNameRow)}19%{/snippet}
+{#snippet longNameTrips(_row: LongNameRow)}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/snippet}
 {#snippet footerStatus()}<span>État du service</span>{/snippet}
 {#snippet exampleFooter()}
 	<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
@@ -145,6 +164,12 @@
 		<div class="record-table">
 			<DataTable rows={records.slice(0, 1)} columns={columns.filter(({ key }) => key !== 'ontime')}
 				key={(row) => row.id} caption={c.details} responsive={rowsLayout} />
+		</div>
+		<div class="record-table">
+			<Card edge="neutral" class="p-4" data-testid="long-names-table">
+				<DataTable rows={longNames} columns={longNameColumns} key={(row) => row.id} caption={c.longNames}
+					responsive={rowsLayout} />
+			</Card>
 		</div>
 		<div data-testid="mixed-hour-grid">
 			<HourGrid label={c.hour} columns={hours} rows={hourlyRows} {scale} {stateLabels} />

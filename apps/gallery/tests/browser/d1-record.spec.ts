@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
+import { expectBeside, expectStacked, rowsGeometry } from './rows-layout.js';
 
 test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 	test('half-width cards keep a sentence beside the answer only when there is room', async ({ page }) => {
@@ -91,6 +92,23 @@ test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 		for (const width of [320, 396]) {
 			await page.setViewportSize({ width, height: 900 });
 			await expectNoHorizontalOverflow(page, ['[data-testid="answer-fit"] :is(.answer-value, .answer-sentence)']);
+		}
+	});
+
+	test('sector rows keep the value beside the name at 14.75rem and stack it below at 200% text', async ({ page }) => {
+		const table = page.getByRole('table', { name: 'Résultats par secteur' });
+		for (const width of [320, 390]) {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto('/d1-record');
+			await page.locator('html[data-gallery-ready]').waitFor();
+			await page.evaluate(() => document.fonts.ready);
+			const beside = await rowsGeometry(table);
+			expect(beside.frameRem, `${width}px and 100% text`).toBeGreaterThan(14);
+			beside.rows.forEach((row, index) => expectBeside(row, 8, `${width}px and 100% text, row ${index + 1}`));
+			await page.locator('html').evaluate((html) => { html.style.fontSize = '200%'; });
+			const stacked = await rowsGeometry(table);
+			stacked.rows.forEach((row, index) => expectStacked(row, `${width}px and 200% text, row ${index + 1}`));
+			await expectNoHorizontalOverflow(page);
 		}
 	});
 

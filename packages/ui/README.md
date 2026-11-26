@@ -1181,8 +1181,10 @@ action for a card list, import `ShowMore` from `@yesid/ui/table` and supply `sho
 
 Use `responsive={{ mode: 'rows', primary: 'name', value: 'total' }}` to put two named
 columns at the top when the table itself is at most 28 rem wide. The value sits above its label
-at the end of the row, leaving the remaining room for the primary column. The other columns
-reflow into wrapping details, with separators attached to the end of each preceding detail.
+at the end of the row, leaving the remaining room for the primary column. When the table is at
+most 14 rem wide, such as a phone card at 200% text, the primary takes the whole row and the
+value moves below it, start-aligned, so long names and route plates keep whole words. The other
+columns reflow into wrapping details, with separators attached to the end of each preceding detail.
 Sort actions stay in the header and wrap together above the rows.
 
 ## Status marks, route plates and charts
