@@ -153,11 +153,9 @@
 
 {#snippet cellContent(column: DataTableColumn<T>, row: T)}
 	{#if reflows}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
-	<div class="data-table-cell-content">
-		{@render column.cell(row)}{#if rowLayout && !rowPosition(column.key) && column.key !== lastDetail}
-			<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
-		{/if}
-	</div>
+	<div class="data-table-cell-content">{@render column.cell(row)}</div>{#if rowLayout && !rowPosition(column.key) && column.key !== lastDetail}
+		<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
+	{/if}
 {/snippet}
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex (an overflowing table must be keyboard-scrollable) -->

@@ -92,7 +92,7 @@
 {/snippet}
 {#snippet ontime(row: RecordRow)}{row.state ? c.state : `${row.ontime.toFixed(1)}%`}{/snippet}
 {#snippet late(_row: RecordRow)}19%{/snippet}
-{#snippet trips(_row: RecordRow)}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/snippet}
+{#snippet trips(row: RecordRow)}{#if !row.state}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/if}{/snippet}
 {#snippet events(_row: RecordRow)}{french ? '10 000' : '10,000'}{/snippet}
 {#snippet early(_row: RecordRow)}8%{/snippet}
 {#snippet footerStatus()}<span>État du service</span>{/snippet}
