@@ -413,7 +413,7 @@ describe('deterministic package API reports', () => {
 
 	it('reports Combobox component bindings and detects open binding loss', async () => {
 		const bindings = (report: string) => report
-			.match(/^const Combobox: Component<ComboboxProps, \{\}, ([^>\r\n]+)>;$/mu)?.[1]
+			.match(/^const Combobox: Component<ComboboxModeProps, \{\}, ([^>\r\n]+)>;$/mu)?.[1]
 			?.split(' | ')
 			.sort();
 		const baseline = readFileSync(join(REPOSITORY_ROOT, 'api-reports/ui.api.md'), 'utf8');

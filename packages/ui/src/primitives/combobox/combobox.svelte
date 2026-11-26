@@ -5,7 +5,9 @@
   Built on bits-ui Combobox.Root (type="single"): a text input filters the option
   list diacritics-insensitively as you type, a portal-rendered listbox shows the
   matches, and selecting one sets `value`. Clearing the field (empty + blur, or the
-  reset affordance) sets `value` to `null`. WAI-ARIA combobox semantics + roving
+  reset affordance) sets `value` to `null`. With `clearable={false}` the choice
+  always keeps its value: no clear affordance, picking the chosen option again keeps
+  it, and closing restores its label. WAI-ARIA combobox semantics + roving
   listbox focus come from bits-ui; we only style + wire the token chrome.
 
   a11y (AA): the Input is the labelled combobox (aria-label from `label`), the
@@ -57,6 +59,11 @@
 		label: string;
 		/** Input placeholder. */
 		placeholder?: string;
+		/**
+		 * Shows the clear affordance while a value is chosen (default `true`). `false` makes a
+		 * choice that always keeps a value; `ComboboxNonClearableProps` then drops `clearLabel`.
+		 */
+		clearable?: boolean;
 		/** Accessible label for the clear affordance. */
 		clearLabel: string;
 		/** Shown inside the listbox when the typed query matches nothing. */
@@ -66,6 +73,16 @@
 		/** Optional extra classes on the root. */
 		class?: string;
 	}
+
+	/** A choice that always keeps a value: no clear affordance, so no `clearLabel` is needed. */
+	export interface ComboboxNonClearableProps extends Omit<ComboboxProps, 'clearable' | 'clearLabel'> {
+		clearable: false;
+		/** Unused while `clearable` is false. */
+		clearLabel?: string;
+	}
+
+	/** The props `Combobox` accepts: either mode. */
+	type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
 </script>
 
 <script lang="ts">
@@ -89,17 +106,19 @@
 		scrollAlignment,
 		label,
 		placeholder,
+		clearable = true,
 		clearLabel,
 		emptyLabel,
 		fold,
 		class: className,
-	}: ComboboxProps = $props();
+	}: ComboboxModeProps = $props();
 
 	// The typed query is EPHEMERAL local state (a keystroke stream, not view state);
 	// it filters the option list but is never persisted or mirrored. Folded once so
 	// the match is diacritics-insensitive + word-order-tolerant (substring per token).
-	let search = $state('');
-	const foldedQuery = $derived(fold(search));
+	// `null` means the field is not being edited.
+	let search = $state<string | null>(null);
+	const foldedQuery = $derived(fold(search ?? ''));
 
 	const filtered = $derived.by<readonly ComboboxOption[]>(() => {
 		if (!foldedQuery) return options;
@@ -111,8 +130,10 @@
 
 	// The visible input text: while typing we show the raw query; otherwise the
 	// label of the current selection (so a hydrated value shows its label).
+	// Without a clear affordance an emptied field stays empty while it is edited,
+	// and closing always restores the selection label.
 	const selectedLabel = $derived(options.find((o) => o.value === value)?.label ?? '');
-	const inputValue = $derived(search || selectedLabel);
+	const inputValue = $derived(clearable ? search || selectedLabel : (search ?? selectedLabel));
 
 	function commitValue(nextValue: string | null): void {
 		value = nextValue;
@@ -120,7 +141,7 @@
 	}
 
 	function clear(): void {
-		search = '';
+		search = null;
 		commitValue(null);
 	}
 
@@ -141,18 +162,23 @@
 	{loop}
 	{scrollAlignment}
 	{inputValue}
+	allowDeselect={clearable}
 	onValueChange={(nextValue) => {
 		commitValue(nextValue || null);
 	}}
 	onOpenChangeComplete={(nextOpen) => {
 		// On close, drop the transient typed query so the input snaps back to the
 		// selection label (never a stale half-typed fragment).
-		if (!nextOpen) search = '';
+		if (!nextOpen) search = null;
 		onOpenChangeComplete?.(nextOpen);
 	}}
 	items={filtered.map((o) => ({ value: o.value, label: o.label }))}
 >
-	<div class={cn('combobox', className)} data-slot="combobox">
+	<div
+		class={cn('combobox', className)}
+		data-slot="combobox"
+		data-clearable={clearable ? undefined : 'false'}
+	>
 		<BitsCombobox.Input
 			data-slot="combobox-input"
 			class="combobox-input"
@@ -162,7 +188,7 @@
 			defaultValue={selectedLabel}
 			oninput={filterBeforeHighlight}
 		/>
-		{#if value}
+		{#if clearable && value}
 			<button
 				type="button"
 				class="combobox-clear"
@@ -250,6 +276,10 @@
 		/* Right padding reserves room for the 44px clear + trigger hit areas. */
 		padding: 0.5rem 5.25rem 0.5rem 0.75rem;
 		line-height: 1.4;
+	}
+	/* With no clear affordance, the input reserves room for the trigger alone. */
+	.combobox[data-clearable='false'] :global(.combobox-input) {
+		padding-right: var(--size-tap-min);
 	}
 	:global(.combobox-input::placeholder) {
 		color: var(--muted-foreground);

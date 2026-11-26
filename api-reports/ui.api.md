@@ -1393,13 +1393,23 @@ const CollapsibleTrigger: Component<Collapsible_2.TriggerProps, {}, "ref">;
 type CollapsibleTrigger = ReturnType<typeof CollapsibleTrigger>;
 
 // @public (undocumented)
-const Combobox: Component<ComboboxProps, {}, "value" | "open">;
+const Combobox: Component<ComboboxModeProps, {}, "value" | "open">;
 
 // @public (undocumented)
 type Combobox = ReturnType<typeof Combobox>;
 
 // @public (undocumented)
 type ComboboxBehaviorProps = Pick<Combobox_2.RootProps, 'disabled' | 'required' | 'name' | 'open' | 'onOpenChange' | 'onOpenChangeComplete' | 'loop' | 'scrollAlignment'>;
+
+// @public
+type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
+
+// @public
+interface ComboboxNonClearableProps extends Omit<ComboboxProps, 'clearable' | 'clearLabel'> {
+    // (undocumented)
+    clearable: false;
+    clearLabel?: string;
+}
 
 // @public
 interface ComboboxOption {
@@ -1413,6 +1423,7 @@ interface ComboboxOption {
 // @public (undocumented)
 interface ComboboxProps extends ComboboxBehaviorProps {
     class?: string;
+    clearable?: boolean;
     clearLabel: string;
     emptyLabel: string;
     fold: (raw: string) => string;
@@ -2705,6 +2716,7 @@ declare namespace PrimitivesCombobox {
     export {
         Combobox as Root,
         Combobox,
+        ComboboxNonClearableProps,
         ComboboxOption,
         ComboboxProps
     }

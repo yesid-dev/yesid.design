@@ -3,7 +3,13 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import { Badge, type BadgeProps } from '@yesid/ui/badge';
 import { Button, type ButtonProps } from '@yesid/ui/button';
 import { CollapsibleContent } from '@yesid/ui/collapsible';
-import { Combobox, type ComboboxProps } from '@yesid/ui/combobox';
+import type { Combobox as ComboboxPrimitive } from 'bits-ui';
+import {
+	Combobox,
+	type ComboboxNonClearableProps,
+	type ComboboxOption,
+	type ComboboxProps,
+} from '@yesid/ui/combobox';
 import { Separator, type SeparatorProps } from '@yesid/ui/separator';
 import {
 	Sheet,
@@ -342,6 +348,36 @@ const comboboxProps: ComboboxProps = {
 	name: 'choice',
 	onValueChange: (value) => expectTypeOf(value).toEqualTypeOf<string | null>(),
 };
+const comboboxBase = { options: [], label: 'Choose', emptyLabel: 'Empty', fold: (raw: string) => raw };
+type ComboboxComponentProps = ComponentProps<typeof Combobox>;
+const requiredChoiceCombobox: ComboboxNonClearableProps = { ...comboboxBase, clearable: false };
+const requiredChoiceWithCopy: ComboboxComponentProps = { ...comboboxBase, clearable: false, clearLabel: 'Clear' };
+const explicitClearableCombobox: ComboboxProps = { ...comboboxBase, clearable: true, clearLabel: 'Clear' };
+const dynamicClearableCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: Boolean(1), clearLabel: 'Clear' };
+// @ts-expect-error the default clear affordance needs caller-owned copy
+const unnamedCombobox: ComboboxComponentProps = { ...comboboxBase };
+// @ts-expect-error an explicitly clearable combobox also needs caller-owned copy
+const unnamedClearableCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: true };
+// @ts-expect-error a dynamic flag can show the clear affordance, so it needs copy
+const unnamedDynamicCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: Boolean(1) };
+// @ts-expect-error ComboboxProps keeps clearLabel required, even with clearable false
+const unnamedPropsCombobox: ComboboxProps = { ...comboboxBase, clearable: false };
+/** The v0.58.0 `ComboboxProps` interface, frozen: every value it typed must still type-check. */
+interface ComboboxPropsV058
+	extends Pick<
+		ComboboxPrimitive.RootProps,
+		'disabled' | 'required' | 'name' | 'open' | 'onOpenChange' | 'onOpenChangeComplete' | 'loop' | 'scrollAlignment'
+	> {
+	options: readonly ComboboxOption[];
+	value?: string | null;
+	onValueChange?: (value: string | null) => void;
+	label: string;
+	placeholder?: string;
+	clearLabel: string;
+	emptyLabel: string;
+	fold: (raw: string) => string;
+	class?: string;
+}
 
 const separatorDefault: SeparatorProps = { variant: 'default', decorative: true };
 const separatorHazard: SeparatorProps = {
@@ -427,6 +463,9 @@ describe('public UI prop contracts', () => {
 			Snippet<[HTMLElement | undefined]>
 		>();
 		expectTypeOf<BindingsOf<typeof Combobox>>().toEqualTypeOf<'value' | 'open'>();
+		expectTypeOf<ComboboxPropsV058>().toExtend<ComboboxProps>();
+		expectTypeOf<ComboboxProps['clearLabel']>().toEqualTypeOf<string>();
+		expectTypeOf<ComboboxComponentProps>().toEqualTypeOf<ComboboxProps | ComboboxNonClearableProps>();
 		expectTypeOf<BindingsOf<typeof Separator>>().toEqualTypeOf<'ref'>();
 		expectTypeOf<BindingsOf<typeof Sheet>>().toEqualTypeOf<'open'>();
 		expectTypeOf<BindingsOf<typeof SheetTrigger>>().toEqualTypeOf<'ref'>();
@@ -455,6 +494,10 @@ describe('public UI prop contracts', () => {
 		expect(siteFooterProps.groups[0]!.links[0]!.external).toBe(true);
 		expect(errorIllustrationProps.code).toBe('404');
 		expect(comboboxProps.open).toBe(false);
+		expect(requiredChoiceCombobox.clearable).toBe(false);
+		expect(requiredChoiceWithCopy.clearLabel).toBe('Clear');
+		expect(explicitClearableCombobox.clearable).toBe(true);
+		expect(dynamicClearableCombobox.clearLabel).toBe('Clear');
 		expect(separatorDefault.variant).toBe('default');
 		expect(separatorHazard.maxWidth).toBe('100%');
 		expect(separatorGradient.variant).toBe('gradient');

@@ -79,6 +79,15 @@ the supported root behavior props and invokes `onValueChange`, `onOpenChange`, a
 and the selected label otherwise, including after an external value update. Closing resets the
 transient query; clearing commits `null`; disabled state reaches the clear control.
 
+`clearable` defaults to `true`: a clear control appears while a value is chosen and `clearLabel`
+is required. Pass `clearable={false}` for a choice that must always keep a value, such as a sort
+measure; `clearLabel` is then optional and unused. That mode renders no clear control, so the
+input reserves room for the trigger alone. Picking the chosen option again keeps it, and closing
+the list restores the chosen label even after the field was emptied; typing still filters and
+picking another option still commits it. The component never commits `null` in that mode, so
+seed `value` with the current choice. `ComboboxProps` keeps `clearLabel` required;
+`ComboboxNonClearableProps` types the `clearable: false` mode, where `clearLabel` may be omitted.
+
 The caller supplies the option catalogue, stable values, visible labels, optional glyphs and
 sublabels, precomputed search haystacks, a pure fold function, and all accessible copy. Filtering
 uses token-AND matching over the caller's folded haystack. The package does not import product

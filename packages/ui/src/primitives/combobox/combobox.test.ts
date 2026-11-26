@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import ComboboxFixture from './test-fixtures/ComboboxFixture.svelte';
+import RequiredChoiceFixture from './test-fixtures/RequiredChoiceFixture.svelte';
 
 afterEach(() => cleanup());
 
@@ -95,6 +96,22 @@ describe('Combobox', () => {
 		await waitFor(() => expect(screen.queryByText('No matching products')).toBeNull());
 	});
 
+	it('clears when Enter picks the chosen option again', async () => {
+		render(ComboboxFixture, { props: { options, value: 'beta' } });
+		const input = screen.getByRole('combobox', { name: 'Choose a product' });
+
+		await fireEvent.pointerDown(screen.getByRole('button', { name: 'Choose a product' }));
+		await waitFor(() =>
+			expect(screen.getByRole('option', { name: /Béta/i }).hasAttribute('data-highlighted')).toBe(true),
+		);
+		await fireEvent.keyDown(input, { key: 'Enter' });
+
+		await waitFor(() => {
+			expect(screen.getByTestId('combobox-value').textContent).toBe('none');
+			expect(screen.getByTestId('combobox-value-changes').textContent).toBe('1');
+		});
+	});
+
 	it('commits the filtered option with Enter', async () => {
 		render(ComboboxFixture, { props: { options } });
 		const input = screen.getByRole('combobox', { name: 'Choose a product' });
@@ -109,5 +126,81 @@ describe('Combobox', () => {
 			expect((input as HTMLInputElement).value).toBe('Béta');
 			expect(input.getAttribute('aria-expanded')).toBe('false');
 		});
+	});
+});
+
+describe('Combobox with clearable={false}', () => {
+	function input(): HTMLInputElement {
+		return screen.getByRole('combobox', { name: 'Rank by' }) as HTMLInputElement;
+	}
+
+	async function openList(): Promise<void> {
+		await fireEvent.pointerDown(screen.getByRole('button', { name: 'Rank by' }));
+		await screen.findByRole('listbox', { name: 'Rank by' });
+	}
+
+	function expectKept(label: string, value: string, changes: string): void {
+		expect(screen.getByTestId('combobox-value').textContent).toBe(value);
+		expect(screen.getByTestId('combobox-value-changes').textContent).toBe(changes);
+		expect(input().value).toBe(label);
+		expect(input().getAttribute('aria-expanded')).toBe('false');
+	}
+
+	it('renders no clear affordance while a value is chosen', () => {
+		const { container } = render(RequiredChoiceFixture, { props: { options, value: 'beta' } });
+		const root = container.querySelector<HTMLElement>('[data-slot="combobox"]')!;
+
+		expect(container.querySelector('[data-slot="combobox-clear"]')).toBeNull();
+		expect(within(root).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+			'Rank by',
+		]);
+	});
+
+	it('keeps the value when the emptied field gets Backspace, Delete and Escape', async () => {
+		render(RequiredChoiceFixture, { props: { options, value: 'beta' } });
+		await openList();
+
+		await fireEvent.input(input(), { target: { value: '' } });
+		expect(await screen.findByRole('option', { name: /Alpha/i })).toBeInTheDocument();
+		await fireEvent.keyDown(input(), { key: 'Backspace' });
+		await fireEvent.keyDown(input(), { key: 'Delete' });
+		await fireEvent.keyDown(input(), { key: 'Escape' });
+
+		await waitFor(() => expectKept('Béta', 'beta', '0'));
+	});
+
+	it('restores the chosen label when the field is emptied without typing first', async () => {
+		render(RequiredChoiceFixture, { props: { options, value: 'beta' } });
+
+		await fireEvent.keyDown(input(), { key: 'Delete' });
+		await fireEvent.input(input(), { target: { value: '' } });
+		await screen.findByRole('listbox', { name: 'Rank by' });
+		await fireEvent.keyDown(input(), { key: 'Escape' });
+
+		await waitFor(() => expectKept('Béta', 'beta', '0'));
+	});
+
+	it('keeps the value when Enter picks the chosen option again', async () => {
+		render(RequiredChoiceFixture, { props: { options, value: 'beta' } });
+		await openList();
+		await waitFor(() =>
+			expect(screen.getByRole('option', { name: /Béta/i }).hasAttribute('data-highlighted')).toBe(true),
+		);
+
+		await fireEvent.keyDown(input(), { key: 'Enter' });
+
+		await waitFor(() => expectKept('Béta', 'beta', '0'));
+	});
+
+	it('still filters as you type and commits a new choice', async () => {
+		render(RequiredChoiceFixture, { props: { options, value: 'beta' } });
+		await openList();
+
+		await fireEvent.input(input(), { target: { value: 'gam' } });
+		expect(await screen.findByRole('option', { name: /Gamma/i })).toBeInTheDocument();
+		expect(screen.queryByRole('option', { name: /Béta/i })).toBeNull();
+		await fireEvent.keyDown(input(), { key: 'Enter' });
+
+		await waitFor(() => expectKept('Gamma', 'gamma', '1'));
 	});
 });

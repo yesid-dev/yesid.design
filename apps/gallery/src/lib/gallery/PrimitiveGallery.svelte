@@ -18,6 +18,7 @@
 
 	let collapsibleOpen = $state(true);
 	let comboboxValue = $state<string | null>('operations');
+	let rankMeasure = $state<string | null>('response-time');
 	let footerStatusRefreshes = $state(0);
 	let sheetOpen = $state(false);
 	let detentOpen = $state(false);
@@ -52,6 +53,12 @@
 			glyph: '03',
 			search: 'continuidad servicio interrupciones planificadas informacion operativa multilingue',
 		},
+	];
+
+	const rankOptions: readonly ComboboxOption[] = [
+		{ value: 'response-time', label: 'Response time', search: 'response time latency' },
+		{ value: 'error-rate', label: 'Error rate', search: 'error rate failures' },
+		{ value: 'request-volume', label: 'Request volume', search: 'request volume traffic' },
 	];
 
 	function foldText(raw: string): string {
@@ -149,7 +156,10 @@
 		<Card.Root class="lg:col-span-2" data-gallery-family="primitive:combobox">
 			<Card.Header>
 				<Card.Title>Combobox</Card.Title>
-				<Card.Description>Single-select typeahead with caller-owned multilingual copy.</Card.Description>
+				<Card.Description>
+					Single-select typeahead with caller-owned multilingual copy. The second always keeps a
+					value: no clear button.
+				</Card.Description>
 			</Card.Header>
 			<Card.Content class="gallery-combobox-demo grid gap-3">
 				<div data-gallery-state="localized-copy" lang="fr">
@@ -165,6 +175,20 @@
 				</div>
 				<p class="font-mono text-caption text-muted-foreground">
 					Selected: {comboboxValue ?? 'none'}
+				</p>
+				<div data-gallery-demo="combobox-required-choice">
+					<Combobox
+						options={rankOptions}
+						bind:value={rankMeasure}
+						clearable={false}
+						label="Rank by measure"
+						placeholder="Type a measure"
+						emptyLabel="No matching measure"
+						fold={foldText}
+					/>
+				</div>
+				<p class="font-mono text-caption text-muted-foreground">
+					Ranked by: {rankMeasure ?? 'none'}
 				</p>
 			</Card.Content>
 		</Card.Root>

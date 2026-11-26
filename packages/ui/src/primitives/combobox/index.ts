@@ -5,4 +5,4 @@ export {
 	//
 	Root as Combobox,
 };
-export type { ComboboxOption, ComboboxProps } from './combobox.svelte';
+export type { ComboboxNonClearableProps, ComboboxOption, ComboboxProps } from './combobox.svelte';
