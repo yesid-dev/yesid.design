@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.57.1-rc.3
+
+<!-- release-fragment: data-table-separate-decoration-from-value -->
+- `@yesid/ui` (patch): Keep decorative trailing separators outside DataTable value wrappers so missing measurements remain empty.
+
 ## 0.57.1-rc.2
 
 <!-- release-fragment: data-table-keep-wrapped-details-compact -->
