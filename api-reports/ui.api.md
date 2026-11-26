@@ -4163,6 +4163,7 @@ type Tooltip = ReturnType<typeof Tooltip>;
 type TooltipProps = {
     content: string;
     trigger: NonNullable<Tooltip_2.TriggerProps['child']>;
+    'aria-describedby'?: string;
 };
 
 // @public (undocumented)

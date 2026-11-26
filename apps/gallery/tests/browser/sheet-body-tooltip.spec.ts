@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { GALLERY_THEMES, openGallery } from './gallery.js';
 
 const hint = 'Read how planned service changes affect connections and accessible boarding.';
@@ -7,6 +7,84 @@ const hint = 'Read how planned service changes affect connections and accessible
 test.beforeEach(({}, testInfo) => {
 	test.skip(testInfo.project.name !== 'desktop', 'One run sets every width and text size');
 });
+
+async function focusCenteredTrigger(page: Page, width: number, height: number) {
+	await page.setViewportSize({ width, height });
+	await openGallery(page);
+	await page.locator('html').evaluate(node => { node.style.fontSize = '200%'; });
+	const trigger = page.getByRole('link', { name: 'Service guide' });
+	await trigger.evaluate(node => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+	await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+	await trigger.focus();
+	const tooltip = page.getByRole('tooltip');
+	await expect(tooltip).toBeVisible();
+	return { trigger, tooltip };
+}
+
+for (const incidentalClose of ['page scroll', 'pointer exit'] as const) {
+	test(`a focused hint persists after ${incidentalClose}`, async ({ page }) => {
+		const { trigger, tooltip } = await focusCenteredTrigger(page, 390, 900);
+		if (incidentalClose === 'page scroll') {
+			await page.evaluate(() => new Promise<void>(resolve => {
+				window.addEventListener('scroll', () => requestAnimationFrame(() => resolve()), { once: true });
+				window.scrollBy({ top: 2, behavior: 'instant' });
+			}));
+		} else {
+			await trigger.hover();
+			await page.mouse.move(0, 0, { steps: 12 });
+		}
+		await expect(trigger).toBeInViewport();
+		await expect(trigger).toBeFocused();
+		await expect(tooltip).toBeVisible();
+		await expect(trigger).toHaveAccessibleDescription(hint);
+
+		await page.keyboard.press('Escape');
+		await expect(tooltip).toBeHidden();
+		await expect(trigger).toBeFocused();
+		await expect(trigger).toHaveAccessibleDescription('');
+		await page.mouse.move(1, 1);
+		await expect(tooltip).toBeHidden();
+		if (incidentalClose === 'page scroll') {
+			await page.keyboard.press('Tab');
+			await expect(trigger).not.toBeFocused();
+			await page.keyboard.press('Shift+Tab');
+			await expect(trigger).toBeFocused();
+		} else {
+			await trigger.hover();
+		}
+		await expect(tooltip).toBeVisible();
+	});
+}
+
+for (const [width, height] of [[320, 568], [390, 667]] as const) {
+	test(`a short viewport (${width}×${height}) fits the full hint at 200% text`, async ({ page }, testInfo) => {
+		const { trigger, tooltip } = await focusCenteredTrigger(page, width, height);
+		const anchor = (await trigger.boundingBox())!;
+		expect(Math.abs(anchor.y + anchor.height / 2 - height / 2)).toBeLessThanOrEqual(1);
+		const measure = () => tooltip.evaluate(node => {
+			const { left, top, right, bottom } = node.getBoundingClientRect();
+			return { left, top, right, bottom, clientHeight: node.clientHeight, scrollHeight: node.scrollHeight };
+		});
+		await expect.poll(async () => {
+			const { left, top, right, bottom } = await measure();
+			return Math.max(-left, -top, right - width, bottom - height);
+		}).toBeLessThanOrEqual(0);
+		await expect(tooltip).toHaveText(hint);
+		const bounds = await measure();
+		if (bounds.scrollHeight > bounds.clientHeight) {
+			await tooltip.hover();
+			await page.mouse.wheel(0, bounds.scrollHeight);
+			await expect.poll(() => tooltip.evaluate(node => node.scrollHeight - node.clientHeight - node.scrollTop))
+				.toBeLessThanOrEqual(1);
+		}
+		await expect(trigger).toBeFocused();
+		await expect(trigger).toHaveAccessibleDescription(hint);
+		await testInfo.attach('short-viewport-tooltip-bounds', {
+			body: JSON.stringify({ width, height, ...bounds }),
+			contentType: 'application/json',
+		});
+	});
+}
 
 for (const theme of GALLERY_THEMES) {
 	for (const [width, textSize] of [[320, 200], [390, 100], [390, 200], [1440, 100]] as const) {

@@ -141,14 +141,18 @@ Use `Tooltip` from `@yesid/ui/tooltip` for a short, supplemental text hint. The 
 own accessible name, and essential information belongs in visible UI. Pass a `trigger` snippet
 and spread the supplied props onto the focusable element so it receives tooltip events and the
 accessible description. The hint opens on keyboard focus or after 400 ms of pointer hover.
-It stays open when hovered, and Escape dismisses it while focus stays on the trigger.
+It stays open when hovered or while the trigger keeps keyboard focus. Escape dismisses it while
+focus stays on the trigger. To keep an existing help or error description, pass its ID or
+space-separated list of IDs as `aria-describedby` on `Tooltip`. The supplied trigger props combine
+those IDs with the hint's ID while it is open.
 
 ```svelte
 <script lang="ts">
   import { Tooltip } from '@yesid/ui/tooltip';
 </script>
 
-<Tooltip content="Downloads the current results as CSV.">
+<p id="export-help">Only results matching the current filters are included.</p>
+<Tooltip content="Downloads the current results as CSV." aria-describedby="export-help">
   {#snippet trigger({ props })}
     <a {...props} type={undefined} href="/reports/results.csv" download>Export results</a>
   {/snippet}
