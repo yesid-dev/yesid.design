@@ -45,8 +45,10 @@ axe in both themes, 320 to 1440px reflow, reduced motion, boundaries and 44px ta
 
 `/reading-surfaces` shows static and interactive cards on the brand and neutral edges, section
 cards at three edge weights with long FR and ES titles, fields that keep 16px, the reading label
-beside signage, and TocNav with and without its counter. `reading-surfaces.spec.ts` checks that
-static cards ignore hover, hovered section titles turn orange, both themes and 320 to 1440px.
+beside signage, TocNav with and without its counter, and SectionHeading's `size="title"` screen
+titles. `reading-surfaces.spec.ts` checks that static cards ignore hover, hovered section titles
+turn orange, both themes and 320 to 1440px. `section-heading-title.spec.ts` checks the title type,
+the reading subheading and the dot at 1440 and 390px, and 390px at 200% text.
 `/reading-frame/[lang]` (`en`, `fr`, `es`) renders the Experimental ReadingFrame with section ids
 shared by every language; `reading-frame.spec.ts` checks the ids, the measure and reflow.
 `/chrome-clearance` puts `.chrome-clearance` on `<html>` with a TocPill and a SurfaceRail pill;

@@ -2,6 +2,7 @@ import { render } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import { describe, expect, it } from 'vitest';
 import SectionHeading, { type SectionHeadingProps } from './SectionHeading.svelte';
+import domBaseline from './test-fixtures/SectionHeading.dom.json';
 
 const explainer = createRawSnippet(() => ({ render: () => '<button data-testid="info">i</button>' }));
 
@@ -9,6 +10,33 @@ const show = (props: SectionHeadingProps) => render(SectionHeading, { props });
 const slot = (view: { container: HTMLElement }, name: string) =>
 	view.container.querySelector<HTMLElement>(`[data-slot="${name}"]`);
 const tail = (view: { container: HTMLElement }) => view.container.querySelector('.section-heading-tail')?.textContent;
+// Svelte's anchor comments and scoping classes are not part of the markup contract.
+const markup = (view: { container: HTMLElement }) =>
+	view.container.innerHTML.replace(/<!---->/g, '').replace(/ svelte-[a-z0-9]+/g, '');
+
+// The fixture is the markup these props rendered before `size` existed.
+const baselineProps: Record<keyof typeof domBaseline, SectionHeadingProps> = {
+	plain: { heading: 'What this is' },
+	full: { heading: 'Service reliability', headingAccent: 'by line', subheading: 'Rolling 30 days', number: 2, level: 3, explainer },
+	undotted: { heading: 'Crowding', dot: false, subheading: 'Weekdays', id: 'crowding' },
+	overline: { overline: 'Platform B', number: 1, numberTone: 'active' },
+};
+const baselines = Object.entries(baselineProps) as [keyof typeof domBaseline, SectionHeadingProps][];
+
+describe('SectionHeading size', () => {
+	it.each(baselines)('keeps the %s markup when size is omitted or display', (name, props) => {
+		expect(markup(show(props))).toBe(domBaseline[name]);
+		expect(markup(show({ ...props, size: 'display' }))).toBe(domBaseline[name]);
+	});
+
+	it.each(baselines)('marks the %s title with data-size and renders the same parts', (name, props) => {
+		const view = show({ ...props, size: 'title' });
+		const root = slot(view, 'section-heading')!;
+		expect(root.getAttribute('data-size')).toBe('title');
+		root.removeAttribute('data-size');
+		expect(markup(view)).toBe(domBaseline[name]);
+	});
+});
 
 describe('SectionHeading', () => {
 	it('renders an h2 by default and the requested level otherwise', () => {

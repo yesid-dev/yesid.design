@@ -3006,6 +3006,7 @@ interface SectionHeadingProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     numberTone?: 'rest' | 'active';
     overline?: string;
+    size?: 'display' | 'title';
     // (undocumented)
     subheading?: string;
 }
