@@ -1399,6 +1399,18 @@ const Combobox: Component<ComboboxProps, {}, "value" | "open">;
 type Combobox = ReturnType<typeof Combobox>;
 
 // @public (undocumented)
+interface ComboboxBaseProps extends ComboboxBehaviorProps {
+    class?: string;
+    emptyLabel: string;
+    fold: (raw: string) => string;
+    label: string;
+    onValueChange?: (value: string | null) => void;
+    options: readonly ComboboxOption[];
+    placeholder?: string;
+    value?: string | null;
+}
+
+// @public (undocumented)
 type ComboboxBehaviorProps = Pick<Combobox_2.RootProps, 'disabled' | 'required' | 'name' | 'open' | 'onOpenChange' | 'onOpenChangeComplete' | 'loop' | 'scrollAlignment'>;
 
 // @public
@@ -1411,17 +1423,13 @@ interface ComboboxOption {
 }
 
 // @public (undocumented)
-interface ComboboxProps extends ComboboxBehaviorProps {
-    class?: string;
+type ComboboxProps = ComboboxBaseProps & ({
+    clearable?: true;
     clearLabel: string;
-    emptyLabel: string;
-    fold: (raw: string) => string;
-    label: string;
-    onValueChange?: (value: string | null) => void;
-    options: readonly ComboboxOption[];
-    placeholder?: string;
-    value?: string | null;
-}
+} | {
+    clearable: false;
+    clearLabel?: string;
+});
 
 // @public (undocumented)
 function configureUi(configuration?: UiConfiguration): ConfigureUiResult;
