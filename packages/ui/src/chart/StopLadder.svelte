@@ -73,7 +73,8 @@
 		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) fit-content(25%);
 		column-gap: 1rem;
 		min-inline-size: 0;
-		overflow-wrap: anywhere;
+		overflow-wrap: break-word;
+		word-break: normal;
 	}
 	.columns, ol, li {
 		display: grid;
@@ -90,8 +91,6 @@
 	.column-value, .reading {
 		/* Let the value track grow for whole words, with a limit for unusually long values. */
 		max-inline-size: 50cqi;
-		overflow-wrap: break-word;
-		word-break: normal;
 	}
 	ol {
 		position: relative;
@@ -146,13 +145,16 @@
 		padding-inline-start: var(--stop-indent);
 	}
 	.stop-name {
-		display: inline-flex;
-		align-items: center;
+		display: block;
+		align-content: center;
 		min-block-size: var(--size-tap-min);
 		max-inline-size: 100%;
 	}
+	.column-stop, .threshold-label, .stop-name, .code, .highlight-label {
+		min-inline-size: 0;
+	}
 	a.stop-name {
-		min-inline-size: var(--size-tap-min);
+		min-inline-size: min(var(--size-tap-min), 100%);
 		color: var(--primary);
 		text-decoration: underline;
 		text-decoration-thickness: 1px;
@@ -190,25 +192,21 @@
 		background: var(--foreground);
 	}
 	@container (width < 30rem) {
+		/* Reclaim label space at large text sizes while keeping clearance for the rail. */
+		.columns, ol { --stop-indent: clamp(1.25rem, 14cqi, 1.75rem); }
 		.columns { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.5rem; }
 		.threshold-label { order: 1; flex-basis: 100%; text-align: start; padding-inline-start: var(--stop-indent); }
 		ol { display: block; }
 		ol[data-threshold]::after {
 			inset-inline-start: calc(var(--stop-indent) + (100% - var(--stop-indent)) * var(--stop-threshold));
 		}
-		li { grid-template-columns: minmax(0, 1fr) fit-content(35%); column-gap: 0.5rem; }
+		li { grid-template-columns: minmax(0, 1fr) fit-content(35%); column-gap: min(0.5rem, 2.5cqi); }
 		.reading { grid-column: 2; }
 		.track {
 			grid-area: 2 / 1 / auto / -1;
 			margin-block: 0 0.5rem;
 			margin-inline-start: var(--stop-indent);
 		}
-	}
-	@container (width < 12rem) {
-		/* At enlarged text sizes, the rail and reading can leave too little room for a stop name. */
-		li { grid-template-columns: minmax(0, 1fr); }
-		.reading { grid-area: 2 / 1; max-inline-size: none; }
-		.track { grid-row: 3; }
 	}
 	@media (forced-colors: active) {
 		[data-highlighted] { outline: 1px dashed CanvasText; outline-offset: -1px; }

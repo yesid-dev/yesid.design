@@ -1295,8 +1295,8 @@ Also from `@yesid/ui/chart`:
   positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
   A `threshold` labels a continuous comparison line. A `highlight` names a span between two
   stop IDs. Linked stops use the kit's text link treatment and each code sits beside the
-  name when there is room. Labels wrap at word boundaries, with breaks inside a word reserved
-  for words wider than the available line.
+  name when there is room. Stop names and readings stay side by side. Labels wrap at word
+  boundaries, with breaks inside a word reserved for words wider than the available line.
 
 ## Map surfaces
 

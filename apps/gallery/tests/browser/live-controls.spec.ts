@@ -93,6 +93,35 @@ test.describe('Switch, Stamp and StopLadder', { tag: '@theme' }, () => {
 		});
 	}
 
+	for (const width of [320, 390]) {
+		test(`oversized stop labels stay inside the ladder at ${width}px and 200% text`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 900 });
+			await page.goto('/live-controls');
+			await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+			await page.evaluate(() => document.fonts.ready);
+
+			const ladder = page.locator(ladderSelector);
+			for (const label of await ladder.locator(labelSelector).all()) {
+				const original = await label.textContent();
+				await label.evaluate((node) => { node.textContent = 'Uninterrupted'.repeat(30); });
+				const [word] = await measureWords(label);
+				expect(word).toMatchObject({ fits: false, broken: true, outside: false });
+				const overflowing = await ladder.evaluate((node) => {
+					const { left, right } = node.getBoundingClientRect();
+					const viewportWidth = document.documentElement.clientWidth;
+					return [...node.querySelectorAll('*')].filter((descendant) => {
+						const bounds = descendant.getBoundingClientRect();
+						return bounds.left < Math.max(0, left) - 1 || bounds.right > Math.min(right, viewportWidth) + 1;
+					}).map((descendant) => descendant.className);
+				});
+				expect(overflowing, `${original} overflows the ladder`).toEqual([]);
+				await expectNoHorizontalOverflow(page, [ladderSelector]);
+				await label.evaluate((node, text) => { node.textContent = text; }, original);
+			}
+		});
+	}
+
 	test('the switch and pause mark stay visible in forced colors', async ({ page }) => {
 		await page.emulateMedia({ forcedColors: 'active' });
 		await page.goto('/live-controls');
