@@ -16,6 +16,7 @@
 	import { Skeleton } from '@yesid/ui/skeleton';
 	import { Switch } from '@yesid/ui/switch';
 	import * as Tabs from '@yesid/ui/tabs';
+	import { Tooltip } from '@yesid/ui/tooltip';
 
 	let collapsibleOpen = $state(true);
 	let liveUpdatesPaused = $state(false);
@@ -302,6 +303,21 @@
 						</Sheet.Footer>
 					</Sheet.Content>
 				</Sheet.Root>
+				<Sheet.Root>
+					<Sheet.Trigger class="min-h-11 rounded-md border border-border px-3 py-2 text-small hover:border-primary">
+						Open schedule note
+					</Sheet.Trigger>
+					<Sheet.Content showCloseButton={false}>
+						<Sheet.Header>
+							<Sheet.Title>Schedule note</Sheet.Title>
+							<Sheet.Description>Check the current operating hours.</Sheet.Description>
+						</Sheet.Header>
+						<Sheet.Body>Weekend hours are in effect.</Sheet.Body>
+						<Sheet.Footer>
+							<Sheet.Close class="min-h-11 rounded-md border border-border px-3 py-2">Done</Sheet.Close>
+						</Sheet.Footer>
+					</Sheet.Content>
+				</Sheet.Root>
 			</Card.Content>
 		</Card.Root>
 
@@ -322,6 +338,22 @@
 						</div>
 					</Sheet.Content>
 				</Sheet.Root>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="primitive:tooltip">
+			<Card.Header><Card.Title>Tooltip</Card.Title></Card.Header>
+			<Card.Content class="flex flex-wrap justify-end gap-2">
+				<Tooltip content="Check for active disruptions and delays.">
+					{#snippet trigger({ props })}
+						<Button {...props} variant="outline" size="cta-sm">Service alerts</Button>
+					{/snippet}
+				</Tooltip>
+				<Tooltip content="Read how planned service changes affect connections and accessible boarding.">
+					{#snippet trigger({ props })}
+						<a {...props} type={undefined} href="/app-frame" class="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-2 text-small hover:border-primary">Service guide</a>
+					{/snippet}
+				</Tooltip>
 			</Card.Content>
 		</Card.Root>
 

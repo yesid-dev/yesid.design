@@ -5,6 +5,15 @@ import SheetContractFixture from './test-fixtures/SheetContractFixture.svelte';
 afterEach(() => cleanup());
 
 describe('Sheet content contract', () => {
+	it('renders the body with the shared inset and forwards content and attributes', () => {
+		render(SheetContractFixture, { props: { showCloseButton: false } });
+		const body = screen.getByText('Fixture body');
+		expect(body.classList.contains('px-4')).toBe(true);
+		expect(body.classList.contains('py-2')).toBe(true);
+		expect(body.id).toBe('fixture-body');
+		expect(body.getAttribute('lang')).toBe('en');
+	});
+
 	it('omits the close button when the caller hides it without supplying copy', () => {
 		render(SheetContractFixture, { props: { showCloseButton: false } });
 		expect(screen.queryByRole('button')).toBeNull();

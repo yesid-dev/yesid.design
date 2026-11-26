@@ -124,11 +124,47 @@ that way.
 
 ### Sheet
 
-Sheet exports named prop types for Root, Trigger, Close, Portal, Content, Overlay, Header, Footer,
+Sheet exports named prop types for Root, Trigger, Close, Portal, Content, Overlay, Header, Body, Footer,
 Title, and Description. `SheetContentProps.portalProps` excludes portal children because Content
 owns the portal body. `closeLabel` is required caller-owned accessible copy whenever the close
 button can appear (including the default). Only `showCloseButton={false}` permits omitting it.
 There is no built-in English label.
+
+`Sheet.Body` (also exported as `SheetBody`) supplies the same inline inset as Header and Footer.
+It accepts div attributes, `class`, `children` and a bindable `ref`. Replace a `px-4` body div
+with `Sheet.Body` and keep any caller-owned vertical spacing or layout classes. The close control
+still reserves extra space on the right of the header when enabled.
+
+### Tooltip
+
+Use `Tooltip` from `@yesid/ui/tooltip` for a short, supplemental text hint. The trigger needs its
+own accessible name, and essential information belongs in visible UI. Pass a `trigger` snippet
+and spread the supplied props onto the focusable element so it receives tooltip events and the
+accessible description. The hint opens on keyboard focus or after 400 ms of pointer hover.
+It stays open when hovered or while the trigger keeps keyboard focus. Escape or activating the
+trigger dismisses the hint. A fresh hover or keyboard refocus can reopen it. When an open hint
+overflows, use Arrow Down, Arrow Up, Page Down, Page Up, Home or End on the focused trigger to
+scroll the hint.
+
+To keep an existing help or error description, pass its ID or
+space-separated list of IDs as `aria-describedby` on `Tooltip`. The supplied trigger props combine
+those IDs with the hint's ID while it is open.
+
+```svelte
+<script lang="ts">
+  import { Tooltip } from '@yesid/ui/tooltip';
+</script>
+
+<p id="export-help">Only results matching the current filters are included.</p>
+<Tooltip content="Downloads the current results as CSV." aria-describedby="export-help">
+  {#snippet trigger({ props })}
+    <a {...props} type={undefined} href="/reports/results.csv" download>Export results</a>
+  {/snippet}
+</Tooltip>
+```
+
+When migrating from a `title` and a screen-reader-only hint, move the supplemental text to
+`content` and remove the old copies. Keep the trigger's visible label or `aria-label`.
 
 ## UI configuration
 
@@ -350,7 +386,7 @@ Persistence belongs to the caller. For tab-scoped persistence:
   <Sheet.Content detents={stops} bind:detent={height.value}
     handleLabel="Detail height" closeLabel="Close detail" modal={false}>
     <Sheet.Header class="shrink-0"><Sheet.Title>Detail</Sheet.Title></Sheet.Header>
-    <div class="min-h-0 flex-1 overflow-y-auto">Body</div>
+    <Sheet.Body class="min-h-0 flex-1 overflow-y-auto">Body</Sheet.Body>
   </Sheet.Content>
 </Sheet.Root>
 ```

@@ -13,6 +13,7 @@ export const GALLERY_COVERAGE = {
 		'skeleton',
 		'switch',
 		'tabs',
+		'tooltip',
 	],
 	brand: [
 		'AnswerLead',
