@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.60.0-rc.1
+
+<!-- release-fragment: drawn-boundary-and-rail-centre -->
+- `@yesid/ui` (patch): Hand-drawn PageSections and ArticleHeader dividers paint to both edges with smaller gaps between strokes. SurfaceRail pills and sheets centre within the available content width, including in a full-viewport AppFrame with a classic scrollbar.
+
+<!-- release-fragment: phone-rows-and-scroll-edges -->
+- `@yesid/ui` (minor): `DataTable` `mode: 'rows'` gains phone-row ergonomics while preserving native table semantics:
+  pass `labels: false` inside `responsive` to omit per-row column labels in compact rows (default
+  `true`), `rowDetail` (a snippet receiving the row `T`) to visually summarize the remaining columns
+  at `<= 28rem`, and `rowEmpty` (a predicate on `T`) to mark no-data rows. In compact rows this
+  clips the value cell visually so the detail can read inline beside the primary cell. Sortable
+  column headers stay visible, keyboard-accessible and wrap in compact rows. Original value and
+  detail cells stay in the accessible table, and their controls become visible on focus.
+
+  `filterCountText` and `FilterSummary` now format `{count}` with `new Intl.NumberFormat(locale)`
+  (for example `8,630` in English and `8 630` with a narrow no-break space in French) while still
+  selecting singular or plural from the raw count. Output text changes for counts of 1,000 or more;
+  consumers passing pre-formatted templates can revert to raw `{count}` templates.
+
+  `HourGrid` and `DataTable` `mode: 'scroll'` now show token-based edge fades on each side where more
+  content is hidden (updating on scroll and resize, absent when nothing overflows, hidden under
+  forced colours and contained within the scroll container) and accept `initialScroll: 'end'`
+  (default `'start'`) to open with the latest columns in view from first paint without jumping after
+  hydration. HourGrid limits both fades to the space beside the sticky row heading. The DataTable
+  frame remains the scrollport, with its caller-supplied attributes and a caption-named keyboard stop
+  available from first render when it may overflow. Outside the scroll region, DataTable applies the
+  caller's `role`, `aria-label` and `tabindex` to its frame.
+
+  An overflowing DataTable frame adds an `aria-hidden` fade wrapper with two spans after the table.
+  They ignore pointer events and take no layout space. For frame child selectors, use
+  `> [data-slot="data-table"]` to target the table across widths. `> table:last-child` only matches
+  when the frame has no fade wrapper.
+
+<!-- release-fragment: sheet-body-and-tooltip -->
+- `@yesid/ui` (minor): Add `Sheet.Body` and `SheetBody` to `@yesid/ui/sheet`. Replace a `px-4` body div with `Sheet.Body` for the shared inline inset. Keep any vertical padding and scrolling classes on the body.
+
+  Add `Tooltip` to `@yesid/ui/tooltip` for short hints on hover or keyboard focus. Move the text from `title` and the screen-reader-only hint to `content`, spread the `trigger` snippet's props onto the existing control, and keep its visible label or `aria-label`.
+  Pass existing help or error IDs to `Tooltip` through `aria-describedby` to preserve those descriptions.
+  Escape and trigger activation dismiss the hint. When the hint overflows, scroll it with the arrow, page, Home and End keys while focus stays on the trigger.
+
+<!-- release-fragment: switch-ladder-wrap-stamp-paused -->
+- `@yesid/ui` (minor): - Use `Switch` from `@yesid/ui/switch` in place of a Button with `role="switch"`. Pass a localized `label` and `stateLabels={{ on, off }}`, then use `bind:checked` or `checked` with `onCheckedChange` in place of the old click handler and ARIA state.
+  - StopLadder keeps stop names and readings side by side. Labels wrap between words, with a break inside a word only when it exceeds the available width. The Gallery regressions cover the narrow French record ladder and label overflow at 320 and 390 px with 200% text.
+  - Pass `paused` to a live Stamp with your localized paused `label` to show a neutral pause mark and stop the clock-driven wording until live updates resume.
+
 ## 0.59.0
 
 <!-- release-fragment: combobox-required-choice -->
