@@ -22,21 +22,24 @@
 		value, sentence, absent, stamp, meta, comparison, actions, size = 'lg', layout = 'threshold',
 	}: AnswerLeadProps = $props();
 	const sentenceId = $props.id();
+	const figureId = `${sentenceId}-figure`;
+	// The section reads its statement in order: the figure, or what stands in for it, then the sentence.
+	const labelledBy = $derived(value !== null || absent ? `${figureId} ${sentenceId}` : sentenceId);
 </script>
 
 <section
 	class="answer-lead"
 	data-slot="answer-lead"
 	data-layout={layout === 'fit' ? 'fit' : undefined}
-	aria-labelledby={sentenceId}
+	aria-labelledby={labelledBy}
 >
 	<div class="answer-layout">
 		<div class="answer-context">
 			<div class="answer-statement">
 				{#if value !== null}
-					<p class="answer-value"><MetricValue {value} {size} /></p>
+					<p class="answer-value" id={figureId}><MetricValue {value} {size} /></p>
 				{:else if absent}
-					<div class="answer-absent">{@render absent()}</div>
+					<div class="answer-absent" id={figureId}>{@render absent()}</div>
 				{/if}
 				<p class="answer-sentence" id={sentenceId}>{sentence}</p>
 			</div>

@@ -114,7 +114,7 @@ describe('SiteHeader', () => {
 			expect(view.queryByRole('switch')).toBeNull();
 			await view.open();
 			expect(view.getAllByRole('switch', { name: LABELS.theme })).toHaveLength(1);
-			const language = view.getByRole('link', { name: 'Language: English / Français / Español: English (EN FR ES)' });
+			const language = view.getByRole('link', { name: 'Language: English / Français / Español: Français (EN FR ES)' });
 			expect(view.getByRole('banner').contains(language)).toBe(false);
 			expect(language.getAttribute('href')).toBe('/fr');
 			expect([...language.querySelectorAll('svg text')].map(node => node.textContent)).toEqual(['EN', 'FR', 'ES']);
@@ -125,7 +125,7 @@ describe('SiteHeader', () => {
 			resize!(600);
 			await tick();
 			expect(view.getAllByRole('switch', { name: LABELS.theme })).toHaveLength(1);
-			expect(view.getByRole('banner').contains(view.getByRole('link', { name: 'Language: English (EN FR ES)' }))).toBe(true);
+			expect(view.getByRole('banner').contains(view.getByRole('link', { name: 'Language: Français (EN FR ES)' }))).toBe(true);
 		} finally { vi.unstubAllGlobals(); }
 	});
 	it('keeps the flat menu as direct links without group headings or lists', async () => {
@@ -196,7 +196,7 @@ describe('SiteHeader', () => {
 	it('closes for a navigation but stays open for its own language switch', async () => {
 		const { hooks, menu, open, getByRole } = setup();
 		await open();
-		hooks.before(await hooks.click(getByRole('link', { name: 'Language: English (EN FR)' })));
+		hooks.before(await hooks.click(getByRole('link', { name: 'Language: Français (EN FR)' })));
 		await tick();
 		expect(menu()).not.toBeNull();
 
@@ -249,7 +249,7 @@ describe('SiteHeader', () => {
 			locale: 'en', locales: ['en', 'fr'], href: (next) => `/${next}`,
 			label: 'Language', names: NAMES, preserveState: true,
 		} });
-		const language = view.getByRole('link', { name: 'Language: English (EN FR)' });
+		const language = view.getByRole('link', { name: 'Language: Français (EN FR)' });
 		language.removeAttribute('data-testid');
 		await view.open();
 		const event = await view.hooks.click(language);

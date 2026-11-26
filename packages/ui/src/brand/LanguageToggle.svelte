@@ -8,7 +8,7 @@
 		locales: readonly string[];
 		/** The current page in `locale`. */
 		href: (locale: string) => string;
-		/** Names the control; the current language's own name follows it. */
+		/** Names the control; the destination language's own name follows it. */
 		label: string;
 		/** Each language's name in that language, keyed by locale. */
 		names: Readonly<Record<string, string>>;
@@ -42,6 +42,7 @@
 	const next = $derived(orderedLocales[(Math.max(0, orderedLocales.indexOf(locale)) + 1) % orderedLocales.length]);
 	const nextHref = $derived(href(next));
 	const name = $derived(names[locale]);
+	const nextName = $derived(names[next]);
 
 	// Every board keeps the two-board geometry, so a third board grows the post rather than shrinking the letters.
 	const SPAN = 18;
@@ -78,13 +79,13 @@
 	<a
 		bind:this={ref}
 		href={nextHref}
+		hreflang={next}
 		data-testid="language-toggle"
 		data-slot="language-toggle"
 		data-sveltekit-preload-data="hover"
 		data-sveltekit-reset={preserveState ? 'false' : undefined}
 		data-sveltekit-reload={reload || undefined}
 		class={cn('lang-post tap-press', className)}
-		aria-label="{label}: {name} ({codes})"
 		title={name}
 		style="--vb-h: {vbHeight}"
 	>
@@ -105,7 +106,8 @@
 				</g>
 			{/key}
 		</svg>
-		<span class="sr-only" aria-live="polite">{name}</span>
+		<!-- Named by its destination, the language's own name in that language. -->
+		<span class="sr-only">{label}: <span lang={next}>{nextName}</span> ({codes})</span>
 	</a>
 {/if}
 
