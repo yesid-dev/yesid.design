@@ -93,6 +93,20 @@
 				<p>A 2px edge for denser pages.</p>
 			</CollapsibleSection>
 		</div>
+		{#each LANGS as lang (lang)}
+			{@const copy = SURFACE_COPY[lang]}
+			<div {lang} data-fixture={`section-article-summary-${lang}`}>
+				<CollapsibleSection
+					title={copy.section}
+					subtitle={copy.summary}
+					headerVariant="article-summary"
+					index={0}
+					anchor={`section-article-summary-${lang}`}
+				>
+					<p>{copy.hint}</p>
+				</CollapsibleSection>
+			</div>
+		{/each}
 	</div>
 
 	<h2 id="labels" class="text-heading font-heading font-bold">Reading labels and signage</h2>

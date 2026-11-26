@@ -160,6 +160,7 @@
 	}
 
 	.error-page-content {
+		container: error-page / inline-size;
 		width: 100%;
 		max-width: 52rem;
 		margin-inline: auto;
@@ -368,6 +369,14 @@
 	@media (max-width: 399px) {
 		.terminal-note {
 			display: block;
+		}
+	}
+
+	/* Enlarged text on a phone: a smaller heading keeps a word such as "construction" whole. At the
+	   default text size the content is at least 14rem wide from a 320px screen, so this never applies. */
+	@container error-page (width < 12rem) {
+		.error-copy h1 {
+			font-size: 1.25rem;
 		}
 	}
 

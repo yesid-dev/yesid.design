@@ -863,8 +863,10 @@
 		.nav-pill {
 			--nav-split-space: 2px;
 		}
-		/* Only the wordmark-to-links divider stays at the 320px floor. */
-		.nav-divider:not(.nav-collapsible) {
+		/* At the 320px floor the wordmark-to-links divider stays and the controls' divider leaves while
+		   links show. Without a links row, the controls' divider keeps the brand off the first control. */
+		.nav-search > .nav-divider,
+		.nav-pill:has(.nav-links-part):not([data-row-from], [data-links-overflow]) .nav-trailing > .nav-divider {
 			display: none;
 		}
 		.nav-links {

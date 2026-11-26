@@ -98,7 +98,7 @@ The owner wants every product to feel like one family (15 November 2026). These 
 - **The header pill:** `SiteHeader` with `ThemeToggle` and `LanguageToggle`, the toggles always in the pill at every width (D19; `compactControls` is deprecated). Grouped menus (`menuGroups`) lay out in columns from 768px and in one column on phones.
 - **The product brand** "yesid. | Product": `ProductBrand` (Experimental), through the `brand` snippet of `SiteHeader` and `SiteFooter`, with optional sizes for each part (`houseStyle`, `productStyle`, `dividerStyle`).
 - **Headings that end on the orange dot**, where the design uses it: `SectionHeading` and `Masthead`, whose `dot` prop (default `true`) draws it.
-- **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28).
+- **Orange text links:** `@yesid/ui/base.css` underlines a link without a class in `primary` ink (Rule 3, Y-28). A text link that also needs layout classes adds `text-link` for the same look.
 - **Buttons:** `Button` with the `default`, `conversion` (at most one per view), `outline` and `ghost` variants.
 - **Interactive and static surfaces** ([D21](../DECISIONS.md#d21-interactive-and-static-surfaces)): `Card interactive` for a card that is a link or control or contains them; a card with nothing to click stays static; section cards react only through their heading.
 - **Section edges, the footer edge and terminal rules** ([D22](../DECISIONS.md#d22-section-edges-and-the-footer-edge)):

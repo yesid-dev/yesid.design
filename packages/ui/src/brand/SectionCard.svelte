@@ -249,6 +249,7 @@
 	}
 
 	:global([data-slot='card'].section-card.section-card--article-summary) {
+		container: section-card / inline-size;
 		padding-block: 0;
 	}
 
@@ -387,6 +388,35 @@
 
 	.section-subtitle--with-mark .section-subtitle__text {
 		grid-column: 2;
+	}
+
+	/* Enlarged text on a phone: a narrower inset, and the mark sits above the title so the title and
+	   subtitle take the full width. At the default text size an article-summary card is at least 16rem
+	   wide from a 320px screen, so this never applies. */
+	@container section-card (width < 14rem) {
+		:global(.section-card--article-summary) > [data-slot='collapsible'] {
+			--collapsible-pad-x: 0.5rem;
+		}
+		.section-header--article-summary.section-header--with-mark {
+			grid-template-columns: minmax(0, 1fr) 1.25rem;
+			row-gap: 0.25rem;
+		}
+		.section-header--with-mark .section-header__mark {
+			grid-area: 1 / 1;
+			justify-content: flex-start;
+		}
+		.section-header--with-mark .section-header__chevron {
+			grid-area: 1 / 2;
+		}
+		.section-header--with-mark .section-title--article-summary {
+			grid-area: 2 / 1 / 3 / -1;
+		}
+		.section-subtitle--article-summary.section-subtitle--with-mark {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.section-subtitle--with-mark .section-subtitle__text {
+			grid-column: 1;
+		}
 	}
 
 	.section-subtitle--article-summary[data-state='closed'] .section-subtitle__text {

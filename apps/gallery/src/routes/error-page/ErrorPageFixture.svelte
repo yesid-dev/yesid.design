@@ -37,7 +37,9 @@
 		illustration={options.illustration}
 		heading={long
 			? 'Wrong platform, and a heading long enough to wrap across several lines on a narrow screen'
-			: words.heading}
+			: options.construction
+				? words.constructionHeading
+				: words.heading}
 		body={long
 			? 'The page you asked for is not on this line. This longer explanation keeps going so the body wraps onto several lines as well and the whole error page grows taller than a short viewport.'
 			: words.body}
