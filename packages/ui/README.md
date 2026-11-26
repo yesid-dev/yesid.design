@@ -148,7 +148,7 @@ The first `cn` use, including a primitive's first class merge, locks the zero-co
 default. Products with custom vocabulary must initialize before any primitive renders. Use one
 shared initializer imported by both SvelteKit `hooks.client.ts` (`ClientInit`) and
 `hooks.server.ts` (`ServerInit`), not a root layout instance script. See the
-[product guide](https://github.com/yesid-dev/yesid.design/blob/v0.58.0-rc.1/docs/BUILD-A-YESID-PRODUCT.md)
+[product guide](https://github.com/yesid-dev/yesid.design/blob/v0.58.0-rc.2/docs/BUILD-A-YESID-PRODUCT.md)
 for the complete hook pattern.
 
 The state boundary is the loaded ESM module graph. Browser and SSR bundles, separately bundled
@@ -1052,7 +1052,7 @@ the lifecycle restores focus after landing. Inside SiteHeader this uses a bound 
 standalone links pass their `bind:ref` to the lifecycle's optional `languageLink` getter.
 `reload` asks for a full document load. LanguageToggle registers no router hooks.
 `resetFocusAfterNavigation` is the same reset for `goto(url, { reset: false })`.
-The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.58.0-rc.1/docs/migrations/navigation-lifecycle.md)
+The [migration note](https://github.com/yesid-dev/yesid.design/blob/v0.58.0-rc.2/docs/migrations/navigation-lifecycle.md)
 covers the copy and integration for Transit and yesid.dev.
 
 ## Page sections
