@@ -48,7 +48,7 @@
 		| 'scrollAlignment'
 	>;
 
-	interface ComboboxBaseProps extends ComboboxBehaviorProps {
+	export interface ComboboxProps extends ComboboxBehaviorProps {
 		/** The full option catalogue (unfiltered). */
 		options: readonly ComboboxOption[];
 		/** The selected option id, or null when none is chosen (bindable). */
@@ -59,6 +59,13 @@
 		label: string;
 		/** Input placeholder. */
 		placeholder?: string;
+		/**
+		 * Shows the clear affordance while a value is chosen (default `true`). `false` makes a
+		 * choice that always keeps a value; `ComboboxNonClearableProps` then drops `clearLabel`.
+		 */
+		clearable?: boolean;
+		/** Accessible label for the clear affordance. */
+		clearLabel: string;
 		/** Shown inside the listbox when the typed query matches nothing. */
 		emptyLabel: string;
 		/** Pure fold fn (diacritics-insensitive) applied to the typed query. */
@@ -67,21 +74,15 @@
 		class?: string;
 	}
 
-	export type ComboboxProps = ComboboxBaseProps &
-		(
-			| {
-					/** Shows the clear affordance while a value is chosen (the default). */
-					clearable?: true;
-					/** Accessible label for the clear affordance. */
-					clearLabel: string;
-			  }
-			| {
-					/** A choice that always keeps a value: no clear affordance, no way to empty it. */
-					clearable: false;
-					/** Unused while `clearable` is false. */
-					clearLabel?: string;
-			  }
-		);
+	/** A choice that always keeps a value: no clear affordance, so no `clearLabel` is needed. */
+	export interface ComboboxNonClearableProps extends Omit<ComboboxProps, 'clearable' | 'clearLabel'> {
+		clearable: false;
+		/** Unused while `clearable` is false. */
+		clearLabel?: string;
+	}
+
+	/** The props `Combobox` accepts: either mode. */
+	type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
 </script>
 
 <script lang="ts">
@@ -110,7 +111,7 @@
 		emptyLabel,
 		fold,
 		class: className,
-	}: ComboboxProps = $props();
+	}: ComboboxModeProps = $props();
 
 	// The typed query is EPHEMERAL local state (a keystroke stream, not view state);
 	// it filters the option list but is never persisted or mirrored. Folded once so

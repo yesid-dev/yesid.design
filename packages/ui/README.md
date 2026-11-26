@@ -85,8 +85,8 @@ measure; `clearLabel` is then optional and unused. That mode renders no clear co
 input reserves room for the trigger alone. Picking the chosen option again keeps it, and closing
 the list restores the chosen label even after the field was emptied; typing still filters and
 picking another option still commits it. The component never commits `null` in that mode, so
-seed `value` with the current choice. `ComboboxProps` types both modes as a union: the
-`clearable: false` branch is the only one where `clearLabel` may be omitted.
+seed `value` with the current choice. `ComboboxProps` keeps `clearLabel` required;
+`ComboboxNonClearableProps` types the `clearable: false` mode, where `clearLabel` may be omitted.
 
 The caller supplies the option catalogue, stable values, visible labels, optional glyphs and
 sublabels, precomputed search haystacks, a pure fold function, and all accessible copy. Filtering

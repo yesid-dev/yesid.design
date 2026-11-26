@@ -4,7 +4,12 @@ import { Badge, type BadgeProps } from '@yesid/ui/badge';
 import { Button, type ButtonProps } from '@yesid/ui/button';
 import { CollapsibleContent } from '@yesid/ui/collapsible';
 import type { Combobox as ComboboxPrimitive } from 'bits-ui';
-import { Combobox, type ComboboxOption, type ComboboxProps } from '@yesid/ui/combobox';
+import {
+	Combobox,
+	type ComboboxNonClearableProps,
+	type ComboboxOption,
+	type ComboboxProps,
+} from '@yesid/ui/combobox';
 import { Separator, type SeparatorProps } from '@yesid/ui/separator';
 import {
 	Sheet,
@@ -344,16 +349,19 @@ const comboboxProps: ComboboxProps = {
 	onValueChange: (value) => expectTypeOf(value).toEqualTypeOf<string | null>(),
 };
 const comboboxBase = { options: [], label: 'Choose', emptyLabel: 'Empty', fold: (raw: string) => raw };
-const requiredChoiceCombobox: ComboboxProps = { ...comboboxBase, clearable: false };
-const requiredChoiceWithCopy: ComboboxProps = { ...comboboxBase, clearable: false, clearLabel: 'Clear' };
+type ComboboxComponentProps = ComponentProps<typeof Combobox>;
+const requiredChoiceCombobox: ComboboxNonClearableProps = { ...comboboxBase, clearable: false };
+const requiredChoiceWithCopy: ComboboxComponentProps = { ...comboboxBase, clearable: false, clearLabel: 'Clear' };
 const explicitClearableCombobox: ComboboxProps = { ...comboboxBase, clearable: true, clearLabel: 'Clear' };
-const dynamicClearableCombobox: ComboboxProps = { ...comboboxBase, clearable: Boolean(1), clearLabel: 'Clear' };
+const dynamicClearableCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: Boolean(1), clearLabel: 'Clear' };
 // @ts-expect-error the default clear affordance needs caller-owned copy
-const unnamedCombobox: ComboboxProps = { ...comboboxBase };
+const unnamedCombobox: ComboboxComponentProps = { ...comboboxBase };
 // @ts-expect-error an explicitly clearable combobox also needs caller-owned copy
-const unnamedClearableCombobox: ComboboxProps = { ...comboboxBase, clearable: true };
+const unnamedClearableCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: true };
 // @ts-expect-error a dynamic flag can show the clear affordance, so it needs copy
-const unnamedDynamicCombobox: ComboboxProps = { ...comboboxBase, clearable: Boolean(1) };
+const unnamedDynamicCombobox: ComboboxComponentProps = { ...comboboxBase, clearable: Boolean(1) };
+// @ts-expect-error ComboboxProps keeps clearLabel required, even with clearable false
+const unnamedPropsCombobox: ComboboxProps = { ...comboboxBase, clearable: false };
 /** The v0.58.0 `ComboboxProps` interface, frozen: every value it typed must still type-check. */
 interface ComboboxPropsV058
 	extends Pick<
@@ -456,7 +464,8 @@ describe('public UI prop contracts', () => {
 		>();
 		expectTypeOf<BindingsOf<typeof Combobox>>().toEqualTypeOf<'value' | 'open'>();
 		expectTypeOf<ComboboxPropsV058>().toExtend<ComboboxProps>();
-		expectTypeOf<ComponentProps<typeof Combobox>>().toEqualTypeOf<ComboboxProps>();
+		expectTypeOf<ComboboxProps['clearLabel']>().toEqualTypeOf<string>();
+		expectTypeOf<ComboboxComponentProps>().toEqualTypeOf<ComboboxProps | ComboboxNonClearableProps>();
 		expectTypeOf<BindingsOf<typeof Separator>>().toEqualTypeOf<'ref'>();
 		expectTypeOf<BindingsOf<typeof Sheet>>().toEqualTypeOf<'open'>();
 		expectTypeOf<BindingsOf<typeof SheetTrigger>>().toEqualTypeOf<'ref'>();

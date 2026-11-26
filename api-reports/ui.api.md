@@ -1393,25 +1393,23 @@ const CollapsibleTrigger: Component<Collapsible_2.TriggerProps, {}, "ref">;
 type CollapsibleTrigger = ReturnType<typeof CollapsibleTrigger>;
 
 // @public (undocumented)
-const Combobox: Component<ComboboxProps, {}, "value" | "open">;
+const Combobox: Component<ComboboxModeProps, {}, "value" | "open">;
 
 // @public (undocumented)
 type Combobox = ReturnType<typeof Combobox>;
 
 // @public (undocumented)
-interface ComboboxBaseProps extends ComboboxBehaviorProps {
-    class?: string;
-    emptyLabel: string;
-    fold: (raw: string) => string;
-    label: string;
-    onValueChange?: (value: string | null) => void;
-    options: readonly ComboboxOption[];
-    placeholder?: string;
-    value?: string | null;
-}
-
-// @public (undocumented)
 type ComboboxBehaviorProps = Pick<Combobox_2.RootProps, 'disabled' | 'required' | 'name' | 'open' | 'onOpenChange' | 'onOpenChangeComplete' | 'loop' | 'scrollAlignment'>;
+
+// @public
+type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
+
+// @public
+interface ComboboxNonClearableProps extends Omit<ComboboxProps, 'clearable' | 'clearLabel'> {
+    // (undocumented)
+    clearable: false;
+    clearLabel?: string;
+}
 
 // @public
 interface ComboboxOption {
@@ -1423,13 +1421,18 @@ interface ComboboxOption {
 }
 
 // @public (undocumented)
-type ComboboxProps = ComboboxBaseProps & ({
-    clearable?: true;
+interface ComboboxProps extends ComboboxBehaviorProps {
+    class?: string;
+    clearable?: boolean;
     clearLabel: string;
-} | {
-    clearable: false;
-    clearLabel?: string;
-});
+    emptyLabel: string;
+    fold: (raw: string) => string;
+    label: string;
+    onValueChange?: (value: string | null) => void;
+    options: readonly ComboboxOption[];
+    placeholder?: string;
+    value?: string | null;
+}
 
 // @public (undocumented)
 function configureUi(configuration?: UiConfiguration): ConfigureUiResult;
@@ -2713,6 +2716,7 @@ declare namespace PrimitivesCombobox {
     export {
         Combobox as Root,
         Combobox,
+        ComboboxNonClearableProps,
         ComboboxOption,
         ComboboxProps
     }

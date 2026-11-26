@@ -10,7 +10,6 @@ filters and picking another option still changes the value. The component never 
 `null` in this mode, so seed it with the current choice.
 
 Existing callers need no change. `clearable` defaults to `true`, where `clearLabel` stays
-required and the markup, styles and behaviour are unchanged. `ComboboxProps` is now a type alias
-over the two modes instead of an interface. Every value the previous interface accepted still
-type-checks, but a type that `extends ComboboxProps` must become an intersection, and
-`ComboboxProps['clearLabel']` now reads `string | undefined`.
+required and the markup, styles and behaviour are unchanged. `ComboboxProps` gains the optional
+`clearable` prop and keeps `clearLabel` required; the new `ComboboxNonClearableProps` types the
+`clearable={false}` mode.
