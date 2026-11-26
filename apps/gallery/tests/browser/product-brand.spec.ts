@@ -36,7 +36,7 @@ for (const lang of PRODUCT_LANGS) {
 			expect(parts[2]!.height, where).toBeGreaterThanOrEqual(44);
 			await expect(banner.getByRole('switch', { name: copy.labels.theme })).toBeVisible();
 			await expect(banner.getByTestId('language-toggle')).toBeVisible();
-			await expect(banner.getByRole('link', { name: new RegExp(`^${copy.language}:`) })).toBeVisible();
+			await expect(banner.getByRole('link', { name: new RegExp(`^${copy.language}\\s?:`) })).toBeVisible();
 		}
 		await expectAccessible(page);
 	});
