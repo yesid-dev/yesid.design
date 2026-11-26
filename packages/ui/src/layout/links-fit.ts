@@ -12,6 +12,7 @@ const DROPPED = 'data-links-dropped';
 const NETWORK_BELOW = 'data-network-below';
 const DOCUMENT_NETWORK_BELOW = 'data-site-header-network-below';
 const NETWORK_MEASURING = 'data-network-measuring';
+const NETWORK_CODE = 'data-network-code';
 const WATCHED = '.nav-wordmark, [data-slot="product-brand"], .nav-links > [data-priority], .nav-network';
 const CONTENT_CHANGES = { subtree: true, childList: true, characterData: true };
 
@@ -56,19 +57,30 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 	function fitNetwork(width: number, fits: () => boolean): void {
 		const network = pill.querySelector('[data-slot="site-header-network"]');
 		if (!network?.firstElementChild) {
+			pill.removeAttribute(NETWORK_CODE);
 			setNetworkBelow(false);
 			onNetworkInline?.(false);
 			return;
 		}
 
-		// Try the full picker before hiding links. Measure without moving the focused DOM node.
+		// Before hiding links, try the full name inline, then the short code inline, and only then
+		// the row below the pill, which shows the code already. Measure without moving the focused
+		// DOM node. Each pass starts from the full name, so the result depends on the widths alone:
+		// the resize a switch causes measures once more and keeps the same state. The mutation
+		// observer does not watch attributes.
 		let inline = false;
 		if (width >= 1024) {
 			const wasBelow = pill.hasAttribute(NETWORK_BELOW);
 			if (wasBelow) pill.setAttribute(NETWORK_MEASURING, '');
+			pill.removeAttribute(NETWORK_CODE);
 			inline = fits();
+			if (!inline) {
+				pill.setAttribute(NETWORK_CODE, '');
+				inline = fits();
+			}
 			if (wasBelow) pill.removeAttribute(NETWORK_MEASURING);
 		}
+		if (!inline) pill.removeAttribute(NETWORK_CODE);
 		setNetworkBelow(!inline);
 		onNetworkInline?.(inline);
 	}
@@ -143,7 +155,10 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 				if (next.onNetworkInline) actions.observe(pill, CONTENT_CHANGES);
 			}
 			onNetworkInline = next.onNetworkInline;
-			if (!onNetworkInline) setNetworkBelow(false);
+			if (!onNetworkInline) {
+				pill.removeAttribute(NETWORK_CODE);
+				setNetworkBelow(false);
+			}
 			measure();
 			// Without a transition (reduced motion), the parts are full width by the next frame.
 			cancelAnimationFrame(frame);
@@ -156,6 +171,7 @@ export function linksFit(pill: HTMLElement, params: LinksFitParams) {
 			cancelAnimationFrame(frame);
 			pill.removeEventListener('transitionend', settled);
 			pill.removeEventListener('transitioncancel', settled);
+			pill.removeAttribute(NETWORK_CODE);
 			setNetworkBelow(false);
 		},
 	};
