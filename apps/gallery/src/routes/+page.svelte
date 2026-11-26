@@ -30,6 +30,7 @@
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/record-parts">Service record tables and charts</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/app-frame/record-parts/en">Record layouts in a compact app frame</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/chart-parts">Service charts</a></p>
+<p><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/live-controls">Switch, freshness stamp and stop ladder</a></p>
 <p><a class="inline-flex min-h-11 items-center underline" href="/d1-record">Answer leads, stamps and paged records</a></p>
 <p><a class="inline-flex min-h-11 items-center underline" href="/app-frame/controls-rail">App frame controls rail and network slot</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/map-parts">Map surfaces and responsive controls</a></p>

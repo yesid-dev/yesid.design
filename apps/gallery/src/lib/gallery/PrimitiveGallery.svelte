@@ -14,9 +14,11 @@
 	import { Separator } from '@yesid/ui/separator';
 	import * as Sheet from '@yesid/ui/sheet';
 	import { Skeleton } from '@yesid/ui/skeleton';
+	import { Switch } from '@yesid/ui/switch';
 	import * as Tabs from '@yesid/ui/tabs';
 
 	let collapsibleOpen = $state(true);
+	let liveUpdatesPaused = $state(false);
 	let comboboxValue = $state<string | null>('operations');
 	let rankMeasure = $state<string | null>('response-time');
 	let footerStatusRefreshes = $state(0);
@@ -320,6 +322,16 @@
 						</div>
 					</Sheet.Content>
 				</Sheet.Root>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="primitive:switch">
+			<Card.Header>
+				<Card.Title>Switch</Card.Title>
+				<Card.Description>An on/off setting that states its state in words, not colour alone.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<Switch label="Pause live updates" stateLabels={{ on: 'Paused', off: 'Live' }} bind:checked={liveUpdatesPaused} />
 			</Card.Content>
 		</Card.Root>
 

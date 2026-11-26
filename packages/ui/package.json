@@ -82,6 +82,11 @@
       "svelte": "./src/primitives/skeleton/index.ts",
       "default": "./src/primitives/skeleton/index.ts"
     },
+    "./switch": {
+      "types": "./src/primitives/switch/index.ts",
+      "svelte": "./src/primitives/switch/index.ts",
+      "default": "./src/primitives/switch/index.ts"
+    },
     "./tabs": {
       "types": "./src/primitives/tabs/index.ts",
       "svelte": "./src/primitives/tabs/index.ts",

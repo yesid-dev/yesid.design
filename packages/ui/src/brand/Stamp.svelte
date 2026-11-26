@@ -5,6 +5,7 @@
 		updatedAt?: Date;
 		agoLabel?: (seconds: number) => string;
 		late?: boolean;
+		paused?: boolean;
 	}
 </script>
 
@@ -12,10 +13,11 @@
 	import { onMount } from 'svelte';
 	import { clock } from '../state/index.js';
 
-	let { kind, label, updatedAt, agoLabel, late = false }: StampProps = $props();
+	let { kind, label, updatedAt, agoLabel, late = false, paused = false }: StampProps = $props();
 	let mounted = $state(false);
+	const isPaused = $derived(kind === 'live' && paused);
 	const timestamp = $derived(updatedAt?.getTime() ?? Number.NaN);
-	const ticking = $derived(mounted && kind === 'live' && !late && Number.isFinite(timestamp) && !!agoLabel);
+	const ticking = $derived(mounted && kind === 'live' && !late && !isPaused && Number.isFinite(timestamp) && !!agoLabel);
 	const text = $derived(ticking && agoLabel
 		? agoLabel(Math.max(0, Math.floor((clock.serverNow - timestamp) / 1000)))
 		: label);
@@ -26,8 +28,13 @@
 	});
 </script>
 
-<span class="stamp" data-slot="stamp" data-kind={kind} data-late={kind === 'live' && late}>
-	<span class="stamp-mark" aria-hidden="true"></span>
+<span class="stamp" data-slot="stamp" data-kind={kind} data-late={kind === 'live' && late && !isPaused}
+	data-paused={isPaused || undefined}>
+	{#if isPaused}
+		<span class="stamp-pause" aria-hidden="true"></span>
+	{:else}
+		<span class="stamp-mark" aria-hidden="true"></span>
+	{/if}
 	<span>{text}</span>
 </span>
 
@@ -45,15 +52,18 @@
 		font-size: var(--text-small);
 		overflow-wrap: anywhere;
 	}
-	.stamp-mark {
+	.stamp-mark, .stamp-pause {
 		flex: none;
 		inline-size: 0.5em;
 		block-size: 0.5em;
+	}
+	.stamp-mark {
 		border: 1px solid currentColor;
 		background: currentColor;
 	}
 	[data-kind='live'] .stamp-mark { border-radius: 50%; color: var(--signal-proceed); }
 	[data-late='true'] .stamp-mark { background: transparent; color: currentColor; }
+	.stamp-pause { border-inline: 2px solid currentColor; }
 	@media (forced-colors: active) {
 		.stamp[data-kind] .stamp-mark {
 			forced-color-adjust: none;

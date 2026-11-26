@@ -73,7 +73,8 @@
 		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) fit-content(25%);
 		column-gap: 1rem;
 		min-inline-size: 0;
-		overflow-wrap: anywhere;
+		overflow-wrap: break-word;
+		word-break: normal;
 	}
 	.columns, ol, li {
 		display: grid;
@@ -88,10 +89,8 @@
 	.threshold-label { grid-column: 2; text-align: center; }
 	.column-value { grid-column: 3; text-align: end; }
 	.column-value, .reading {
-		/* Keep complete words in the value track, even with the body wrap fallback. */
-		min-inline-size: min-content;
-		overflow-wrap: normal;
-		word-break: normal;
+		/* Let the value track grow for whole words, with a limit for unusually long values. */
+		max-inline-size: 50cqi;
 	}
 	ol {
 		position: relative;
@@ -146,10 +145,13 @@
 		padding-inline-start: var(--stop-indent);
 	}
 	.stop-name {
-		display: inline-flex;
-		align-items: center;
+		display: block;
+		align-content: center;
 		min-block-size: var(--size-tap-min);
 		max-inline-size: 100%;
+	}
+	.column-stop, .threshold-label, .stop-name, .code, .highlight-label {
+		min-inline-size: 0;
 	}
 	a.stop-name {
 		min-inline-size: var(--size-tap-min);
@@ -169,9 +171,8 @@
 	.highlight-label { flex-basis: 100%; padding-block-end: 0.5rem; }
 	.reading {
 		grid-area: 1 / 3;
-		display: flex;
-		align-items: center;
-		justify-content: end;
+		display: block;
+		align-content: center;
 		min-block-size: var(--size-tap-min);
 		text-align: end;
 		font-weight: 700;
@@ -191,14 +192,25 @@
 		background: var(--foreground);
 	}
 	@container (width < 30rem) {
+		/* Reclaim label space at large text sizes while keeping clearance for the rail. */
+		.columns, ol { --stop-indent: clamp(1.25rem, 14cqi, 1.75rem); }
 		.columns { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.5rem; }
 		.threshold-label { order: 1; flex-basis: 100%; text-align: start; padding-inline-start: var(--stop-indent); }
 		ol { display: block; }
 		ol[data-threshold]::after {
 			inset-inline-start: calc(var(--stop-indent) + (100% - var(--stop-indent)) * var(--stop-threshold));
 		}
-		li { grid-template-columns: minmax(0, 1fr) fit-content(35%); column-gap: 0.5rem; }
-		.reading { grid-column: 2; }
+		li {
+			--stop-column-min: calc(var(--stop-indent) + var(--size-tap-min));
+			--stop-column-gap: min(0.5rem, 2.5cqi);
+			grid-template-columns: minmax(var(--stop-column-min), 1fr) fit-content(35%);
+			column-gap: var(--stop-column-gap);
+		}
+		.reading {
+			grid-column: 2;
+			/* A long reading can grow its track after reserving space for the stop link. */
+			max-inline-size: min(50cqi, 100cqi - var(--stop-column-min) - var(--stop-column-gap));
+		}
 		.track {
 			grid-area: 2 / 1 / auto / -1;
 			margin-block: 0 0.5rem;
