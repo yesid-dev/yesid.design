@@ -88,9 +88,9 @@
 	.threshold-label { grid-column: 2; text-align: center; }
 	.column-value { grid-column: 3; text-align: end; }
 	.column-value, .reading {
-		/* Keep complete words in the value track, even with the body wrap fallback. */
-		min-inline-size: min-content;
-		overflow-wrap: normal;
+		/* Let the value track grow for whole words, with a limit for unusually long values. */
+		max-inline-size: 50cqi;
+		overflow-wrap: break-word;
 		word-break: normal;
 	}
 	ol {
@@ -169,9 +169,8 @@
 	.highlight-label { flex-basis: 100%; padding-block-end: 0.5rem; }
 	.reading {
 		grid-area: 1 / 3;
-		display: flex;
-		align-items: center;
-		justify-content: end;
+		display: block;
+		align-content: center;
 		min-block-size: var(--size-tap-min);
 		text-align: end;
 		font-weight: 700;
@@ -204,6 +203,12 @@
 			margin-block: 0 0.5rem;
 			margin-inline-start: var(--stop-indent);
 		}
+	}
+	@container (width < 12rem) {
+		/* At enlarged text sizes, the rail and reading can leave too little room for a stop name. */
+		li { grid-template-columns: minmax(0, 1fr); }
+		.reading { grid-area: 2 / 1; max-inline-size: none; }
+		.track { grid-row: 3; }
 	}
 	@media (forced-colors: active) {
 		[data-highlighted] { outline: 1px dashed CanvasText; outline-offset: -1px; }

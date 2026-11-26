@@ -92,6 +92,12 @@
 - `svelte` → `./src/primitives/skeleton/index.ts`
 - `default` → `./src/primitives/skeleton/index.ts`
 
+### `./switch`
+
+- `types` → `./src/primitives/switch/index.ts`
+- `svelte` → `./src/primitives/switch/index.ts`
+- `default` → `./src/primitives/switch/index.ts`
+
 ### `./tabs`
 
 - `types` → `./src/primitives/tabs/index.ts`
@@ -175,6 +181,7 @@
 - `PrimitivesSeparator` → `./src/primitives/separator/index.ts` (`./separator`)
 - `PrimitivesSheet` → `./src/primitives/sheet/index.ts` (`./sheet`)
 - `PrimitivesSkeleton` → `./src/primitives/skeleton/index.ts` (`./skeleton`)
+- `PrimitivesSwitch` → `./src/primitives/switch/index.ts` (`./switch`)
 - `PrimitivesTabs` → `./src/primitives/tabs/index.ts` (`./tabs`)
 - `Layout` → `./src/layout/index.ts` (`./layout`)
 - `State` → `./src/state/index.ts` (`./state`)
@@ -2808,6 +2815,13 @@ declare namespace PrimitivesSkeleton {
     }
 }
 
+declare namespace PrimitivesSwitch {
+    export {
+        Switch,
+        SwitchProps
+    }
+}
+
 declare namespace PrimitivesTabs {
     export {
         Tabs as Root,
@@ -3646,6 +3660,8 @@ interface StampProps {
     // (undocumented)
     late?: boolean;
     // (undocumented)
+    paused?: boolean;
+    // (undocumented)
     updatedAt?: Date;
 }
 
@@ -3892,6 +3908,31 @@ interface SurfaceRailProps {
     // (undocumented)
     rail: Snippet<[SurfaceRailContext]>;
     summary?: string;
+}
+
+// @public (undocumented)
+const Switch: Component<SwitchProps, {}, "checked">;
+
+// @public (undocumented)
+type Switch = ReturnType<typeof Switch>;
+
+// @public (undocumented)
+interface SwitchProps {
+    // (undocumented)
+    checked?: boolean;
+    // (undocumented)
+    class?: string;
+    // (undocumented)
+    disabled?: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    onCheckedChange?: (checked: boolean) => void;
+    // (undocumented)
+    stateLabels: {
+        on: string;
+        off: string;
+    };
 }
 
 declare namespace Table {

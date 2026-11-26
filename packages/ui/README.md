@@ -206,6 +206,26 @@ width and wrap labels over multiple lines, using content-driven height with a mi
 target. Fixed caller heights still override this option.
 Button transitions name color, background-color, border-color, box-shadow and translate explicitly.
 
+### Switch
+
+Use `Switch` from `@yesid/ui/switch` for an on/off setting. Supply a stable, localized `label`
+and localized `stateLabels.on` and `stateLabels.off`. The label is visible and names the control.
+The state word is visible, and `aria-checked` announces the state separately.
+
+```svelte
+<script lang="ts">
+	import { Switch } from '@yesid/ui/switch';
+	let paused = $state(false);
+</script>
+
+<Switch label="Pause live updates" stateLabels={{ on: 'Paused', off: 'Live' }} bind:checked={paused} />
+```
+
+To migrate from a Button with `role="switch"`, move its label and state words into these props
+and replace its click handler and `aria-checked` bookkeeping with `bind:checked` or
+`checked` and `onCheckedChange`. The callback receives the new boolean on user activation.
+`checked` defaults to `false`. `disabled` prevents activation.
+
 ### Card
 
 A solid panel with a lit top bevel (`edge-highlight`). Only a card that acts reacts (D21): pass
@@ -586,7 +606,10 @@ does). The default is `layout="threshold"`.
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
 seconds from the shared clock. Pass `late` with the supplied stale-since `label` to show a ring
-and keep the label stable. Clock updates are ordinary text changes.
+and keep the label stable. Pass `paused` on a live stamp with a localized paused `label`,
+such as `Paused · last updated at 2 p.m.`, to show a neutral pause mark and hold that label
+steady. If both `late` and `paused` are set, the pause mark takes precedence. Clock updates
+are ordinary text changes.
 
 ### CornerMarks, StatusDot, MetricDisplay, SectionHeading, and SectionIcon
 
@@ -1272,7 +1295,8 @@ Also from `@yesid/ui/chart`:
   positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
   A `threshold` labels a continuous comparison line. A `highlight` names a span between two
   stop IDs. Linked stops use the kit's text link treatment and each code sits beside the
-  name when there is room.
+  name when there is room. Labels wrap at word boundaries, with breaks inside a word reserved
+  for words wider than the available line.
 
 ## Map surfaces
 
