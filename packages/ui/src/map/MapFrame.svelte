@@ -10,6 +10,10 @@
 		legend?: Snippet;
 		legendLabel?: string;
 		details?: { label: string; content: Snippet };
+		/** Fill the host's block size instead of keeping the map at least 20rem tall. */
+		fillHeight?: boolean;
+		/** The inline side for the compact legend button and its card. */
+		legendSide?: 'start' | 'end';
 	}
 </script>
 
@@ -18,7 +22,10 @@
 	import { Card } from '../primitives/card/index.js';
 	import type { MapRect } from './placement.js';
 
-	let { label, children, panel, legend, legendLabel, details, class: className, ...rest }: MapFrameProps = $props();
+	let {
+		label, children, panel, legend, legendLabel, details, fillHeight = false, legendSide = 'end',
+		class: className, ...rest
+	}: MapFrameProps = $props();
 	let stage = $state<HTMLDivElement>();
 	let left = $state<HTMLDivElement>();
 	let right = $state<HTMLElement>();
@@ -67,7 +74,14 @@
 	});
 </script>
 
-<section {...rest} class={cn('map-frame', className)} data-slot="map-frame" aria-label={label}>
+<section
+	{...rest}
+	class={cn('map-frame', className)}
+	data-slot="map-frame"
+	data-fill-height={fillHeight || undefined}
+	data-legend-side={legendSide === 'start' ? 'start' : undefined}
+	aria-label={label}
+>
 	<div class="map-content">
 		<div class="map-stage" bind:this={stage} data-slot="map-stage">
 			{@render children(viewport)}
@@ -150,6 +164,9 @@
 		min-inline-size: 0;
 		background: var(--background);
 	}
+	/* The host sets the height; the map content is absolutely positioned. */
+	.map-frame[data-fill-height] { block-size: 100%; }
+	.map-frame[data-fill-height] .map-stage { min-block-size: 0; }
 	.map-left,
 	.map-details {
 		position: absolute;
@@ -210,6 +227,7 @@
 			gap: 0.5rem;
 			pointer-events: none;
 		}
+		.map-frame[data-legend-side='start'] .legend-dock { align-items: flex-start; }
 	}
 	@container map-frame (inline-size < 48rem) {
 		.map-left,

@@ -40,6 +40,11 @@ export const stopTable = {
 	headers: { stop: 'Stop', wait: 'Wait (min)', headway: 'Headway (min)' },
 };
 
+export const statusTable = {
+	caption: 'Stop waits with status',
+	minWidth: '28rem',
+};
+
 export const hourTable = {
 	caption: 'Departures by hour',
 	minWidth: '40rem',

@@ -15,6 +15,7 @@
 	];
 	type Row = (typeof data)[number];
 	const number = new Intl.NumberFormat('fr-CA');
+	const percent = new Intl.NumberFormat('fr-CA', { style: 'percent' });
 	const cells = Array.from({ length: 7 }, (_, index) => ({
 		id: String(index), label: String(16 + index), dateLabel: `${16 + index} novembre`,
 		report: index === 1 ? null : { value: '71,5 %', fraction: 0.715 },
@@ -66,6 +67,11 @@
 		</AnswerLead>
 	</Card>
 	<AnswerLead value="0" size="md" sentence="trajet annulé dans le secteur du Lac." />
+	<div class="answer-fit" data-testid="answer-fit">
+		<AnswerLead layout="fit" size="md" value={percent.format(0.08)} sentence="des correspondances ont été manquées cette semaine." />
+		<AnswerLead layout="fit" value={`${number.format(1234567)} – ${number.format(2345678)}`}
+			sentence="validations de titres par mois sur le réseau." />
+	</div>
 	<div class="stamps">
 		<Stamp kind="live" label="En direct · à l’instant" {updatedAt} agoLabel={(seconds) => `En direct · il y a ${seconds} s`} />
 		<Stamp kind="live" late label="En direct · interrompu depuis 14 h" />
@@ -103,6 +109,7 @@
 <style>
 	.record { display: grid; gap: var(--space-card-gap); min-inline-size: 0; }
 	.record :global(.answer-example) { inline-size: min(100%, calc(416px + 2rem + 4px)); }
+	.answer-fit { display: grid; gap: var(--space-card-gap); }
 	.stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 	h1 { font-size: var(--text-title); }
 	h2 { font-size: var(--text-heading); }

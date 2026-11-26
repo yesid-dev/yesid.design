@@ -51,6 +51,49 @@ test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 		await expectAccessible(page, { include: '[data-testid="d1-record"]' });
 	});
 
+	test('the fit layout keeps a short figure beside its sentence and breaks a long range between numbers', async ({ page }) => {
+		await page.goto('/d1-record');
+		await page.evaluate(() => document.fonts.ready);
+		const scope = page.getByTestId('answer-fit');
+		const short = scope.getByRole('region', { name: 'des correspondances ont été manquées cette semaine.' });
+		const long = scope.getByRole('region', { name: 'validations de titres par mois sur le réseau.' });
+		for (const width of [320, 396]) {
+			await page.setViewportSize({ width, height: 900 });
+			await expect(short).toHaveAttribute('data-layout', 'fit');
+			const figure = (await short.locator('.answer-value').boundingBox())!;
+			const sentence = (await short.locator('.answer-sentence').boundingBox())!;
+			expect(figure.x + figure.width, `${width}px`).toBeLessThan(sentence.x);
+			expect(sentence.y, `${width}px`).toBeLessThan(figure.y + figure.height);
+
+			// Each number is one Range line box; the whole range wraps between them.
+			const lines = await long.locator('.metric-value').evaluate((value) => {
+				const text = value.firstChild as Text;
+				const range = document.createRange();
+				const count = (start: number, end: number) => {
+					range.setStart(text, start);
+					range.setEnd(text, end);
+					return range.getClientRects().length;
+				};
+				let offset = 0;
+				const numbers = text.data.split(' – ').map((token) => {
+					const start = text.data.indexOf(token, offset);
+					offset = start + token.length;
+					return count(start, offset);
+				});
+				return { whole: count(0, text.data.length), numbers };
+			});
+			expect(lines.whole, `${width}px`).toBeGreaterThan(1);
+			expect(lines.numbers, `${width}px`).toEqual([1, 1]);
+			const range = (await long.locator('.answer-value').boundingBox())!;
+			expect((await long.locator('.answer-sentence').boundingBox())!.y).toBeGreaterThanOrEqual(range.y + range.height);
+		}
+		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+		for (const width of [320, 396]) {
+			await page.setViewportSize({ width, height: 900 });
+			await expectNoHorizontalOverflow(page, ['[data-testid="answer-fit"] :is(.answer-value, .answer-sentence)']);
+		}
+	});
+
 	test('short day figures and stacked table pairs stay on the same row at 200% text', async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 900 });
 		await page.goto('/d1-record');

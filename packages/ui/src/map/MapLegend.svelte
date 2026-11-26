@@ -20,6 +20,10 @@
 		collapsible?: boolean;
 		open?: boolean;
 		persistKey?: string;
+		/** `inline` sets each label in semibold with its detail on the same line. */
+		detailLayout?: 'below' | 'inline';
+		/** `before-groups` renders the scale between the flat items and the groups. */
+		scalePlacement?: 'after-groups' | 'before-groups';
 	}
 </script>
 
@@ -28,7 +32,7 @@
 	import { cn } from '../cn/index.js';
 	let {
 		title, items = [], groups = [], scale, collapsible = false, open = $bindable(true),
-		persistKey, class: className, ...rest
+		persistKey, detailLayout = 'below', scalePlacement = 'after-groups', class: className, ...rest
 	}: MapLegendProps = $props();
 	const contentId = $props.id();
 
@@ -50,7 +54,8 @@
 </script>
 
 {#snippet legendRows(groupTitle: string, groupItems: readonly MapLegendItem[])}
-	<ul class="items" role="list" aria-label={groupTitle} data-slot="map-legend">
+	<ul class="items" role="list" aria-label={groupTitle} data-slot="map-legend"
+		data-detail-layout={detailLayout === 'inline' ? 'inline' : undefined}>
 		{#each groupItems as { label, symbol, detail }}
 			<li>
 				<span class="map-legend-symbol" aria-hidden="true">{@render symbol()}</span>
@@ -63,6 +68,18 @@
 	</ul>
 {/snippet}
 
+{#snippet scaleRows(legendScale: NonNullable<MapLegendProps['scale']>)}
+	<p class="group-title">{legendScale.title}</p>
+	{#if legendScale.steps.length}
+		<ol class="ramp" role="list" aria-label={legendScale.title} style:--legend-steps={legendScale.steps.length}>
+			{#each legendScale.steps as step}
+				<li><span class="step" style:background-color={step.swatch} aria-hidden="true"></span>{step.label}</li>
+			{/each}
+		</ol>
+	{/if}
+	{#if legendScale.states?.length}{@render legendRows(legendScale.title, legendScale.states)}{/if}
+{/snippet}
+
 <Card {...rest} edge="neutral" textSize="inherit" class={cn('gap-2 p-3', className)}>
 	{#if collapsible}
 		<button type="button" class="map-legend-title legend-toggle" aria-controls={contentId} aria-expanded={open} onclick={toggle}>
@@ -72,22 +89,12 @@
 		<p class="map-legend-title">{title}</p>
 	{/if}
 	<div id={contentId} hidden={collapsible && !open}>
-		{#if items.length}{@render legendRows(title, items)}{/if}
+		{#if items.length}{@render legendRows(title, items)}{/if}{#if scale && scalePlacement === 'before-groups'}{@render scaleRows(scale)}{/if}
 		{#each groups as group}
 			<p class="group-title">{group.title}</p>
 			{@render legendRows(group.title, group.items)}
 		{/each}
-		{#if scale}
-			<p class="group-title">{scale.title}</p>
-			{#if scale.steps.length}
-				<ol class="ramp" role="list" aria-label={scale.title} style:--legend-steps={scale.steps.length}>
-					{#each scale.steps as step}
-						<li><span class="step" style:background-color={step.swatch} aria-hidden="true"></span>{step.label}</li>
-					{/each}
-				</ol>
-			{/if}
-			{#if scale.states?.length}{@render legendRows(scale.title, scale.states)}{/if}
-		{/if}
+		{#if scale && scalePlacement !== 'before-groups'}{@render scaleRows(scale)}{/if}
 	</div>
 </Card>
 
@@ -145,6 +152,12 @@
 	.detail {
 		display: block;
 		color: var(--muted-foreground);
+	}
+	/* The label inherits the weight; the detail follows after the space already in the markup. */
+	.items[data-detail-layout='inline'] li { font-weight: 600; }
+	.items[data-detail-layout='inline'] .detail {
+		display: inline;
+		font-weight: 400;
 	}
 	.ramp {
 		display: grid;

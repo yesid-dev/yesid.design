@@ -563,6 +563,11 @@ short `comparison` adds context below the answer. At a viewport of at least 40 e
 width of at least 26 rem, the figure and sentence sit side by side. The sentence keeps at least
 12 rem and the figure keeps its natural width up to 55% of the available width. The layout
 stacks below either threshold. The large answer uses the display scale within this component.
+`layout="fit"` drops both thresholds: at any width, the figure sits beside the sentence whenever
+its natural width, a 1 rem gap and 12 rem for the sentence fit, and the sentence wraps below it
+otherwise. A long figure, such as a range, wraps at its spaces and breaks inside a number only
+when that number is wider than the line, so put no-break spaces inside numbers (`Intl.NumberFormat`
+does). The default is `layout="threshold"`.
 
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
@@ -1140,6 +1145,11 @@ named by its caption. `frame="card"` draws a rounded card, `headerBand="terminal
 header, `tableClass` styles the table and other attributes go to the frame. Stacked rows wrap
 localized headings and keep the native table roles at enlarged text.
 
+`rowAlign="middle"` centres body cells vertically, so a short figure lines up with the middle of
+a taller row header; numeric and `end` cells stay right-aligned. It applies while the cells keep
+table layout, including `mode: 'scroll'` and a `rows` table wider than 28 rem. Stacked rows and
+the compact `rows` layout ignore it. The default is `rowAlign="top"`.
+
 `@yesid/ui/feedback` exports `StateNotice`, the quiet empty, error and status notice: `title`,
 optional `body`, a `glyph` tinted by `tone`, and `meta` and `action` snippets. `tone` is
 `neutral` (default), `positive`, `warning` or `error`; the last three use `--success`,
@@ -1231,11 +1241,21 @@ Also from `@yesid/ui/chart`:
   after the map in reading order. The map snippet receives its measured `width`, `height`
   and the visible overlay rectangles it needs to avoid, in CSS pixels relative to the map.
   The first render has zero measured dimensions. Render the base map first and wait for
-  measurements before placing labels.
+  measurements before placing labels. The map is at least 20 rem tall by default. Pass
+  `fillHeight` when the host sets the height, such as a short landscape phone: the map drops that
+  minimum and fills the host, which needs a definite block size; below 48 rem, panels that move
+  after the map share that height. `legendSide="start"` docks the round legend button and its
+  card at the start inset instead of the end (`end` by default); the wide legend always sits
+  below the panel.
 - `MapLegend` takes a localized `title`, optional flat `items`, titled `groups`, and an ordered
   `scale` with labeled color steps and optional states. Each item has a `label`, decorative
   `symbol` snippet and optional `detail`. Use `collapsible` for a title button, `bind:open`
-  for caller state, and a unique `persistKey` to remember the visitor’s choice.
+  for caller state, and a unique `persistKey` to remember the visitor’s choice. By default the
+  detail sits under its label in muted text. `detailLayout="inline"` sets the label in semibold
+  with the muted detail after a space on the same line, wrapping as text does; the legend adds no
+  punctuation, so put any separator and its locale spacing in the label. The scale follows the
+  groups by default; `scalePlacement="before-groups"` places it after the flat items and before
+  the groups.
 - `StillMap` takes a localized `label`, a `viewBox` tuple `[x, y, width, height]`, an SVG snippet
   and optional HTML `overlay`. The whole view box stays visible as the card stretches. Give the
   same location or route information in the label or surrounding text.

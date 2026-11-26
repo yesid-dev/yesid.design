@@ -44,4 +44,18 @@ describe('DataTable', () => {
 	it('refuses a blank caption', () => {
 		expect(() => table('   ')).toThrow(/caption/);
 	});
+
+	it('marks middle row alignment on the frame and changes nothing else', () => {
+		const show = (rowAlign?: 'top' | 'middle') =>
+			render(DataTable<Row>, { props: { rows, columns, key: (row) => row.id, caption: 'Waits by route', rowAlign } });
+		const omitted = show();
+		const frame = omitted.container.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
+		expect(frame.hasAttribute('data-row-align')).toBe(false);
+		expect(show('top').container.innerHTML).toBe(omitted.container.innerHTML);
+
+		const middle = show('middle').container;
+		const marked = middle.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
+		expect(marked.dataset.rowAlign).toBe('middle');
+		expect(middle.innerHTML.replace(' data-row-align="middle"', '')).toBe(omitted.container.innerHTML);
+	});
 });
