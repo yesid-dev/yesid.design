@@ -12,6 +12,7 @@ export const GALLERY_COVERAGE = {
 		'sheet',
 		'skeleton',
 		'tabs',
+		'tooltip',
 	],
 	brand: [
 		'AnswerLead',

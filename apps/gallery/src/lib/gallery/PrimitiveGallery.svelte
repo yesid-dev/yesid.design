@@ -15,6 +15,7 @@
 	import * as Sheet from '@yesid/ui/sheet';
 	import { Skeleton } from '@yesid/ui/skeleton';
 	import * as Tabs from '@yesid/ui/tabs';
+	import { Tooltip } from '@yesid/ui/tooltip';
 
 	let collapsibleOpen = $state(true);
 	let comboboxValue = $state<string | null>('operations');
@@ -300,6 +301,21 @@
 						</Sheet.Footer>
 					</Sheet.Content>
 				</Sheet.Root>
+				<Sheet.Root>
+					<Sheet.Trigger class="min-h-11 rounded-md border border-border px-3 py-2 text-small hover:border-primary">
+						Open schedule note
+					</Sheet.Trigger>
+					<Sheet.Content showCloseButton={false}>
+						<Sheet.Header>
+							<Sheet.Title>Schedule note</Sheet.Title>
+							<Sheet.Description>Check the current operating hours.</Sheet.Description>
+						</Sheet.Header>
+						<Sheet.Body>Weekend hours are in effect.</Sheet.Body>
+						<Sheet.Footer>
+							<Sheet.Close class="min-h-11 rounded-md border border-border px-3 py-2">Done</Sheet.Close>
+						</Sheet.Footer>
+					</Sheet.Content>
+				</Sheet.Root>
 			</Card.Content>
 		</Card.Root>
 
@@ -320,6 +336,17 @@
 						</div>
 					</Sheet.Content>
 				</Sheet.Root>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="primitive:tooltip">
+			<Card.Header><Card.Title>Tooltip</Card.Title></Card.Header>
+			<Card.Content class="flex justify-end">
+				<Tooltip content="Read how planned service changes affect connections and accessible boarding.">
+					{#snippet trigger({ props })}
+						<a {...props} type={undefined} href="/app-frame" class="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-2 text-small hover:border-primary">Service guide</a>
+					{/snippet}
+				</Tooltip>
 			</Card.Content>
 		</Card.Root>
 

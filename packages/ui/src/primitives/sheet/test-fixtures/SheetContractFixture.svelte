@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Sheet, SheetContent, SheetDescription, SheetTitle } from '../index.js';
+	import { Sheet, SheetBody, SheetContent, SheetDescription, SheetTitle } from '../index.js';
 
 	type Props = { modal?: boolean } & (
 		| { closeLabel: string; showCloseButton?: boolean }
@@ -13,7 +13,7 @@
 	<SheetContent portalProps={{ disabled: true }} {...props}>
 		<SheetTitle>Fixture title</SheetTitle>
 		<SheetDescription>Fixture description</SheetDescription>
-		<p>Fixture body</p>
+		<SheetBody id="fixture-body" class="py-2" lang="en">Fixture body</SheetBody>
 	</SheetContent>
 </Sheet>
 

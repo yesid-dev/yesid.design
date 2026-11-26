@@ -1,5 +1,6 @@
 import { Dialog as SheetPrimitive } from 'bits-ui';
 
+import Body, { type SheetBodyProps } from './sheet-body.svelte';
 import Title, { type SheetTitleProps } from './sheet-title.svelte';
 import Footer, { type SheetFooterProps } from './sheet-footer.svelte';
 import Header, { type SheetHeaderProps } from './sheet-header.svelte';
@@ -21,6 +22,7 @@ export type SheetCloseProps = SheetPrimitive.CloseProps;
 export type SheetPortalProps = SheetPrimitive.PortalProps;
 
 export type {
+	SheetBodyProps,
 	SheetContentProps,
 	SheetDescriptionProps,
 	SheetFooterProps,
@@ -30,6 +32,7 @@ export type {
 };
 
 export {
+	Body,
 	Root,
 	Title,
 	Portal,
@@ -43,6 +46,7 @@ export {
 	type SheetSide,
 	//
 	Root as Sheet,
+	Body as SheetBody,
 	Title as SheetTitle,
 	Portal as SheetPortal,
 	Footer as SheetFooter,

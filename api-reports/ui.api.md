@@ -98,6 +98,12 @@
 - `svelte` → `./src/primitives/tabs/index.ts`
 - `default` → `./src/primitives/tabs/index.ts`
 
+### `./tooltip`
+
+- `types` → `./src/primitives/tooltip/index.ts`
+- `svelte` → `./src/primitives/tooltip/index.ts`
+- `default` → `./src/primitives/tooltip/index.ts`
+
 ### `./layout`
 
 - `types` → `./src/layout/index.ts`
@@ -176,6 +182,7 @@
 - `PrimitivesSheet` → `./src/primitives/sheet/index.ts` (`./sheet`)
 - `PrimitivesSkeleton` → `./src/primitives/skeleton/index.ts` (`./skeleton`)
 - `PrimitivesTabs` → `./src/primitives/tabs/index.ts` (`./tabs`)
+- `PrimitivesTooltip` → `./src/primitives/tooltip/index.ts` (`./tooltip`)
 - `Layout` → `./src/layout/index.ts` (`./layout`)
 - `State` → `./src/state/index.ts` (`./state`)
 - `Head` → `./src/head/index.ts` (`./head`)
@@ -212,6 +219,7 @@ import type { Snippet } from 'svelte';
 import { SvelteComponent } from 'svelte';
 import type { SVGAttributes } from 'svelte/elements';
 import { Tabs as Tabs_2 } from 'bits-ui';
+import { Tooltip as Tooltip_2 } from 'bits-ui';
 import { TVReturnType } from 'tailwind-variants';
 import { VariantProps } from 'tailwind-variants';
 
@@ -2770,12 +2778,14 @@ declare namespace PrimitivesSheet {
         SheetTriggerProps,
         SheetCloseProps,
         SheetPortalProps,
+        SheetBodyProps,
         SheetContentProps,
         SheetDescriptionProps,
         SheetFooterProps,
         SheetHeaderProps,
         SheetOverlayProps,
         SheetTitleProps,
+        SheetBody as Body,
         Root,
         SheetTitle as Title,
         Portal,
@@ -2788,6 +2798,7 @@ declare namespace PrimitivesSheet {
         Close,
         SheetSide,
         Root as Sheet,
+        SheetBody,
         SheetTitle,
         Portal as SheetPortal,
         SheetFooter,
@@ -2819,6 +2830,14 @@ declare namespace PrimitivesTabs {
         TabsContent,
         TabsList,
         TabsTrigger
+    }
+}
+
+declare namespace PrimitivesTooltip {
+    export {
+        Tooltip as Root,
+        Tooltip,
+        TooltipProps
     }
 }
 
@@ -3294,6 +3313,15 @@ type SeparatorProps = SeparatorDefaultProps | SeparatorHazardProps | SeparatorGr
 
 // @public (undocumented)
 type SeparatorVariant = 'default' | 'hazard' | 'gradient' | 'dimension' | 'hand-drawn';
+
+// @public (undocumented)
+const SheetBody: Component<SheetBodyProps, {}, "ref">;
+
+// @public (undocumented)
+type SheetBody = ReturnType<typeof SheetBody>;
+
+// @public (undocumented)
+type SheetBodyProps = WithElementRef<HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
 
 // @public (undocumented)
 type SheetCloseProps = Dialog.CloseProps;
@@ -4124,6 +4152,18 @@ interface ToggleChipProps extends Omit<HTMLButtonAttributes, 'aria-pressed'> {
     // (undocumented)
     pressed: boolean;
 }
+
+// @public (undocumented)
+const Tooltip: Component<TooltipProps, {}, "">;
+
+// @public (undocumented)
+type Tooltip = ReturnType<typeof Tooltip>;
+
+// @public (undocumented)
+type TooltipProps = {
+    content: string;
+    trigger: NonNullable<Tooltip_2.TriggerProps['child']>;
+};
 
 // @public (undocumented)
 const Trigger: Component<Dialog.TriggerProps, {}, "ref">;

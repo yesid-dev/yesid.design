@@ -87,6 +87,11 @@
       "svelte": "./src/primitives/tabs/index.ts",
       "default": "./src/primitives/tabs/index.ts"
     },
+    "./tooltip": {
+      "types": "./src/primitives/tooltip/index.ts",
+      "svelte": "./src/primitives/tooltip/index.ts",
+      "default": "./src/primitives/tooltip/index.ts"
+    },
     "./layout": {
       "types": "./src/layout/index.ts",
       "svelte": "./src/layout/index.ts",
