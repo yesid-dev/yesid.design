@@ -38,6 +38,26 @@ describe('SectionHeading size', () => {
 	});
 });
 
+describe('SectionHeading flush', () => {
+	it.each(baselines)('keeps the %s markup when flush is omitted or false', (name, props) => {
+		expect(slot(show(props), 'section-heading')?.hasAttribute('data-flush')).toBe(false);
+		expect(markup(show({ ...props, flush: false }))).toBe(domBaseline[name]);
+	});
+
+	it.each(baselines)('marks the flush %s heading with data-flush and renders the same parts', (name, props) => {
+		const view = show({ ...props, flush: true });
+		const root = slot(view, 'section-heading')!;
+		expect(root.getAttribute('data-flush')).toBe('');
+		root.removeAttribute('data-flush');
+		expect(markup(view)).toBe(domBaseline[name]);
+	});
+
+	it('combines flush with the title size', () => {
+		const root = slot(show({ heading: 'Delivery address', size: 'title', flush: true }), 'section-heading')!;
+		expect([root.getAttribute('data-size'), root.getAttribute('data-flush')]).toEqual(['title', '']);
+	});
+});
+
 describe('SectionHeading', () => {
 	it('renders an h2 by default and the requested level otherwise', () => {
 		const tag = (props: SectionHeadingProps) => slot(show(props), 'section-heading')?.firstElementChild?.tagName;

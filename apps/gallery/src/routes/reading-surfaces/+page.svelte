@@ -135,7 +135,10 @@
 	</div>
 
 	<h2 id="titles" class="text-heading font-heading font-bold">Screen titles</h2>
-	<p>The compact title size for task and reading screens, with and without the dot.</p>
+	<p>
+		The compact title size for task and reading screens: with and without the dot, flush before the caller's own
+		content, with a long last word, and sized by <code>--section-heading-title-size</code> on a wrapper.
+	</p>
 	<div class="stack">
 		<div data-fixture="title-dot">
 			<SectionHeading size="title" level={3} heading="Check your details before you continue" />
@@ -145,6 +148,23 @@
 		</div>
 		<div data-fixture="title-sub">
 			<SectionHeading size="title" level={3} heading="Weekly summary" subheading="Figures from the last seven days" />
+		</div>
+		<div data-fixture="title-flush">
+			<SectionHeading size="title" level={3} flush heading="Delivery address" />
+			<p>With <code>flush</code>, the heading adds no space after it, so this paragraph sets the gap.</p>
+		</div>
+		<div data-fixture="title-flush-sub">
+			<SectionHeading size="title" level={3} flush heading="Payment" subheading="Card or bank transfer" />
+			<p>A flush heading's subheading adds no space after it either.</p>
+		</div>
+		<div lang="fr" data-fixture="title-long-word" class="plain-wrap">
+			<SectionHeading size="title" level={3} heading="Les mesures appliquées anticonstitutionnellement" />
+		</div>
+		<div data-fixture="title-size-compact" class="title-size-compact">
+			<SectionHeading size="title" level={3} heading="Plan a trip" />
+		</div>
+		<div data-fixture="title-size-heading" class="title-size-heading">
+			<SectionHeading size="title" level={3} heading="Saved places" />
 		</div>
 	</div>
 </div>
@@ -184,6 +204,17 @@
 	}
 	.hint {
 		color: var(--muted-foreground);
+	}
+	/* The page's own wrapping help is off here, so the long word wraps by the kit's rule alone. */
+	.plain-wrap {
+		overflow-wrap: normal;
+	}
+	/* A caller sizes its screen titles on its own wrapper, never on the kit's markup. */
+	.title-size-compact {
+		--section-heading-title-size: clamp(1.25rem, 8vi, var(--text-title));
+	}
+	.title-size-heading {
+		--section-heading-title-size: var(--text-heading);
 	}
 	.value {
 		font-size: var(--text-body);

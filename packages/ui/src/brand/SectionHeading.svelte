@@ -19,10 +19,17 @@
 		level?: 1 | 2 | 3 | 4 | 5 | 6;
 		/**
 		 * `display` (default): the large section heading. `title`: the compact screen title for task
-		 * and reading screens, at `--text-title`, bold with normal tracking, and a subheading in the
-		 * reading label type. The overline ignores it.
+		 * and reading screens, at `--section-heading-title-size` when an ancestor sets it and
+		 * `--text-title` otherwise, bold with normal tracking, long words wrapping, and a subheading
+		 * in the reading label type. The overline ignores it.
 		 */
 		size?: 'display' | 'title';
+		/**
+		 * No space after the heading: the heading text, and the subheading when given, drop their
+		 * end margin, for a title followed by the caller's own subtitle or content. The root carries
+		 * `data-flush` only when set.
+		 */
+		flush?: boolean;
 		dot?: boolean;
 		/** Leading zero-padded section number. */
 		number?: number;
@@ -45,6 +52,7 @@
 		overline,
 		level = 2,
 		size = 'display',
+		flush = false,
 		dot = true,
 		number,
 		numberTone = 'rest',
@@ -74,6 +82,7 @@
 	data-slot="section-heading"
 	data-mode={isOverline ? 'overline' : 'display'}
 	data-size={size === 'title' ? 'title' : undefined}
+	data-flush={flush ? '' : undefined}
 	class={cn('section-heading', className)}
 	{...restProps}
 >
@@ -128,12 +137,30 @@
 		margin-block-end: 36px;
 	}
 
+	/* No space after the heading, for a title followed by the caller's own subtitle or content. */
+	.section-heading[data-flush] .section-heading-text,
+	.section-heading[data-flush] .section-heading-sub {
+		margin-block-end: 0;
+	}
+
 	/* The compact screen title. The dot is a glyph of the heading text, so it scales and keeps the
-	   baseline with it. The subheading takes the reading label role (`.label-reading` in base.css). */
+	   baseline with it. The subheading takes the reading label role (`.label-reading` in base.css).
+	   A caller sets `--section-heading-title-size` on its own wrapper for a compact or narrow step. */
 	.section-heading[data-size='title'] .section-heading-text {
-		font-size: var(--text-title);
+		font-size: var(--section-heading-title-size, var(--text-title));
 		font-weight: 700;
 		letter-spacing: normal;
+		overflow-wrap: break-word;
+	}
+	/* A last word wider than the line breaks inside itself instead of overflowing. As an inline block
+	   it still moves to the next line whole when it fits there, so only a word wider than the line
+	   breaks. `break-all` adds breaks between letters but never before the full stop (UAX #14), so
+	   the dot stays on the word's last line. */
+	.section-heading[data-size='title'] .section-heading-tail {
+		display: inline-block;
+		max-width: 100%;
+		white-space: normal;
+		word-break: break-all;
 	}
 	.section-heading[data-size='title'] .section-heading-sub {
 		font-family: var(--font-body);

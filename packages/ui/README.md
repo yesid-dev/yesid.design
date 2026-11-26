@@ -594,7 +594,16 @@ section heading. `title` is the smaller title for task and reading screens: the 
 size, bold, with normal letter spacing, and a `subheading` in the sentence-case `.label-reading`
 type instead of the mono uppercase label. The `dot`, `number`, `headingAccent`, `explainer` and
 `level` props work the same at both sizes, and the root carries `data-size="title"` only at the
-title size. The overline ignores `size`. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
+title size. The overline ignores `size`. At the title size, a long word wraps instead of
+overflowing; a last word wider than the line breaks inside itself and keeps the dot on its last
+line, while a last word that fits still moves to the next line whole. The title size reads the
+`--section-heading-title-size` custom property and falls back to `--text-title`. Set it on your own
+wrapper, never on the kit's markup: `clamp(1.25rem, 8vi, var(--text-title))` gives a compact title
+that shrinks with the viewport width down to 1.25rem, and `var(--text-heading)` inside a
+narrow-width media query gives a smaller step. The display size ignores it. `flush` removes the space after the
+heading: the heading text, and the `subheading` when given, lose their end margin, for a title
+followed directly by your own subtitle or content. The root carries `data-flush` only when it is
+set. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses.
 
 ### FilterGroup, FilterSection, FilterSummary, and SearchInput
 
