@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.60.0-rc.1
+## 0.60.0
 
 <!-- release-fragment: drawn-boundary-and-rail-centre -->
 - `@yesid/ui` (patch): Hand-drawn PageSections and ArticleHeader dividers paint to both edges with smaller gaps between strokes. SurfaceRail pills and sheets centre within the available content width, including in a full-viewport AppFrame with a classic scrollbar.
