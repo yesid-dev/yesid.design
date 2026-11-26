@@ -1,0 +1,5 @@
+---
+"@yesid/ui": minor
+---
+
+`SectionHeading` takes a `flush` prop that removes the space after the heading: the heading text, and the subheading when given, lose their end margin, for a title followed directly by your own subtitle or content. The root carries `data-flush` only when it is set. At `size="title"`, long words now wrap instead of overflowing, and a last word wider than the line breaks inside itself with the dot kept on its last line; a last word that fits still moves to the next line whole. The title size reads the new `--section-heading-title-size` custom property and falls back to `--text-title`, so you can set it on your own wrapper, for example to `clamp(1.25rem, 8vi, var(--text-title))` or, in a narrow-width media query, to `var(--text-heading)`. The display size ignores it. Migration: replace `:global` rules on the heading's margin, wrapping or title font size with `flush` and the custom property. Without them, display headings and titles whose words fit render exactly as before.

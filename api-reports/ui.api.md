@@ -2997,6 +2997,7 @@ interface SectionHeadingProps extends HTMLAttributes<HTMLDivElement> {
     // (undocumented)
     dot?: boolean;
     explainer?: Snippet;
+    flush?: boolean;
     // (undocumented)
     heading?: string;
     headingAccent?: string;
