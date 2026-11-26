@@ -154,7 +154,7 @@
 		min-inline-size: 0;
 	}
 	a.stop-name {
-		min-inline-size: min(var(--size-tap-min), 100%);
+		min-inline-size: var(--size-tap-min);
 		color: var(--primary);
 		text-decoration: underline;
 		text-decoration-thickness: 1px;
@@ -200,8 +200,17 @@
 		ol[data-threshold]::after {
 			inset-inline-start: calc(var(--stop-indent) + (100% - var(--stop-indent)) * var(--stop-threshold));
 		}
-		li { grid-template-columns: minmax(0, 1fr) fit-content(35%); column-gap: min(0.5rem, 2.5cqi); }
-		.reading { grid-column: 2; }
+		li {
+			--stop-column-min: calc(var(--stop-indent) + var(--size-tap-min));
+			--stop-column-gap: min(0.5rem, 2.5cqi);
+			grid-template-columns: minmax(var(--stop-column-min), 1fr) fit-content(35%);
+			column-gap: var(--stop-column-gap);
+		}
+		.reading {
+			grid-column: 2;
+			/* A long reading can grow its track after reserving space for the stop link. */
+			max-inline-size: min(50cqi, 100cqi - var(--stop-column-min) - var(--stop-column-gap));
+		}
 		.track {
 			grid-area: 2 / 1 / auto / -1;
 			margin-block: 0 0.5rem;
