@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.59.0-rc.1
+
+<!-- release-fragment: combobox-required-choice -->
+- `@yesid/ui` (minor): `Combobox` accepts `clearable={false}` for a choice that must always keep a value, such as the
+  measure a list is ranked by. In that mode it renders no clear button and needs no `clearLabel`.
+  Escape, Backspace and Delete never empty the choice, picking the chosen option again keeps it,
+  and closing the list restores the chosen label even after the field was emptied. Typing still
+  filters and picking another option still changes the value. The component never sets `value` to
+  `null` in this mode, so seed it with the current choice.
+
+  Existing callers need no change. `clearable` defaults to `true`, where `clearLabel` stays
+  required and the markup, styles and behaviour are unchanged. `ComboboxProps` gains the optional
+  `clearable` prop and keeps `clearLabel` required; the new `ComboboxNonClearableProps` types the
+  `clearable={false}` mode.
+
+<!-- release-fragment: language-toggle-name-geometry -->
+- `@yesid/ui` (patch): `LanguageToggle` no longer lays out part of its hidden name outside the link. Since 0.58.1 the destination's autonym, marked with its `lang`, kept an inline box as wide as the word beside the 1px hidden name; with the toggle near the right edge that box ran past the viewport (about 160px past it at 390px wide with 200% text in the Gallery header), so layout checks that measure element boxes against the viewport failed on every page. The autonym now has no box of its own. The link's look, position, `lang` marking and name are unchanged. On a French page (`locale` `fr` or `fr-*`) the name now puts a no-break space before the colon, as French typography asks: "Langue : English (EN FR)" instead of "Langue: English (EN FR)". Other languages keep "Language: Français (EN FR)". Migration: tests that match the French name with a plain colon, such as `/^Langue:/`, must also accept the no-break space, for example `/^Langue\s?:/`.
+
+<!-- release-fragment: section-heading-title-fit -->
+- `@yesid/ui` (minor): `SectionHeading` takes a `flush` prop that removes the space after the heading: the heading text, and the subheading when given, lose their end margin, for a title followed directly by your own subtitle or content. The root carries `data-flush` only when it is set. At `size="title"`, long words now wrap instead of overflowing, and a last word wider than the line breaks inside itself with the dot kept on its last line; a last word that fits still moves to the next line whole. The title size reads the new `--section-heading-title-size` custom property and falls back to `--text-title`, so you can set it on your own wrapper, for example to `clamp(1.25rem, 8vi, var(--text-title))` or, in a narrow-width media query, to `var(--text-heading)`. The display size ignores it. Migration: replace `:global` rules on the heading's margin, wrapping or title font size with `flush` and the custom property. Without them, display headings and titles whose words fit render exactly as before.
+
 ## 0.58.1
 
 <!-- release-fragment: answer-lead-and-language-toggle-names -->
