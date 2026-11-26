@@ -1,4 +1,4 @@
-import { expect, test, type Browser } from '@playwright/test';
+import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { column, isInk, strokes } from './pixels.js';
 
 // D22 regressions for PageSections, read from painted pixels at device scale 1 and 2:
@@ -6,6 +6,77 @@ import { column, isInk, strokes } from './pixels.js';
 // - a Masthead that is a whole section gives one stroke, not two;
 // - the wrapped final section draws nothing before the footer.
 const THEMES = ['dark', 'light'] as const;
+
+async function paintedRuns(page: Page, boundary: Locator) {
+	await boundary.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+	const box = (await boundary.boundingBox())!;
+	const clip = { x: Math.ceil(box.x), y: Math.floor(box.y) - 8, width: Math.floor(box.width), height: 10 };
+	const visible = await page.screenshot({ clip });
+	const hidden = await page.screenshot({
+		clip, style: '[data-variant="hand-drawn"] .hand-drawn-line-art { visibility: hidden !important; }',
+	});
+	return page.evaluate(async ({ visible, hidden }) => {
+		async function decode(base64: string) {
+			const img = new Image();
+			img.src = `data:image/png;base64,${base64}`;
+			await img.decode();
+			const canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			const context = canvas.getContext('2d')!;
+			context.drawImage(img, 0, 0);
+			return context.getImageData(0, 0, img.width, img.height);
+		}
+
+		// An otherwise identical capture removes the background, leaving the painted ink.
+		const [ink, background] = await Promise.all([decode(visible), decode(hidden)]);
+		const runs: { start: number; end: number }[] = [];
+		for (let x = 0; x < ink.width; x++) {
+			const painted = Array.from({ length: ink.height }, (_, y) => (y * ink.width + x) * 4)
+				.some((i) => [0, 1, 2].some((channel) => Math.abs(ink.data[i + channel]! - background.data[i + channel]!) >= 12));
+			if (!painted) continue;
+			const last = runs.at(-1);
+			if (last?.end === x) last.end++;
+			else runs.push({ start: x, end: x + 1 });
+		}
+		return { width: ink.width, runs };
+	}, { visible: visible.toString('base64'), hidden: hidden.toString('base64') });
+}
+
+for (const width of [390, 768, 1024, 1440]) {
+	test(`hand-drawn edges span the boundary with small gaps at ${width}px`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run per width');
+		await page.setViewportSize({ width, height: 900 });
+		await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+		await page.goto('/dividers/en?divider=hand-drawn');
+		await page.evaluate(() => document.fonts.ready);
+		const sections = page.getByTestId('divider-sections');
+		const boundaries = sections.locator('[data-slot="page-section-boundary"][data-variant="hand-drawn"]');
+		await expect(boundaries).toHaveCount(3);
+		const sectionWidth = (await sections.boundingBox())!.width;
+
+		async function check(boundary: Locator, count: number, label: string) {
+			const { width: inkWidth, runs } = await paintedRuns(page, boundary);
+			await testInfo.attach(label, { body: JSON.stringify({ width: inkWidth, runs }), contentType: 'application/json' });
+			expect(runs, label).toHaveLength(count);
+			expect(runs[0]!.start, `${label} left edge`).toBeLessThanOrEqual(2);
+			expect(runs.at(-1)!.end, `${label} right edge`).toBeGreaterThanOrEqual(inkWidth - 2);
+			for (const [index, run] of runs.entries()) {
+				expect(run.end - run.start, `${label} stroke ${index + 1}`).toBeGreaterThan(inkWidth * 0.15);
+				if (index > 0) expect(run.start - runs[index - 1]!.end, `${label} gap ${index}`).toBeLessThanOrEqual(inkWidth * 0.02 + 1);
+			}
+		}
+
+		for (const [index, boundary] of (await boundaries.all()).entries()) {
+			expect((await boundary.boundingBox())!.width).toBeCloseTo(sectionWidth, 0);
+			await check(boundary, 4 + index % 2, `section boundary ${index + 1}`);
+		}
+
+		await page.goto('/detail-frame');
+		await page.evaluate(() => document.fonts.ready);
+		await check(page.locator('[data-slot="article-header-boundary"]'), 4, 'article header boundary');
+	});
+}
 
 async function open(browser: Browser, baseURL: string, theme: string, deviceScaleFactor: number) {
 	const context = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 }, deviceScaleFactor, reducedMotion: 'reduce' });

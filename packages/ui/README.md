@@ -1176,7 +1176,8 @@ a card that groups controls under `label`. `DashboardGrid` fits as many `minTile
 the width allows; with `label` (and not `as="ul"` or `as="ol"`) it is a named region.
 `SurfaceRail` is a page's controls rail: a landmark that sticks below `--chrome-offset` from 1024px, and below that a pill
 (`label`, `summary`, `openAria`, `closeAria`) that opens the same rail in a bottom sheet. The
-`rail` snippet receives `closeSheet` and the current `presentation`; pass the rail to
+`rail` snippet receives `closeSheet` and the current `presentation`. The pill and sheet centre over
+the scrollable content area, excluding any classic scrollbar. Pass the rail to
 `DetailFrame`'s `rail`. With a TocPill on the same page the two pills stack (see TocPill); put
 `.chrome-clearance` on the scrolling element so focused controls stay clear of both.
 
