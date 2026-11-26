@@ -178,6 +178,7 @@
 <style>
 	/* The measure is in em of the reading size: 34em of Inter holds about 65 to 70 characters. */
 	.reading-frame {
+		container: reading-frame / inline-size;
 		box-sizing: content-box;
 		max-width: var(--reading-measure, 34em);
 		margin-inline: auto;
@@ -305,6 +306,18 @@
 	@media (min-width: 1024px) {
 		.reading-frame__body :global(:where(h2)) {
 			font-size: var(--text-reading-heading-desktop);
+		}
+	}
+
+	/* Enlarged text on a phone: the title and section headings step down one size so a long word
+	   such as "confidentialité" stays whole. At the default text size the measure is at least 15rem
+	   from a 320px screen, so this never applies. Same specificity as the rules above. */
+	@container reading-frame (width < 12rem) {
+		.reading-frame__title {
+			font-size: var(--text-heading);
+		}
+		.reading-frame__body :global(:where(h2)) {
+			font-size: var(--text-reading-support);
 		}
 	}
 </style>

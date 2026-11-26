@@ -505,7 +505,10 @@ The optional `summary` snippet renders between the header and the body. It stays
 states, outside the inert collapsible region, wraps without clamping, and describes the heading
 button without becoming part of its name. Use it for the finding, period and material caveat.
 Use `subtitle` for a short label in the header; an article-summary subtitle clamps to two lines
-while its section is closed. `SectionCard` owns these rendered mechanics; `CollapsibleSection` owns registration.
+while its section is closed. An article-summary card is an inline-size container named
+`section-card`: below 14rem (enlarged text on a phone, never at the default text size from 320px)
+its side inset drops to 0.5rem and the index or icon sits above the title, so the title and subtitle
+take the full width. `SectionCard` owns these rendered mechanics; `CollapsibleSection` owns registration.
 
 Reading surfaces: `edge="neutral"` draws the static edge in `--border`; `edgeWeight` is `heavy`
 (3px, default), `regular` (2px) or `thin` (1px); `textSize="inherit"` keeps body text and fields at
@@ -764,7 +767,10 @@ date of the last change when the text has one, an optional `summary`, the conten
 (`children`), on a measure of about 65 to 70 characters (`--reading-measure`, default `34em` of the
 reading size) with `--reading-gutter` (default `1rem`) on each side. No canvas, tape, mono labels,
 numbering or glow; the contents are an unnumbered list (`role="list"`) of orange underlined links,
-each a 44px target (`--size-tap-min`).
+each a 44px target (`--size-tap-min`). The frame is an inline-size container named `reading-frame`:
+below a 12rem measure (enlarged text on a phone, never at the default text size from 320px) the
+title steps down to `--text-heading` and body `h2` to `--text-reading-support`, so a long word such
+as "confidentialité" stays whole. An unnamed `@container` query in the body resolves against the frame.
 
 - `updated` is optional: `{ datetime, label, text }` with an ISO 8601 date (`2026-11-02`,
   optionally with a time and offset) from the text's real revision history, the product's label
@@ -997,7 +1003,8 @@ on `.nav-pill`: 20px by default and 10px, 4px and 2px at the phone compaction ti
 inside the pill uses the same value, so "yesid. | Transit" and the kit's own `|` agree. A product
 brand snippet that draws its own `|` owns that spacing: use `ProductBrand`, or space its divider
 with `var(--nav-split-space)` so it matches. The divider space never changes the 44px targets, the
-pill's fit or the link priorities.
+pill's fit or the link priorities. Below 360px the divider before the controls stays while no links
+show, so the brand never touches the first control.
 
 `compactControls` is deprecated: the theme and language toggles stay in the pill
 at every width in every product (owner decision of 14 November 2026, `DECISIONS.md` D19). Omit
@@ -1111,7 +1118,8 @@ each can be turned off: `label` is optional (omit it to start with the heading),
 default, a large scene above the copy), `'small-after'` (a small scene after the heading, body,
 destinations and terminal line, so the way back comes first) or `'none'`. The scene's lamps are
 still. The suggestions navigation is always named: by `suggestionsLabel`, or by the heading when
-the label is missing or empty.
+the label is missing or empty. With enlarged text on a phone (content narrower than 12rem, never at
+the default text size from 320px) the heading steps down to 1.25rem so a long word stays whole.
 
 ## Data pages
 

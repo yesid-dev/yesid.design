@@ -83,6 +83,41 @@ test('nav text keeps one size at every width and the pill fits the screen', asyn
 	}
 });
 
+// Below 360px the links leave at default text sizes; the controls' divider then keeps the brand off
+// the first control. While links show, the wordmark-to-links divider is the only one.
+test('the brand keeps a divider before the first control at 320px, and every pill fits', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run sets the phone width');
+	await page.setViewportSize({ width: 320, height: 800 });
+	const variants = [
+		{ path: HOME, links: false },
+		{ path: `${HOME}?brand=product`, links: false },
+		{ path: `${HOME}?compact`, links: true },
+		{ path: '/site-header-mixed', links: false },
+		{ path: '/product-brand/en', links: false },
+		{ path: '/app-frame/record-parts/en', links: false },
+	];
+	for (const { path, links } of variants) {
+		await visitHeader(page, path);
+		const fit = await page.getByTestId('nav-pill').evaluate((pill) => {
+			const box = (element: Element) => element.getBoundingClientRect();
+			const shown = (element: Element) => element.checkVisibility({ visibilityProperty: true }) && box(element).width > 0;
+			const brand = pill.firstElementChild!;
+			const first = [...pill.querySelectorAll('a, button')].find((control) => !brand.contains(control) && shown(control))!;
+			return {
+				gap: box(first).left - box(brand).right,
+				split: Number.parseFloat(getComputedStyle(pill).getPropertyValue('--nav-split-space')),
+				controlsDivider: shown(pill.querySelector('.nav-trailing > .nav-divider')!),
+				left: box(pill).left,
+				right: box(pill).right,
+			};
+		});
+		expect(fit.gap, `${path}: space after the brand`).toBeGreaterThanOrEqual(2 * fit.split + 2);
+		expect(fit.controlsDivider, `${path}: controls divider`).toBe(!links);
+		expect(fit.left, `${path}: pill left edge`).toBeGreaterThanOrEqual(0);
+		expect(fit.right, `${path}: pill right edge`).toBeLessThanOrEqual(320);
+	}
+});
+
 // One divider space at every width, for the kit's `|` and for a product brand's own `|` inside
 // the pill (owner live QA, 16 November 2026). Both sides of every divider take the same value.
 test('every navbar divider keeps the same space on both sides, with a kit or product brand', async ({ page }, testInfo) => {

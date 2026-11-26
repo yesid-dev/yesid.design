@@ -3,13 +3,15 @@ import type { ErrorPageIllustration, ErrorPageLink } from '@yesid/ui/layout';
 /**
  * Gallery options for /error-page/[options], a prerendered path so the chosen props are in the
  * first markup. The segment joins tokens with dots: an illustration, a language, and any of
- * `no-label`, `no-tape` and `unnamed` (no `suggestionsLabel`). /error-page itself is today's page.
+ * `no-label`, `no-tape`, `unnamed` (no `suggestionsLabel`) and `construction` (a heading with a
+ * long word, for enlarged text). /error-page itself is today's page.
  */
 export interface ErrorPageGalleryOptions {
 	illustration: ErrorPageIllustration;
 	label: boolean;
 	tape: boolean;
 	named: boolean;
+	construction: boolean;
 	lang: ErrorPageGalleryLang;
 }
 
@@ -23,13 +25,14 @@ export const DEFAULT_OPTIONS: ErrorPageGalleryOptions = {
 	label: true,
 	tape: true,
 	named: true,
+	construction: false,
 	lang: 'en',
 };
 
 /** The path segment for a set of options; `parseOptions` reads it back. */
 export function optionsSegment(options: Partial<ErrorPageGalleryOptions>): string {
-	const { illustration, label, tape, named, lang } = { ...DEFAULT_OPTIONS, ...options };
-	return [illustration, !label && 'no-label', !tape && 'no-tape', !named && 'unnamed', lang]
+	const { illustration, label, tape, named, construction, lang } = { ...DEFAULT_OPTIONS, ...options };
+	return [illustration, !label && 'no-label', !tape && 'no-tape', !named && 'unnamed', construction && 'construction', lang]
 		.filter(Boolean)
 		.join('.');
 }
@@ -43,6 +46,7 @@ export function parseOptions(segment: string): ErrorPageGalleryOptions | undefin
 		else if (token === 'no-label') options.label = false;
 		else if (token === 'no-tape') options.tape = false;
 		else if (token === 'unnamed') options.named = false;
+		else if (token === 'construction') options.construction = true;
 		else return undefined;
 	}
 	return options;
@@ -53,11 +57,14 @@ export const OPTION_SEGMENTS: readonly string[] = [
 	...ILLUSTRATIONS.flatMap((illustration) => LANGS.map((lang) => optionsSegment({ illustration, lang }))),
 	optionsSegment({ illustration: 'small-after', label: false, tape: false }),
 	optionsSegment({ illustration: 'small-after', label: false, tape: false, named: false }),
+	...LANGS.map((lang) => optionsSegment({ construction: true, lang })),
 ];
 
 interface ErrorPageGalleryCopy {
 	label: string;
 	heading: string;
+	/** The `construction` option's heading: a long word that must stay whole at enlarged text sizes. */
+	constructionHeading: string;
 	body: string;
 	suggestionsLabel: string;
 	statusNote: string;
@@ -69,6 +76,7 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 	en: {
 		label: 'Error 404',
 		heading: 'Wrong platform',
+		constructionHeading: 'This station is under construction',
 		body: 'The page you asked for is not on this line.',
 		suggestionsLabel: 'Suggested pages',
 		statusNote: 'route not found',
@@ -81,6 +89,7 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 	fr: {
 		label: 'Erreur 404',
 		heading: 'Page introuvable à cette adresse',
+		constructionHeading: 'Cette station est en construction',
 		body: 'Cette page n’existe pas à cette adresse. Le lien a peut-être changé depuis votre dernière visite.',
 		suggestionsLabel: 'Où aller ensuite',
 		statusNote: 'itinéraire introuvable',
@@ -93,6 +102,7 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 	es: {
 		label: 'Error 404',
 		heading: 'No encontramos esta página en esta dirección',
+		constructionHeading: 'Esta estación está en construcción',
 		body: 'Esta página no existe en esta dirección. El enlace puede haber cambiado desde tu última visita.',
 		suggestionsLabel: 'Adónde ir ahora',
 		statusNote: 'ruta no encontrada',
