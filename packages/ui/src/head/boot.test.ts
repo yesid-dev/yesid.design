@@ -35,9 +35,22 @@ afterEach(() => {
 	delete document.documentElement.dataset.sectionsChoice;
 	delete document.documentElement.dataset.sectionsSaved;
 	delete document.documentElement.dataset.sectionsRecovering;
+	delete document.documentElement.dataset.appFrameRails;
 });
 
 describe('theme boot script', () => {
+	it.each([[16, 'paired'], [32, 'compact']])('measures the computed %spx root size in the first frame', (size, layout) => {
+		const frame = vi.spyOn(globalThis, 'requestAnimationFrame').mockReturnValue(1);
+		vi.stubGlobal('innerWidth', 1440);
+		const root = document.documentElement;
+		vi.stubGlobal('getComputedStyle', vi.fn(() => ({ fontSize: `${size}px` })));
+		runBoot();
+		expect(root.dataset.appFrameRails).toBeUndefined();
+		frame.mock.calls[0]![0](0);
+		expect(getComputedStyle).toHaveBeenCalledWith(root);
+		expect(root.dataset.appFrameRails).toBe(layout);
+	});
+
 	it.each([null, 'collapsed', 'expanded', 'false', '{broken'])('reads only a valid bulk choice (%s), without writing a default', (stored) => {
 		if (stored !== null) localStorage.setItem('sections-choice', stored);
 		runBoot();

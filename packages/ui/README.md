@@ -969,9 +969,10 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   Pass `controlsRail={{ rail, label, summary, openAria, closeAria, mobileVisible }}` for a
   start-side controls column at 64 rem. Controls and evidence use bottom-sheet triggers below
   that width. Page-width frames use the viewport width, including its scrollbar, on the first
-  render and after hydration. The first render uses the browser's initial text size. After
-  hydration narrower frames use their measured width, and the threshold follows the computed
-  root font size, including page overrides. The `rail` snippet receives `SurfaceRailContext` and can
+  render and after hydration. With the theme boot script, the threshold follows the computed
+  root font size, including page overrides, from first paint. Without the script the first render
+  uses the browser's initial text size. After hydration narrower frames use their measured width.
+  The `rail` snippet receives `SurfaceRailContext` and can
   render `ControlsRail`. In a paired reading frame, the rail starts at the page gutter
   and sits 1 rem below the chrome when sticky. In `fullViewport` the
   controls rail floats over `main`. `chromeHeight` measures the header and any controls row.
@@ -992,7 +993,7 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   put on a scrolled page. Leave `overflow` on `html` unset in app CSS.
   Controls can scroll independently when space is tight.
   Pass `evidence={{ rail, label, openAria, closeAria, summary, mobileVisible }}` to put a `SurfaceRail` on the right at
-  desktop widths and in its sheet below 1024px. For a map, `fullViewport` sizes the frame to
+  paired widths and in its sheet below 64 rem. For a map, `fullViewport` sizes the frame to
   the dynamic viewport and lets the main area fill the remaining height below the chrome.
 
 At narrow available widths with enlarged text, a `ProductBrand` gets a row above the other
@@ -1562,8 +1563,10 @@ No per-page hard-coded share copy; write it in the content fields. See the
 
 `injectThemeBoot(html)` replaces `%yesid.themeBoot%` with the boot script. Put the placeholder in
 `app.html` before `%sveltekit.head%` and call it from `transformPageChunk`. Before first paint the
-script sets `data-theme` from the `theme` key (dark otherwise). It also handles a rejected
-cross-document view transition during reload. It also reads `sections-choice` and applies section geometry before paint. Keep this script
+script sets `data-theme` from the `theme` key (dark otherwise). In the first rendering frame it
+sets `data-app-frame-rails` from the viewport width and computed root font size so page-width
+AppFrames start in the correct layout. The script handles a rejected cross-document view
+transition during reload and reads `sections-choice` to apply section geometry before paint. Keep this script
 in the head before page content and keep the package's component CSS: hydration adopts that
 geometry without a flash. The server supplies eligibility on the injected script so the first
 section has its initial geometry while later HTML is parsing. The body, header and TOC stay

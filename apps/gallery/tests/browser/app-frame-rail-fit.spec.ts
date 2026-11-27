@@ -4,6 +4,19 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } });
 
 const path = '/app-frame/controls-rail';
+const rootTextStylesheet = '/app-frame-root-text.css';
+
+async function setInitialTextSize(page: Page, scale: number) {
+	await page.route(`**${rootTextStylesheet}`, (route) =>
+		route.fulfill({ contentType: 'text/css', body: `html { font-size: ${scale}%; }` }),
+	);
+	await page.route(`**${path}`, async (route) => {
+		const response = await route.fetch();
+		const html = (await response.text()).replace('</head>', `<link rel="stylesheet" href="${rootTextStylesheet}"></head>`);
+		await route.fulfill({ response, body: html });
+	});
+}
+
 const workspace = (page: Page) => ({
 	main: page.getByRole('main', { name: 'Service workspace' }),
 	controls: page.getByRole('complementary', { name: 'Controls', exact: true }),
@@ -50,6 +63,7 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 	for (const { width, scale, paired, controlsWidth } of scenarios) {
 		test(`${width}px at ${scale}% settles into ${paired ? 'paired' : 'compact'} rails`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 900 });
+			await setInitialTextSize(page, scale);
 			let resume!: () => void;
 			const held = new Promise<void>((resolve) => { resume = resolve; });
 			await page.route('**/_app/immutable/**/*.js', async (route) => {
@@ -58,16 +72,15 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 			});
 			try {
 				await page.goto(path, { waitUntil: 'domcontentloaded' });
-				await page.addStyleTag({ content: `html { font-size: ${scale}%; }` });
+				await page.waitForFunction(() => performance.getEntriesByName('first-contentful-paint').length > 0);
 				await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
-				const firstPaintPaired = await page.evaluate(() => matchMedia('(min-width: 64rem)').matches);
-				const before = await expectClosedLayout(page, firstPaintPaired);
+				await expect(page.locator('html')).toHaveCSS('font-size', `${16 * scale / 100}px`);
+				const before = await expectClosedLayout(page, paired);
 
 				resume();
 				await page.locator('html[data-gallery-ready]').waitFor();
 				const after = await expectClosedLayout(page, paired);
-				if (paired === firstPaintPaired) expect(after).toEqual(before);
-				else expect(after.width).toBeGreaterThan(before.width);
+				expect(after).toEqual(before);
 				if (controlsWidth !== undefined) {
 					const rail = (await workspace(page).controls.boundingBox())!;
 					const frame = (await page.locator('[data-slot="app-frame"]').boundingBox())!;
@@ -80,6 +93,16 @@ test.describe('AppFrame rail layout follows root text size', { tag: '@theme' }, 
 			}
 		});
 	}
+
+	test('enlarged page text starts compact even when app modules fail to load', async ({ page }) => {
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await setInitialTextSize(page, 200);
+		await page.route('**/_app/immutable/**/*.js', (route) => route.abort());
+		await page.goto(path);
+		await expect(page.locator('html')).toHaveCSS('font-size', '32px');
+		await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
+		await expectClosedLayout(page, false);
+	});
 
 	test('paired controls start at the page gutter and stay below the chrome', async ({ page }) => {
 		await page.setViewportSize({ width: 1440, height: 900 });

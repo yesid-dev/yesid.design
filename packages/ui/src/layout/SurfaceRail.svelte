@@ -179,6 +179,7 @@
 					role={compact ? 'dialog' : undefined}
 					aria-modal={sheetPresent ? 'true' : undefined}
 					aria-label={label}
+					aria-hidden={compact && !sheetPresent ? 'true' : undefined}
 					inert={compact && !sheetPresent}
 					tabindex="-1"
 					data-slot="surface-rail"
