@@ -11,6 +11,58 @@ async function openFrame(page: Page, path = '/app-frame'): Promise<void> {
 	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 }
 
+for (const theme of ['light', 'dark']) {
+	for (const width of [390, 1024, 1440]) {
+		test(`floating chrome stays clear at ${width}px in ${theme}`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 844 });
+			await page.addInitScript((value) => localStorage.setItem('theme', value), theme);
+			await page.goto('/app-frame/network-paint/en/quiet');
+			await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+			const pill = page.getByTestId('nav-pill');
+			await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+			await page.evaluate(() => document.fonts.ready);
+
+			const chromeRow = page.locator(chrome);
+			const controls = page.locator('[data-slot="app-frame-controls"]');
+			const ground = await page.locator('[data-slot="app-frame"]').evaluate((element) => {
+				const probe = document.createElement('span');
+				probe.style.backgroundColor = 'var(--background)';
+				element.append(probe);
+				const color = getComputedStyle(probe).backgroundColor;
+				probe.remove();
+				return color;
+			});
+			const paint = () => chromeRow.evaluate((element) => {
+				const { backgroundColor, backgroundImage } = getComputedStyle(element);
+				return { backgroundColor, backgroundImage };
+			});
+			const clear = { backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none' };
+			const assertPaint = async (position: string) => {
+				expect.soft(await paint(), position).toEqual(clear);
+				expect.soft(await controls.evaluate((element) => getComputedStyle(element).backgroundColor), position).toBe(ground);
+				await expect(pill).not.toHaveCSS('background-color', clear.backgroundColor);
+				await expect(pill).toHaveCSS('backdrop-filter', /^blur\([1-9]/);
+			};
+			await assertPaint('at the top');
+
+			const pin = page.getByRole('button', { name: 'Pin report' });
+			const pillBox = (await pill.boundingBox())!;
+			const pinBox = (await pin.boundingBox())!;
+			const y = Math.round(pillBox.y + pillBox.height / 2);
+			const x = Math.floor(Math.min(pillBox.x, pinBox.x + pinBox.width) / 2);
+			const scrollTop = Math.round(pinBox.y + pinBox.height / 2 - y);
+			await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), scrollTop);
+			await expect.poll(() => page.evaluate(() => scrollY)).toBe(scrollTop);
+			expect(await pill.boundingBox()).toEqual(pillBox);
+			await assertPaint('after scrolling');
+			expect(x).toBeGreaterThan(pinBox.x);
+			expect(x).toBeLessThan(pillBox.x);
+			await page.mouse.click(x, y);
+			await expect(pin).toHaveAttribute('aria-pressed', 'true');
+		});
+	}
+}
+
 test('ready ranges commit resolved dates and custom validation names and focuses the field', async ({ page }) => {
 	await page.setViewportSize({ width: 320, height: 850 });
 	await openFrame(page);

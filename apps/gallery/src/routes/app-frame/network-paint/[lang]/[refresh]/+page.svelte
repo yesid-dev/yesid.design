@@ -27,6 +27,7 @@
 		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: 'OC Transpo' },
 	]);
 	let selected = $state('stm');
+	let pinned = $state(false);
 	const href = (lang: string) => `/app-frame/network-paint/${lang}/${data.refresh ? 'refresh' : 'quiet'}`;
 </script>
 
@@ -56,10 +57,34 @@
 			{/snippet}
 		</SiteHeader>
 	{/snippet}
-	<h1 id="overview">{french ? 'Aperçu du réseau' : 'Service overview'}</h1>
-	<p id="map">{french ? 'Les derniers relevés du service.' : 'The latest service report.'}</p>
+	{#snippet controls()}
+		<a href="#map">{french ? 'Dernier relevé' : 'Latest report'}</a>
+	{/snippet}
+	<section class="report">
+		<h1 id="overview">{french ? 'Aperçu du réseau' : 'Service overview'}</h1>
+		<button class="pin-report" type="button" aria-pressed={pinned} onclick={() => (pinned = !pinned)}>
+			{french ? 'Épingler le relevé' : 'Pin report'}
+		</button>
+		<p id="map">{french ? 'Les derniers relevés du service.' : 'The latest service report.'}</p>
+		<table>
+			<thead><tr><th>{french ? 'Heure' : 'Hour'}</th><th>STM</th><th>OC Transpo</th></tr></thead>
+			<tbody>
+				{#each Array(24) as _, hour (hour)}
+					<tr><th scope="row">{String(hour).padStart(2, '0')}:00</th><td>{hour * 13}</td><td>{hour * 9}</td></tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
 </AppFrame>
 
 <style>
 	.search { inline-size: clamp(11rem, 22cqi, 20rem); min-block-size: var(--size-tap-min); border: 1px solid var(--border); }
+	.report {
+		background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+		background-size: 1.5rem 1.5rem;
+	}
+	.report h1, .report p { padding-inline: var(--space-page-x); }
+	.pin-report { min-block-size: var(--size-tap-min); padding-inline: 0.5rem; }
+	table { inline-size: 100%; text-align: start; }
+	th, td { padding: 0.5rem var(--space-page-x); border-block-end: 1px solid var(--border); }
 </style>

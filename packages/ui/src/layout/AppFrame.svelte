@@ -218,18 +218,9 @@
 		inset-block-start: 0;
 		z-index: var(--z-sheet);
 		flex: none;
-		background: var(--background);
+		pointer-events: none;
 	}
-	@media (width < 1024px) {
-		.app-frame-chrome:where(:not(.tall-chrome):has(> [data-slot='app-frame-header'] :global([data-slot='site-header-network']:not([inert])) > :global(*))) {
-			/* Keep the network row's initial space without painting or intercepting the space it vacates. */
-			--pill-end: calc(var(--app-frame-header-height) - var(--nav-network-clearance));
-			background: linear-gradient(var(--background) 0 var(--pill-end), transparent var(--pill-end) var(--app-frame-header-height), var(--background) var(--app-frame-header-height));
-			pointer-events: none;
-			& > .app-frame-controls,
-			& > [data-slot='app-frame-header'] > :global(*) { pointer-events: auto; }
-		}
-	}
+	.app-frame-chrome > [data-slot='app-frame-header'] > :global(*) { pointer-events: auto; }
 	.app-frame-chrome:has(:global([aria-modal='true'])) {
 		z-index: var(--z-menu);
 	}
@@ -244,7 +235,9 @@
 		align-items: center;
 		gap: 0.5em 1em;
 		padding: 0.5em min(var(--space-page-x), 4vw);
+		background: var(--background);
 		border-block-end: 1px solid var(--border);
+		pointer-events: auto;
 		max-block-size: max(
 			var(--size-tap-min),
 			min(44dvh, calc(100dvh - var(--app-frame-header-height) - var(--app-frame-main-min)))
