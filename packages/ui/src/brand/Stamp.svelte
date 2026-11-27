@@ -13,11 +13,18 @@
 	import { onMount } from 'svelte';
 	import { clock } from '../state/index.js';
 
+	// Sample the usual zero, singular, plural and upper-end age labels before the clock starts.
+	const sizingAges = [0, 1, 59, 60, 120, 3_599, 3_600, 7_200, 86_399, 86_400, 172_800, 604_799];
+
 	let { kind, label, updatedAt, agoLabel, late = false, paused = false }: StampProps = $props();
 	let mounted = $state(false);
 	const isPaused = $derived(kind === 'live' && paused);
 	const timestamp = $derived(updatedAt?.getTime() ?? Number.NaN);
-	const ticking = $derived(mounted && kind === 'live' && !late && !isPaused && Number.isFinite(timestamp) && !!agoLabel);
+	const liveAge = $derived(kind === 'live' && !late && !isPaused && Number.isFinite(timestamp) && !!agoLabel);
+	const ticking = $derived(mounted && liveAge);
+	const sizingLabels = $derived(liveAge && agoLabel
+		? new Set([label, ...sizingAges.map((seconds) => agoLabel(seconds))])
+		: null);
 	const text = $derived(ticking && agoLabel
 		? agoLabel(Math.max(0, Math.floor((clock.serverNow - timestamp) / 1000)))
 		: label);
@@ -35,7 +42,16 @@
 	{:else}
 		<span class="stamp-mark" aria-hidden="true"></span>
 	{/if}
-	<span>{text}</span>
+	{#if sizingLabels}
+		<span class="stamp-age">
+			<span>{text}</span>
+			{#each sizingLabels as sizingLabel (sizingLabel)}
+				<span class="stamp-age-size" aria-hidden="true" inert data-label={sizingLabel}></span>
+			{/each}
+		</span>
+	{:else}
+		<span>{text}</span>
+	{/if}
 </span>
 
 <style>
@@ -52,6 +68,14 @@
 		font-size: var(--text-small);
 		overflow-wrap: anywhere;
 	}
+	.stamp-age {
+		display: grid;
+		min-inline-size: 0;
+		font-variant-numeric: tabular-nums;
+	}
+	.stamp-age > span { grid-area: 1 / 1; }
+	.stamp-age-size { visibility: hidden; }
+	.stamp-age-size::before { content: attr(data-label); }
 	.stamp-mark, .stamp-pause {
 		flex: none;
 		inline-size: 0.5em;

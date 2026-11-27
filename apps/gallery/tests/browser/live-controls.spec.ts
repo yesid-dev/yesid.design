@@ -47,7 +47,7 @@ test.describe('Switch, Stamp and StopLadder', { tag: '@theme' }, () => {
 			await page.evaluate(() => document.fonts.ready);
 
 			const control = page.getByRole('switch', { name: 'Pause live updates' });
-			const stamp = page.locator('[data-slot="stamp"]');
+			const stamp = page.getByRole('region', { name: 'Service updates' }).locator('[data-slot="stamp"]');
 			const bounds = (await control.boundingBox())!;
 			expect(bounds.width).toBeGreaterThanOrEqual(44);
 			expect(bounds.height).toBeGreaterThanOrEqual(44);
@@ -119,6 +119,69 @@ test.describe('Switch, Stamp and StopLadder', { tag: '@theme' }, () => {
 				await expectNoHorizontalOverflow(page, [ladderSelector]);
 				await label.evaluate((node, text) => { node.textContent = text; }, original);
 			}
+		});
+	}
+
+	for (const { width, textSize } of [{ width: 1440, textSize: 100 }, { width: 320, textSize: 200 }]) {
+		test(`live age keeps its neighbours in place at ${width}px and ${textSize}% text`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 900 });
+			await page.emulateMedia({ reducedMotion: 'no-preference' });
+			await page.clock.install({ time: new Date('2026-11-27T12:00:00Z') });
+			await page.clock.pauseAt(new Date('2026-11-27T12:00:09Z'));
+
+			// Let the prerendered page paint before releasing the hydration entry point.
+			let resumeHydration!: () => void;
+			const hydration = new Promise<void>((resolve) => { resumeHydration = resolve; });
+			await page.route('**/_app/immutable/entry/start.*.js', async (route) => {
+				await hydration;
+				await route.continue();
+			});
+			await page.goto('/live-controls', { waitUntil: 'commit' });
+			await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` });
+			const row = page.getByTestId('live-age-row');
+			const stamp = row.locator('[data-slot="stamp"]');
+			const bounds = () => row.locator(':scope > *').evaluateAll((children) =>
+				children.map((element) => element.getBoundingClientRect().toJSON()));
+			const expectAge = (age: string) => expect.poll(() => stamp.ariaSnapshot()).toBe(
+				`- text: Service information updated ${age} ago`,
+			);
+
+			let initialBounds;
+			try {
+				await expect(stamp).toMatchAriaSnapshot('- text: Live service');
+				await page.evaluate(() => document.fonts.ready);
+				initialBounds = await bounds();
+			} finally {
+				resumeHydration();
+			}
+			await expectAge('9 s');
+			expect(await bounds()).toEqual(initialBounds);
+			await page.clock.runFor(1000);
+			await expectAge('10 s');
+			expect(await bounds()).toEqual(initialBounds);
+			await page.clock.runFor(49_000);
+			await expectAge('59 s');
+			expect(await bounds()).toEqual(initialBounds);
+			await page.clock.runFor(1000);
+			await expectAge('1 min');
+			expect(await bounds()).toEqual(initialBounds);
+			if (textSize === 200) {
+				const visibleText = stamp.getByText('Service information updated 1 min ago', { exact: true });
+				expect(await visibleText.evaluate((element) => {
+					const range = document.createRange();
+					range.selectNodeContents(element);
+					return range.getClientRects().length;
+				})).toBeGreaterThan(1);
+			}
+			await page.clock.fastForward(480_000);
+			await expectAge('9 min');
+			expect(await bounds()).toEqual(initialBounds);
+			await page.clock.fastForward(60_000);
+			await expectAge('10 min');
+			expect(await bounds()).toEqual(initialBounds);
+			await expectNoHorizontalOverflow(page, ['[data-testid="live-age-row"]', '[data-slot="stamp"]']);
+			await page.clock.resume();
+			await expectAccessible(page, { include: '[data-testid="live-age-row"]' });
 		});
 	}
 
