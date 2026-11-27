@@ -61,6 +61,7 @@
 	import { FooterGroup, FooterLink } from '../primitives/footer/index.js';
 	import { Separator } from '../primitives/separator/index.js';
 	import StatusDot from '../brand/StatusDot.svelte';
+	import { footerRowMargins } from './footer-balance.js';
 
 	let { brand, tagline, groups, statusStart, statusPrefix, liveLabel, edge = 'street' }: SiteFooterProps = $props();
 
@@ -72,12 +73,48 @@
 	const systemDate = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
 
 	let footer: HTMLElement;
+	let columns = $state<HTMLElement>();
+	let margins = $state<number[]>([]);
+	const balancedBlocks = $derived(groups.length >= 3 ? groups.length + 1 : undefined);
 	let inView = $state(false);
 	onMount(() => {
 		if (typeof IntersectionObserver === 'undefined') return;
 		const observer = new IntersectionObserver(([entry]) => (inView = entry.isIntersecting));
 		observer.observe(footer);
 		return () => observer.disconnect();
+	});
+
+	$effect(() => {
+		const layout = columns;
+		if (!layout || !balancedBlocks || typeof ResizeObserver === 'undefined' || !window.matchMedia) {
+			margins = [];
+			return;
+		}
+		// Reobserve the keyed blocks when the caller replaces groups.
+		const blocks = Array.from(layout.children).slice(0, groups.length + 1);
+		const desktop = window.matchMedia('(min-width: 64rem)');
+		const balance = () => {
+			if (!desktop.matches || !layout.clientWidth) {
+				if (margins.length) margins = [];
+				return;
+			}
+			const style = getComputedStyle(layout);
+			const available = layout.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+			if (available <= 0) return;
+			const widths = blocks.map((block, index) => Math.min(available, index === 0
+				? parseFloat(getComputedStyle(block).flexBasis)
+				: block.getBoundingClientRect().width));
+			const next = footerRowMargins(widths, available, parseFloat(style.columnGap));
+			if (next.length !== margins.length || next.some((margin, index) => margin !== margins[index])) margins = next;
+		};
+		const observer = new ResizeObserver(balance);
+		observer.observe(layout);
+		for (const block of blocks) observer.observe(block);
+		desktop.addEventListener('change', balance);
+		return () => {
+			observer.disconnect();
+			desktop.removeEventListener('change', balance);
+		};
 	});
 </script>
 
@@ -86,7 +123,7 @@
 	data-in-view={inView}
 	data-testid="footer"
 	data-slot="footer"
-	data-balanced-blocks={groups.length === 3 || groups.length === 4 ? groups.length + 1 : undefined}
+	data-balanced-blocks={balancedBlocks}
 	class="relative z-[var(--z-content)] bg-[var(--muted)]"
 	style="--footer-groups: {groups.length};"
 >
@@ -96,15 +133,17 @@
 		<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
 	{/if}
 	<div
+		bind:this={columns}
 		class="footer-columns grid w-full gap-10 px-6 pb-8 pt-10 sm:px-10 sm:pt-12 lg:gap-8 lg:px-16 lg:pt-14"
 		class:with-status={!!statusStart || statusPrefix !== undefined}
 	>
-		<div class="footer-brand flex flex-col items-start">
+		<div class="footer-brand flex flex-col items-start" style:margin-inline-end={margins[0] ? `${margins[0]}px` : undefined}>
 			{@render brand()}
 			<span class="mt-2 font-mono text-xs text-[var(--muted-foreground)]">{tagline}</span>
 		</div>
-		{#each groups as group (group.label)}
-			<nav aria-label={group.navLabel ?? group.label} data-testid={group.testId}>
+		{#each groups as group, index (group.label)}
+			<nav aria-label={group.navLabel ?? group.label} data-testid={group.testId}
+				style:margin-inline-end={margins[index + 1] ? `${margins[index + 1]}px` : undefined}>
 				<FooterGroup label={group.label}>
 					{#each group.links as link (link.href)}
 						{#if link.external}
@@ -171,19 +210,19 @@
 		word-break: normal;
 	}
 
-	footer[data-balanced-blocks] {
+	footer:is([data-balanced-blocks='4'], [data-balanced-blocks='5']) {
 		container: footer-balance / inline-size;
 	}
-	footer[data-balanced-blocks] > .footer-columns {
+	footer:is([data-balanced-blocks='4'], [data-balanced-blocks='5']) > .footer-columns {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 	}
 	@media (width < 40rem) {
-		footer:not([data-balanced-blocks]) {
+		footer:not([data-balanced-blocks='4'], [data-balanced-blocks='5']) {
 			container: footer-balance / inline-size;
 		}
 		.footer-columns,
-		footer[data-balanced-blocks] > .footer-columns {
+		footer:is([data-balanced-blocks='4'], [data-balanced-blocks='5']) > .footer-columns {
 			display: flex;
 			flex-wrap: wrap;
 			column-gap: var(--footer-phone-gap, var(--space-card-gap));
@@ -197,7 +236,7 @@
 	/* Keep the balanced grid and its usual gap whenever the footer is wide enough. */
 	@container footer-balance (inline-size >= 29.5rem) {
 		/* Two 12rem tracks, the usual 2.5rem gap, and 3rem of horizontal padding. */
-		footer:not([data-balanced-blocks]) > .footer-columns {
+		footer:not([data-balanced-blocks='4'], [data-balanced-blocks='5']) > .footer-columns {
 			display: grid;
 			--footer-phone-gap: calc(var(--spacing, 0.25rem) * 10);
 		}
@@ -217,7 +256,7 @@
 		}
 	}
 	@container footer-balance (inline-size >= 63rem) {
-		footer[data-balanced-blocks] > .footer-columns {
+		footer:is([data-balanced-blocks='4'], [data-balanced-blocks='5']) > .footer-columns {
 			grid-template-columns: minmax(0, 1.5fr) repeat(var(--footer-groups), minmax(0, 1fr));
 		}
 	}
@@ -229,7 +268,7 @@
 			flex-wrap: wrap;
 			column-gap: 1.5rem;
 		}
-		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
+		.footer-brand { flex: 1.5 1 10.125rem; max-inline-size: 100%; }
 		.footer-columns > nav {
 			flex: 0 0 max-content;
 			max-inline-size: 100%;

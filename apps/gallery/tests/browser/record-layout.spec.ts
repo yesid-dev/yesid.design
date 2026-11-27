@@ -318,6 +318,58 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			expect(await groups.nth(1).evaluate((node) => node.scrollWidth)).toBe(await groups.nth(1).evaluate((node) => node.clientWidth));
 		});
 
+		test(`${lang}: the desktop footer balances whole blocks at 100% and 200% text`, async ({ page }) => {
+			await page.setViewportSize({ width: 1024, height: 900 });
+			await page.goto(`${path(lang)}?long-footer`);
+			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+			await page.evaluate(() => document.fonts.ready);
+			const columns = page.getByRole('contentinfo').locator('.footer-columns');
+			for (const blocks of [4, 5]) {
+				await page.getByTestId('footer-group-count').selectOption(String(blocks - 1));
+				await expect(columns.getByRole('navigation')).toHaveCount(blocks - 1);
+				for (const scale of [100, 200]) {
+					await page.locator('html').evaluate((node, size) => { node.style.fontSize = `${size}%`; }, scale);
+					for (const width of [1024, 1280]) {
+						await page.setViewportSize({ width, height: 900 });
+						const caption = `${blocks} blocks at ${width}px and ${scale}% text`;
+						await expect.poll(async () => columns.evaluate((node) => {
+							const rows = new Map<number, number>();
+							const style = getComputedStyle(node);
+							const available = node.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+							const gap = parseFloat(style.columnGap);
+							const widths = [...node.children].map((block, index) => {
+								const box = block.getBoundingClientRect();
+								const top = Math.round(box.top);
+								rows.set(top, (rows.get(top) ?? 0) + 1);
+								return index === 0 ? parseFloat(getComputedStyle(block).flexBasis) : box.width;
+							});
+							const fits = (items: number[]) => items.reduce((sum, n) => sum + n, gap * (items.length - 1)) <= available;
+							const first = [Math.ceil(widths.length / 2), Math.floor(widths.length / 2)].find(
+								(split) => fits(widths.slice(0, split)) && fits(widths.slice(split)),
+							);
+							// The five-block fixture needs three rows at 1024px and 200% text.
+							const expected = fits(widths) ? [widths.length] : first ? [first, widths.length - first] : [2, 2, 1];
+							const actual = [...rows.values()].join('+');
+							return actual === expected.join('+') ? 'balanced' : `${actual}, expected ${expected.join('+')}`;
+						}), caption).toBe('balanced');
+						const lines = await columns.locator('[data-slot="footer-link"]').evaluateAll((links) => links.map((link) => {
+							const range = document.createRange();
+							range.selectNodeContents(link);
+							return range.getClientRects().length;
+						}));
+						expect(lines, caption).toEqual(Array.from({ length: blocks - 1 }, () => 1));
+						await expectNoHorizontalOverflow(page);
+					}
+				}
+			}
+			const links = await columns.getByRole('link').all();
+			await links[0]!.focus();
+			for (const link of links.slice(1)) {
+				await page.keyboard.press('Tab');
+				await expect(link).toBeFocused();
+			}
+		});
+
 		test(`${lang}: the phone footer pairs groups when their text fits`, async ({ page }) => {
 			await page.setViewportSize({ width: 390, height: 900 });
 			await page.goto(path(lang));
