@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/svelte';
+import type { Window as HappyDomWindow } from 'happy-dom';
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import SheetContractFixture from './test-fixtures/SheetContractFixture.svelte';
 import type { SheetContentProps, SheetSide } from './index.js';
@@ -10,10 +11,25 @@ describe('Sheet content contract', () => {
 		['bottom', 'bottom-0'],
 		['right', 'right-0'],
 		['center', 'm-auto'],
-		[{ base: 'bottom', md: 'center' }, 'bottom-0'],
 	] as const)('applies the presentation for %j', (side, className) => {
 		render(SheetContractFixture, { props: { showCloseButton: false, side } });
 		expect(screen.getByRole('dialog').classList.contains(className)).toBe(true);
+	});
+
+	it.each([
+		[767, 'bottom-0'],
+		[768, 'm-auto'],
+	] as const)('applies the responsive presentation at %ipx', (width, className) => {
+		const { happyDOM, innerWidth } = window as unknown as HappyDomWindow;
+		happyDOM.setViewport({ width });
+		try {
+			render(SheetContractFixture, {
+				props: { showCloseButton: false, side: { base: 'bottom', md: 'center' } },
+			});
+			expect(screen.getByRole('dialog').classList.contains(className)).toBe(true);
+		} finally {
+			happyDOM.setViewport({ width: innerWidth });
+		}
 	});
 
 	it('types the base and md sides and keeps detents exclusive to the bottom string side', () => {
