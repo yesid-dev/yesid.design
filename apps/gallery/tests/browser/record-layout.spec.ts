@@ -3,7 +3,7 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 import { expectBeside, expectStacked, rowsGeometry } from './rows-layout.js';
 
 const path = (lang: string) => `/app-frame/record-parts/${lang}`;
-const footerWidths = [320, 600, 639, 640, 768, 900, 1024, 1440] as const;
+const footerWidths = [320, 600, 639, 640, 768, 900] as const;
 const copy = {
 	en: { details: 'Lines without measurements', longNames: 'Stops with long names', onTime: 'On time', trips: 'Trips that ran', events: 'Stop events', late: 'Late',
 		compact: 'Open search', search: 'Find a line, stop or vehicle', footerLink: 'Accessibility', scale: 'Late share, in percent:',
@@ -171,7 +171,6 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				(elements) => new Set(elements.map((el) => el.getBoundingClientRect().top)).size,
 			)).toBe(1);
 			await footer.evaluate((el) => { el.style.inlineSize = ''; });
-			const desktopColumns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
 			await page.setViewportSize({ width: 320, height: 900 });
 			await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'compact');
 			await expect(footerColumns).toHaveCSS('padding-top', '16px');
@@ -182,8 +181,12 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				await expect(page.locator('[data-slot="app-frame"]')).toHaveAttribute('data-rail-layout', 'compact');
 				await expect(page.getByRole('button', { name: c.compact })).toBeVisible();
 				await expect(page.getByRole('searchbox', { name: c.search })).toHaveCount(0);
-				const columns = await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().x)).size);
-				expect(columns).toBeLessThan(desktopColumns);
+				if (width === 1024) {
+					const rows = await footerColumns.locator(':scope > *').evaluateAll(
+						(elements) => new Set(elements.map((el) => Math.round(el.getBoundingClientRect().top))).size,
+					);
+					expect(rows).toBeGreaterThan(1);
+				}
 				const link = footer.getByRole('link', { name: c.footerLink });
 				await expect(footerColumns).toHaveCSS('padding-top', '8px');
 				expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
@@ -226,7 +229,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			}
 		});
 
-		test(`${lang}: the standalone footer keeps four or five blocks on balanced rows`, async ({ page }, info) => {
+		test(`${lang}: the footer keeps four or five blocks on balanced rows below desktop`, async ({ page }, info) => {
 			await page.goto(path(lang));
 			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
 			await page.evaluate(() => document.fonts.ready);
@@ -259,7 +262,7 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 							? [1, 2, blocks - 3]
 							: Array.from({ length: blocks }, () => 1);
 						expect(layout.rows, `${blocks} blocks at ${width}px and ${scale}% text`).toEqual(
-							rem >= 63 ? [blocks] : rem >= minimum
+							rem >= minimum
 								? (blocks === 4 ? [2, 2] : [3, 2])
 								: fallback,
 						);
@@ -272,6 +275,47 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 				body: JSON.stringify(measurements),
 				contentType: 'application/json',
 			});
+		});
+		test(`${lang}: desktop footer gives link labels room and wraps whole columns`, async ({ page }) => {
+			await page.setViewportSize({ width: 1024, height: 900 });
+			await page.goto(`${path(lang)}?long-footer`);
+			await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+			await page.evaluate(() => document.fonts.ready);
+			const footer = page.getByRole('contentinfo');
+			const groups = footer.getByRole('navigation');
+			const labels = footer.locator('[data-slot="footer-link"]');
+			await expect(labels.nth(1)).toHaveText(lang === 'en' ? 'Worst trips and vehicles' : 'Télécharger les données');
+			const linkLines = () => labels.evaluateAll((elements) => elements.map((element) => {
+				const range = document.createRange();
+				range.selectNodeContents(element);
+				return range.getClientRects().length;
+			}));
+			let gap: number | undefined;
+			for (const count of [4, 5]) {
+				await page.getByTestId('footer-group-count').selectOption(String(count));
+				for (const width of [1024, 1280]) {
+					await page.setViewportSize({ width, height: 900 });
+					const boxes = await groups.evaluateAll((elements) => elements.map((element) => {
+						const { left, right, top } = element.getBoundingClientRect();
+						return { left, right, top };
+					}));
+					expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
+					for (const [index, box] of boxes.slice(1).entries()) {
+						const distance = box.left - boxes[index]!.right;
+						gap ??= distance;
+						expect(distance).toBeGreaterThan(0);
+						expect(Math.abs(distance - gap)).toBeLessThanOrEqual(1);
+					}
+					expect(await linkLines()).toEqual(Array.from({ length: count }, () => 1));
+				}
+			}
+			await footer.evaluate((node) => { node.style.inlineSize = '30rem'; });
+			expect(await groups.evaluateAll((elements) => new Set(elements.map((el) => el.getBoundingClientRect().top)).size)).toBeGreaterThan(1);
+			expect(await linkLines()).toEqual([1, 1, 1, 1, 1]);
+			await expectNoHorizontalOverflow(page);
+			await footer.evaluate((node) => { node.style.inlineSize = '16rem'; });
+			expect((await linkLines())[1]).toBeGreaterThan(1);
+			expect(await groups.nth(1).evaluate((node) => node.scrollWidth)).toBe(await groups.nth(1).evaluate((node) => node.clientWidth));
 		});
 
 		test(`${lang}: the phone footer pairs groups when their text fits`, async ({ page }) => {
