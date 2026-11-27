@@ -31,10 +31,10 @@
 
 ## Direct public assets
 
-- `./tokens.json` — direct asset `./tokens.json` (`default`), sha256 `bfe8f6068cc692463b515bd2733e111010dac695388be72c840522315c859330`
-- `./tokens.css` — direct asset `./tokens.css` (`default`), sha256 `5cd41e11e2346abb857a5527906d788914f4d0392afac3ceee3e1f8ba3df639f`
-- `./theme.css` — direct asset `./theme.css` (`default`), sha256 `b24523f0dd1cadde8b1ae21c2a046391d1638fc9944ff035336ee04907b0aed3`
-- `./fonts.css` — direct asset `./fonts.css` (`default`), sha256 `86b24f9e84418fa584e8cb8ac4ecdefb0869376eb6ecc07054c5f4412d30a362`
+- `./tokens.json` — direct asset `./tokens.json` (`default`), sha256 `15cac95cc57b8e7b6261304736e298029be26b31dc5dee1a13c9b60a7a769bc3`
+- `./tokens.css` — direct asset `./tokens.css` (`default`), sha256 `c83e66f9c9345ae651b6c798309144fcd2bd0737bdc816fa3b1f3ff93fc418ee`
+- `./theme.css` — direct asset `./theme.css` (`default`), sha256 `a19d555000d7b9d0129c81f0ca4478805dfebf10f2d159913e21c9fbdf09a5b3`
+- `./fonts.css` — direct asset `./fonts.css` (`default`), sha256 `b8635bfd55fcd8e897958d7d43875eb045e8b967754bcf025fa912fa5ddee565`
 
 ## Declaration namespaces
 

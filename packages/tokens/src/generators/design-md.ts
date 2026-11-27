@@ -179,7 +179,8 @@ responsibility. Contrast verified on dark first, then light — all pairs script
 ## Typography
 
 Inter Variable for headings + body; JetBrains Mono Variable for code, terminals, mono labels.
-Self-hosted (no Google Fonts CDN). Type scale uses \`clamp()\` for fluid sizing across breakpoints.
+Self-hosted (no Google Fonts CDN). Metric-adjusted local faces reduce reflow while the fonts load.
+Type scale uses \`clamp()\` for fluid sizing across breakpoints.
 Hard floors: body ≥ 16px, mono ≥ 13px, labels ≥ 12px, micro for chrome only.
 
 Sentence case. Uppercase only for short signage. A section starts with its heading, never with a label above it.
