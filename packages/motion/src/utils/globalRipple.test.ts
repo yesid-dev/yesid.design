@@ -155,6 +155,20 @@ describe('motion/utils/globalRipple', () => {
 		expect(document.querySelectorAll('.global-ripple, .global-ripple-inner')).toHaveLength(0);
 	});
 
+	it('spawns nothing while reduced motion is requested and follows a live change', () => {
+		const reducedMotion = { matches: true } as MediaQueryList;
+		const matchMedia = vi.spyOn(window, 'matchMedia').mockReturnValue(reducedMotion);
+		dispose = initGlobalRipple();
+		expect(matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+
+		window.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 20 }));
+		expect(document.querySelectorAll('.global-ripple, .global-ripple-inner')).toHaveLength(0);
+
+		Object.assign(reducedMotion, { matches: false });
+		window.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 20 }));
+		expect(document.querySelectorAll('.global-ripple, .global-ripple-inner')).toHaveLength(2);
+	});
+
 	it('returns a no-op disposer during SSR', () => {
 		const originalWindow = globalThis.window;
 		// @ts-expect-error — simulating SSR

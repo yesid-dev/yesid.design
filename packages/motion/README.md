@@ -71,7 +71,8 @@ reduced motion or at 1023px and below, where the art stays fully drawn. `Listing
 
 `initGlobalRipple({ exclude? })` from `./utils/globalRipple` spawns the two-ring click ripple on
 every pointerdown and returns its cleanup; `@yesid/motion/ripple.css` styles the rings. Neither runs
-on import.
+on import. While the reader asks for reduced motion (`prefers-reduced-motion: reduce`), no ripple
+spawns; the preference is read at each pointerdown, so a change applies without a reload.
 
 Mark reading surfaces (article bodies, editorial cards, charts, maps) with `data-ripple-exempt`.
 Clicks inside them never ripple, so feedback stays on navigation and controls. The rule always

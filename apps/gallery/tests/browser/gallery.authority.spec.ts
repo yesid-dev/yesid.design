@@ -76,6 +76,7 @@ test('renders the exact coverage matrix', async ({ page }) => {
 });
 
 test('renders both global ripple rings at the pointer coordinates', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await openGallery(page);
 	const demo = page.locator('[data-gallery-demo="global-ripple"]');
 
@@ -101,6 +102,20 @@ test('renders both global ripple rings at the pointer coordinates', async ({ pag
 		expect(ripple).toMatchObject({ left: '124px', top: '168px', position: 'fixed', borderTopStyle: 'solid' });
 		expect(ripple.animationName).not.toBe('none');
 	}
+});
+
+test('spawns no global ripple under reduced motion and follows a live change', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await openGallery(page);
+	const demo = page.locator('[data-gallery-demo="global-ripple"]');
+	const rings = page.locator('.global-ripple, .global-ripple-inner');
+
+	await demo.dispatchEvent('pointerdown', { clientX: 124, clientY: 168 });
+	await expect(rings).toHaveCount(0);
+
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await demo.dispatchEvent('pointerdown', { clientX: 124, clientY: 168 });
+	await expect(rings).toHaveCount(2);
 });
 
 type Interaction = Readonly<{
