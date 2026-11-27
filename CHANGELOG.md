@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.61.0-rc.2
+
+<!-- release-fragment: answer-lead-line-box -->
+- `@yesid/ui` (patch): AnswerLead keeps its previous line height and baseline around figures that fit, including when a product uses container-relative font sizes.
+
+<!-- release-fragment: app-frame-floating-chrome -->
+- `@yesid/ui` (patch): AppFrame’s chrome is transparent around the header pill. The pill and the optional controls row paint their own backgrounds, and pointer events reach the page through empty chrome. Remove local AppFrame overrides that made the chrome transparent.
+
+<!-- release-fragment: datatable-reflow-wrap -->
+- `@yesid/ui` (patch): Reflowed DataTables wrap long words when they cannot fit on a line. Content that still overflows can scroll while the page loads. Once the table is interactive, the frame becomes a caption-named, keyboard-scrollable region with edge fades whenever content overflows, including when a control expands on focus.
+
+<!-- release-fragment: seo-head-og-url -->
+- `@yesid/ui` (minor): SeoHead accepts an optional `ogUrl` for the shared address, which defaults to `canonical`.
+
 ## 0.61.0-rc.1
 
 <!-- release-fragment: combobox-select-only -->
