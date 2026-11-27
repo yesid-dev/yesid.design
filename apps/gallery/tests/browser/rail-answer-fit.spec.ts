@@ -52,7 +52,10 @@ async function openBeforeHydration(page: Page) {
 			.replace(/<link\b[^>]*\brel="modulepreload"[^>]*>/g, '')
 			.replace(startImport, `${gate}.then(() => $&)`);
 		await route.fulfill({ response, body });
-	}, { times: 1 });
+		// No `times: 1`: an expiring route turns request interception off while the browser is already requesting
+		// the page's stylesheets and fonts, and a request caught in that switch can stay paused, holding
+		// DOMContentLoaded. Only the document matches this pattern, so keeping the route changes nothing else.
+	});
 	await page.goto('/rail-answer-fit', { waitUntil: 'domcontentloaded' });
 	await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
 }
