@@ -217,27 +217,32 @@ async function emitPackageDeclarations(
 				'svelte2tsx',
 				'svelte-shims-v4.d.ts',
 			),
-			tsconfig: 'tsconfig.json',
+			// Only the published sources (package.json files): tests and fixtures are not API.
+			tsconfig: 'tsconfig.api.json',
 		});
 		return;
 	}
 	emitTypeScriptDeclarations(sourcePackage, packageOutput, targets, compilerOptions);
 }
 
-function exportedSymbols(
-	packageName: ApiPackageName,
-	subpath: string,
-	entrypoint: string,
-	tsconfigPath: string,
-): PublicSymbol[] {
+// One program for all of a package's entrypoints: a program per subpath re-parses the DOM lib each time.
+function createDeclarationProgram(entrypoints: readonly string[], tsconfigPath: string): ts.Program {
 	const config = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
 	if (config.error) throw new Error(formatDiagnostics([config.error]));
 	const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, dirname(tsconfigPath));
-	const program = ts.createProgram([entrypoint], parsed.options);
-	const source = program.getSourceFile(entrypoint);
-	const moduleSymbol = source && program.getTypeChecker().getSymbolAtLocation(source);
-	if (!source || !moduleSymbol) throw new Error(`Cannot inspect declarations for ${packageName} ${subpath}`);
+	return ts.createProgram(entrypoints, parsed.options);
+}
+
+function exportedSymbols(
+	program: ts.Program,
+	packageName: ApiPackageName,
+	subpath: string,
+	entrypoint: string,
+): PublicSymbol[] {
 	const checker = program.getTypeChecker();
+	const source = program.getSourceFile(entrypoint);
+	const moduleSymbol = source && checker.getSymbolAtLocation(source);
+	if (!source || !moduleSymbol) throw new Error(`Cannot inspect declarations for ${packageName} ${subpath}`);
 	return checker.getExportsOfModule(moduleSymbol).map((symbol) => {
 		const aliased = symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
 		const tags = [...symbol.getJsDocTags(checker), ...aliased.getJsDocTags(checker)];
@@ -365,16 +370,21 @@ async function createPackageReport(
 
 	const declarationSections: string[] = ['## Declaration namespaces', ''];
 	const syntheticExports: string[] = [];
-	for (const { name: namespace, target } of planDeclarationNamespaces(targets)) {
-		const entrypoint = declarationPath(packageOutput, target);
+	const namespaces = planDeclarationNamespaces(targets).map((namespace) => {
+		const entrypoint = declarationPath(packageOutput, namespace.target);
 		if (!existsSync(entrypoint)) {
-			throw new Error(`${config.name} export target ${target} did not emit ${entrypoint}`);
+			throw new Error(`${config.name} export target ${namespace.target} did not emit ${entrypoint}`);
 		}
+		return { ...namespace, entrypoint };
+	});
+	const program = createDeclarationProgram(
+		namespaces.map(({ entrypoint }) => entrypoint),
+		join(packageOutput, 'tsconfig.json'),
+	);
+	for (const { name: namespace, target, entrypoint } of namespaces) {
 		const subpaths = publicSubpathsForTarget(exports, target);
 		for (const subpath of subpaths) {
-			validatePublicSymbols(
-				exportedSymbols(config.name, subpath, entrypoint, join(packageOutput, 'tsconfig.json')),
-			);
+			validatePublicSymbols(exportedSymbols(program, config.name, subpath, entrypoint));
 		}
 		const declarationRelative = `./${target
 			.replace(/^\.\//u, '')
@@ -444,8 +454,12 @@ export async function createApiReports(
 	const workspaceRoot = createApiWorkspace(repositoryRoot);
 	try {
 		const reports = {} as Record<ApiPackageName, string>;
+		// Bun keeps a finished package's compiler programs resident until a full collection, so
+		// without one each package stacks on the last (api:check reached 2.7 GB on Windows).
+		const bun = (globalThis as { Bun?: { gc(force: boolean): void } }).Bun;
 		for (const config of API_PACKAGES) {
 			reports[config.name] = await createPackageReport(repositoryRoot, workspaceRoot, config);
+			bun?.gc(true);
 		}
 		return reports;
 	} finally {
