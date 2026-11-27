@@ -167,7 +167,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `5e64b1f8f416a09c5eb04fe5ac5c72c0a795cadf12d82eafc19454fdb6d25101`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `e4b4dbbe3cc9b3f93775793404c334f6bb21dfec6e889f55844e9b88a279a90e`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
@@ -3389,7 +3389,10 @@ type SheetContentProps = WithoutChildrenOrChild<Dialog.ContentProps> & {
 } | {
     detents?: undefined;
     handleLabel?: never;
-    side?: SheetSide;
+    side?: SheetSide | {
+        base: NonNullable<SheetSide>;
+        md: NonNullable<SheetSide>;
+    };
 }) & ({
     showCloseButton?: boolean;
     closeLabel: string;
@@ -3467,16 +3470,19 @@ const sheetVariants: TVReturnType<    {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
 }, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
 }, undefined, TVReturnType<    {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
 }, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", unknown, unknown, undefined>>;
 

@@ -21,6 +21,8 @@ it('preserves every retained computed class string except the enumerated unused 
 	const baseline = JSON.parse(readFileSync(evidenceUrl, 'utf8')) as Row[];
 	for (const [family, variants] of Object.entries(families)) {
 		for (const props of [{}, ...combinations(variants.variants)]) {
+			// Center was added after this baseline.
+			if (family === 'sheet' && props.side === 'center') continue;
 			const row = baseline.find((row) => row.family === family && JSON.stringify(row.props) === JSON.stringify(props));
 			expect(row, `${family} ${JSON.stringify(props)} has a baseline`).toBeDefined();
 			const expected = row!.before.split(' ').filter((token) => !/^(?:has-data-\[icon=inline-|in-data-\[slot=button-group\]|(?:dark:)?aria-invalid:)/.test(token)).join(' ');

@@ -2,6 +2,8 @@
 	import { tv, type VariantProps } from 'tailwind-variants';
 	import { twMergeConfig } from '../../cn/index.js';
 
+	const shortMotion = 'transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0';
+
 	export const sheetVariants = tv(
 		{
 			base: 'bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none',
@@ -11,6 +13,7 @@
 						'data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 max-w-sm border-l border-border',
 					bottom:
 						'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 max-h-[90svh] w-full rounded-t-xl border-t border-border',
+					center: `sheet-center inset-0 m-auto h-fit max-h-[min(80dvh,44rem)] w-[min(var(--sheet-center-width,40rem),calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-[0_4px_12px_rgb(0_0_0_/_0.15)] data-[state=closed]:slide-out-to-bottom-[8px] data-[state=open]:slide-in-from-bottom-[8px] ${shortMotion}`,
 				},
 			},
 			defaultVariants: {
@@ -18,7 +21,7 @@
 				side: 'bottom',
 			},
 		},
-		{ twMergeConfig },
+		{ twMergeConfig: { extend: { theme: { ...twMergeConfig.extend.theme, shadow: ['sheet'] } } } },
 	);
 
 	export type SheetSide = VariantProps<typeof sheetVariants>['side'];
@@ -45,7 +48,11 @@
 		children: Snippet;
 	} & (
 		| { detents: readonly SheetDetent[]; handleLabel: string; side?: 'bottom' }
-		| { detents?: undefined; handleLabel?: never; side?: SheetSide }
+		| {
+			detents?: undefined;
+			handleLabel?: never;
+			side?: SheetSide | { base: NonNullable<SheetSide>; md: NonNullable<SheetSide> };
+		}
 	) & (
 		| { showCloseButton?: boolean; closeLabel: string }
 		| { showCloseButton: false; closeLabel?: string }
@@ -70,6 +77,16 @@
 	let dismiss: HTMLButtonElement | null = $state(null);
 	const index = $derived(Math.max(0, detents?.findIndex(d => d.id === detent) ?? 0));
 	const active = $derived(detents?.[index]);
+	const responsiveSide = $derived(typeof side === 'object' ? side : undefined);
+	const contentClasses = $derived(cn(
+		side && typeof side === 'object'
+			? ['fixed flex flex-col gap-4 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none', shortMotion]
+			: sheetVariants({ side }),
+		'z-[calc(var(--z-index-sheet)+1)]',
+		showCloseButton && '[&_[data-slot=sheet-header]]:pr-12',
+		detents && 'max-h-none gap-0 overflow-hidden',
+		className,
+	));
 	$effect(() => {
 		if (!detents) return;
 		if (side !== 'bottom') throw new Error('Sheet detents require side="bottom"');
@@ -131,8 +148,9 @@
 	<SheetPrimitive.Content
 		bind:ref
 		data-slot="sheet-content"
-		style="z-index: calc(var(--z-index-sheet) + 1);"
-		class={cn(sheetVariants({ side }), showCloseButton && '[&_[data-slot=sheet-header]]:pr-12', className)}
+		data-sheet-base={responsiveSide?.base}
+		data-sheet-md={responsiveSide?.md}
+		class={contentClasses}
 		{...(!modal ? { trapFocus: false, preventScroll: false, interactOutsideBehavior: 'ignore' as const, escapeKeydownBehavior: 'ignore' as const } : {})}
 		{...restProps}
 	>
@@ -143,7 +161,6 @@
 					onkeydown={modal ? restProps.onkeydown : undefined}
 					onkeydowncapture={!modal ? nonModalKey : restProps.onkeydowncapture}
 					data-detent={active?.id} data-sheet-detents={detents ? '' : undefined}
-					class={cn(sheetVariants({ side }), showCloseButton && '[&_[data-slot=sheet-header]]:pr-12', detents && 'max-h-none gap-0 overflow-hidden', className)}
 					style:height={active ? dragHeight === undefined ? cssHeight(detents, index) : `${dragHeight}px` : undefined}
 					style:touch-action={detents ? 'none' : undefined}
 					style:transition-property={detents ? 'height' : undefined}

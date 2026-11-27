@@ -17,6 +17,7 @@
 
 <TokenGallery />
 <PrimitiveGallery />
+<p class="mt-4"><a class="inline-flex min-h-11 items-center underline" href="/sheet">Responsive Sheet example</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/station-tabs">Station tabs: Tabs and native links</a></p>
 <BrandGallery />
 <MotionGallery />

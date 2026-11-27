@@ -58,24 +58,38 @@ test('sheet detent height follows viewport and reduced motion', async ({ page })
 	expect(await sheet.evaluate(n => getComputedStyle(n).transitionDuration)).toBe('0s');
 });
 
-test('sheet mouse drag snaps nearest and flicks in direction', async ({ page }) => {
+test('sheet mouse drag snaps nearest and flicks in direction', async ({ page, context }) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
 	const { sheet, handle } = await open(page);
+	await handle.press('Home');
+	await expect(sheet).toHaveAttribute('data-detent', 'peek');
+	const peek = (await sheet.boundingBox())!.height;
 	const box = (await handle.boundingBox())!;
 	const x = box.x + box.width / 2;
-	const y = box.y + box.height / 2;
-	await page.mouse.move(x, y);
-	await page.mouse.down();
-	await page.mouse.move(x, y + page.viewportSize()!.height * 0.5 - 130, { steps: 10 });
-	// Hold at release to remove flick velocity from the sample window.
-	await page.waitForTimeout(150);
-	await page.mouse.up();
-	await expect(sheet).toHaveAttribute('data-detent', 'peek');
-	const second = (await handle.boundingBox())!;
-	await page.mouse.move(x, second.y + 22);
-	await page.mouse.down();
-	await page.mouse.move(x, second.y - 80, { steps: 2 });
-	await page.mouse.up();
-	await expect(sheet).toHaveAttribute('data-detent', 'half');
+	const from = box.y + box.height / 2;
+	const to = from - 100;
+	const cdp = await context.newCDPSession(page);
+	// Chromium clamps event timestamps before the document's time origin to zero.
+	const origin = await page.evaluate(() => performance.timeOrigin / 1000);
+	try {
+		// The same release height is nearest to Peek. Only the fast release flicks to Half.
+		for (const [offset, duration, expected] of [[0.05, 0.2, 'peek'], [0.35, 0.04, 'half']] as const) {
+			const start = origin + offset;
+			await cdp.send('Input.dispatchMouseEvent', {
+				type: 'mousePressed', x, y: from, button: 'left', buttons: 1, clickCount: 1, timestamp: start,
+			});
+			await cdp.send('Input.dispatchMouseEvent', {
+				type: 'mouseMoved', x, y: to, buttons: 1, timestamp: start + 0.02,
+			});
+			await expect.poll(async () => (await sheet.boundingBox())?.height).toBe(peek + 100);
+			await cdp.send('Input.dispatchMouseEvent', {
+				type: 'mouseReleased', x, y: to, button: 'left', buttons: 0, clickCount: 1, timestamp: start + duration,
+			});
+			await expect(sheet).toHaveAttribute('data-detent', expected);
+		}
+	} finally {
+		await cdp.detach();
+	}
 });
 
 test('sheet touch drag follows the finger and snaps both ways', async ({ page, context }) => {
