@@ -157,7 +157,9 @@
 		}) | null | undefined;
 		if (!control || !trailing || !pill) return;
 
-		const before = getComputedStyle(control).position === 'absolute' ? null : trailing;
+		const below = getComputedStyle(control).position === 'absolute';
+		control.toggleAttribute('data-network-below', below);
+		const before = below ? null : trailing;
 		if (control.nextElementSibling === before) return;
 		if (typeof pill.moveBefore === 'function') {
 			pill.moveBefore(control, before);
@@ -666,7 +668,7 @@
 		margin-inline: var(--nav-split-space);
 		flex-shrink: 0;
 	}
-	.nav-network > :global([data-slot='network-picker']) {
+	.nav-network :global([data-slot='network-picker']) {
 		font-weight: 500;
 		line-height: 1.2;
 		white-space: nowrap;
@@ -675,8 +677,8 @@
 	/* Allow extra room for enlarged text at the desktop step. */
 	@container site-header (width >= max(1024px, calc(824px + 12.5em))) {
 		.nav-pill-network {
-			/* Make room for the extra divider without dropping links as soon as they appear. */
-			--nav-split-space: clamp(12px, calc(5cqi - 48px), 20px);
+			/* Leave room for wider fallback text when the desktop links first appear. */
+			--nav-split-space: clamp(12px, calc(5cqi - 50px), 20px);
 		}
 		.nav-pill-network > .nav-network { order: 1; }
 		.nav-pill-network > .nav-trailing {
@@ -743,7 +745,7 @@
 			max-inline-size: calc(100vw - 1rem);
 		}
 		.nav-network:has(> :global(*))::before { display: none; }
-		.nav-network > :global([data-slot='network-picker']) {
+		.nav-network :global([data-slot='network-picker']) {
 			-webkit-backdrop-filter: blur(var(--glass-blur));
 			backdrop-filter: blur(var(--glass-blur));
 		}

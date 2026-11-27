@@ -39,7 +39,40 @@ function networkRow(page: Page) {
 	};
 }
 
+function navClearance(page: Page) {
+	return page.evaluate(() => {
+		const probe = document.createElement('div');
+		probe.style.cssText = 'position: fixed; block-size: var(--nav-clearance)';
+		document.body.append(probe);
+		const height = probe.getBoundingClientRect().height;
+		probe.remove();
+		return height;
+	});
+}
+
 test.describe('Header network short code', { tag: '@theme' }, () => {
+	test('reserves the compact row at 200% text before hydration', async ({ page }) => {
+		await page.setViewportSize({ width: 1024, height: 850 });
+		const scripts = Promise.withResolvers<void>();
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await scripts.promise;
+			await route.fallback();
+		});
+		try {
+			await page.goto(path, { waitUntil: 'domcontentloaded' });
+			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+			const { pill, inRow } = networkRow(page);
+			await expect(pill).not.toHaveClass(/\bnav-hydrated\b/);
+			expect(await inRow()).toBe(false);
+			expect(await navClearance(page)).toBe(164);
+			await page.setViewportSize({ width: 1280, height: 850 });
+			expect(await inRow()).toBe(true);
+			expect(await navClearance(page)).toBe(104);
+		} finally {
+			scripts.resolve();
+		}
+	});
+
 	test('shows the short code in the narrower inline tier', async ({ page }) => {
 		await page.setViewportSize({ width: 1120, height: 850 });
 		await page.goto(`${path}?long-name`);
@@ -208,6 +241,7 @@ test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
 					const pickerBox = (await picker.boundingBox())!;
 					const below = pickerBox.y >= pillBox.y + pillBox.height;
 					if (width === 1024) expect(below).toBe(true);
+					await expect.poll(() => navClearance(page)).toBe(below ? 164 : 104);
 					if (below) {
 						await expect(picker.getByText('STM', { exact: true })).toBeVisible();
 						const chrome = (await page.locator('[data-slot="app-frame-chrome"]').boundingBox())!;

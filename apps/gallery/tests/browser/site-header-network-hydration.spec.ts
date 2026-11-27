@@ -76,6 +76,7 @@ test.describe('Network header first paint', { tag: '@theme' }, () => {
 								border: label.borderTop, pillBorder: pill.borderTop,
 								borderWidth: label.borderTopWidth,
 								shadow: label.boxShadow, pillShadow: pill.boxShadow,
+								blur: label.backdropFilter, pillBlur: pill.backdropFilter,
 								before: [before.display, before.width, before.height, before.backgroundColor],
 								after: [after.display, after.width, after.height, after.backgroundColor],
 								chevronMuted: chevron.color !== label.color,
@@ -93,6 +94,8 @@ test.describe('Network header first paint', { tag: '@theme' }, () => {
 							expect(appearance.background).toBe(appearance.pillBackground);
 							expect(appearance.border).toBe(appearance.pillBorder);
 							expect(appearance.shadow).toBe(appearance.pillShadow);
+							expect(appearance.blur).toBe(appearance.pillBlur);
+							expect(appearance.blur).not.toBe('none');
 						}
 
 						resume();
@@ -128,6 +131,75 @@ test.describe('Network header first paint', { tag: '@theme' }, () => {
 			}
 		}
 	}
+});
+
+test.describe('Network header with long French copy', { tag: '@theme' }, () => {
+	test('keeps the links visible before hydration, after hydration and after the fonts arrive', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		const scripts = Promise.withResolvers<void>();
+		const fonts = Promise.withResolvers<void>();
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await scripts.promise;
+			await route.fallback();
+		});
+		await page.route(/\.woff2(?:\?|$)/, async (route) => {
+			await fonts.promise;
+			await route.fallback();
+		});
+
+		try {
+			await page.goto('/app-frame/network-paint/fr/long', { waitUntil: 'domcontentloaded' });
+			const pill = page.getByTestId('nav-pill');
+			const links = pill.getByRole('link', { name: /Aperçu du réseau|Carte du réseau/ });
+			const hasInter = () => page.evaluate(() => document.fonts.check('500 16px "Inter Variable"'));
+			await expect(pill).not.toHaveClass(/\bnav-hydrated\b/);
+			await expect.poll(hasInter).toBe(false);
+			await expect(links).toHaveCount(2);
+			const before = await headerBoxes(page);
+
+			scripts.resolve();
+			await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+			await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+			expect(await hasInter()).toBe(false);
+			await expect(links).toHaveCount(2);
+			expect(await headerBoxes(page)).toEqual(before);
+
+			fonts.resolve();
+			await page.evaluate(() => document.fonts.ready);
+			await expect.poll(hasInter).toBe(true);
+			await expect(links).toHaveCount(2);
+			const loaded = await headerBoxes(page);
+			expect(loaded.header.height).toBe(before.header.height);
+			expect(loaded.mainY).toBe(before.mainY);
+			await expectNoHorizontalOverflow(page);
+		} finally {
+			scripts.resolve();
+			fonts.resolve();
+		}
+	});
+
+	test('restores the links when an action is removed and names the selected network', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 900 });
+		await page.goto('/app-frame/network-paint/fr/long');
+		const pill = page.getByTestId('nav-pill');
+		const links = pill.getByRole('link', { name: /Aperçu du réseau|Carte du réseau/ });
+		const pin = page.getByRole('button', { name: 'Épingler le relevé' });
+		const refresh = pill.getByRole('button', { name: 'Actualiser les données' });
+		await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+		await page.evaluate(() => document.fonts.ready);
+		await expect(links).toHaveCount(2);
+		await pin.click();
+		await expect(refresh).toBeVisible();
+		await expect(links).toHaveCount(0);
+		await pin.click();
+		await expect(refresh).toHaveCount(0);
+		await expect(links).toHaveCount(2);
+
+		const picker = pill.getByRole('combobox');
+		await expect(picker).toHaveAccessibleName('Réseau : Ottawa · OC Transpo');
+		await picker.selectOption('stm');
+		await expect(picker).toHaveAccessibleName('Réseau : Montréal · STM');
+	});
 });
 
 test.describe('Network header menu height', { tag: '@theme' }, () => {

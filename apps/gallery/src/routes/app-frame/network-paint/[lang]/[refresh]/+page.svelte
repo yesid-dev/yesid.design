@@ -28,6 +28,10 @@
 	]);
 	let selectedNetwork = $state<string>();
 	const selected = $derived(selectedNetwork ?? (data.variant === 'long' ? 'ott' : 'stm'));
+	const selectedEntry = $derived(networks.find((entry) => entry.id === selected) ?? networks[0]);
+	const networkLabel = $derived(data.variant === 'long'
+		? `${french ? 'Réseau :' : 'Network:'} ${selectedEntry.city} · ${selectedEntry.name}`
+		: french ? 'Réseau' : 'Network');
 	let pinned = $state(false);
 	const href = (lang: string) => `/app-frame/network-paint/${lang}/${data.variant}`;
 </script>
@@ -50,11 +54,12 @@
 					<input class="search" type="search" aria-label={french ? 'Chercher dans le réseau' : 'Search the network'} />
 				{/snippet}
 				{#snippet network()}
-					<NetworkPicker label={data.variant === 'long' ? (french ? 'Réseau : Ottawa · OC Transpo' : 'Network: Ottawa · OC Transpo') : french ? 'Réseau' : 'Network'}
-						{networks} value={selected} onValueChange={(id) => (selectedNetwork = id)} />
+					<span class="network-choice">
+						<NetworkPicker label={networkLabel} {networks} value={selected} onValueChange={(id) => (selectedNetwork = id)} />
+					</span>
 				{/snippet}
 				{#snippet actions()}
-					{#if data.variant === 'refresh'}
+					{#if data.variant === 'refresh' || (data.variant === 'long' && pinned)}
 						<Button type="button" variant="ghost" size="icon-tap" aria-label={french ? 'Actualiser les données' : 'Refresh data'}>
 							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
 								<path d="M15 5v4h-4M15 9a6 6 0 1 0-2 4.5" />
@@ -87,6 +92,7 @@
 
 <style>
 	.frame-nav { display: contents; pointer-events: none; }
+	.network-choice { display: contents; }
 	@media (min-width: 1024px) { .frame-nav { display: block; } }
 	.search { inline-size: clamp(11rem, 22cqi, 20rem); min-block-size: var(--size-tap-min); border: 1px solid var(--border); }
 	.report {
