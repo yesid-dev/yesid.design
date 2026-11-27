@@ -363,9 +363,10 @@ test('portaled header and control listboxes and the right Sheet paint above chro
 
 test('an evidence sheet keeps its layer through its closing animation', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 800 });
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await openFrame(page);
 	await page.addStyleTag({
-		content: '.surface-rail-sheet[data-state="closed"] { animation-duration: 1s !important; }',
+		content: '.surface-rail-sheet[data-state="closed"] { transition-duration: 1s !important; }',
 	});
 	const carrier = page.locator('[data-slot="surface-rail-mobile"]');
 	const sheet = carrier.locator('.surface-rail-sheet');
@@ -375,11 +376,29 @@ test('an evidence sheet keeps its layer through its closing animation', async ({
 	await page.getByRole('button', { name: /Open evidence/ }).click();
 	await expect(sheet).toHaveAttribute('data-state', 'open');
 	await expect(carrier).toHaveCSS('z-index', String(layer));
-	await page.keyboard.press('Escape');
-	await expect(sheet).toHaveAttribute('data-state', 'closed');
-	await expect(carrier).toHaveCSS('z-index', String(layer));
-	await expect(sheet).toHaveCount(0);
-	await expect.poll(() => carrier.evaluate((element) => Number(getComputedStyle(element).zIndex))).toBeLessThan(layer);
+	await expect.poll(() => sheet.evaluate((element) =>
+		getComputedStyle(element).opacity === '1' && element.getAnimations().length === 0)).toBe(true);
+
+	const samples = await sheet.evaluate(async (element) => {
+		const carrier = element.parentElement!;
+		const layers: number[] = [];
+		element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+		await new Promise<void>((resolve) => {
+			const sample = () => {
+				const style = getComputedStyle(element);
+				if (!element.isConnected || style.visibility === 'hidden') return resolve();
+				if (element.getAttribute('data-state') === 'closed' && Number(style.opacity) > 0) {
+					layers.push(Number(getComputedStyle(carrier).zIndex));
+				}
+				requestAnimationFrame(sample);
+			};
+			requestAnimationFrame(sample);
+		});
+		return { layers, hiddenLayer: Number(getComputedStyle(carrier).zIndex) };
+	});
+	expect(samples.layers.length).toBeGreaterThan(0);
+	expect(samples.layers.every((value) => value === layer)).toBe(true);
+	expect(samples.hiddenLayer).toBe(layer - 1);
 });
 
 test.describe('desktop input', () => {
