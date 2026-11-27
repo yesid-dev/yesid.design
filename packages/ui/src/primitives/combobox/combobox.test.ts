@@ -1,7 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it } from 'vitest';
+import type { ComponentProps } from 'svelte';
+import type { Combobox, ComboboxSelectOnlyProps } from './index.js';
 import ComboboxFixture from './test-fixtures/ComboboxFixture.svelte';
 import RequiredChoiceFixture from './test-fixtures/RequiredChoiceFixture.svelte';
+import SelectOnlyFixture from './test-fixtures/SelectOnlyFixture.svelte';
 
 afterEach(() => cleanup());
 
@@ -202,5 +205,52 @@ describe('Combobox with clearable={false}', () => {
 		await fireEvent.keyDown(input(), { key: 'Enter' });
 
 		await waitFor(() => expectKept('Gamma', 'gamma', '1'));
+	});
+});
+
+describe('select-only Combobox', () => {
+	it('accepts options without search and excludes a clearable select-only mode', () => {
+		type Props = ComponentProps<typeof Combobox>;
+		expectTypeOf<Extract<Props, { searchable: false }>>().toEqualTypeOf<ComboboxSelectOnlyProps>();
+		expectTypeOf<{ searchable: false; options: [{ value: 'week'; label: 'Last week' }]; label: 'Period' }>().toExtend<Props>();
+		expectTypeOf<{ searchable: false; options: []; label: 'Period'; clearable: true }>().not.toExtend<Props>();
+	});
+
+	it('validates and submits the bound choice without a text input or duplicate value changes', async () => {
+		render(SelectOnlyFixture);
+		const form = screen.getByRole('form', { name: 'Report filters' }) as HTMLFormElement;
+		const trigger = within(form).getByRole('combobox', { name: 'Reporting period' });
+		expect(trigger.tagName).toBe('BUTTON');
+		expect(trigger.textContent).toContain('Choose a period');
+		expect(trigger.getAttribute('aria-required')).toBe('true');
+		expect(form.querySelector('input')).toBeNull();
+		const state = () => screen.getByTestId('select-state').textContent;
+		expect(form.checkValidity()).toBe(false);
+		expect(state()).toBe('none / false / 0 / 0 / 0');
+		await fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+		const option = await screen.findByRole('option', { name: 'Last week' });
+		await waitFor(() => expect(state()).toBe('none / true / 0 / 1 / 1'));
+		await waitFor(() => expect(option.hasAttribute('data-highlighted')).toBe(true));
+		await fireEvent.keyDown(trigger, { key: 'Enter' });
+		await waitFor(() => expect(state()).toBe('week / false / 1 / 2 / 2'));
+		expect(trigger.textContent).toContain('Last week');
+		expect(form.reportValidity()).toBe(true);
+		expect(new FormData(form).get('period')).toBe('week');
+		form.reset();
+		expect(new FormData(form).get('period')).toBe('week');
+
+		await fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+		await waitFor(() => expect(state()).toBe('week / true / 1 / 3 / 3'));
+		await waitFor(() => expect(screen.getByRole('option', { name: 'Last week' }).hasAttribute('data-highlighted')).toBe(true));
+		await fireEvent.keyDown(trigger, { key: 'Enter' });
+		await waitFor(() => expect(state()).toBe('week / false / 1 / 4 / 4'));
+	});
+
+	it('disables the trigger and excludes its value from form submission', () => {
+		render(SelectOnlyFixture, { props: { disabled: true } });
+		const form = screen.getByRole('form', { name: 'Report filters' }) as HTMLFormElement;
+		expect(within(form).getByRole('combobox', { name: 'Reporting period' }).hasAttribute('disabled')).toBe(true);
+		expect(form.reportValidity()).toBe(true);
+		expect(new FormData(form).has('period')).toBe(false);
 	});
 });

@@ -8,6 +8,7 @@ import {
 	Combobox,
 	type ComboboxNonClearableProps,
 	type ComboboxOption,
+	type ComboboxSelectOnlyProps,
 	type ComboboxProps,
 } from '@yesid/ui/combobox';
 import { Separator, type SeparatorProps } from '@yesid/ui/separator';
@@ -467,7 +468,9 @@ describe('public UI prop contracts', () => {
 		expectTypeOf<BindingsOf<typeof Combobox>>().toEqualTypeOf<'value' | 'open'>();
 		expectTypeOf<ComboboxPropsV058>().toExtend<ComboboxProps>();
 		expectTypeOf<ComboboxProps['clearLabel']>().toEqualTypeOf<string>();
-		expectTypeOf<ComboboxComponentProps>().toEqualTypeOf<ComboboxProps | ComboboxNonClearableProps>();
+		expectTypeOf<ComboboxComponentProps>().toEqualTypeOf<
+			ComboboxProps | ComboboxNonClearableProps | ComboboxSelectOnlyProps
+		>();
 		expectTypeOf<BindingsOf<typeof Separator>>().toEqualTypeOf<'ref'>();
 		expectTypeOf<BindingsOf<typeof Sheet>>().toEqualTypeOf<'open'>();
 		expectTypeOf<BindingsOf<typeof SheetTrigger>>().toEqualTypeOf<'ref'>();

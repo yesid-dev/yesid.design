@@ -1,8 +1,29 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import TooltipFixture from './test-fixtures/TooltipFixture.svelte';
 
 afterEach(() => cleanup());
+
+it.each(['number', 'textarea'] as const)('preserves navigation keys on a %s trigger', async (field) => {
+	render(TooltipFixture, { props: { field } });
+	const trigger = screen.getByRole(field === 'number' ? 'spinbutton' : 'textbox');
+	trigger.focus();
+	const tooltip = await screen.findByRole('tooltip');
+	const scrollTo = vi.fn();
+	Object.defineProperties(tooltip, {
+		clientHeight: { value: 100 },
+		scrollHeight: { value: 300 },
+		scrollTo: { value: scrollTo },
+	});
+	const press = (key: string) => fireEvent.keyDown(trigger, { key });
+	for (const key of ['ArrowUp', 'ArrowDown', 'Home', 'End']) {
+		expect(await press(key)).toBe(true);
+	}
+	for (const key of ['PageUp', 'PageDown']) {
+		expect(await press(key)).toBe(field === 'textarea');
+	}
+	expect(scrollTo).toHaveBeenCalledTimes(field === 'textarea' ? 0 : 2);
+});
 
 it('describes the focused trigger and dismisses on Escape without moving focus', async () => {
 	render(TooltipFixture);

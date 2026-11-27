@@ -1417,7 +1417,7 @@ type Combobox = ReturnType<typeof Combobox>;
 type ComboboxBehaviorProps = Pick<Combobox_2.RootProps, 'disabled' | 'required' | 'name' | 'open' | 'onOpenChange' | 'onOpenChangeComplete' | 'loop' | 'scrollAlignment'>;
 
 // @public
-type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
+type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps | ComboboxSelectOnlyProps;
 
 // @public
 interface ComboboxNonClearableProps extends Omit<ComboboxProps, 'clearable' | 'clearLabel'> {
@@ -1446,8 +1446,24 @@ interface ComboboxProps extends ComboboxBehaviorProps {
     onValueChange?: (value: string | null) => void;
     options: readonly ComboboxOption[];
     placeholder?: string;
+    searchable?: true;
     value?: string | null;
 }
+
+// @public
+interface ComboboxSelectOnlyProps extends Omit<ComboboxProps, 'searchable' | 'options' | 'clearable' | 'clearLabel' | 'emptyLabel' | 'fold'> {
+    clearable?: false;
+    clearLabel?: string;
+    emptyLabel?: string;
+    fold?: ComboboxProps['fold'];
+    options: readonly ComboboxSelectOption[];
+    searchable: false;
+}
+
+// @public
+type ComboboxSelectOption = Omit<ComboboxOption, 'search'> & {
+    readonly search?: string;
+};
 
 // @public (undocumented)
 function configureUi(configuration?: UiConfiguration): ConfigureUiResult;
@@ -2738,7 +2754,9 @@ declare namespace PrimitivesCombobox {
         Combobox,
         ComboboxNonClearableProps,
         ComboboxOption,
-        ComboboxProps
+        ComboboxProps,
+        ComboboxSelectOnlyProps,
+        ComboboxSelectOption
     }
 }
 
