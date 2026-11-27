@@ -25,28 +25,6 @@
 	const figureId = `${sentenceId}-figure`;
 	// The section reads its statement in order: the figure, or what stands in for it, then the sentence.
 	const labelledBy = $derived(value !== null || absent ? `${figureId} ${sentenceId}` : sentenceId);
-
-	let figureBox = $state<HTMLParagraphElement>();
-	let measure = $state<HTMLSpanElement>();
-
-	$effect(() => {
-		if (!figureBox || !measure || typeof ResizeObserver === 'undefined') return;
-		const box = figureBox;
-		const natural = measure;
-		const observer = new ResizeObserver(() => {
-			const available = box.getBoundingClientRect().width;
-			const width = natural.getBoundingClientRect().width;
-			if (available > 0.5 && width > available) {
-				const fontSize = Number.parseFloat(getComputedStyle(natural).fontSize);
-				box.style.setProperty('--answer-value-fit', `${fontSize * (available - 0.5) / width}px`);
-			} else {
-				box.style.removeProperty('--answer-value-fit');
-			}
-		});
-		observer.observe(box);
-		observer.observe(natural);
-		return () => observer.disconnect();
-	});
 </script>
 
 <section
@@ -59,11 +37,11 @@
 		<div class="answer-context">
 			<div class="answer-statement">
 				{#if value !== null}
-					<p class="answer-value" class:answer-value-lg={size === 'lg'} id={figureId} bind:this={figureBox}>
-						<MetricValue {value} {size} />
-						<span class="answer-measure">
-							<span class="answer-measure-width font-heading font-extrabold leading-none tabular-nums"
-								data-value={value} bind:this={measure}></span>
+					<p class="answer-value" class:answer-value-lg={size === 'lg'} id={figureId}>
+						<span class="answer-fit">
+							<span class="answer-figure"><MetricValue {value} {size} /></span>
+							<span class="answer-measure font-heading font-extrabold leading-none tabular-nums"
+								data-value={value}></span>
 						</span>
 					</p>
 				{:else if absent}
@@ -80,8 +58,20 @@
 </section>
 
 <style>
+	/* Capture the two container widths before calculating their ratio.
+	   https://kizu.dev/fit-to-width/ */
+	@property --yesid-answer-available {
+		syntax: "<length>";
+		initial-value: 0px;
+		inherits: true;
+	}
+	@property --yesid-answer-natural {
+		syntax: "<length> | clip";
+		initial-value: clip;
+		inherits: false;
+	}
 	.answer-lead {
-		container-type: inline-size;
+		container: answer-lead / inline-size;
 		min-inline-size: 0;
 		overflow-wrap: anywhere;
 	}
@@ -94,26 +84,54 @@
 	.answer-value {
 		--answer-value-size: var(--text-heading);
 		min-inline-size: 0;
+		overflow-x: auto;
 		white-space: nowrap;
 	}
 	.answer-value-lg { --answer-value-size: clamp(2.25rem, var(--text-display), 2.875rem); }
-	.answer-value > :global(.metric-value) {
-		font-size: var(--answer-value-fit, var(--answer-value-size));
-	}
-	/* The unscaled copy keeps the figure's intrinsic width stable in both layouts
-	   and lets the observer react to font loads and text changes. */
-	.answer-measure {
-		display: block;
-		block-size: 0;
-		overflow: clip;
-		visibility: hidden;
-	}
-	.answer-measure-width {
-		display: block;
-		inline-size: max-content;
+	.answer-figure > :global(.metric-value) {
 		font-size: var(--answer-value-size);
 	}
-	.answer-measure-width::before { content: attr(data-value); }
+	.answer-measure { display: none; }
+
+	@supports (container-type: inline-size) and (zoom: tan(atan2(1px, 1px))) {
+		.answer-statement {
+			container-type: inline-size;
+			/* Without @property, keep the scale capped at its normal size. */
+			--yesid-answer-available: initial;
+			--answer-fit-fallback: var(--yesid-answer-available, 1000000px);
+		}
+		.answer-value {
+			--yesid-answer-available: 100cqi;
+			/* Keep the full figure scrollable if typed properties are unavailable. */
+			overflow-x: var(--yesid-answer-natural, auto);
+		}
+		.answer-fit {
+			display: grid;
+			grid-template-columns: max-content;
+			/* The measurement track can be wider than the visible figure. */
+			overflow-x: var(--yesid-answer-natural, visible);
+		}
+		.answer-figure, .answer-measure { grid-area: 1 / 1; }
+		.answer-figure { container-type: inline-size; }
+		/* The hidden copy sizes the grid track to the normal figure width. Its
+		   sibling exposes that width in cqi without contributing to the track. */
+		.answer-measure {
+			display: block;
+			block-size: 0;
+			font-size: var(--answer-value-size);
+			visibility: hidden;
+			user-select: none;
+		}
+		.answer-measure::before { content: attr(data-value); }
+		.answer-figure > :global(.metric-value) {
+			--yesid-answer-natural: 100cqi;
+			/* Scale the whole inline box so inherited letter and word spacing fit too. */
+			zoom: clamp(0.001, tan(atan2(
+				var(--yesid-answer-available) + var(--answer-fit-fallback),
+				max(1px, var(--yesid-answer-natural))
+			)), 1);
+		}
+	}
 	.answer-sentence { font-size: var(--text-body); }
 	.answer-meta {
 		font-size: var(--text-small);
@@ -128,7 +146,7 @@
 	}
 	@media (min-width: 40em) {
 		/* A 13rem figure, a 1rem gap and at least 12rem for the sentence. */
-		@container (min-width: 26rem) {
+		@container answer-lead (min-width: 26rem) {
 			.answer-statement { display: flex; align-items: baseline; gap: 1rem; }
 			.answer-value, .answer-absent {
 				flex: none;
@@ -136,6 +154,9 @@
 				max-inline-size: min(55%, calc(100% - 13rem));
 			}
 			.answer-sentence { flex: 1 1 12rem; min-inline-size: 12rem; }
+			.answer-lead:not([data-layout='fit']) .answer-value {
+				--yesid-answer-available: min(55cqi, calc(100cqi - 13rem));
+			}
 		}
 	}
 	/* The sentence wraps below once it no longer has 12rem beside the figure.
@@ -157,7 +178,7 @@
 		min-inline-size: 0;
 	}
 	@media (min-width: 64em) {
-		@container (min-width: 56rem) {
+		@container answer-lead (min-width: 56rem) {
 			.answer-layout { grid-template-columns: minmax(0, 1fr) fit-content(35%); gap: 1.5rem; }
 			.answer-actions { justify-content: end; }
 		}

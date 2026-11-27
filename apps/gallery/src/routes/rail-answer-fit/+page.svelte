@@ -7,8 +7,10 @@
 	const sizes = ['md', 'lg'] as const;
 </script>
 
+<svelte:head><title>Rail pill and answer reflow</title></svelte:head>
+
 {#snippet rail()}
-	<a href="#answers">Service results</a>
+	<a href="#answers" class="inline-flex min-h-11 items-center">Service results</a>
 {/snippet}
 
 <SurfaceRail {rail} label="Controls" summary="7 days selected"

@@ -97,11 +97,11 @@ test.describe('D1 responsive record parts', { tag: '@theme' }, () => {
 
 			const range = (await long.locator('.answer-value').boundingBox())!;
 			expect((await long.locator('.answer-sentence').boundingBox())!.y).toBeGreaterThanOrEqual(range.y + range.height);
-			await expect.poll(() => long.locator('.answer-value > .metric-value').evaluate((value) => {
+			await expect.poll(() => long.locator('.answer-value .metric-value').evaluate((value) => {
 				const range = document.createRange();
 				range.selectNodeContents(value);
 				return range.getClientRects().length === 1 &&
-					range.getBoundingClientRect().right <= value.parentElement!.getBoundingClientRect().right + 0.5;
+					range.getBoundingClientRect().right <= value.closest('.answer-value')!.getBoundingClientRect().right + 0.5;
 			})).toBe(true);
 			await expectNoHorizontalOverflow(page, ['[data-testid="answer-fit"] :is(.answer-value, .answer-sentence)']);
 		}
