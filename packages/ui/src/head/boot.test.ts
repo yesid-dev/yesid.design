@@ -1,9 +1,12 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { serializeFooterBalance } from '../../../../tools/build-footer-boot.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SECTIONS_READY_EVENT } from '../brand/sections-preference.js';
 import { theme } from '../state/theme.svelte.js';
 import boot from './boot.json';
 import { injectThemeBoot, themeBootScript } from './boot.js';
+import { footerBalanceBootSource } from './footer-balance-source.js';
 
 const runBoot = () => new Function(themeBootScript)();
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -13,6 +16,11 @@ const stateOf = (root: Element) =>
 	[...root.querySelectorAll(STATE.map((name) => `[${name}]`).join(', '))].map((element) =>
 		STATE.map((name) => element.getAttribute(name)),
 	);
+
+it('embeds the same footer balance code that runs in the component', () => {
+	const source = readFileSync('src/layout/footer-balance.ts', 'utf8');
+	expect(footerBalanceBootSource).toBe(serializeFooterBalance(source));
+});
 
 // Runs the boot script, then parses `server` markup as a page load would, and returns what it shows.
 async function booted(server: string) {

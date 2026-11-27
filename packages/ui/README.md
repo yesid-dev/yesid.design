@@ -1602,6 +1602,10 @@ keep their DOM; products must verify their actual measurement/lazy-mount code du
 A hash-based CSP allows it with the source in
 `@yesid/ui/boot.json` (`{ "hash": "sha256-…" }`), which Node config files can import. A CSP that
 relies on `'unsafe-inline'` must not add the hash, because any hash switches `'unsafe-inline'` off.
+The same boot script balances server-rendered desktop footers before paint. Client-rendered footers
+measure on connection, then follow later size changes. This changes the theme boot CSP hash.
+Consumers with a hard-coded `script-src` hash must update it to the new `hash` from `boot.json`.
+Maintainers regenerate the embedded footer source and hash with `bun tools/build-footer-boot.ts`.
 
 ### Header brand and empty menus
 
