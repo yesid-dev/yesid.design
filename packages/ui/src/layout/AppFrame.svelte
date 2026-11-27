@@ -220,7 +220,9 @@
 		flex: none;
 		pointer-events: none;
 	}
-	.app-frame-chrome > [data-slot='app-frame-header'] > :global(*) { pointer-events: auto; }
+	/* SiteHeader owns hit testing for its pill and menu. Transparent wrappers stay click-through. */
+	[data-slot='app-frame-header'] :global(.skip-link:focus),
+	[data-slot='app-frame-header'] :global([data-slot='announcement-banner']) { pointer-events: auto; }
 	.app-frame-chrome:has(:global([aria-modal='true'])) {
 		z-index: var(--z-menu);
 	}

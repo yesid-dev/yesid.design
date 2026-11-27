@@ -943,7 +943,8 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. The chrome around the pill is transparent and lets pointer events reach
-  the page. The controls row paints its own background. `bind:chromeHeight` reports the combined
+  the page. Custom header content can set `pointer-events: auto` on its interactive elements.
+  The controls row paints its own background. `bind:chromeHeight` reports the combined
   row heights in CSS pixels after layout and on resize. Within the frame, `--app-frame-chrome-height`
   exposes that measurement.
   `--chrome-offset` is the sticky clearance and becomes zero when tall chrome scrolls away.

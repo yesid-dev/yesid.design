@@ -58,10 +58,72 @@ for (const theme of ['light', 'dark']) {
 			expect(x).toBeGreaterThan(pinBox.x);
 			expect(x).toBeLessThan(pillBox.x);
 			await page.mouse.click(x, y);
-			await expect(pin).toHaveAttribute('aria-pressed', 'true');
+			expect.soft(await pin.getAttribute('aria-pressed'), 'click reaches the report button').toBe('true');
+
+			const word = await page.locator('#map').evaluate((element) => {
+				const range = document.createRange();
+				range.setStart(element.firstChild!, 0);
+				range.setEnd(element.firstChild!, 3);
+				const { left, right, top, height } = range.getBoundingClientRect();
+				return { start: left + 1, end: right - 1, documentY: Math.round(scrollY + top + height / 2) };
+			});
+			const textScroll = word.documentY - y;
+			await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), textScroll);
+			await expect.poll(() => page.evaluate(() => scrollY)).toBe(textScroll);
+			expect(word.end).toBeLessThan(pillBox.x);
+			// Chromium clamps the selection endpoint to the scroll-padding edge during a drag.
+			await page.addStyleTag({ content: 'html.chrome-clearance { scroll-padding-block-start: 0; }' });
+			await page.mouse.move(word.start, y);
+			await page.mouse.down();
+			await page.mouse.move(word.end, y, { steps: 5 });
+			await page.mouse.up();
+			expect((await page.evaluate(() => getSelection()?.toString()))?.trim()).toBe('The');
 		});
 	}
 }
+
+test('the announcement and focused skip link stay clickable inside a wrapped header', async ({ page }) => {
+	await openFrame(page, '/app-frame/network-paint/en/announcement');
+	const banner = page.getByRole('region', { name: 'Today’s service report' });
+	await expect(banner).toBeVisible();
+	await banner.getByRole('button', { name: 'Dismiss announcement' }).click();
+	await expect(banner).toBeHidden();
+
+	const skip = page.getByRole('link', { name: LABELS.skipToContent });
+	await skip.focus();
+	await skip.click();
+	await expect(page.getByRole('main')).toBeFocused();
+});
+
+test('the wrapped header keeps pill controls and links clickable', async ({ page }) => {
+	await openFrame(page, '/app-frame/network-paint/en/refresh');
+	const pill = page.getByTestId('nav-pill');
+	await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+	const theme = pill.getByTestId('theme-toggle');
+	const checked = await theme.getAttribute('aria-checked');
+	await theme.click();
+	await expect(theme).toHaveAttribute('aria-checked', checked === 'true' ? 'false' : 'true');
+	const network = pill.getByRole('combobox', { name: 'Network' });
+	await network.click();
+	await expect(network).toBeFocused();
+	await page.keyboard.press('Escape');
+	const search = pill.getByRole('searchbox', { name: 'Search the network' });
+	if (page.viewportSize()!.width >= 1024) {
+		await search.click();
+		await expect(search).toBeFocused();
+	}
+	await pill.getByRole('button', { name: 'Refresh data' }).click();
+	await pill.getByRole('button', { name: LABELS.openMenu }).click();
+	await expect(page.getByRole('dialog', { name: LABELS.menu })).toBeVisible();
+	await pill.getByRole('button', { name: LABELS.closeMenu }).click();
+	await expect(page.getByRole('dialog', { name: LABELS.menu })).toBeHidden();
+	if (page.viewportSize()!.width >= 1280) {
+		await pill.getByRole('link', { name: 'Overview' }).click();
+		await expect(page).toHaveURL(/#overview$/);
+	}
+	await pill.getByTestId('language-toggle').click();
+	await expect(page).toHaveURL(/\/fr\/refresh$/);
+});
 
 test('ready ranges commit resolved dates and custom validation names and focuses the field', async ({ page }) => {
 	await page.setViewportSize({ width: 320, height: 850 });
