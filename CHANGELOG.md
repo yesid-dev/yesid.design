@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.61.0-rc.3
+
+<!-- release-fragment: answer-fit-slot -->
+- `@yesid/ui` (minor): AnswerLead exposes the `answer-fit-measure` slot on the figure's natural-width measuring box
+  so consumer overflow checks can exempt it and its descendants. The figure stays in the
+  section's accessible name.
+
+<!-- release-fragment: datatable-hidden-header -->
+- `@yesid/ui` (patch): Visually hidden DataTable headers stay within the table in compact rows and stacked layouts, even with long headings and enlarged text. Their labels and cell associations remain available to assistive technology.
+
+<!-- release-fragment: datatable-whole-words -->
+- `@yesid/ui` (patch): Reflowed DataTable body cells preserve whole words inside nested badges and other cell content. Content that is wider than the table stays reachable in its caption-named, keyboard-scrollable frame.
+
+<!-- release-fragment: header-picker-family -->
+- `@yesid/ui` (patch): Match the network picker to the SiteHeader pill and keep the header height steady through hydration and menu toggles. Gallery regressions cover compact and inline pickers, both themes and languages, and layout shifts at 1024 px.
+
+<!-- release-fragment: loading-states -->
+- `@yesid/tokens` (minor), `@yesid/ui` (minor): Pass `busy` to `Skeleton` for a standalone pulse that respects reduced motion. A busy ancestor
+  still enables the pulse. The block uses the kit's `rounded-md` radius and the new theme-specific
+  `--skeleton` fill (`bg-skeleton`) to stay visible on cards and page backgrounds. Use
+  `DataTable loading` with the real caption, columns and responsive layout to show decorative
+  placeholder rows, including compact rows and stacked layouts. Set `skeletonRows` to the expected
+  first-page count when known. The default is four. Keep `ChartFrame` mounted and pass `loading`
+  to reserve the plot area with a single Skeleton.
+
+<!-- release-fragment: sheet-center -->
+- `@yesid/ui` (minor): Add a centered Sheet window and responsive sides. Replace a desktop bottom sheet with
+  `side={{ base: 'bottom', md: 'center' }}` to keep the bottom presentation on phones and
+  center it from 768px. Use Sheet Header, Body and Footer so long content scrolls within
+  the window. Set `--sheet-center-width` on Content to widen it. Centered and responsive
+  sheets open and close with a short fade and offset, and respect reduced motion.
+
+<!-- release-fragment: surface-rail-motion -->
+- `@yesid/ui` (patch): Keep SurfaceRail controls mounted in place and open the mobile sheet with a short fade and rise directly above its pill. Long rails scroll within the sheet, and reduced motion shows it immediately.
+
 ## 0.61.0-rc.2
 
 <!-- release-fragment: answer-lead-line-box -->
