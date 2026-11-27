@@ -376,11 +376,29 @@ test('an evidence sheet keeps its layer through its closing animation', async ({
 	await page.getByRole('button', { name: /Open evidence/ }).click();
 	await expect(sheet).toHaveAttribute('data-state', 'open');
 	await expect(carrier).toHaveCSS('z-index', String(layer));
-	await page.keyboard.press('Escape');
-	await expect(sheet).toHaveAttribute('data-state', 'closed');
-	await expect(carrier).toHaveCSS('z-index', String(layer));
-	await expect(sheet).toBeHidden();
-	await expect.poll(() => carrier.evaluate((element) => Number(getComputedStyle(element).zIndex))).toBeLessThan(layer);
+	await expect.poll(() => sheet.evaluate((element) =>
+		getComputedStyle(element).opacity === '1' && element.getAnimations().length === 0)).toBe(true);
+
+	const samples = await sheet.evaluate(async (element) => {
+		const carrier = element.parentElement!;
+		const layers: number[] = [];
+		element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+		await new Promise<void>((resolve) => {
+			const sample = () => {
+				const style = getComputedStyle(element);
+				if (!element.isConnected || style.visibility === 'hidden') return resolve();
+				if (element.getAttribute('data-state') === 'closed' && Number(style.opacity) > 0) {
+					layers.push(Number(getComputedStyle(carrier).zIndex));
+				}
+				requestAnimationFrame(sample);
+			};
+			requestAnimationFrame(sample);
+		});
+		return { layers, hiddenLayer: Number(getComputedStyle(carrier).zIndex) };
+	});
+	expect(samples.layers.length).toBeGreaterThan(0);
+	expect(samples.layers.every((value) => value === layer)).toBe(true);
+	expect(samples.hiddenLayer).toBe(layer - 1);
 });
 
 test.describe('desktop input', () => {

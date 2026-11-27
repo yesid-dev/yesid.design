@@ -35,6 +35,7 @@
 	import { Dialog } from 'bits-ui';
 	import { desktop } from '../state/desktop.js';
 	import { frameRailLayout } from './frame-rail-layout.js';
+	import { hideRailBackground } from './rail-modal-background.js';
 
 	let {
 		rail,
@@ -50,7 +51,9 @@
 	let sheetPresent = $state(false);
 	let mounted = $state(false);
 	let pillBtn = $state<HTMLButtonElement>();
+	let carrier = $state<HTMLDivElement>();
 	let railEl = $state<HTMLElement>();
+	let lastFocused: HTMLElement | undefined;
 	const railId = $props.id();
 	const isDesktop = getContext<(() => boolean) | undefined>(frameRailLayout) ?? (() => desktop.current);
 	const presentation = $derived<SurfaceRailPresentation>(isDesktop() ? 'desktop' : 'mobile');
@@ -58,6 +61,37 @@
 	const compact = $derived(mounted && presentation === 'mobile');
 
 	onMount(() => { mounted = true; });
+
+	$effect(() => {
+		if (compact && sheetPresent && carrier) return hideRailBackground(carrier);
+	});
+
+	function focusOnOpen(event: Event): void {
+		const rail = railEl;
+		const initialFocus = rail?.querySelector<HTMLElement>('[data-rail-initial-focus]');
+		const previous = rail?.contains(lastFocused ?? null) ? lastFocused : undefined;
+		if (!rail || (!initialFocus && !previous)) return;
+
+		event.preventDefault();
+		void tick().then(() => {
+			if (!sheetOpen || rail.contains(document.activeElement)) return;
+			if (previous) {
+				const control = previous.getBoundingClientRect();
+				const port = rail.getBoundingClientRect();
+				if (control.height > 0 && control.width > 0 &&
+					control.top >= port.top && control.bottom <= port.bottom &&
+					control.left >= port.left && control.right <= port.right &&
+					getComputedStyle(previous).visibility === 'visible') {
+					previous.focus({ preventScroll: true });
+					if (document.activeElement === previous) return;
+				}
+			}
+
+			// The default control can sit above the retained scroll position.
+			(initialFocus ?? previous)?.focus();
+			if (!rail.contains(document.activeElement)) rail.focus({ preventScroll: true });
+		});
+	}
 
 	function setOpen(open: boolean): void {
 		sheetOpen = open;
@@ -91,6 +125,7 @@
 	sheetPresent = false;
 }}>
 	<div
+		bind:this={carrier}
 		class="surface-rail-carrier"
 		data-slot={mobileVisible ? 'surface-rail-mobile' : undefined}
 		data-open={sheetOpen}
@@ -101,7 +136,7 @@
 			<button
 				bind:this={pillBtn}
 				type="button"
-				class="tap-press surface-rail-pill"
+				class="tap-press surface-rail-pill glass-chrome"
 				onclick={() => setOpen(!sheetOpen)}
 				aria-haspopup="dialog"
 				aria-controls={railId}
@@ -132,17 +167,7 @@
 			onInteractOutside={(event) => {
 				if (event.target instanceof Node && pillBtn?.contains(event.target)) event.preventDefault();
 			}}
-			onOpenAutoFocus={(event) => {
-				const initialFocus = railEl?.querySelector<HTMLElement>('[data-rail-initial-focus]');
-				if (!initialFocus) return;
-
-				event.preventDefault();
-				void tick().then(() => {
-					if (sheetOpen && railEl && !railEl.contains(document.activeElement)) {
-						initialFocus.focus({ preventScroll: true });
-					}
-				});
-			}}
+			onOpenAutoFocus={focusOnOpen}
 			onCloseAutoFocus={(event) => event.preventDefault()}
 		>
 			{#snippet child({ props })}
@@ -160,6 +185,11 @@
 					data-lenis-prevent
 					style:contain={compact ? 'layout style' : undefined}
 					style:pointer-events={compact && !sheetOpen ? 'none' : 'auto'}
+					onfocusin={(event) => {
+						if (sheetOpen && event.target instanceof HTMLElement && event.target !== railEl) {
+							lastFocused = event.target;
+						}
+					}}
 					onclick={(event) => {
 						if (sheetOpen && event.target instanceof Element && event.target.closest('a[href^="#"]')) {
 							closeSheet();
@@ -212,7 +242,6 @@
 		}
 	}
 
-	.surface-rail-pill,
 	.surface-rail-sheet {
 		border: 1px solid var(--border-brand);
 		background: var(--background);

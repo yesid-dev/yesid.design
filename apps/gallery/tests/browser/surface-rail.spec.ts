@@ -69,7 +69,9 @@ test('Controls keep their input, scroll position and focus across presentations'
 	await pill.click();
 	await expect(dialog).toHaveAttribute('aria-modal', 'true');
 	await expect(dialog.getByText('Presentation: mobile')).toBeVisible();
-	await expect(dialog.getByRole('button', { name: 'Close controls', exact: true })).toBeFocused();
+	const close = dialog.getByRole('button', { name: 'Close controls', exact: true });
+	await expect(close).toBeFocused();
+	await expect(close).toBeInViewport({ ratio: 1 });
 	await expect.poll(async () => {
 		const [sheetBox, pillBox] = await Promise.all([dialog.boundingBox(), pill.boundingBox()]);
 		return pillBox!.y - sheetBox!.y - sheetBox!.height;
@@ -100,8 +102,10 @@ test('Controls keep their input, scroll position and focus across presentations'
 	await expect(panel).toBeHidden();
 	await expect(pill).toBeFocused();
 
-	await pill.click();
+	await page.keyboard.press('Enter');
 	await expect(input).toHaveValue('Morning service');
+	await expect(last).toBeFocused();
+	await expect(last).toBeInViewport({ ratio: 1 });
 	expect(await dialog.evaluate((element) => element.scrollTop)).toBe(scrollTop);
 	await last.click();
 	await expect(page).toHaveURL(/#last-section$/);
@@ -146,6 +150,47 @@ test('Controls keep their input, scroll position and focus across presentations'
 	await page.getByRole('button', { name: 'Show controls' }).click();
 	await pill.click();
 	await expect(input).toHaveValue('Morning service');
+});
+
+test('the modal hides page content and preserves an owned portaled popup', async ({ page }) => {
+	await openLongReport(page);
+	const main = page.locator('main');
+	const heading = page.getByRole('heading', { name: 'Service report', exact: true });
+	const home = page.getByRole('link', { name: 'Gallery home' });
+	const show = page.getByRole('button', { name: 'Show controls' });
+	await main.evaluate((element) => element.setAttribute('aria-hidden', 'false'));
+	await page.evaluate(() => {
+		const host = document.createElement('div');
+		host.innerHTML = '<button>Background tool</button><div hidden id="rail-portaled-options" role="listbox" aria-label="Rail options"><div role="option">Morning</div></div>';
+		document.body.append(host);
+	});
+
+	const pill = page.locator('.surface-rail-pill');
+	await pill.click();
+	await expect(heading).toHaveCount(0);
+	await expect(home).toHaveCount(0);
+	await expect(show).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Controls · Close controls' })).toBeVisible();
+
+	await page.getByRole('textbox', { name: 'Report name' }).evaluate((element) => {
+		const popup = document.getElementById('rail-portaled-options')!;
+		element.setAttribute('aria-controls', popup.id);
+		popup.hidden = false;
+	});
+	await expect(page.getByRole('option', { name: 'Morning' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Background tool' })).toHaveCount(0);
+
+	await page.keyboard.press('Escape');
+	await expect(pill).toBeFocused();
+	await expect(heading).toBeVisible();
+	await expect(home).toBeVisible();
+	await expect(main).toHaveAttribute('aria-hidden', 'false');
+
+	await pill.click();
+	await expect(heading).toHaveCount(0);
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await expect(heading).toBeVisible();
+	await expect(main).toHaveAttribute('aria-hidden', 'false');
 });
 
 test('Controls show and hide without animation @motion', async ({ page }) => {

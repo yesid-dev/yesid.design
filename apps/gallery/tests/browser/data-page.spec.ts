@@ -138,23 +138,41 @@ test.describe('with motion on', () => {
 		await page.getByRole('button', { name: new RegExp(`^${copy.rail.label}`) }).click();
 		const sheet = page.getByRole('dialog', { name: copy.rail.label });
 		await expect(sheet.getByRole('searchbox', { name: copy.search })).toBeVisible();
-		await expect.poll(() => sheet.evaluate((el) => el.getAnimations().length)).toBe(0);
-		const samples = await sheet.evaluate(async (el) => {
-			const heights: number[] = [];
-			const initialHeight = el.getBoundingClientRect().height;
-			el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+		await expect.poll(() => sheet.evaluate((element) =>
+			getComputedStyle(element).opacity === '1' && element.getAnimations().length === 0)).toBe(true);
+		const control = await sheet.getByRole('searchbox', { name: copy.search }).elementHandle();
+
+		const samples = await sheet.evaluate(async (element, control) => {
+			if (!control) throw new Error('Missing rail search control');
+			const frames: { railHeight: number; controlHeight: number; connected: boolean }[] = [];
+			const initialHeight = element.getBoundingClientRect().height;
+			element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 			await new Promise<void>((resolve) => {
 				const sample = () => {
-					if (!el.isConnected) return resolve();
-					heights.push(el.querySelector('aside')?.getBoundingClientRect().height ?? 0);
+					if (!element.isConnected || getComputedStyle(element).visibility === 'hidden') return resolve();
+					if (element.getAttribute('data-state') === 'closed' && Number(getComputedStyle(element).opacity) > 0) {
+						frames.push({
+							railHeight: element.getBoundingClientRect().height,
+							controlHeight: control.getBoundingClientRect().height,
+							connected: control.isConnected && element.contains(control),
+						});
+					}
 					requestAnimationFrame(sample);
 				};
 				requestAnimationFrame(sample);
 			});
-			return { heights, initialHeight };
-		});
-		expect(samples.heights.length).toBeGreaterThan(2);
-		expect(Math.min(...samples.heights)).toBeGreaterThan(samples.initialHeight / 2);
+			return { frames, initialHeight, connected: element.isConnected && control.isConnected && element.contains(control) };
+		}, control);
+		await control?.dispose();
+
+		expect(samples.frames.length).toBeGreaterThan(0);
+		for (const frame of samples.frames) {
+			expect(frame.connected).toBe(true);
+			expect(frame.railHeight).toBeGreaterThan(samples.initialHeight / 2);
+			expect(frame.controlHeight).toBeGreaterThan(0);
+		}
+		expect(samples.connected).toBe(true);
+		await expect(sheet).toBeHidden();
 	});
 
 	test('the rail sheet stays centred while it opens on phones', async ({ page }) => {
