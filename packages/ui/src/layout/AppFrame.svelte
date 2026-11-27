@@ -21,7 +21,7 @@
 	import { buttonVariants } from '../primitives/button/button.svelte';
 	import SurfaceRail from './SurfaceRail.svelte';
 	import type { SurfaceRailContext } from './SurfaceRail.svelte';
-	import { frameRailLayout } from './frame-rail-layout.js';
+	import { FRAME_RAIL_MIN_REM, frameRailLayout } from './frame-rail-layout.js';
 
 	let { header, controls, controlsRail, children, footer, mainLabel, evidence, fullViewport = false, chromeHeight = $bindable() }: AppFrameProps = $props();
 	let headerHeight = $state<number>();
@@ -44,7 +44,7 @@
 			const frameWidth = frame.getBoundingClientRect().width;
 			// CSS media queries include the scrollbar in the viewport width.
 			const width = Math.round(frameWidth) === root.clientWidth ? view.innerWidth : frameWidth;
-			pairedRails = width >= 64 * rem;
+			pairedRails = width >= FRAME_RAIL_MIN_REM * rem;
 		};
 		const observer = new ResizeObserver(measure);
 		observer.observe(marker);
@@ -193,14 +193,16 @@
 		min-block-size: 100dvh;
 		min-inline-size: 0;
 	}
+	/* No-boot fallback. Keep this in sync with FRAME_RAIL_MIN_REM. */
 	@media (min-width: 64rem) {
-		.app-frame:not([data-rail-layout]) {
+		:global(:root:not([data-app-frame-rails])) .app-frame:not([data-rail-layout]) {
 			--app-frame-paired: 1;
 			--app-frame-rail-display: flex;
 			--app-frame-pill-display: none;
 			--app-frame-rail-carrier-display: contents;
 		}
 	}
+	:global(:root[data-app-frame-rails='paired']) .app-frame:not([data-rail-layout]),
 	.app-frame[data-rail-layout='paired'] {
 		--app-frame-paired: 1;
 		--app-frame-rail-display: flex;

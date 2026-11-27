@@ -1,7 +1,8 @@
 import { SECTIONS_CHOICE_KEY, SECTIONS_READY_EVENT } from '../brand/sections-preference.js';
+import { FRAME_RAIL_MIN_REM } from '../layout/frame-rail-layout.js';
 import { hasBulkSectionsInHtml } from './section-eligibility.js';
 
-/** Runs before first paint to apply theme and section geometry.
+/** Runs before first paint to apply theme, AppFrame rail layout and section geometry.
  * `boot.json` holds this text's CSP hash; edit both together.
  */
 export const themeBootScript = `(() => {
@@ -9,6 +10,15 @@ export const themeBootScript = `(() => {
 	let theme = null;
 	try { theme = localStorage.getItem('theme'); } catch {}
 	root.dataset.theme = theme === 'light' ? 'light' : 'dark';
+	const measureAppFrameRails = () => {
+		const rem = parseFloat(getComputedStyle(root).fontSize);
+		if (rem > 0) root.dataset.appFrameRails = innerWidth >= ${FRAME_RAIL_MIN_REM} * rem ? 'paired' : 'compact';
+	};
+	// The boot script runs before the head stylesheets. Measure in the first rendering frame.
+	requestAnimationFrame(measureAppFrameRails);
+	addEventListener('resize', () => {
+		if (document.querySelector('[data-slot="app-frame"]:not([data-rail-layout])')) measureAppFrameRails();
+	});
 	root.dataset.sectionsBoot = '';
 	const cards = '.section-card:not([data-section-ready])';
 	const controls = '[data-sections-control]:not([data-sections-ready])';
