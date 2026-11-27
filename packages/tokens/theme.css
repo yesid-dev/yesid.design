@@ -2,9 +2,9 @@
 /* Run `bun run tokens:build` to regenerate. */
 
 @theme {
-  --font-heading: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-heading: 'Inter Variable', 'Inter Fallback', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter Variable', 'Inter Fallback', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono Fallback', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   --text-hero: clamp(4rem, min(9vw, 11svh), 8.125rem);
   --text-hero-mobile: clamp(3rem, min(13vw, 8svh), 4rem);
   --text-display: clamp(2.5rem, 5vw, 4rem);
