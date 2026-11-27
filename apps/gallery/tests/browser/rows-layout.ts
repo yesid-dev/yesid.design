@@ -12,8 +12,8 @@ export interface RowGeometry {
 	readonly figure: Box;
 	readonly label: Box;
 	readonly firstDetailTop: number | null;
-	/** Words in the primary on more than one line. Lines may break between hyphenated parts. */
-	readonly splitWords: readonly string[];
+	/** Words that break even though they fit the primary. Hyphenated parts are measured separately. */
+	readonly splitFittingWords: readonly string[];
 	readonly plates: readonly { text: string; lines: number }[];
 }
 
@@ -29,9 +29,10 @@ export function rowsGeometry(table: Locator): Promise<{ frameRem: number; rows: 
 			const value = row.querySelector('[data-row-position="value"]')!;
 			const style = getComputedStyle(row);
 			const outer = row.getBoundingClientRect();
+			const primaryBox = box(primary.getBoundingClientRect());
 			const left = outer.left + Number.parseFloat(style.paddingInlineStart);
 			const right = outer.right - Number.parseFloat(style.paddingInlineEnd);
-			const splitWords: string[] = [];
+			const splitFittingWords: string[] = [];
 			const text = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity, width: 0 };
 			const walker = document.createTreeWalker(primary, NodeFilter.SHOW_TEXT);
 			for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -40,7 +41,9 @@ export function rowsGeometry(table: Locator): Promise<{ frameRem: number; rows: 
 					range.setStart(node, word.index);
 					range.setEnd(node, word.index + word[0].length);
 					const rects = lines(range);
-					if (rects.length > 1) splitWords.push(word[0]);
+					if (rects.length > 1 && rects.reduce((width, rect) => width + rect.width, 0) <= primaryBox.width + 0.5) {
+						splitFittingWords.push(word[0]);
+					}
 					for (const rect of rects) {
 						text.left = Math.min(text.left, rect.left);
 						text.right = Math.max(text.right, rect.right);
@@ -58,13 +61,13 @@ export function rowsGeometry(table: Locator): Promise<{ frameRem: number; rows: 
 			const detail = row.querySelector(':scope > :is(th, td):not([data-row-position])');
 			return {
 				content: { left, right, top: outer.top, bottom: outer.bottom, width: right - left },
-				primary: box(primary.getBoundingClientRect()),
+				primary: primaryBox,
 				text,
 				value: box(value.getBoundingClientRect()),
 				figure: box(value.querySelector('.data-table-cell-content')!.getBoundingClientRect()),
 				label: box(value.querySelector('.data-table-stack-label')!.getBoundingClientRect()),
 				firstDetailTop: detail ? detail.getBoundingClientRect().top : null,
-				splitWords,
+				splitFittingWords,
 				plates,
 			};
 		});
@@ -89,7 +92,8 @@ export function expectBeside(row: RowGeometry, gap: number, context: string): vo
 export function expectStacked(row: RowGeometry, context: string): void {
 	expect(apart(row.primary, row.value), `${context}: primary and value boxes apart`).toBe(true);
 	expect(apart(row.text, row.value), `${context}: primary text clear of the value`).toBe(true);
-	expect(row.splitWords, `${context}: words in the primary`).toEqual([]);
+	expect(row.splitFittingWords, `${context}: words that fit stay whole`).toEqual([]);
+	expect(row.text.right, `${context}: text within the primary`).toBeLessThanOrEqual(row.primary.right + 0.5);
 	for (const plate of row.plates) expect(plate.lines, `${context}: plate ${plate.text}`).toBe(1);
 	expect(row.primary.width, `${context}: primary takes the row`).toBeCloseTo(row.content.width, 0);
 	expect(row.value.top, `${context}: value under the primary`).toBeGreaterThanOrEqual(row.primary.bottom - 0.5);

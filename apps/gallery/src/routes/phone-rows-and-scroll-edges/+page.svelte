@@ -3,7 +3,7 @@
 	import { FilterSummary } from '@yesid/ui/brand';
 	import { Card } from '@yesid/ui/card';
 	import { HourGrid, type HourGridCell } from '@yesid/ui/chart';
-	import { DataTable, type DataTableColumn } from '@yesid/ui/table';
+	import { DataTable, type DataTableColumn, type DataTableResponsive } from '@yesid/ui/table';
 
 	interface StationRow {
 		id: string;
@@ -141,6 +141,24 @@
 	];
 
 	const narrowDailyColumns = dailyColumns.slice(0, 3);
+
+	const wrapRows = [
+		{ name: 'North', detail: 'Eastbound', value: '93%' },
+		{ name: 'Sherbrooke', detail: 'Fahrgastinformationssystemverfügbarkeitsberichte', value: '88%' },
+	];
+	type WrapRow = (typeof wrapRows)[number];
+	const wrapColumns: DataTableColumn<WrapRow>[] = [
+		{ key: 'name', header: 'Station', rowHeader: true, sortable: true, cell: wrapName },
+		{ key: 'value', header: 'On time', numeric: true, cell: wrapValue },
+		{ key: 'detail', header: 'Service', cell: wrapDetail },
+	];
+	const wrapExamples = [
+		{ title: 'Compact rows', responsive: { mode: 'rows', primary: 'name', value: 'value', labels: 'details' } },
+		{ title: 'Compact stack', responsive: { mode: 'stack', at: 'compact' } },
+		{ title: 'Tablet stack', responsive: { mode: 'stack', at: 'tablet' } },
+	] satisfies { title: string; responsive: DataTableResponsive }[];
+	let wrapSort = $state<'asc' | 'desc'>('asc');
+	let showWideCells = $state(false);
 </script>
 
 <svelte:head><title>Phone rows and scroll edges · yesid.design</title></svelte:head>
@@ -157,6 +175,17 @@
 {#snippet stationReports(row: StationRow)}{row.reports}{/snippet}
 {#snippet stationDetail(row: StationRow)}{row.emptyNote ?? `${row.direction} · ${row.distance} · ${row.reports} reports`}{/snippet}
 {#snippet corridorLabel(row: DailyRow)}{row.label}{/snippet}
+{#snippet wrapName(row: WrapRow)}<span class="wrap-name" data-wrap-word>{row.name}</span>{/snippet}
+{#snippet wrapValue(row: WrapRow)}
+	{#if showWideCells && row.name === 'Sherbrooke'}
+		<span class="wide-cell" data-testid="wide-table-cell">Fixed-width service map</span>
+	{:else if row.name === 'North'}
+		<input class="focus-width" aria-label="North on-time rate" value={row.value} />
+	{:else}
+		{row.value}
+	{/if}
+{/snippet}
+{#snippet wrapDetail(row: WrapRow)}<span data-wrap-word>{row.detail}</span>{/snippet}
 
 <div class="showcase" data-testid="phone-rows-and-scroll-edges">
 	<h1>Phone rows, formatted filter counts and scroll edges</h1>
@@ -301,6 +330,26 @@
 			frame="card"
 		/>
 	</Card>
+
+	<button type="button" aria-pressed={showWideCells} onclick={() => showWideCells = !showWideCells}>
+		Show fixed-width cells
+	</button>
+	{#each wrapExamples as { title, responsive }, index (title)}
+		<Card id={responsive.mode === 'rows' ? 'initial-wide' : undefined} edge="neutral" class="p-4 gap-3" style="max-inline-size: 20rem" data-testid="table-wrap-card">
+			<h2 id={`wrap-heading-${index}`}>{title}</h2>
+			<DataTable
+				rows={wrapSort === 'asc' ? wrapRows : wrapRows.toReversed()}
+				columns={wrapColumns}
+				key={(row) => row.name}
+				caption={`${title} with long words`}
+				role="group"
+				aria-labelledby={`wrap-heading-${index}`}
+				{responsive}
+				sort={{ key: 'name', direction: wrapSort }}
+				onSort={() => wrapSort = wrapSort === 'asc' ? 'desc' : 'asc'}
+			/>
+		</Card>
+	{/each}
 </div>
 
 <style>
@@ -314,6 +363,22 @@
 	}
 	h2 {
 		font-size: var(--text-heading);
+	}
+	.wrap-name {
+		display: inline-block;
+		font-size: var(--text-heading);
+	}
+	.wide-cell {
+		display: inline-block;
+		inline-size: 600px;
+	}
+	.focus-width {
+		inline-size: 2.8125rem;
+		block-size: 1.5rem;
+	}
+	.focus-width:focus,
+	:global(#initial-wide:target) .focus-width {
+		inline-size: 620px;
 	}
 	.counts {
 		display: grid;

@@ -50,6 +50,7 @@ export function attachScrollEdges(
 	element: HTMLElement,
 	options: {
 		readonly initialScroll: InitialScroll;
+		readonly observeContent?: boolean;
 		readonly onUpdate: (state: ScrollEdgeState) => void;
 		readonly onResize?: () => void;
 	},
@@ -70,6 +71,20 @@ export function attachScrollEdges(
 		options.onUpdate(measureScrollEdges(element));
 	};
 
+	const view = element.ownerDocument.defaultView;
+	let pendingFrame: number | undefined;
+	const scheduleSync = (): void => {
+		if (!view) {
+			sync();
+			return;
+		}
+		if (pendingFrame !== undefined) return;
+		pendingFrame = view.requestAnimationFrame(() => {
+			pendingFrame = undefined;
+			sync();
+		});
+	};
+
 	if (options.initialScroll === 'end') {
 		// Preserve any pre-hydration scroll offset taken while `row-reverse` was active, then hand off
 		// synchronously to standard `scrollLeft` before the browser paints the hydrated frame.
@@ -85,11 +100,25 @@ export function attachScrollEdges(
 	options.onResize?.();
 	options.onUpdate(measureScrollEdges(element));
 
+	const content = element.firstElementChild;
 	let observer: ResizeObserver | undefined;
 	if (typeof ResizeObserver !== 'undefined') {
-		observer = new ResizeObserver(sync);
+		observer = new ResizeObserver(scheduleSync);
 		observer.observe(element);
-		if (element.firstElementChild) observer.observe(element.firstElementChild);
+		if (content) observer.observe(content);
+	}
+
+	// A reflowed table can gain overflow without changing its own border box or DOM.
+	let contentObserver: MutationObserver | undefined;
+	if (options.observeContent && content) {
+		if (typeof MutationObserver !== 'undefined') {
+			contentObserver = new MutationObserver(scheduleSync);
+			contentObserver.observe(content, { attributes: true, characterData: true, childList: true, subtree: true });
+		}
+		content.addEventListener('load', scheduleSync, true);
+		content.addEventListener('focusin', scheduleSync);
+		content.addEventListener('focusout', scheduleSync);
+		view?.addEventListener('resize', scheduleSync);
 	}
 
 	return {
@@ -101,6 +130,14 @@ export function attachScrollEdges(
 		},
 		destroy(): void {
 			observer?.disconnect();
+			contentObserver?.disconnect();
+			if (pendingFrame !== undefined) view?.cancelAnimationFrame(pendingFrame);
+			if (options.observeContent && content) {
+				content.removeEventListener('load', scheduleSync, true);
+				content.removeEventListener('focusin', scheduleSync);
+				content.removeEventListener('focusout', scheduleSync);
+				view?.removeEventListener('resize', scheduleSync);
+			}
 		},
 	};
 }

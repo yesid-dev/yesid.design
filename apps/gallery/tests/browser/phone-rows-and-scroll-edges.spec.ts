@@ -100,6 +100,181 @@ async function fadeVisibility(container: Locator): Promise<{ start: boolean; end
 }
 
 test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@theme' }, () => {
+	for (const width of [320, 390]) {
+		test(`wraps oversized words inside reflowed table cards at ${width}px with 200% text`, async ({ page }) => {
+			await open(page, width, 200);
+			const cards = page.getByTestId('table-wrap-card');
+			await expect(cards).toHaveCount(3);
+			for (const card of await cards.all()) {
+				const table = card.getByRole('table');
+				await expect(card).toHaveCSS('overflow-x', 'hidden');
+				await expect(table).toHaveCSS('display', 'block');
+				await expect(table).toHaveCSS('overflow-x', 'visible');
+				const { overflow, clipped, words } = await card.evaluate((card) => {
+					const overflow = [card, ...card.querySelectorAll<HTMLElement>('*')]
+						// Captions and non-sortable column headers are intentionally clipped in 1px boxes.
+						.filter((element) => element.clientWidth > 1 && element.scrollWidth > element.clientWidth)
+						.map(({ tagName, clientWidth, scrollWidth }) => ({ tagName, clientWidth, scrollWidth }));
+					const { left, right } = card.getBoundingClientRect();
+					const range = document.createRange();
+					const clipped: string[] = [];
+					const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+					for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+						if (!node.textContent?.trim() || !node.parentElement?.closest('tbody, h2, button')) continue;
+						range.selectNodeContents(node);
+						if ([...range.getClientRects()].some((box) => box.left < left - 0.5 || box.right > right + 0.5)) {
+							clipped.push(node.textContent);
+						}
+					}
+					const words = [...card.querySelectorAll('[data-wrap-word]')].map((word) => {
+						range.selectNodeContents(word.firstChild!);
+						const boxes = [...range.getClientRects()];
+						const line = word.closest<HTMLElement>('.data-table-cell-content')!;
+						const cell = word.closest('th, td')!;
+						return {
+							word: word.textContent,
+							lines: new Set(boxes.map((box) => box.top)).size,
+							width: boxes.reduce((sum, box) => sum + box.width, 0),
+							available: (line.clientWidth ? line : cell).getBoundingClientRect().width,
+						};
+					});
+					return { overflow, clipped, words };
+				});
+				const caption = await table.locator('caption').textContent();
+				expect(overflow, `${caption} scroll widths`).toEqual([]);
+				expect(clipped, `${caption} clipped text`).toEqual([]);
+				expect(words.filter((word) => word.lines > 1).length).toBeGreaterThan(0);
+				for (const { word, lines, width, available } of words) {
+					expect(lines > 1, `${caption}: ${word} is ${width}px on a ${available}px line`).toBe(width > available + 0.5);
+				}
+			}
+		});
+	}
+
+	test('makes fixed-width cells in reflowed tables reachable by keyboard only while they overflow', async ({ page }) => {
+		await open(page, 390);
+		const cards = page.getByTestId('table-wrap-card');
+		const scrollRegions = cards.locator('[data-slot="data-table-frame"]:is([tabindex], [role="region"])');
+		const toggle = page.getByRole('button', { name: 'Show fixed-width cells' });
+		const expectNoScrollViolations = async () => {
+			const { violations } = await new AxeBuilder({ page })
+				.include('[data-testid="table-wrap-card"]')
+				.withRules(['scrollable-region-focusable'])
+				.analyze();
+			expect(violations).toEqual([]);
+		};
+		await expect(scrollRegions).toHaveCount(0);
+		await expectNoScrollViolations();
+		await toggle.click();
+		for (const card of await cards.all()) {
+			const caption = (await card.locator('caption').textContent())!;
+			const region = card.getByRole('region', { name: caption, exact: true });
+			await expect(region).toHaveAttribute('tabindex', '0');
+			await expect(region).toHaveCSS('overflow-x', 'auto');
+			await expect(region.getByRole('table')).toHaveCSS('overflow-x', 'visible');
+			await expect(region.getByTestId('wide-table-cell')).toHaveCSS('width', '600px');
+			await expect(region.locator('[data-slot="scroll-fade-end"]')).toBeVisible();
+			await region.focus();
+			await expect(region).toBeFocused();
+			await region.press('ArrowRight');
+			await expect.poll(() => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+			await expect(region.locator('[data-slot="scroll-fade-start"]')).toBeVisible();
+			await region.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+			await expect(region.locator('[data-slot="scroll-fade-end"]')).toBeHidden();
+			const wideCell = (await region.getByTestId('wide-table-cell').boundingBox())!;
+			const scrollport = (await region.boundingBox())!;
+			expect(wideCell.x + wideCell.width).toBeLessThanOrEqual(scrollport.x + scrollport.width + 0.5);
+		}
+		await expectNoHorizontalOverflow(page);
+		const escaped = await cards.evaluateAll((cards) => cards.flatMap((card) => [...card.querySelectorAll<HTMLElement>('*')]
+			.filter((element) => {
+				const box = element.getBoundingClientRect();
+				if (!box.width || !box.height || !element.checkVisibility() || (box.left >= -1 && box.right <= innerWidth + 1)) {
+					return false;
+				}
+				for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+					if (['auto', 'scroll'].includes(getComputedStyle(ancestor).overflowX)) return false;
+				}
+				return true;
+			})
+			.map((element) => element.outerHTML.slice(0, 160))));
+		expect(escaped).toEqual([]);
+		await expectNoScrollViolations();
+		await toggle.click();
+		await expect(scrollRegions).toHaveCount(0);
+	});
+
+	test('remeasures overflow when a cell control gains and loses focus without resizing the table', async ({ page }) => {
+		await open(page, 390);
+		const card = page.locator('#initial-wide');
+		const frame = card.locator('[data-slot="data-table-frame"]');
+		const table = card.getByRole('table');
+		const input = table.getByRole('textbox', { name: 'North on-time rate' });
+		const tableSize = () => table.evaluate(({ clientWidth, clientHeight }) => ({ clientWidth, clientHeight }));
+		const before = await tableSize();
+		await expect(frame).toHaveAttribute('data-scrollable', 'false');
+		await expect(frame).toHaveAttribute('aria-labelledby', 'wrap-heading-0');
+		await expect(input).toHaveCSS('width', '45px');
+
+		await table.getByRole('button', { name: 'Station' }).press('Tab');
+		await expect(input).toBeFocused();
+		await expect(input).toHaveCSS('width', '620px');
+		const region = card.getByRole('region', { name: 'Compact rows with long words', exact: true });
+		await expect(region).toHaveAttribute('tabindex', '0');
+		await expect(region).toHaveCSS('overflow-x', 'auto');
+		expect(await tableSize()).toEqual(before);
+
+		await input.press('Shift+Tab');
+		await expect(frame).toHaveAttribute('data-scrollable', 'false');
+		await expect(frame).not.toHaveAttribute('tabindex');
+		await expect(frame).toHaveAttribute('aria-labelledby', 'wrap-heading-0');
+		await expect(frame).toHaveCSS('overflow-x', 'visible');
+		expect(await tableSize()).toEqual(before);
+	});
+
+	test('starts with reachable reflowed overflow before hydration and preserves the scroll offset', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 900 });
+		const { promise: held, resolve: resume } = Promise.withResolvers<void>();
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await held;
+			await route.fallback();
+		});
+		try {
+			await page.goto(`${ROUTE}#initial-wide`, { waitUntil: 'domcontentloaded' });
+			await page.evaluate(() => document.fonts.ready);
+			const ready = page.locator('html[data-gallery-ready]');
+			const card = page.locator('#initial-wide');
+			const frame = card.locator('[data-slot="data-table-frame"]');
+			const input = card.getByRole('textbox', { name: 'North on-time rate' });
+			const fittingFrames = page.getByTestId('table-wrap-card').locator('[data-stack-at]');
+			const frameHeights = () => fittingFrames.evaluateAll((frames) => frames.map((frame) => frame.clientHeight));
+			await expect(ready).toHaveCount(0);
+			await expect(frame).not.toHaveAttribute('data-scrollable');
+			await expect(frame).toHaveCSS('overflow-x', 'auto');
+			await expect(card.getByRole('table')).toHaveCSS('overflow-x', 'visible');
+			await expect(input).toHaveCSS('width', '620px');
+			const heights = await frameHeights();
+			const scrollLeft = await frame.evaluate((element) => {
+				element.scrollLeft = element.scrollWidth;
+				return element.scrollLeft;
+			});
+			expect(scrollLeft).toBeGreaterThan(0);
+			const inlineEnd = (await input.boundingBox())!;
+			const scrollport = (await frame.boundingBox())!;
+			expect(inlineEnd.x + inlineEnd.width).toBeLessThanOrEqual(scrollport.x + scrollport.width + 0.5);
+
+			resume();
+			await expect(ready).toBeAttached();
+			const region = card.getByRole('region', { name: 'Compact rows with long words', exact: true });
+			await expect(region).toHaveAttribute('tabindex', '0');
+			expect(await region.evaluate((element) => element.scrollLeft)).toBe(scrollLeft);
+			await expect(page.getByTestId('table-wrap-card').locator('[data-stack-at][data-scrollable="false"]')).toHaveCount(2);
+			expect(await frameHeights()).toEqual(heights);
+		} finally {
+			resume();
+		}
+	});
+
 	test('reflows compact rows and stacked tables without making them scroll containers', async ({ page }) => {
 		await open(page, 390);
 		const rows = page.getByRole('table', { name: 'Stations by on-time rate', exact: true });
