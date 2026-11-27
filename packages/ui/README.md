@@ -36,9 +36,9 @@ and produce no visual pulse; their props, types and exports stay available under
 owner-approved compatibility exception in `DEPRECATION.md`. Reduced motion stays still.
 
 Skeleton and consumer spinners may loop only while something is actually loading. The caller
-owns that lifetime: render them within an `aria-busy="true"` loading region and remove them
-when it completes. Skeleton only animates inside that busy region. In the Gallery, the explicit
-browser allowlist accepts only Skeleton inside `aria-busy="true"`.
+owns that lifetime. Pass `busy` to animate a Skeleton directly or place it in an
+`aria-busy="true"` loading region. Clear the loading state or remove the placeholder when it
+completes. The Gallery accepts looping Skeletons with either busy signal.
 The browser regression checks every Gallery route after load and after six seconds, with normal
 and reduced motion. See [the inventory](../../docs/migrations/no-endless-decorative-loops.md)
 for consumer callers and the JavaScript driver audit.
@@ -356,8 +356,10 @@ active-state details rather than treating the import replacement as sufficient p
 ### Sheet and Skeleton
 
 Sheet supports `bottom` and `right`. Its bottom side is the mobile-first default; its overlay, focusable close control, animation,
-and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`) and its pulse
-stops under reduced motion. A product with no prior local family treats first use as a new
+and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the muted
+surface and a 6px radius, and accepts `busy?: boolean` for a standalone pulse. An ancestor with
+`aria-busy="true"` also enables the pulse. Reduced motion keeps the block still.
+A product with no prior local family treats first use as a new
 product-level visual and accessibility decision, not proof supplied by the package.
 
 ### Draggable bottom sheets
@@ -1277,6 +1279,14 @@ when it is outside scroll region mode. An overflowing frame adds a decorative fa
 the table. Target the table with `tableClass` or `[data-slot="data-table"]`. Stacked rows wrap
 localized headings and keep the native table roles at enlarged text.
 
+Pass `loading` to render Skeleton rows with the same columns, responsive layout and one-line
+cell spacing as the table. Keep the caption, columns and layout props in place while data loads.
+`skeletonRows` defaults to 4 and accepts a non-negative integer. Set it to the expected first-page
+count when known. The frame reports `aria-busy="true"`, the placeholder cells are decorative,
+sort buttons are disabled and pagination is hidden. Table columns with content-dependent widths,
+and rows with wrapped or custom cells, may grow when data arrives. Set column widths with
+`borderCollapse="separate"` when the loading and loaded table need the same column widths.
+
 `rowAlign="middle"` centres body cells vertically, so a short figure lines up with the middle of
 a taller row header; numeric and `end` cells stay right-aligned. It applies while the cells keep
 table layout, including `mode: 'scroll'` and a `rows` table wider than 28 rem. Stacked rows and
@@ -1331,6 +1341,10 @@ From `@yesid/ui/chart`, `ChartFrame` takes a localized `label`, `xDomain` and `y
 plot snippet and an optional `legend` snippet. The frame fills spare space in a flex-column card.
 The plot snippet receives the same pixel scales for every SVG part. Use compact, localized tick
 labels. Put the exact values in a nearby `DataTable` so they remain readable without the drawing.
+
+Pass `loading` to fill the same chart area with one Skeleton. Keep the frame in place with the
+same sizing styles and legend while the plot loads. The figure reports `aria-busy="true"` until
+the plot is ready.
 
 ```svelte
 <ChartFrame label={copy.hoursByDay} xDomain={[-0.5, 6.5]} yDomain={[0, 24]}>

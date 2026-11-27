@@ -3,12 +3,17 @@
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '../../cn/index.js';
 
+	interface SkeletonProps extends WithElementRef<HTMLAttributes<HTMLDivElement>> {
+		busy?: boolean;
+	}
+
 	let {
+		busy = false,
 		ref = $bindable(null),
 		class: className,
 		children,
 		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+	}: SkeletonProps = $props();
 </script>
 
 <!--
@@ -22,13 +27,17 @@ halt animation for users who opt out.
 	aria-hidden="true"
 	class={cn('skeleton-pulse rounded-md bg-muted', className)}
 	{...restProps}
+	data-skeleton-busy={busy || undefined}
 >
 	{@render children?.()}
 </div>
 
 <style>
-	:global([aria-busy='true']) .skeleton-pulse {
-		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	@media (prefers-reduced-motion: no-preference) {
+		.skeleton-pulse[data-skeleton-busy],
+		:global([aria-busy='true']) .skeleton-pulse {
+			animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		}
 	}
 
 	@keyframes pulse {
@@ -38,12 +47,6 @@ halt animation for users who opt out.
 		}
 		50% {
 			opacity: 0.5;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		:global([aria-busy='true']) .skeleton-pulse {
-			animation: none;
 		}
 	}
 </style>

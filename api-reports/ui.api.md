@@ -1196,6 +1196,8 @@ interface ChartFrameProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> 
     // (undocumented)
     legend?: Snippet;
     // (undocumented)
+    loading?: boolean;
+    // (undocumented)
     xDomain: readonly [number, number];
     // (undocumented)
     yDomain: readonly [number, number];
@@ -1653,6 +1655,8 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     // (undocumented)
     readonly key: (row: T, index: number) => string;
     // (undocumented)
+    readonly loading?: boolean;
+    // (undocumented)
     readonly onSort?: (key: string) => void;
     // (undocumented)
     readonly pageLabels?: ShowMoreLabels;
@@ -1665,6 +1669,7 @@ interface DataTableProps<T> extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     readonly rowEmpty?: (row: T) => boolean;
     // (undocumented)
     readonly rows: readonly T[];
+    readonly skeletonRows?: number;
     // (undocumented)
     readonly sort?: {
         key: string;
@@ -3676,10 +3681,16 @@ interface SiteRootScroller {
 }
 
 // @public (undocumented)
-const Skeleton: Component<WithElementRef<HTMLAttributes<HTMLDivElement>>, {}, "ref">;
+const Skeleton: Component<SkeletonProps, {}, "ref">;
 
 // @public (undocumented)
 type Skeleton = ReturnType<typeof Skeleton>;
+
+// @public (undocumented)
+interface SkeletonProps extends WithElementRef<HTMLAttributes<HTMLDivElement>> {
+    // (undocumented)
+    busy?: boolean;
+}
 
 // @public (undocumented)
 const SliderButton: Component<SliderButtonProps, {}, "">;

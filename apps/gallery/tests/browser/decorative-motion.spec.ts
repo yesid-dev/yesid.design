@@ -6,7 +6,7 @@ const routes = [
 	'/detail-frame', '/data-page', '/button-focus', '/sections', '/sections/late',
 	'/sections/next', '/sections/single', '/navigation-lifecycle-fixture',
 	'/density', '/listing-frame', '/masthead', '/error-page/small-after.no-label.no-tape.en',
-	'/product-brand', '/site-header-pill/es',
+	'/product-brand', '/site-header-pill/es', '/loading-states',
 ];
 
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
@@ -28,7 +28,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 						// Both its identity and the caller's current busy state are required.
 						if (target instanceof Element &&
 							target.matches('[data-slot="skeleton"]') &&
-							target.closest('[aria-busy="true"]')) return [];
+							(target.hasAttribute('data-skeleton-busy') || target.closest('[aria-busy="true"]'))) return [];
 						const infinite = effect?.getTiming().iterations === Infinity;
 						const statusLamp = target instanceof Element &&
 							target.matches('[data-slot="status-dot"], .led-pulse');
