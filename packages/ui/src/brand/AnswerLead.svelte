@@ -35,9 +35,9 @@
 >
 	<div class="answer-layout">
 		<div class="answer-context">
-			<div class="answer-statement">
+			<div class="answer-statement" class:answer-statement-lg={size === 'lg'}>
 				{#if value !== null}
-					<p class="answer-value" class:answer-value-lg={size === 'lg'} id={figureId}>
+					<p class="answer-value" id={figureId}>
 						<span class="answer-fit">
 							<span class="answer-figure"><MetricValue {value} {size} /></span>
 							<span class="answer-measure font-heading font-extrabold leading-none tabular-nums"
@@ -70,6 +70,11 @@
 		initial-value: 0px;
 		inherits: false;
 	}
+	@property --yesid-answer-normal-size {
+		syntax: "<length-percentage> | <custom-ident>";
+		initial-value: 0px;
+		inherits: true;
+	}
 	/* These values opt into fitting only when property registration works. */
 	@property --yesid-answer-fit-overflow {
 		syntax: "*";
@@ -91,6 +96,11 @@
 		initial-value: 0px;
 		inherits: false;
 	}
+	@property --yesid-answer-fit-container {
+		syntax: "*";
+		initial-value: inline-size;
+		inherits: false;
+	}
 	.answer-lead {
 		container: answer-lead / inline-size;
 		min-inline-size: 0;
@@ -102,8 +112,8 @@
 		min-inline-size: 0;
 	}
 	p { margin: 0; }
-	.answer-value { --answer-value-size: var(--text-heading); }
-	.answer-value-lg { --answer-value-size: clamp(2.25rem, var(--text-display), 2.875rem); }
+	.answer-statement { --answer-value-size: var(--text-heading); }
+	.answer-statement-lg { --answer-value-size: clamp(2.25rem, var(--text-display), 2.875rem); }
 	.answer-value :global(.metric-value.text-title) {
 		font-size: var(--answer-value-size);
 	}
@@ -112,12 +122,15 @@
 
 	@supports (container-type: inline-size) and (overflow-x: clip) and (zoom: tan(atan2(sign(1px) * 1px, 1px))) {
 		.answer-statement {
-			container-type: inline-size;
+			container-type: var(--yesid-answer-fit-container, normal);
+			/* Resolve container-relative type against AnswerLead, before the measuring containers. */
+			--yesid-answer-normal-size: var(--answer-value-size);
 			/* Without @property, keep the scale capped at its normal size. */
 			--yesid-answer-available: initial;
 			--answer-fit-fallback: var(--yesid-answer-available, 1000000px);
 		}
 		.answer-value {
+			--answer-value-size: var(--yesid-answer-normal-size);
 			--yesid-answer-available: 100cqi;
 			min-inline-size: var(--yesid-answer-fit-min-inline, auto);
 			white-space: var(--yesid-answer-fit-white-space, inherit);
@@ -130,7 +143,7 @@
 			overflow-x: var(--yesid-answer-fit-overflow, visible);
 		}
 		.answer-figure, .answer-measure { grid-area: 1 / 1; }
-		.answer-figure { container-type: inline-size; }
+		.answer-figure { container-type: var(--yesid-answer-fit-container, normal); }
 		/* The hidden copy sizes the grid track to the normal figure width. Its
 		   sibling exposes that width in cqi without contributing to the track. */
 		.answer-measure {
@@ -142,6 +155,7 @@
 		}
 		.answer-measure::before { content: attr(data-value); }
 		.answer-figure > :global(.metric-value) {
+			font-size: var(--answer-value-size);
 			--yesid-answer-natural: 100cqi;
 			--answer-fit-room: calc(var(--yesid-answer-available) + var(--answer-fit-fallback));
 			/* Linux glyph rounding added about 1.6% of the column. Allow 3% plus 1px only when shrinking. */
