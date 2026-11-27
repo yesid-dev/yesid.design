@@ -48,10 +48,13 @@ select {
 @media (width < 1024px) {
 	:root:has([data-slot='site-header-network'] > *) { --nav-extra-clearance: var(--nav-network-clearance); }
 }
-/* Match the network row's text-scaled breakpoint before the header can report its placement. */
+/* Match the network row's text-scaled breakpoint and document inset before hydration. */
 @supports (width: calc(1px * sign(1vw - 1px))) {
 	:root:has([data-slot='site-header-network'] > *) {
-		--nav-extra-clearance: calc(var(--nav-network-clearance) * max(0, sign(max(1024px, 824px + 12.5rem) - 100vw)));
+		--nav-extra-clearance: calc(
+			var(--nav-network-clearance) *
+			max(0, sign(max(1024px, 824px + 12.5rem) - (100vw - var(--site-header-inset-end, 0px))))
+		);
 	}
 }
 /* The header container can be narrower than the viewport beside an inset panel. */

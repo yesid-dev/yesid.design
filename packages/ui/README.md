@@ -1105,7 +1105,9 @@ required, with an empty footer string hiding it. The header opens with the named
 `#main`, shown on focus, and the pill is the page's banner. Every product renders the same skeleton: `SiteHeader`, then
 `<main id="main">`, then `SiteFooter` outside `main`.
 `--site-header-inset-end` narrows the header beside a docked panel, animated over
-`--site-header-inset-duration`. The menu starts below the app's `--chrome-offset` (default `--nav-clearance`); page offsets read
+`--site-header-inset-duration`. Set the inset as a length on `:root` for a panel present on
+first paint, so the header and document clearance use the same value before hydration. The
+menu starts below the app's `--chrome-offset` (default `--nav-clearance`), and page offsets read
 `--nav-clearance` from `base.css`.
 
 `menuGroups?: readonly SiteHeaderMenuGroup[]` supplies visible group headings and ordered items.

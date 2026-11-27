@@ -50,6 +50,46 @@ function navClearance(page: Page) {
 	});
 }
 
+test.describe('Inset network header clearance', { tag: '@theme' }, () => {
+	for (const { textSize, clearance } of [{ textSize: 100, clearance: 140 }, { textSize: 200, clearance: 164 }]) {
+		test(`reserves the picker row before hydration with a 320px inset at ${textSize}% text`, async ({ page }) => {
+			await page.setViewportSize({ width: 1280, height: 900 });
+			const path = '/app-frame/network-paint/fr/refresh';
+			const scripts = Promise.withResolvers<void>();
+			await page.route('**/_app/immutable/**/*.js', async (route) => {
+				await scripts.promise;
+				await route.fallback();
+			});
+			await page.route(`**${path}`, async (route) => {
+				const response = await route.fetch();
+				const css = `<style>:root { --site-header-inset-end: 320px; font-size: ${textSize}%; }</style>`;
+				await route.fulfill({ response, body: (await response.text()).replace('</head>', `${css}</head>`) });
+			});
+
+			try {
+				await page.goto(path, { waitUntil: 'domcontentloaded' });
+				const pill = page.getByTestId('nav-pill');
+				const picker = pill.getByRole('combobox', { name: 'Réseau' });
+				const pickerIsBelow = () => picker.evaluate((select) =>
+					select.getBoundingClientRect().top >= select.closest('nav')!.getBoundingClientRect().bottom);
+				await expect(picker).toBeVisible();
+				await expect(pill).not.toHaveClass(/\bnav-hydrated\b/);
+				expect(await pickerIsBelow()).toBe(true);
+				const before = await navClearance(page);
+				expect(before).toBe(clearance);
+
+				scripts.resolve();
+				await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+				await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+				expect(await pickerIsBelow()).toBe(true);
+				expect(await navClearance(page)).toBe(before);
+			} finally {
+				scripts.resolve();
+			}
+		});
+	}
+});
+
 test.describe('Header network short code', { tag: '@theme' }, () => {
 	test('reserves the compact row at 200% text before hydration', async ({ page }) => {
 		await page.setViewportSize({ width: 1024, height: 850 });
