@@ -63,7 +63,21 @@ describe('SeoHead', () => {
 		expect(head().querySelector('meta[name="robots"]')).toBeNull();
 	});
 
-	it('leaves canonical, og:url and hreflang off a page without a canonical, and can keep it out of search', () => {
+	it('uses the dated share URL without changing the canonical link', () => {
+		const ogUrl = `${page.canonical}?frameMode=record&recordFrom=2026-11-25&recordTo=2026-11-26`;
+		render(SeoHead, { props: { ...page, ogUrl } });
+		expect(meta('property', 'og:url')).toBe(ogUrl);
+		expect(head().querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(page.canonical);
+	});
+
+	it('can write og:url without a canonical link', () => {
+		const ogUrl = 'https://example.com/shared-lines';
+		render(SeoHead, { props: { ...page, canonical: undefined, ogUrl } });
+		expect(meta('property', 'og:url')).toBe(ogUrl);
+		expect(head().querySelector('link[rel="canonical"], link[rel="alternate"]')).toBeNull();
+	});
+
+	it('omits canonical, og:url and hreflang when neither URL is set, and can keep the page out of search', () => {
 		render(SeoHead, { props: { ...page, canonical: undefined, noIndex: true } });
 		expect(head().querySelector('link[rel="canonical"], link[rel="alternate"], meta[property="og:url"]')).toBeNull();
 		expect(meta('name', 'robots')).toContain('noindex');
