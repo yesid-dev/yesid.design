@@ -22,6 +22,7 @@
 	let liveUpdatesPaused = $state(false);
 	let comboboxValue = $state<string | null>('operations');
 	let rankMeasure = $state<string | null>('response-time');
+	let reportPeriod = $state<string | null>(null);
 	let footerStatusRefreshes = $state(0);
 	let sheetOpen = $state(false);
 	let detentOpen = $state(false);
@@ -62,6 +63,11 @@
 		{ value: 'response-time', label: 'Response time', search: 'response time latency' },
 		{ value: 'error-rate', label: 'Error rate', search: 'error rate failures' },
 		{ value: 'request-volume', label: 'Request volume', search: 'request volume traffic' },
+	];
+	const periodOptions = [
+		{ value: 'today', label: 'Today' },
+		{ value: 'last-week', label: 'Previous seven complete reporting days', sublabel: 'Excludes the current reporting day' },
+		{ value: 'last-month', label: 'Previous calendar month' },
 	];
 
 	function foldText(raw: string): string {
@@ -160,8 +166,7 @@
 			<Card.Header>
 				<Card.Title>Combobox</Card.Title>
 				<Card.Description>
-					Single-select typeahead with caller-owned multilingual copy. The second always keeps a
-					value: no clear button.
+					Search a catalogue, keep a searchable choice, or pick from a fixed list.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="gallery-combobox-demo grid gap-3">
@@ -193,6 +198,10 @@
 				<p class="font-mono text-caption text-muted-foreground">
 					Ranked by: {rankMeasure ?? 'none'}
 				</p>
+				<div data-gallery-demo="combobox-select-only">
+					<Combobox searchable={false} options={periodOptions} bind:value={reportPeriod}
+						label="Reporting period" placeholder="Choose a period" />
+				</div>
 			</Card.Content>
 		</Card.Root>
 
@@ -352,6 +361,12 @@
 				<Tooltip content="Read how planned service changes affect connections and accessible boarding.">
 					{#snippet trigger({ props })}
 						<a {...props} type={undefined} href="/app-frame" class="inline-flex min-h-11 items-center rounded-md border border-border px-3 py-2 text-small hover:border-primary">Service guide</a>
+					{/snippet}
+				</Tooltip>
+				<Tooltip content="Use the name displayed in the service directory when adding an entry. Include the region if several entries share the same name. The directory uses this text to match service alerts to the correct entry.">
+					{#snippet trigger({ props })}
+						<input {...props} type="text" aria-label="Service name" placeholder="Service name"
+							class="min-h-11 min-w-0 max-w-full rounded-md border border-border bg-card px-3 py-2 text-small" />
 					{/snippet}
 				</Tooltip>
 			</Card.Content>

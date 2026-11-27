@@ -1,6 +1,5 @@
 <!--
-  Combobox — a bits-ui typeahead combobox for picking ONE entity from a large
-  catalogue by typing.
+  Combobox — a bits-ui single choice control with searchable and select-only modes.
 
   Built on bits-ui Combobox.Root (type="single"): a text input filters the option
   list diacritics-insensitively as you type, a portal-rendered listbox shows the
@@ -36,6 +35,12 @@
 		readonly search: string;
 	}
 
+	/** One option in a select-only combobox. */
+	export type ComboboxSelectOption = Omit<ComboboxOption, 'search'> & {
+		/** Unused in select-only mode. */
+		readonly search?: string;
+	};
+
 	type ComboboxBehaviorProps = Pick<
 		ComboboxPrimitive.RootProps,
 		| 'disabled'
@@ -49,15 +54,17 @@
 	>;
 
 	export interface ComboboxProps extends ComboboxBehaviorProps {
+		/** Enables typing to filter options (default `true`). */
+		searchable?: true;
 		/** The full option catalogue (unfiltered). */
 		options: readonly ComboboxOption[];
 		/** The selected option id, or null when none is chosen (bindable). */
 		value?: string | null;
 		/** Called once when this component commits a new nullable selection. */
 		onValueChange?: (value: string | null) => void;
-		/** Accessible label for the combobox input. */
+		/** Accessible label for the combobox control. */
 		label: string;
-		/** Input placeholder. */
+		/** Placeholder shown before a choice is made. */
 		placeholder?: string;
 		/**
 		 * Shows the clear affordance while a value is chosen (default `true`). `false` makes a
@@ -81,12 +88,31 @@
 		clearLabel?: string;
 	}
 
-	/** The props `Combobox` accepts: either mode. */
-	type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps;
+	/** A fixed list of choices opened from a button without an editable field. */
+	export interface ComboboxSelectOnlyProps extends Omit<
+		ComboboxProps,
+		'searchable' | 'options' | 'clearable' | 'clearLabel' | 'emptyLabel' | 'fold'
+	> {
+		/** Use a trigger button and a fixed option list. */
+		searchable: false;
+		/** Choices to show in the listbox. */
+		options: readonly ComboboxSelectOption[];
+		/** The select-only control has no clear affordance. */
+		clearable?: false;
+		/** Unused in select-only mode. */
+		clearLabel?: string;
+		/** Unused in select-only mode. */
+		emptyLabel?: string;
+		/** Unused in select-only mode. */
+		fold?: ComboboxProps['fold'];
+	}
+
+	/** The props accepted by the searchable and select-only modes. */
+	type ComboboxModeProps = ComboboxProps | ComboboxNonClearableProps | ComboboxSelectOnlyProps;
 </script>
 
 <script lang="ts">
-	import { Combobox as BitsCombobox } from 'bits-ui';
+	import { Combobox as BitsCombobox, Select as BitsSelect } from 'bits-ui';
 	import { flushSync } from 'svelte';
 	import { cn } from '../../cn/index.js';
 
@@ -94,6 +120,7 @@
 
 	let {
 		options,
+		searchable = true,
 		value = $bindable(null),
 		open = $bindable(false),
 		disabled,
@@ -118,14 +145,15 @@
 	// the match is diacritics-insensitive + word-order-tolerant (substring per token).
 	// `null` means the field is not being edited.
 	let search = $state<string | null>(null);
-	const foldedQuery = $derived(fold(search ?? ''));
+	let selectTrigger = $state<HTMLButtonElement | null>(null);
+	const foldedQuery = $derived(searchable && fold ? fold(search ?? '') : '');
 
-	const filtered = $derived.by<readonly ComboboxOption[]>(() => {
+	const filtered = $derived.by(() => {
 		if (!foldedQuery) return options;
 		// Token-AND: every whitespace-separated token must appear in the option's
 		// precomputed folded haystack, so "80 nord" narrows without caring about order.
 		const tokens = foldedQuery.split(/\s+/).filter(Boolean);
-		return options.filter((o) => tokens.every((tk) => o.search.includes(tk)));
+		return options.filter((o) => tokens.every((tk) => o.search?.includes(tk)));
 	});
 
 	// The visible input text: while typing we show the raw query; otherwise the
@@ -149,8 +177,86 @@
 		const nextSearch = (event.currentTarget as HTMLInputElement).value;
 		flushSync(() => (search = nextSearch));
 	}
+
+	function focusInvalidSelect(event: Event): void {
+		event.preventDefault();
+		selectTrigger?.focus();
+		if (!open) {
+			open = true;
+			onOpenChange?.(true);
+		}
+	}
 </script>
 
+{#snippet itemContent(option: ComboboxSelectOption, selected: boolean)}
+	{#if option.glyph}
+		<span class="combobox-item-glyph" aria-hidden="true">{option.glyph}</span>
+	{/if}
+	<span class="combobox-item-body">
+		<span class="combobox-item-label">{option.label}</span>
+		{#if option.sublabel}
+			<span class="combobox-item-sub">{option.sublabel}</span>
+		{/if}
+	</span>
+	{#if selected}
+		<span class="combobox-item-check" aria-hidden="true">✓</span>
+	{/if}
+{/snippet}
+
+{#if !searchable}
+	<BitsSelect.Root
+		type="single"
+		value={value ?? ''}
+		bind:open
+		{disabled}
+		{onOpenChange}
+		{onOpenChangeComplete}
+		{loop}
+		{scrollAlignment}
+		allowDeselect={false}
+		onValueChange={(nextValue) => commitValue(nextValue || null)}
+		items={options.map((option) => ({ value: option.value, label: option.label }))}
+	>
+		<div class={cn('combobox', className)} data-slot="combobox" data-clearable="false">
+			<BitsSelect.Trigger
+				bind:ref={selectTrigger}
+				data-slot="combobox-trigger"
+				class="combobox-select-trigger"
+				aria-label={label}
+				aria-required={required || undefined}
+			>
+				<span class="combobox-select-label">{selectedLabel || placeholder}</span>
+				<span class="combobox-select-chevron" aria-hidden="true">⌄</span>
+			</BitsSelect.Trigger>
+			{#if !disabled && (name || required)}
+				<!-- Preserve native submission and validation without Bits Select's text input. -->
+				<select hidden {name} {required} oninvalid={focusInvalidSelect}>
+					<option value={value ?? ''}>{selectedLabel}</option>
+				</select>
+			{/if}
+		</div>
+
+		<BitsSelect.Portal>
+			<BitsSelect.Content
+				data-slot="combobox-content"
+				class="combobox-content combobox-select-content"
+				aria-label={label}
+				sideOffset={6}
+				strategy="fixed"
+			>
+				<BitsSelect.Viewport class="combobox-viewport">
+					{#each options as option (option.value)}
+						<BitsSelect.Item data-slot="combobox-item" class="combobox-item" value={option.value} label={option.label}>
+							{#snippet children({ selected })}
+								{@render itemContent(option, selected)}
+							{/snippet}
+						</BitsSelect.Item>
+					{/each}
+				</BitsSelect.Viewport>
+			</BitsSelect.Content>
+		</BitsSelect.Portal>
+	</BitsSelect.Root>
+{:else}
 <BitsCombobox.Root
 	type="single"
 	value={value ?? ''}
@@ -228,18 +334,7 @@
 									label={option.label}
 								>
 									{#snippet children({ selected })}
-										{#if option.glyph}
-											<span class="combobox-item-glyph" aria-hidden="true">{option.glyph}</span>
-										{/if}
-										<span class="combobox-item-body">
-											<span class="combobox-item-label">{option.label}</span>
-											{#if option.sublabel}
-												<span class="combobox-item-sub">{option.sublabel}</span>
-											{/if}
-										</span>
-										{#if selected}
-											<span class="combobox-item-check" aria-hidden="true">✓</span>
-										{/if}
+										{@render itemContent(option, selected)}
 									{/snippet}
 								</BitsCombobox.Item>
 							{:else}
@@ -252,6 +347,7 @@
 		</BitsCombobox.Content>
 	</BitsCombobox.Portal>
 </BitsCombobox.Root>
+{/if}
 
 <style>
 	/* The trigger row: a mono input carrying the same card/border/focus chrome as
@@ -263,7 +359,8 @@
 		align-items: center;
 		min-width: 0;
 	}
-	:global(.combobox-input) {
+	:global(.combobox-input),
+	:global(.combobox-select-trigger) {
 		flex: 1 1 auto;
 		min-width: 0;
 		/* Tap-target floor (P5.3d §C4 P10): the input row was 39px tall → 44px. */
@@ -285,7 +382,8 @@
 	:global(.combobox-input::placeholder) {
 		color: var(--muted-foreground);
 	}
-	:global(.combobox-input:focus-visible) {
+	:global(.combobox-input:focus-visible),
+	:global(.combobox-select-trigger:focus-visible) {
 		outline: 2px solid var(--primary);
 		outline-offset: 2px;
 	}
@@ -325,6 +423,30 @@
 		outline: 2px solid var(--primary);
 		outline-offset: 1px;
 	}
+	:global(.combobox-select-trigger) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		text-align: start;
+		cursor: pointer;
+	}
+	:global(.combobox-select-trigger[data-placeholder]),
+	.combobox-select-chevron {
+		color: var(--muted-foreground);
+	}
+	:global(.combobox-select-trigger:disabled) {
+		cursor: default;
+	}
+	.combobox-select-label {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.combobox-select-chevron {
+		flex: none;
+		font-size: var(--text-body);
+	}
 
 	/* The portal-rendered listbox: a bordered card popover, capped height with
 	   scroll, anchored to the input width. */
@@ -338,6 +460,10 @@
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-md, 0 4px 12px rgb(0 0 0 / 0.15));
 		padding: 0.25rem;
+	}
+	:global(.combobox-select-content) {
+		width: min(var(--bits-select-anchor-width), var(--bits-select-content-available-width));
+		max-height: min(20rem, var(--bits-select-content-available-height));
 	}
 	:global(.combobox-item) {
 		display: flex;
@@ -377,6 +503,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	:global(.combobox-select-content) .combobox-item-label,
+	:global(.combobox-select-content) .combobox-item-sub {
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 	:global(.combobox-item-check) {
 		margin-left: auto;

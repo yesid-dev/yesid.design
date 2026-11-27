@@ -93,6 +93,18 @@ sublabels, precomputed search haystacks, a pure fold function, and all accessibl
 uses token-AND matching over the caller's folded haystack. The package does not import product
 locale or copy modules.
 
+For a short, fixed list, pass `searchable={false}` to open a listbox directly from a labelled
+button. Enter, Space or either arrow key opens the list. Use the arrows to move, Enter or Space
+to select, or Escape to close and keep the previous selection. The trigger retains focus.
+The selected label (or `placeholder` before selection) and option labels wrap as needed.
+`ComboboxSelectOnlyProps` accepts the same bindings, callbacks and form props. It omits the clear
+affordance and ignores `clearLabel`, `emptyLabel`, `fold` and the option `search` field.
+
+```svelte
+<Combobox searchable={false} options={periods} bind:value={period} label="Reporting period"
+  placeholder="Choose a period" />
+```
+
 ### Separator
 
 `Separator` has a discriminated surface. The `default` variant delegates to bits-ui and retains
@@ -145,6 +157,8 @@ It stays open when hovered or while the trigger keeps keyboard focus. Escape or 
 trigger dismisses the hint. A fresh hover or keyboard refocus can reopen it. When an open hint
 overflows, use Arrow Down, Arrow Up, Page Down, Page Up, Home or End on the focused trigger to
 scroll the hint.
+Text-entry triggers keep Arrow Down, Arrow Up, Home and End for the control. Textareas and
+editable content also keep Page Down and Page Up. Escape still dismisses the hint.
 
 To keep an existing help or error description, pass its ID or
 space-separated list of IDs as `aria-describedby` on `Tooltip`. The supplied trigger props combine

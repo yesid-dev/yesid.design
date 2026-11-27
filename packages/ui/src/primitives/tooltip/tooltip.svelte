@@ -39,8 +39,18 @@
 		else if (next || !focusOwner?.matches(':focus')) open = next;
 	}
 
+	const inputTypesWithNavigation = new Set([
+		'text', 'search', 'email', 'url', 'tel', 'password', 'number',
+		'date', 'datetime-local', 'month', 'week', 'time', 'range',
+	]);
+
 	function scrollHint(event: KeyboardEvent) {
 		if (!open || !scrollport || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+		const target = event.target;
+		if (target instanceof HTMLTextAreaElement || (target instanceof HTMLElement && target.isContentEditable)) return;
+		if (target instanceof HTMLInputElement && inputTypesWithNavigation.has(target.type) &&
+			event.key !== 'PageUp' && event.key !== 'PageDown') return;
+
 		const { clientHeight, scrollHeight, scrollTop } = scrollport;
 		if (scrollHeight <= clientHeight) return;
 
