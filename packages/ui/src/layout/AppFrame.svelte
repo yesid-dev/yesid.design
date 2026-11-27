@@ -18,7 +18,7 @@
 
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import Button from '../primitives/button/button.svelte';
+	import { buttonVariants } from '../primitives/button/button.svelte';
 	import SurfaceRail from './SurfaceRail.svelte';
 	import type { SurfaceRailContext } from './SurfaceRail.svelte';
 	import { frameRailLayout } from './frame-rail-layout.js';
@@ -156,7 +156,14 @@
 			<SurfaceRail {...controlsRail} class="app-frame-controls-rail">
 				{#snippet rail(context: SurfaceRailContext)}
 					<div class="app-frame-close-controls">
-						<Button variant="outline" wrap onclick={context.closeSheet}>{controlsRail.closeAria}</Button>
+						<button
+							type="button"
+							data-slot="button"
+							class={buttonVariants({ variant: 'outline' })}
+							onclick={context.closeSheet}
+						>
+							{controlsRail.closeAria}
+						</button>
 					</div>
 					{@render controlsRail.rail(context)}
 				{/snippet}
@@ -178,7 +185,8 @@
 		--app-frame-paired: 0;
 		--app-frame-compact: calc(1 - var(--app-frame-paired));
 		--app-frame-rail-display: none;
-		--app-frame-pill-display: block;
+		--app-frame-pill-display: flex;
+		--app-frame-rail-carrier-display: block;
 		display: flex;
 		flex-direction: column;
 		min-block-size: 100dvh;
@@ -189,12 +197,14 @@
 			--app-frame-paired: 1;
 			--app-frame-rail-display: flex;
 			--app-frame-pill-display: none;
+			--app-frame-rail-carrier-display: contents;
 		}
 	}
 	.app-frame[data-rail-layout='paired'] {
 		--app-frame-paired: 1;
 		--app-frame-rail-display: flex;
 		--app-frame-pill-display: none;
+		--app-frame-rail-carrier-display: contents;
 	}
 	.app-frame-rail-breakpoint {
 		position: absolute;
@@ -206,6 +216,16 @@
 	}
 	.app-frame-close-controls { display: none; }
 	:global(.surface-rail-sheet) .app-frame-close-controls { display: flex; justify-content: flex-end; }
+	.app-frame-close-controls button {
+		min-block-size: var(--size-tap-min);
+		min-inline-size: var(--size-tap-min);
+		max-inline-size: 100%;
+		height: auto;
+		padding-block: 0.5rem;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		transition: none;
+	}
 	/* base.css clips the root's inline overflow. A root overflow other than visible keeps body's
 	   overflow off the viewport, so the scroll lock behind the SiteHeader menu and the sheets
 	   (overflow: hidden on body) would make body a scroll container that never scrolls, and the
@@ -273,7 +293,7 @@
 	.app-frame:not(.full-viewport) > .with-controls-rail {
 		padding-inline-start: calc(var(--app-frame-paired) * var(--space-page-x));
 	}
-	.app-frame:not(.full-viewport) > .with-controls-rail > :global(.app-frame-controls-rail:not(.surface-rail--mobile)) {
+	.app-frame:not(.full-viewport) > .with-controls-rail > :global(.surface-rail-carrier) > :global(.app-frame-controls-rail:not(.surface-rail--mobile)) {
 		--reading-rail-gap: calc(var(--app-frame-paired) * 1rem);
 		--reading-rail-top: calc(var(--chrome-offset) + var(--reading-rail-gap));
 		margin-block-start: var(--reading-rail-gap);
@@ -309,8 +329,8 @@
 	.app-frame-body > :global([data-slot='surface-rail-mobile']) {
 		--surface-rail-sheet-clearance: var(--app-frame-header-height);
 	}
-	/* Keep the evidence sheet above the chrome until its exit animation unmounts it. */
-	.app-frame-body > :global([data-slot='surface-rail-mobile']:not([data-open='true']):not(:has(.surface-rail-sheet))) {
+	/* Keep the evidence sheet above the chrome through its exit animation. */
+	.app-frame-body > :global([data-slot='surface-rail-mobile'][data-present='false']) {
 		z-index: calc(var(--z-sheet) - 1);
 	}
 	.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
