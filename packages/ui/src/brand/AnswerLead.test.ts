@@ -39,7 +39,8 @@ describe('AnswerLead', () => {
 			expect(name).toBe('78 vehicles are reporting now.');
 			expect(occurrences(name, '78')).toBe(1);
 			// The visible figure stays in the tree, once, as the first part of the statement.
-			expect(within(element).getAllByText('78')).toHaveLength(1);
+			const figure = within(element).getByText('78');
+			expect(figure.closest('[data-slot="answer-fit-measure"]')).toBe(figure.parentElement);
 			expect(element.querySelector('[aria-hidden]')).toBeNull();
 			expect(element.textContent!.indexOf('78')).toBeLessThan(element.textContent!.indexOf('vehicles are reporting now.'));
 		});

@@ -659,6 +659,11 @@ column in the initial layout, including with JavaScript disabled. Figures that f
 normal size. Browsers without CSS fitting support use the original size and wrapping rules.
 The default is `layout="threshold"`.
 
+When a figure is present, `[data-slot="answer-fit-measure"]` marks its natural-width measuring
+box. When the figure scales down, this box can be wider than its clipped column while the
+visible figure fits. Consumer overflow checks can exempt the box and its descendants with
+`element.closest('[data-slot="answer-fit-measure"]')`.
+
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
 seconds from the shared clock. Pass `late` with the supplied stale-since `label` to show a ring
