@@ -4,6 +4,7 @@ import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/play
 
 const ROUTE = '/phone-rows-and-scroll-edges';
 const TABLE_SCROLLPORT = '[data-slot="data-table-frame"][data-responsive="scroll"]';
+const TABLE_SCROLLPORTS = `${TABLE_SCROLLPORT}, [data-slot="data-table-frame"][data-scrollable="true"]`;
 const REPORTS_SORT = 'Sort by Fahrgastinformationssystemverfügbarkeitsberichte';
 const EMPTY_ROW = 'tbody tr[data-row-empty]';
 
@@ -72,7 +73,7 @@ async function expectStrictContainment(page: Page): Promise<void> {
 			}
 		}
 		return issues;
-	}, TABLE_SCROLLPORT);
+	}, TABLE_SCROLLPORTS);
 	expect(violations).toEqual([]);
 }
 
@@ -100,54 +101,59 @@ async function fadeVisibility(container: Locator): Promise<{ start: boolean; end
 }
 
 test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@theme' }, () => {
+	for (const width of [360, 390]) {
+		test(`keeps words in nested badges whole at ${width}px`, async ({ page }) => {
+			await open(page, width);
+			const card = page.locator('#initial-wide');
+			const badge = card.getByText('Unknown', { exact: true });
+			await expect(badge).toBeVisible();
+			const lines = await badge.evaluate((element) => {
+				const range = document.createRange();
+				range.selectNodeContents(element.firstChild!);
+				return new Set([...range.getClientRects()].map((rect) => rect.top)).size;
+			});
+			expect(lines).toBe(1);
+			await expect(card.locator('[data-slot="data-table-frame"]')).toHaveAttribute('data-scrollable', 'false');
+		});
+	}
+
 	for (const width of [320, 390]) {
-		test(`wraps oversized words inside reflowed table cards at ${width}px with 200% text`, async ({ page }) => {
+		test(`keeps oversized words whole and scrollable at ${width}px with 200% text`, async ({ page }) => {
 			await open(page, width, 200);
 			const cards = page.getByTestId('table-wrap-card');
 			await expect(cards).toHaveCount(3);
 			for (const card of await cards.all()) {
 				const table = card.getByRole('table');
+				const caption = (await table.locator('caption').textContent())!;
+				const region = card.getByRole('region', { name: caption, exact: true });
 				await expect(card).toHaveCSS('overflow-x', 'hidden');
 				await expect(table).toHaveCSS('display', 'block');
 				await expect(table).toHaveCSS('overflow-x', 'visible');
-				const { overflow, clipped, words } = await card.evaluate((card) => {
-					const overflow = [card, ...card.querySelectorAll<HTMLElement>('*')]
-						// Captions and non-sortable column headers are intentionally clipped in 1px boxes.
-						.filter((element) => element.clientWidth > 1 && element.scrollWidth > element.clientWidth)
-						.map(({ tagName, clientWidth, scrollWidth }) => ({ tagName, clientWidth, scrollWidth }));
-					const { left, right } = card.getBoundingClientRect();
+				await expect(region).toHaveAttribute('tabindex', '0');
+				await expect(region).toHaveCSS('overflow-x', 'auto');
+				expect(await card.evaluate((element) => element.scrollWidth)).toBe(await card.evaluate((element) => element.clientWidth));
+				const words = await region.evaluate((frame) => {
+					const start = frame.getBoundingClientRect().left + frame.clientLeft - frame.scrollLeft;
+					const end = start + frame.scrollWidth;
 					const range = document.createRange();
-					const clipped: string[] = [];
-					const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
-					for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-						if (!node.textContent?.trim() || !node.parentElement?.closest('tbody, h2, button')) continue;
-						range.selectNodeContents(node);
-						if ([...range.getClientRects()].some((box) => box.left < left - 0.5 || box.right > right + 0.5)) {
-							clipped.push(node.textContent);
-						}
-					}
-					const words = [...card.querySelectorAll('[data-wrap-word]')].map((word) => {
+					return [...frame.querySelectorAll('[data-wrap-word]')].map((word) => {
 						range.selectNodeContents(word.firstChild!);
 						const boxes = [...range.getClientRects()];
-						const line = word.closest<HTMLElement>('.data-table-cell-content')!;
-						const cell = word.closest('th, td')!;
 						return {
 							word: word.textContent,
 							lines: new Set(boxes.map((box) => box.top)).size,
-							width: boxes.reduce((sum, box) => sum + box.width, 0),
-							available: (line.clientWidth ? line : cell).getBoundingClientRect().width,
+							reachable: boxes.every((box) => box.left >= start - 0.5 && box.right <= end + 0.5),
 						};
 					});
-					return { overflow, clipped, words };
 				});
-				const caption = await table.locator('caption').textContent();
-				expect(overflow, `${caption} scroll widths`).toEqual([]);
-				expect(clipped, `${caption} clipped text`).toEqual([]);
-				expect(words.filter((word) => word.lines > 1).length).toBeGreaterThan(0);
-				for (const { word, lines, width, available } of words) {
-					expect(lines > 1, `${caption}: ${word} is ${width}px on a ${available}px line`).toBe(width > available + 0.5);
+				for (const { word, lines, reachable } of words) {
+					expect(lines, `${caption}: ${word} stays whole`).toBe(1);
+					expect(reachable, `${caption}: ${word} can be fully reached by scrolling`).toBe(true);
 				}
+				await region.press('ArrowRight');
+				await expect.poll(() => region.evaluate((frame) => frame.scrollLeft)).toBeGreaterThan(0);
 			}
+			await expectStrictContainment(page);
 		});
 	}
 
