@@ -164,8 +164,9 @@ caller-owned scrolling classes on Body.
 
 The default modal behavior focuses the first focusable element inside the sheet. Use
 `onOpenAutoFocus` to choose a different initial target. Tab stays inside, Escape and a
-scrim click dismiss the sheet, and focus returns to the trigger on close. Sheet entry
-and exit use short fades and offsets, with no panel animation under reduced motion.
+scrim click dismiss the sheet, and focus returns to the trigger on close. Centered and
+responsive sheets use short fades and offsets. Static bottom and right sheets keep
+their existing slide. All sides remove panel animation under reduced motion.
 
 ### Tooltip
 

@@ -2,8 +2,27 @@ import { cleanup, render, screen } from '@testing-library/svelte';
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import SheetContractFixture from './test-fixtures/SheetContractFixture.svelte';
 import type { SheetContentProps, SheetSide } from './index.js';
+import { sheetVariants } from './sheet-content.svelte';
 
 afterEach(() => cleanup());
+
+it('preserves the published rc.2 Sheet variant strings', () => {
+	const base = 'bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none';
+	const right = `${base} data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 max-w-sm border-l border-border`;
+	const bottom = `${base} data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 max-h-[90svh] w-full rounded-t-xl border-t border-border`;
+
+	expect(sheetVariants.base).toBe(base);
+	expect(sheetVariants()).toBe(bottom);
+	expect(sheetVariants({ side: 'right' })).toBe(right);
+	expect(sheetVariants({ side: 'bottom' })).toBe(bottom);
+});
+
+it('replaces the edge sheet surface and long motion in the center variant', () => {
+	const center = sheetVariants({ side: 'center' });
+	for (const token of ['bg-popover', 'shadow-sheet', 'duration-300', 'duration-500']) {
+		expect(center).not.toContain(token);
+	}
+});
 
 describe('Sheet content contract', () => {
 	it.each([

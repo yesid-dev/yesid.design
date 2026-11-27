@@ -42,7 +42,10 @@ select {
 @utility sheet-center-layout {
 	@apply inset-0 m-auto h-fit max-h-[min(80dvh,44rem)] w-[min(var(--sheet-center-width,40rem),calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-[0_4px_12px_rgb(0_0_0_/_0.15)];
 	@apply data-[state=closed]:slide-out-to-bottom-[8px] data-[state=open]:slide-in-from-bottom-[8px];
+	@apply sheet-center-parts;
+}
 
+@utility sheet-center-parts {
 	& > :is([data-slot="sheet-header"], [data-slot="sheet-footer"]) { flex-shrink: 0; }
 	& > [data-slot="sheet-body"] {
 		min-height: 0;
@@ -55,7 +58,7 @@ select {
 /* Select the presentation before hydration and let caller utilities override its defaults. */
 @layer components {
 	[data-slot="sheet-title"] { @apply text-base font-medium; }
-	.sheet-center { @apply sheet-center-layout; }
+	.sheet-center { @apply sheet-center-parts; }
 
 	@media (width < 768px) {
 		[data-sheet-base="bottom"] { @apply sheet-bottom-layout; }

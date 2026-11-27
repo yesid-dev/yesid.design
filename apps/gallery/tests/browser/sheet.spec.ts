@@ -18,19 +18,21 @@ test('Sheet owns its motion styles and respects reduced motion', async ({ page }
 	for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 		await page.emulateMedia({ reducedMotion });
 		await openGallery(page);
-		for (const [trigger, title] of [
-			['Open details', 'Operational detail'],
-			['Open schedule note', 'Schedule note'],
-			['Open report files', 'Download report files'],
-		]) {
+		for (const [trigger, title, duration] of [
+			['Open details', 'Operational detail', '0.5s'],
+			['Open schedule note', 'Schedule note', '0.5s'],
+			['Open report files', 'Download report files', '0.2s'],
+		] as const) {
 			if (trigger === 'Open report files') await visitReportFiles(page);
 			await page.getByRole('button', { name: trigger }).click();
 			const dialog = page.getByRole('dialog', { name: title });
 			await expect(dialog).toBeVisible();
 			await expect(dialog).toHaveCSS('animation-name', reducedMotion === 'reduce' ? 'none' : 'enter');
 			if (reducedMotion === 'no-preference') {
-				await expect(dialog).toHaveCSS('animation-duration', '0.2s');
-				await expect(dialog).toHaveCSS('animation-timing-function', 'cubic-bezier(0.2, 0.8, 0.2, 1)');
+				await expect(dialog).toHaveCSS('animation-duration', duration);
+				if (trigger === 'Open report files') {
+					await expect(dialog).toHaveCSS('animation-timing-function', 'cubic-bezier(0.2, 0.8, 0.2, 1)');
+				}
 			}
 			await page.keyboard.press('Escape');
 			await expect(dialog).toBeHidden();
@@ -123,11 +125,14 @@ test('responsive Sheet keeps mobile geometry and contains desktop overflow and f
 });
 
 test('an inline width override keeps a static centered Sheet clickable above its scrim', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await page.setViewportSize({ width: 1024, height: 768 });
 	await visitReportFiles(page);
 	await page.getByRole('button', { name: 'Use a wider centered window' }).click();
 	const { dialog, opener } = await openReportFiles(page);
 	expect((await box(dialog)).width).toBe(768);
+	await expect(dialog).toHaveCSS('animation-duration', '0.2s');
+	await expect(dialog.getByRole('heading', { name: 'Download report files' })).toHaveCSS('font-size', '18px');
 	await dialog.getByRole('button', { name: 'Close report files' }).click();
 	await expect(dialog).toBeHidden();
 	await expect(opener).toBeFocused();

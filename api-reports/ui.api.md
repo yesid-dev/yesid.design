@@ -167,7 +167,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `65632ce2fd2c3e4263e0f08fced8d6638ceb7b93c6466ea2462f1ff0bcf88cf8`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `e4b4dbbe3cc9b3f93775793404c334f6bb21dfec6e889f55844e9b88a279a90e`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
@@ -3472,7 +3472,7 @@ right: string;
 bottom: string;
 center: string;
 };
-}, undefined, "fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none motion-reduce:transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0", {
+}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", {
 side: {
 right: string;
 bottom: string;
@@ -3484,7 +3484,7 @@ right: string;
 bottom: string;
 center: string;
 };
-}, undefined, "fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none motion-reduce:transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0", unknown, unknown, undefined>>;
+}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", unknown, unknown, undefined>>;
 
 // @public (undocumented)
 const ShowMore: Component<ShowMoreProps, {}, "">;
