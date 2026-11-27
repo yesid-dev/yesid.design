@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.62.1-rc.1
+
+<!-- release-fragment: center-site-header-menu -->
+- `@yesid/ui` (patch): Center the open SiteHeader’s grouped desktop menu with content-sized columns and equal gaps.
+  Long destination labels stay on one line when space allows.
+
+<!-- release-fragment: footer-link-column-fit -->
+- `@yesid/ui` (patch): Size desktop SiteFooter link columns to their labels. Keep a constant column gap and move whole
+  groups onto the next row when space is tight. An oversized group still wraps its labels to fit.
+
+<!-- release-fragment: ripple-reduced-motion -->
+- `@yesid/motion` (patch): The global ripple no longer spawns while the reader asks for reduced motion. The preference is read
+  at each pointerdown, so a change applies without a reload.
+
 ## 0.62.0
 
 <!-- release-fragment: metric-matched-font-fallbacks -->
