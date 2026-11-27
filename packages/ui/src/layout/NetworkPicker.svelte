@@ -44,6 +44,7 @@
 
 <style>
 	label {
+		--picker-edge: var(--network-picker-border-width, 1px);
 		position: relative;
 		display: inline-flex;
 		align-items: center;
@@ -52,9 +53,10 @@
 		min-inline-size: var(--size-tap-min);
 		min-block-size: var(--size-tap-min);
 		padding-inline: 0.65em;
-		border: 1px solid var(--border);
+		border: var(--picker-edge) solid var(--network-picker-border-color, var(--border));
 		border-radius: var(--radius-pill);
-		background: var(--muted);
+		background: var(--network-picker-background, var(--muted));
+		box-shadow: var(--network-picker-shadow, none);
 		color: var(--foreground);
 		font-size: var(--text-control);
 	}
@@ -66,34 +68,36 @@
 
 	select {
 		position: absolute;
-		/* Absolute sizing starts inside the label's 1px border. The native control covers it too. */
-		inset: -1px;
-		inline-size: calc(100% + 2px);
-		block-size: calc(100% + 2px);
+		/* Absolute sizing starts inside the label's border. The native control covers it too. */
+		inset: calc(-1 * var(--picker-edge));
+		inline-size: calc(100% + 2 * var(--picker-edge));
+		block-size: calc(100% + 2 * var(--picker-edge));
 		border-radius: inherit;
 		opacity: 0;
 		cursor: pointer;
 	}
 
-	.network-code { display: none; }
-	.network-name, .network-code { min-inline-size: 0; overflow-wrap: anywhere; }
-	label :global(.picker-chevron) { flex-shrink: 0; }
+	.network-name { display: var(--network-picker-name-display, inline); }
+	.network-code { display: var(--network-picker-code-display, none); }
+	.network-name, .network-code {
+		min-inline-size: 0;
+		overflow: hidden;
+		overflow-wrap: anywhere;
+		text-overflow: ellipsis;
+	}
+	label :global(.picker-chevron) {
+		flex-shrink: 0;
+		color: var(--muted-foreground);
+	}
 	select, option {
 		background-color: var(--popover);
 		color: var(--popover-foreground);
 	}
 
 	@media (width < 37.5em) {
-		.network-name { display: none; }
-		.network-code { display: inline; }
+		.network-name { display: var(--network-picker-name-display, none); }
+		.network-code { display: var(--network-picker-code-display, inline); }
 	}
-	@container site-header (width < 1024px) {
-		:global([data-slot='site-header-network']) .network-name { display: none; }
-		:global([data-slot='site-header-network']) .network-code { display: inline; }
-	}
-	/* The header shows the code below the pill, or inline when the full name does not fit. */
-	:global(:is([data-network-below]:not([data-network-measuring]), [data-network-code]) [data-slot='site-header-network']) .network-name { display: none; }
-	:global(:is([data-network-below]:not([data-network-measuring]), [data-network-code]) [data-slot='site-header-network']) .network-code { display: inline; }
 
 	@media (forced-colors: active) {
 		label:has(select:focus-visible) { outline-color: CanvasText; }

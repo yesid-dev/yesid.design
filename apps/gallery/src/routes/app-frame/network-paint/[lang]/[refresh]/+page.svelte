@@ -26,7 +26,8 @@
 		{ id: 'stm', city: french ? 'Montréal' : 'Montreal', name: 'STM', shortCode: 'STM' },
 		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: 'OC Transpo' },
 	]);
-	let selected = $state('stm');
+	let selectedNetwork = $state<string>();
+	const selected = $derived(selectedNetwork ?? (data.variant === 'long' ? 'ott' : 'stm'));
 	let pinned = $state(false);
 	const href = (lang: string) => `/app-frame/network-paint/${lang}/${data.variant}`;
 </script>
@@ -49,7 +50,8 @@
 					<input class="search" type="search" aria-label={french ? 'Chercher dans le réseau' : 'Search the network'} />
 				{/snippet}
 				{#snippet network()}
-					<NetworkPicker label={french ? 'Réseau' : 'Network'} {networks} value={selected} onValueChange={(id) => (selected = id)} />
+					<NetworkPicker label={data.variant === 'long' ? (french ? 'Réseau : Ottawa · OC Transpo' : 'Network: Ottawa · OC Transpo') : french ? 'Réseau' : 'Network'}
+						{networks} value={selected} onValueChange={(id) => (selectedNetwork = id)} />
 				{/snippet}
 				{#snippet actions()}
 					{#if data.variant === 'refresh'}

@@ -40,13 +40,12 @@ function networkRow(page: Page) {
 }
 
 test.describe('Header network short code', { tag: '@theme' }, () => {
-	test('shows the short code inline when only the code fits beside the links', async ({ page }) => {
+	test('shows the short code in the narrower inline tier', async ({ page }) => {
 		await page.setViewportSize({ width: 1120, height: 850 });
 		await page.goto(`${path}?long-name`);
 		await page.locator('html[data-gallery-ready]').waitFor();
 		await page.evaluate(() => document.fonts.ready);
 		const { pill, select, name, code, inRow } = networkRow(page);
-		const root = page.locator('html');
 		const chrome = page.getByTestId('chrome-size');
 		await expect(name).toHaveText('Riverside · Regional Transit');
 		await expect(name).toBeVisible();
@@ -57,14 +56,11 @@ test.describe('Header network short code', { tag: '@theme' }, () => {
 		await select.focus();
 		const node = await select.elementHandle();
 
-		// The full name needs about 1066px here; the code fits from 1024px.
 		for (const width of [1040, 1024, 1120]) {
 			await page.setViewportSize({ width, height: 850 });
 			const full = width === 1120;
 			await expect(full ? name : code).toBeVisible();
 			await expect(full ? code : name).toBeHidden();
-			await expect(pill).not.toHaveAttribute('data-network-below');
-			await expect(root).not.toHaveAttribute('data-site-header-network-below');
 			expect(await inRow()).toBe(true);
 			expect((await pill.boundingBox())!.height).toBe(fullPill);
 			await expect(chrome).toHaveText(fullChrome);
@@ -76,30 +72,21 @@ test.describe('Header network short code', { tag: '@theme' }, () => {
 		}
 	});
 
-	test('moves the picker below the pill only when the code does not fit either', async ({ page }) => {
+	test('gives the network row more space at 200% text', async ({ page }) => {
 		await page.setViewportSize({ width: 1024, height: 850 });
 		await page.goto(`${path}?long-name`);
 		await page.locator('html[data-gallery-ready]').waitFor();
 		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 		await page.evaluate(() => document.fonts.ready);
-		const { pill, select, name, code, inRow } = networkRow(page);
-		const root = page.locator('html');
+		const { select, name, code, inRow } = networkRow(page);
 		await select.focus();
 		const node = await select.elementHandle();
 
-		// At 200% text the code fits from about 1208px and the full name from about 1432px.
 		for (const width of [1024, 1300, 1100]) {
 			await page.setViewportSize({ width, height: 850 });
 			const below = width !== 1300;
 			await expect(code).toBeVisible();
 			await expect(name).toBeHidden();
-			if (below) {
-				await expect(pill).toHaveAttribute('data-network-below', '');
-				await expect(root).toHaveAttribute('data-site-header-network-below', '');
-			} else {
-				await expect(pill).not.toHaveAttribute('data-network-below');
-				await expect(root).not.toHaveAttribute('data-site-header-network-below');
-			}
 			await expect.poll(inRow).toBe(!below);
 			await expect(select).toBeFocused();
 			expect(await select.evaluate((control, original) => control === original, node)).toBe(true);
@@ -220,16 +207,11 @@ test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
 					const pillBox = (await pill.boundingBox())!;
 					const pickerBox = (await picker.boundingBox())!;
 					const below = pickerBox.y >= pillBox.y + pillBox.height;
-					const root = page.locator('html');
 					if (width === 1024) expect(below).toBe(true);
 					if (below) {
 						await expect(picker.getByText('STM', { exact: true })).toBeVisible();
-						await expect(root).toHaveAttribute('data-site-header-network-below', '');
-						const clearance = await root.evaluate((element) =>
-							getComputedStyle(element).getPropertyValue('--nav-network-clearance').trim());
-						await expect(root).toHaveCSS('--nav-extra-clearance', clearance);
-					} else {
-						await expect(root).not.toHaveAttribute('data-site-header-network-below');
+						const chrome = (await page.locator('[data-slot="app-frame-chrome"]').boundingBox())!;
+						expect(chrome.y + chrome.height).toBeGreaterThanOrEqual(pickerBox.y + pickerBox.height);
 					}
 					const trailing = [
 						...(refresh ? [header.getByRole('button', { name: french ? 'Actualiser les données' : 'Refresh data' })] : []),
