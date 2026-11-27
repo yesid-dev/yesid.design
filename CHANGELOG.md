@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.62.1-rc.1
+## 0.62.1
 
 <!-- release-fragment: center-site-header-menu -->
 - `@yesid/ui` (patch): Center the open SiteHeader’s grouped desktop menu with content-sized columns and equal gaps.
