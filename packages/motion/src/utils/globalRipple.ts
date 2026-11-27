@@ -9,8 +9,9 @@
 // elements are position: fixed (relative to viewport) so they stay
 // where the user pressed even if a mid-ripple scroll happens.
 //
-// Reduced-motion: the click ripple stays active because it is user-initiated,
-// brief (<1.2s) and not a vestibular trigger.
+// Reduced motion: no ripple. The rings are decorative movement, and controls
+// keep their own pressed states. The preference is read on every pointerdown,
+// so a change applies without a reload.
 //
 // Reading surfaces (articles, cards, charts, maps) carry data-ripple-exempt and
 // never ripple. A consumer's `exclude` selector adds to that, never replaces it.
@@ -18,11 +19,13 @@
 const OUTER_DURATION_MS = 1200;
 const INNER_DURATION_MS = 800;
 const EXEMPT_SELECTOR = '[data-ripple-exempt]';
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 export function initGlobalRipple(options: { exclude?: string } = {}): () => void {
 	if (typeof window === 'undefined') return () => {};
 
 	const skip = options.exclude ? `${EXEMPT_SELECTOR}, ${options.exclude}` : EXEMPT_SELECTOR;
+	const reducedMotion = window.matchMedia?.(REDUCED_MOTION_QUERY);
 
 	function spawnRipple(x: number, y: number) {
 		const outer = document.createElement('div');
@@ -41,6 +44,7 @@ export function initGlobalRipple(options: { exclude?: string } = {}): () => void
 	}
 
 	function onPointerDown(e: PointerEvent) {
+		if (reducedMotion?.matches) return;
 		if (e.target instanceof Element && e.target.closest(skip)) return;
 		spawnRipple(e.clientX, e.clientY);
 	}

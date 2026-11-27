@@ -78,6 +78,9 @@ consumer passes `exclude`, and `exclude` adds to that rule rather than replacing
 articles, editorial cards, charts and maps with the attribute so feedback stays on navigation and
 controls while people read or explore data.
 
+A reader who asks for reduced motion gets no ripple. The rings are decorative movement, and controls
+keep their own pressed states. The utility reads the preference at each pointerdown.
+
 ## D10: Fluid clamp tokens stay structured at the source
 
 Fluid values use the `yesid.clamp` extension with structured `min`, `preferred`, and `max`
