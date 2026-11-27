@@ -635,11 +635,10 @@ width of at least 26 rem, the figure and sentence sit side by side. The sentence
 stacks below either threshold. The large answer uses the display scale within this component.
 `layout="fit"` drops both thresholds: at any width, the figure sits beside the sentence whenever
 its natural width, a 1 rem gap and 12 rem for the sentence fit, and the sentence wraps below it
-otherwise. In either layout the figure and its unit stay on one line. With CSS container units,
-registered custom properties and CSS zoom, an oversized figure scales to its available width
-in the initial layout, including with JavaScript disabled. Browsers without CSS fitting keep
-the figure on one line at its normal size, with horizontal scrolling if needed. The default
-is `layout="threshold"`.
+otherwise. With CSS fitting support, the figure and its unit fit on one line within their
+column in the initial layout, including with JavaScript disabled. Figures that fit keep their
+normal size. Browsers without CSS fitting support use the original size and wrapping rules.
+The default is `layout="threshold"`.
 
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed

@@ -66,8 +66,29 @@
 		inherits: true;
 	}
 	@property --yesid-answer-natural {
-		syntax: "<length> | clip";
+		syntax: "<length>";
+		initial-value: 0px;
+		inherits: false;
+	}
+	/* These values opt into fitting only when property registration works. */
+	@property --yesid-answer-fit-overflow {
+		syntax: "*";
 		initial-value: clip;
+		inherits: false;
+	}
+	@property --yesid-answer-fit-white-space {
+		syntax: "*";
+		initial-value: nowrap;
+		inherits: false;
+	}
+	@property --yesid-answer-fit-display {
+		syntax: "*";
+		initial-value: grid;
+		inherits: false;
+	}
+	@property --yesid-answer-fit-min-inline {
+		syntax: "*";
+		initial-value: 0px;
 		inherits: false;
 	}
 	.answer-lead {
@@ -81,19 +102,15 @@
 		min-inline-size: 0;
 	}
 	p { margin: 0; }
-	.answer-value {
-		--answer-value-size: var(--text-heading);
-		min-inline-size: 0;
-		overflow-x: auto;
-		white-space: nowrap;
-	}
+	.answer-value { --answer-value-size: var(--text-heading); }
 	.answer-value-lg { --answer-value-size: clamp(2.25rem, var(--text-display), 2.875rem); }
-	.answer-figure > :global(.metric-value) {
+	.answer-value :global(.metric-value.text-title) {
 		font-size: var(--answer-value-size);
 	}
+	.answer-fit { display: contents; }
 	.answer-measure { display: none; }
 
-	@supports (container-type: inline-size) and (zoom: tan(atan2(1px, 1px))) {
+	@supports (container-type: inline-size) and (overflow-x: clip) and (zoom: tan(atan2(sign(1px) * 1px, 1px))) {
 		.answer-statement {
 			container-type: inline-size;
 			/* Without @property, keep the scale capped at its normal size. */
@@ -102,21 +119,22 @@
 		}
 		.answer-value {
 			--yesid-answer-available: 100cqi;
-			/* Keep the full figure scrollable if typed properties are unavailable. */
-			overflow-x: var(--yesid-answer-natural, auto);
+			min-inline-size: var(--yesid-answer-fit-min-inline, auto);
+			white-space: var(--yesid-answer-fit-white-space, inherit);
+			overflow-x: var(--yesid-answer-fit-overflow, visible);
 		}
 		.answer-fit {
-			display: grid;
+			display: var(--yesid-answer-fit-display, contents);
 			grid-template-columns: max-content;
 			/* The measurement track can be wider than the visible figure. */
-			overflow-x: var(--yesid-answer-natural, visible);
+			overflow-x: var(--yesid-answer-fit-overflow, visible);
 		}
 		.answer-figure, .answer-measure { grid-area: 1 / 1; }
 		.answer-figure { container-type: inline-size; }
 		/* The hidden copy sizes the grid track to the normal figure width. Its
 		   sibling exposes that width in cqi without contributing to the track. */
 		.answer-measure {
-			display: block;
+			display: var(--yesid-answer-fit-display, none);
 			block-size: 0;
 			font-size: var(--answer-value-size);
 			visibility: hidden;
@@ -125,9 +143,12 @@
 		.answer-measure::before { content: attr(data-value); }
 		.answer-figure > :global(.metric-value) {
 			--yesid-answer-natural: 100cqi;
+			--answer-fit-room: calc(var(--yesid-answer-available) + var(--answer-fit-fallback));
+			/* Keep one pixel for rounding only when the natural width needs shrinking. */
+			--answer-fit-rounding: max(0, sign(var(--yesid-answer-natural) - var(--answer-fit-room)));
 			/* Scale the whole inline box so inherited letter and word spacing fit too. */
 			zoom: clamp(0.001, tan(atan2(
-				var(--yesid-answer-available) + var(--answer-fit-fallback),
+				var(--answer-fit-room) - 1px * var(--answer-fit-rounding),
 				max(1px, var(--yesid-answer-natural))
 			)), 1);
 		}
@@ -159,8 +180,7 @@
 			}
 		}
 	}
-	/* The sentence wraps below once it no longer has 12rem beside the figure.
-	   The figure stays whole and scales down only when it exceeds its available width. */
+	/* The sentence wraps below once it no longer has 12rem beside the figure. */
 	.answer-lead[data-layout='fit'] .answer-statement {
 		display: flex;
 		flex-wrap: wrap;
@@ -171,8 +191,8 @@
 		flex: 0 1 auto;
 		min-inline-size: 0;
 		max-inline-size: 100%;
+		overflow-wrap: break-word;
 	}
-	.answer-lead[data-layout='fit'] .answer-absent { overflow-wrap: break-word; }
 	.answer-lead[data-layout='fit'] .answer-sentence {
 		flex: 1 1 12rem;
 		min-inline-size: 0;
