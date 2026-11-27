@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.61.0-rc.3
+## 0.61.0
 
 <!-- release-fragment: answer-fit-slot -->
 - `@yesid/ui` (minor): AnswerLead exposes the `answer-fit-measure` slot on the figure's natural-width measuring box
