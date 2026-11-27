@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
@@ -99,6 +100,23 @@ async function fadeVisibility(container: Locator): Promise<{ start: boolean; end
 }
 
 test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@theme' }, () => {
+	test('reflows compact rows and stacked tables without making them scroll containers', async ({ page }) => {
+		await open(page, 390);
+		const rows = page.getByRole('table', { name: 'Stations by on-time rate', exact: true });
+		const stack = page.getByRole('table', { name: 'Three-day corridor performance' });
+		for (const table of [rows, stack]) {
+			await expect(table).toHaveCSS('display', 'block');
+			await expect(table).toHaveCSS('overflow-x', 'visible');
+			await expect(table).toHaveCSS('overflow-y', 'visible');
+		}
+		const { violations } = await new AxeBuilder({ page })
+			.include('[data-testid="phone-rows-card"] [data-slot="data-table"]')
+			.include('[data-testid="compact-stack-card"] [data-slot="data-table"]')
+			.withRules(['scrollable-region-focusable'])
+			.analyze();
+		expect(violations).toEqual([]);
+	});
+
 	test('renders phone rows without labels, single detail sentence, one-line empty row, and sortable headers at 390px', async ({ page }) => {
 		await open(page, 390);
 		const card = page.getByTestId('phone-rows-card');
@@ -198,6 +216,46 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		await expectStrictContainment(page);
 		await expectAccessible(page);
 	});
+
+	for (const textPercent of [100, 200]) {
+		test(`shows only the requested row labels at 390px with ${textPercent}% text`, async ({ page }) => {
+			await open(page, 390, textPercent);
+			const all = page.getByRole('table', { name: 'Stations by on-time rate, value and detail labels' });
+			const details = page.getByRole('table', { name: 'Stations by on-time rate, detail labels only' });
+			const none = page.getByRole('table', { name: 'Stations by on-time rate', exact: true });
+			const valueCell = (table: Locator) => table.locator('tbody tr').first().locator('[data-row-position="value"]');
+			const label = '.data-table-stack-label';
+
+			await expect(valueCell(all).locator(label)).toBeVisible();
+			await expect(valueCell(all)).toHaveCSS('align-self', 'start');
+			for (const table of [all, details]) {
+				const row = table.locator('tbody tr').first();
+				await expect(row.locator(`[data-row-position="primary"] ${label}`)).toBeHidden();
+				for (const [key, header] of [['direction', 'Direction and distance'], ['reports', 'Reports']] as const) {
+					const detailLabel = row.locator(`[data-column="${key}"] ${label}`);
+					await expect(detailLabel).toBeVisible();
+					await expect(detailLabel).toHaveText(header);
+				}
+			}
+			await expect(none.locator(label)).toHaveCount(0);
+			for (const table of [details, none]) {
+				await expect(valueCell(table).locator(label)).toBeHidden();
+				await expect(valueCell(table)).toHaveCSS('align-self', 'baseline');
+				await expect(table.locator('thead th[aria-sort] button')).toHaveCSS('font-weight', '600');
+			}
+			const primary = details.locator('tbody tr').first().locator('[data-row-position="primary"]');
+			const primaryBox = (await primary.boundingBox())!;
+			const valueBox = (await valueCell(details).boundingBox())!;
+			if (textPercent === 200) {
+				expect(valueBox.y).toBeGreaterThanOrEqual(primaryBox.y + primaryBox.height - 1);
+				expect(valueBox.x).toBeCloseTo(primaryBox.x);
+			} else {
+				expect(valueBox.x).toBeGreaterThan(primaryBox.x);
+				expect(valueBox.y).toBeLessThan(primaryBox.y + primaryBox.height);
+			}
+			await expectStrictContainment(page);
+		});
+	}
 
 	for (const width of [768, 1440]) {
 		test(`keeps normal multi-column table layout and accessible semantics at ${width}px`, async ({ page }) => {

@@ -96,7 +96,33 @@ describe('DataTable', () => {
 		expect(middle.innerHTML.replace(' data-row-align="middle"', '')).toBe(omitted.container.innerHTML);
 	});
 
-	it('supports rows mode without per-row column labels, with a row detail snippet, empty rows and sortable headers', async () => {
+	it.each([
+		{ labels: undefined, marker: undefined, rendered: ['Route', 'Wait', 'Sector', 'Distance'] },
+		{ labels: true, marker: undefined, rendered: ['Route', 'Wait', 'Sector', 'Distance'] },
+		{ labels: false, marker: 'none', rendered: [] },
+		{ labels: 'details' as const, marker: 'details', rendered: ['Route', 'Sector', 'Distance'] },
+	])('renders the compact row label markup for labels=$labels', ({ labels, marker, rendered }) => {
+		const view = render(DataTable<Row>, {
+			props: {
+				rows,
+				columns: [
+					...columns,
+					{ key: 'sector', header: 'Sector', cell: cell(() => 'Eastbound') },
+					{ key: 'distance', header: 'Distance', cell: cell(() => '240 m') },
+				],
+				key: (row) => row.id,
+				caption: 'Waits by route',
+				responsive: { mode: 'rows', primary: 'route', value: 'wait', labels },
+			},
+		});
+		const frame = view.container.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
+		const rowLabels = [...frame.querySelectorAll('tbody tr:first-child .data-table-stack-label')];
+		expect(frame.dataset.rowLabels).toBe(marker);
+		expect(rowLabels.map((label) => label.textContent)).toEqual(rendered);
+		expect(rowLabels.every((label) => label.getAttribute('aria-hidden') === 'true')).toBe(true);
+	});
+
+	it.each([false, 'details'] as const)('supports a row detail snippet, empty rows and sortable headers with labels=%s', async (labels) => {
 		const onSort = vi.fn();
 		const detailColumns: DataTableColumn<Row>[] = [
 			{ key: 'route', header: 'Route', rowHeader: true, sortable: true, cell: cell((row) => row.route) },
@@ -111,26 +137,13 @@ describe('DataTable', () => {
 			render: () => `<span>${row().detail ?? ''}</span>`,
 		}));
 
-		const withDefaults = render(DataTable<Row>, {
-			props: {
-				rows: mixedRows,
-				columns: detailColumns,
-				key: (row) => row.id,
-				caption: 'Default rows',
-				responsive: { mode: 'rows', primary: 'route', value: 'wait' },
-			},
-		});
-		expect(withDefaults.container.querySelectorAll('.data-table-stack-label').length).toBeGreaterThan(0);
-		expect(withDefaults.container.querySelector('.data-table-row-detail')).toBeNull();
-		expect(withDefaults.container.querySelector('[data-slot="data-table-frame"]')?.hasAttribute('data-row-labels')).toBe(false);
-
 		const compact = render(DataTable<Row>, {
 			props: {
 				rows: mixedRows,
 				columns: detailColumns,
 				key: (row) => row.id,
 				caption: 'Compact phone rows',
-				responsive: { mode: 'rows', primary: 'route', value: 'wait', labels: false },
+				responsive: { mode: 'rows', primary: 'route', value: 'wait', labels },
 				rowDetail,
 				rowEmpty: (row) => row.wait === null,
 				sort: { key: 'wait', direction: 'desc' },
@@ -139,9 +152,7 @@ describe('DataTable', () => {
 			},
 		});
 		const frame = compact.container.querySelector<HTMLElement>('[data-slot="data-table-frame"]')!;
-		expect(frame.dataset.rowLabels).toBe('none');
 		expect(frame.dataset.hasRowDetail).toBe('true');
-		expect(compact.container.querySelectorAll('.data-table-stack-label')).toHaveLength(0);
 
 		const grid = within(compact.container).getByRole('table', { name: 'Compact phone rows' });
 		expect(within(grid).getAllByRole('columnheader')).toHaveLength(3);

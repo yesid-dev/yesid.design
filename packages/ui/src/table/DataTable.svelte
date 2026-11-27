@@ -25,8 +25,8 @@
 				mode: 'rows';
 				primary: string;
 				value: string;
-				/** Whether compact rows show column labels inside each row. Defaults to `true`. */
-				labels?: boolean;
+				/** In-row labels in compact rows. Defaults to `true`. Use `false` to hide all labels or `'details'` to hide the value label. */
+				labels?: boolean | 'details';
 		  };
 
 	export interface DataTableColumn<T> {
@@ -130,8 +130,7 @@
 	const scrollMode = $derived(responsive.mode === 'scroll');
 	const scrollRegion = $derived(scrollMode && (scrollEdges?.scrollable ?? true));
 	const reflows = $derived(!!stackAt || !!rowLayout);
-	const showRowLabels = $derived(rowLayout?.labels !== false);
-	const showStackLabels = $derived(reflows && showRowLabels);
+	const showStackLabels = $derived(reflows && rowLayout?.labels !== false);
 	const hasRowDetail = $derived(!!rowLayout && !!rowDetail);
 	const lastDetail = $derived(rowLayout && columns
 		.filter(({ key }) => key !== rowLayout.primary && key !== rowLayout.value).at(-1)?.key);
@@ -201,7 +200,9 @@
 </script>
 
 {#snippet cellContent(column: DataTableColumn<T>, row: T)}
-	{#if showStackLabels}<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>{/if}
+	{#if showStackLabels && !(rowLayout?.labels === 'details' && rowPosition(column.key) === 'value')}
+		<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>
+	{/if}
 	<div class="data-table-cell-content">{@render column.cell(row)}</div>{#if rowLayout && !hasRowDetail && !rowPosition(column.key) && column.key !== lastDetail}
 		<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
 	{/if}
@@ -301,7 +302,7 @@
 		data-collapse={borderCollapse}
 		data-header-band={headerBand}
 		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
-		data-row-labels={rowLayout?.labels === false ? 'none' : undefined}
+		data-row-labels={rowLayout?.labels === false ? 'none' : rowLayout?.labels === 'details' ? 'details' : undefined}
 		data-has-row-detail={hasRowDetail || undefined}
 		data-scrollable={scrollMode && (scrollEdges?.scrollable ?? false)}
 		data-scroll-start={scrollEdges?.start || undefined}
@@ -601,6 +602,11 @@
 	}
 
 	@media (max-width: 28rem) {
+		/* Base styles set overflow-x: auto on tables. Reset it when the table becomes a block. */
+		.data-table-frame[data-stack-at='compact'] > .data-table {
+			overflow: visible;
+		}
+
 		.data-table-frame[data-stack-at='compact'] .data-table,
 		.data-table-frame[data-stack-at='compact'] .data-table :is(thead, tbody, tr, th, td) {
 			display: block;
@@ -655,6 +661,10 @@
 	}
 
 	@media (max-width: 1023px) {
+		.data-table-frame[data-stack-at='tablet'] > .data-table {
+			overflow: visible;
+		}
+
 		.data-table-frame[data-stack-at='tablet'] .data-table,
 		.data-table-frame[data-stack-at='tablet'] .data-table :is(thead, tbody, tr, th, td) {
 			display: block;
@@ -732,6 +742,7 @@
 	@container yesid-table (inline-size <= 28rem) {
 		.data-table-frame[data-responsive='rows'] > .data-table {
 			display: block;
+			overflow: visible;
 			overflow-wrap: normal;
 			word-break: normal;
 		}
@@ -762,7 +773,7 @@
 			padding: 0;
 			border: 0;
 		}
-		.data-table-frame:is([data-row-labels='none'], [data-has-row-detail]) > .data-table > thead th[aria-sort] .data-table-sort {
+		.data-table-frame:is([data-row-labels='none'], [data-row-labels='details'], [data-has-row-detail]) > .data-table > thead th[aria-sort] .data-table-sort {
 			color: var(--foreground);
 			font-weight: 600;
 		}
@@ -812,7 +823,7 @@
 			font-weight: 600;
 			text-align: end;
 		}
-		.data-table-frame[data-responsive='rows'][data-row-labels='none'] > .data-table > tbody > tr > [data-row-position='value'] {
+		.data-table-frame[data-responsive='rows']:is([data-row-labels='none'], [data-row-labels='details']) > .data-table > tbody > tr > [data-row-position='value'] {
 			align-self: baseline;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='value'] .data-table-cell-content {

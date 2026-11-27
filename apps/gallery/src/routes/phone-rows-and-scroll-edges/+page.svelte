@@ -84,6 +84,13 @@
 		{ key: 'direction', header: 'Direction and distance', rowHeader: true, cell: stationDirection },
 		{ key: 'reports', header: 'Fahrgastinformationssystemverfügbarkeitsberichte', numeric: true, sortable: true, cell: stationReports },
 	];
+	const labeledStationColumns = stationColumns.map((column) =>
+		column.key === 'reports' ? { ...column, header: 'Reports' } : column,
+	);
+	const labelExamples = [
+		{ labels: true, title: 'Value and detail labels' },
+		{ labels: 'details', title: 'Detail labels only' },
+	] as const;
 
 	const days = Array.from({ length: 14 }, (_, index) => ({
 		id: `day-${index + 1}`,
@@ -167,6 +174,32 @@
 			{sort}
 			onSort={toggleSort}
 			sortLabels={{ by: (column) => `Sort by ${column}` }}
+		/>
+	</Card>
+
+	{#each labelExamples as { labels, title } (title)}
+		<Card edge="neutral" textSize="inherit" class="p-4 gap-3">
+			<h2>{title}</h2>
+			<DataTable
+				rows={sortedStations.filter((row) => !row.emptyNote)}
+				columns={labeledStationColumns}
+				key={(row) => row.id}
+				caption={`Stations by on-time rate, ${title.toLowerCase()}`}
+				responsive={{ mode: 'rows', primary: 'name', value: 'onTime', labels }}
+				{sort}
+				onSort={toggleSort}
+			/>
+		</Card>
+	{/each}
+
+	<Card edge="neutral" textSize="inherit" class="p-4 gap-3" data-testid="compact-stack-card">
+		<h2>Stacked rows on phones</h2>
+		<DataTable
+			rows={dailyRows}
+			columns={narrowDailyColumns}
+			key={(row) => row.id}
+			caption="Three-day corridor performance"
+			responsive={{ mode: 'stack', at: 'compact' }}
 		/>
 	</Card>
 

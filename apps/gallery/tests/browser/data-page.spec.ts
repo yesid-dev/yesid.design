@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 import { copy, hourTable, statuses, statusTable, stopRows, stopTable } from '../../src/routes/data-page/fixture.js';
@@ -21,6 +22,13 @@ test('tables stack or scroll to fit this width', async ({ page }) => {
 	expect(fits).toBe(true);
 	if (isPhone(page)) {
 		expect(new Set(tops).size).toBe(tops.length);
+		await expect(stacked).toHaveCSS('overflow-x', 'visible');
+		await expect(stacked).toHaveCSS('overflow-y', 'visible');
+		const { violations } = await new AxeBuilder({ page })
+			.include('[data-stack-at="tablet"] [data-slot="data-table"]')
+			.withRules(['scrollable-region-focusable'])
+			.analyze();
+		expect(violations).toEqual([]);
 	} else {
 		expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
 	}
