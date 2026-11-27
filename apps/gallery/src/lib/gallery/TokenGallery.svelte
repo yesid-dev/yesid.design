@@ -30,6 +30,7 @@
 	const textScale = leaves(tree.text as TokenGroup);
 	const radii = leaves(tree.radius as TokenGroup);
 	const spaces = leaves(tree.space as TokenGroup);
+	const measures = leaves(tree.measure as TokenGroup);
 </script>
 
 <section class="mt-10" aria-labelledby="gallery-colors">
@@ -126,6 +127,20 @@
 			</div>
 		{/each}
 	</div>
+</section>
+
+<section class="mt-10" aria-labelledby="gallery-measures">
+	<h2 id="gallery-measures" class="font-heading text-title font-semibold">Measures</h2>
+	<ul class="mt-3 space-y-2">
+		{#each measures as token (token.name)}
+			<li
+				class="rounded-md border border-border-subtle bg-card p-2 font-mono text-caption"
+				style:max-inline-size={`var(--measure-${token.name})`}
+			>
+				--measure-{token.name}: {token.value}
+			</li>
+		{/each}
+	</ul>
 </section>
 
 <section class="mt-10 grid gap-8 md:grid-cols-2" aria-label="Shape and spacing tokens">

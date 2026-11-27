@@ -1,5 +1,5 @@
 import type { Token, TokenTree } from '../types.ts';
-import { serializeYaml } from '../serialize.ts';
+import { serializeCss, serializeYaml } from '../serialize.ts';
 import { isLeaf, isClampToken } from '../parse.ts';
 
 export interface DesignMdOptions {
@@ -76,6 +76,11 @@ export function generateDesignMd(tree: TokenTree, opts: DesignMdOptions = {}): s
   const text = tree.text as TokenTree;
   const radius = tree.radius as TokenTree;
   const space = tree.space as TokenTree;
+  const listing = (tree.measure as TokenTree | undefined)?.listing;
+  const listingMeasure = listing && isLeaf(listing)
+    ? `Use \`--measure-listing\` (\`${serializeCss(listing)}\`) for a single listing or results column,
+such as search results or a directory, between the lede and body measures.\n`
+    : '';
   const deprecatedShadows = Object.entries((tree.shadow ?? {}) as TokenTree)
     .filter(([, v]) => isLeaf(v) && v.$deprecated)
     .map(([k]) => `\`${k}\``);
@@ -187,7 +192,7 @@ Four CSS Grid recipes: Full-Bleed · Contained · Content+Sidebars · Edge-Title
 widths cap at \`64rem\` (content) / \`72rem\` (wide). Page gutters scale via \`--space-page-x\`.
 Section spacing scales via \`--space-section-y\`. Consumer integration guidance lives in
 docs/BUILD-A-YESID-PRODUCT.md.
-SiteHeader accepts a caller-owned \`brand\` snippet and \`wordmarkAutoPlay={false}\` for its default
+${listingMeasure}SiteHeader accepts a caller-owned \`brand\` snippet and \`wordmarkAutoPlay={false}\` for its default
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
 The theme and language toggles stay in the pill at every width (D19); priority 2 links show from a
 600px header and links that do not fit leave a whole priority at a time. The Experimental

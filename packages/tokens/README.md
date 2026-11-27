@@ -20,6 +20,9 @@ Compact density is opt-in: set `data-density="compact"` on `<html>` or on a subt
 `density.compact` overrides. `tokens.css` also declares the breakpoints as `@custom-media`; inside
 Svelte styles they need postcss-global-data and postcss-custom-media in the product's build.
 
+Use `--measure-listing` (`46rem`) for a single listing or results column, such as search results or
+a directory, between the lede (`34rem`) and body (`60rem`) measures.
+
 For ordinary reading, use these explicit roles. They retain their size inside compact-density
 subtrees. `text-body`, `text-small`, `text-mono` and `text-caption` also serve controls,
 data and labels at their own sizes. Display, hero and impact roles are separate.

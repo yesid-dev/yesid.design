@@ -75,6 +75,9 @@ Token values live in `packages/tokens/tokens.json`. `bun run tokens:build` regen
 `tokens.css`, `theme.css`, the motion tokens and `DESIGN.md` from it, and `bun run ci:tokens`
 fails when a generated file has drifted.
 
+Use `--measure-listing` (`46rem`) for a single listing or results column, such as search results or
+a directory, between the lede and body measures.
+
 ## Principles
 
 1. **No app conditionals.** Nothing in a package branches on which product uses it. A difference
