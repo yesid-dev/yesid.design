@@ -19,10 +19,10 @@ describe('Sheet content contract', () => {
 		render(SheetContractFixture, {
 			props: { showCloseButton: false, side: { base: 'right', md: 'center' } },
 		});
-		const { classList } = screen.getByRole('dialog');
-		expect(classList.contains('max-[768px]:sheet-right')).toBe(true);
-		expect(classList.contains('min-[768px]:sheet-center')).toBe(true);
-		expect(classList.contains('bottom-0')).toBe(false);
+		const dialog = screen.getByRole('dialog');
+		expect(dialog.getAttribute('data-sheet-base')).toBe('right');
+		expect(dialog.getAttribute('data-sheet-md')).toBe('center');
+		expect(dialog.classList.contains('bottom-0')).toBe(false);
 	});
 
 	it('types the base and md sides and keeps detents exclusive to the bottom string side', () => {

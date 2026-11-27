@@ -4,7 +4,7 @@
 
 	export const sheetVariants = tv(
 		{
-			base: 'fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
+			base: 'fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none motion-reduce:transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
 			variants: {
 				side: {
 					right:
@@ -23,13 +23,6 @@
 	);
 
 	export type SheetSide = VariantProps<typeof sheetVariants>['side'];
-
-	// Match the kit's tablet minimum, even when the consumer customizes their Tailwind breakpoints.
-	const responsiveSides = {
-		bottom: { base: 'max-[768px]:sheet-bottom', md: 'min-[768px]:sheet-bottom' },
-		right: { base: 'max-[768px]:sheet-right', md: 'min-[768px]:sheet-right' },
-		center: { base: 'max-[768px]:sheet-center', md: 'min-[768px]:sheet-center' },
-	} as const;
 </script>
 
 <script lang="ts">
@@ -82,10 +75,9 @@
 	let dismiss: HTMLButtonElement | null = $state(null);
 	const index = $derived(Math.max(0, detents?.findIndex(d => d.id === detent) ?? 0));
 	const active = $derived(detents?.[index]);
+	const responsiveSide = $derived(typeof side === 'object' ? side : undefined);
 	const contentClasses = $derived(cn(
-		side && typeof side === 'object'
-			? [sheetVariants.base, responsiveSides[side.base].base, responsiveSides[side.md].md]
-			: sheetVariants({ side }),
+		side && typeof side === 'object' ? sheetVariants.base : sheetVariants({ side }),
 		showCloseButton && '[&_[data-slot=sheet-header]]:pr-12',
 		detents && 'max-h-none gap-0 overflow-hidden',
 		className,
@@ -151,6 +143,8 @@
 	<SheetPrimitive.Content
 		bind:ref
 		data-slot="sheet-content"
+		data-sheet-base={responsiveSide?.base}
+		data-sheet-md={responsiveSide?.md}
 		class={contentClasses}
 		{...(!modal ? { trapFocus: false, preventScroll: false, interactOutsideBehavior: 'ignore' as const, escapeKeydownBehavior: 'ignore' as const } : {})}
 		{...restProps}

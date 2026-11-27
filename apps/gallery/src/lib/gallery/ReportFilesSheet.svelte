@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Sheet from '@yesid/ui/sheet';
 
-	let { initiallyOpen = false }: { initiallyOpen?: boolean } = $props();
+	let { initiallyOpen = false, contentClass }: { initiallyOpen?: boolean; contentClass?: string } = $props();
 	let wider = $state(false);
 	const reportFiles = [
 		'summary', 'daily-totals', 'weekly-totals', 'monthly-totals', 'locations', 'observations',
@@ -11,7 +11,7 @@
 </script>
 
 <h1 class="font-heading text-title font-semibold">Report files Sheet</h1>
-{#if !initiallyOpen}
+{#if !initiallyOpen && !contentClass}
 	<button type="button" class="mt-2 min-h-11 rounded-md border border-border px-3 py-2"
 		aria-pressed={wider} onclick={() => wider = !wider}>
 		Use a wider centered window
@@ -23,6 +23,7 @@
 	</Sheet.Trigger>
 	<Sheet.Content
 		side={wider ? 'center' : { base: 'bottom', md: 'center' }}
+		class={contentClass}
 		style={wider ? '--sheet-center-width: 48rem' : undefined}
 		portalProps={initiallyOpen ? { disabled: true } : undefined}
 		closeLabel="Close report files"

@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openGallery } from './gallery.js';
 
-async function visitReportFiles(page: Page) {
-	await page.goto('/sheet');
+async function visitReportFiles(page: Page, path = '/sheet') {
+	await page.goto(path);
 	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 }
 
@@ -79,6 +79,9 @@ test('responsive Sheet keeps mobile geometry and contains desktop overflow and f
 			expect(panel.x * 2 + panel.width).toBeCloseTo(width, 0);
 			expect(panel.y * 2 + panel.height).toBeCloseTo(height, 0);
 			await expect(dialog).toHaveCSS('border-bottom-left-radius', '12px');
+			const title = dialog.getByRole('heading', { name: 'Download report files' });
+			await expect(title).toHaveCSS('font-size', '18px');
+			await expect(title).toHaveCSS('font-weight', '600');
 			await expect(overlay).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
 			const cardColor = await page.evaluate(() => {
 				const probe = document.createElement('div');
@@ -128,6 +131,49 @@ test('an inline width override keeps a static centered Sheet clickable above its
 	await dialog.getByRole('button', { name: 'Close report files' }).click();
 	await expect(dialog).toBeHidden();
 	await expect(opener).toBeFocused();
+});
+
+test('caller utilities override the responsive Sheet defaults at both sides of 768px', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.setViewportSize({ width: 767, height: 768 });
+	await visitReportFiles(page, '/sheet/custom');
+	const { dialog } = await openReportFiles(page);
+
+	for (const width of [767, 1024]) {
+		await page.setViewportSize({ width, height: 768 });
+		const panel = await box(dialog);
+		expect(panel.width).toBe(width / 2);
+		if (width < 768) {
+			expect(panel.x).toBe(0);
+			expect(panel.y + panel.height).toBeCloseTo(768, 0);
+		} else {
+			expect(panel.x * 2 + panel.width).toBeCloseTo(width, 0);
+			expect(panel.y * 2 + panel.height).toBeCloseTo(768, 0);
+		}
+		await expect(dialog).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+		await expect(dialog).toHaveCSS('border-width', '0px');
+		await expect(dialog).toHaveCSS('border-radius', '0px');
+	}
+});
+
+test('reduced motion suppresses a caller opacity transition on Sheet Content', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await visitReportFiles(page, '/sheet/custom');
+	const { dialog } = await openReportFiles(page);
+	await expect(dialog).toHaveCSS('transition-property', 'opacity');
+
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await expect(dialog).toHaveCSS('transition-property', 'none');
+	const result = await dialog.evaluate(node => {
+		const before = getComputedStyle(node).opacity;
+		node.style.opacity = '0.25';
+		return {
+			before,
+			after: getComputedStyle(node).opacity,
+			transitions: node.getAnimations().filter(animation => animation instanceof CSSTransition).length,
+		};
+	});
+	expect(result).toEqual({ before: '1', after: '0.25', transitions: 0 });
 });
 
 test('an open responsive Sheet switches geometry without layout transitions or lost focus', async ({ page }) => {

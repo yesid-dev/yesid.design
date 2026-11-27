@@ -151,8 +151,9 @@ still reserves extra space on the right of the header when enabled.
 `Sheet.Content` defaults to `side="bottom"` and also accepts `"right"` and `"center"`. Use
 `side={{ base: 'bottom', md: 'center' }}` for a bottom sheet below 768px and a centered window
 from 768px. Both keys are required and accept any of the three sides. CSS selects the
-presentation before hydration and updates it without moving focus on resize. Detents
-require the static bottom side.
+presentation before hydration and updates it without moving focus on resize. Utility
+classes passed to Content can override the presentation defaults at either width.
+Detents require the static bottom side.
 
 The centered window is at most 40rem wide with 1rem clearance on either side. Set
 `--sheet-center-width` on Content to widen it, for example
