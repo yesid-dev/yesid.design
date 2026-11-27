@@ -602,6 +602,11 @@
 	}
 
 	@media (max-width: 28rem) {
+		/* Base styles set overflow-x: auto on tables. Reset it when the table becomes a block. */
+		.data-table-frame[data-stack-at='compact'] > .data-table {
+			overflow: visible;
+		}
+
 		.data-table-frame[data-stack-at='compact'] .data-table,
 		.data-table-frame[data-stack-at='compact'] .data-table :is(thead, tbody, tr, th, td) {
 			display: block;
@@ -656,6 +661,10 @@
 	}
 
 	@media (max-width: 1023px) {
+		.data-table-frame[data-stack-at='tablet'] > .data-table {
+			overflow: visible;
+		}
+
 		.data-table-frame[data-stack-at='tablet'] .data-table,
 		.data-table-frame[data-stack-at='tablet'] .data-table :is(thead, tbody, tr, th, td) {
 			display: block;
@@ -733,6 +742,7 @@
 	@container yesid-table (inline-size <= 28rem) {
 		.data-table-frame[data-responsive='rows'] > .data-table {
 			display: block;
+			overflow: visible;
 			overflow-wrap: normal;
 			word-break: normal;
 		}

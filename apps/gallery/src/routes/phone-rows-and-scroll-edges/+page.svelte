@@ -192,6 +192,17 @@
 		</Card>
 	{/each}
 
+	<Card edge="neutral" textSize="inherit" class="p-4 gap-3" data-testid="compact-stack-card">
+		<h2>Stacked rows on phones</h2>
+		<DataTable
+			rows={dailyRows}
+			columns={narrowDailyColumns}
+			key={(row) => row.id}
+			caption="Three-day corridor performance"
+			responsive={{ mode: 'stack', at: 'compact' }}
+		/>
+	</Card>
+
 	<Card edge="neutral" textSize="inherit" class="p-4 gap-3" data-testid="filter-counts-card">
 		<h2>Formatted filter counts</h2>
 		<div class="counts">
