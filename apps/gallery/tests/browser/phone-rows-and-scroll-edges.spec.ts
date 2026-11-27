@@ -204,6 +204,77 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		await expect(scrollRegions).toHaveCount(0);
 	});
 
+	test('remeasures overflow when a cell control gains and loses focus without resizing the table', async ({ page }) => {
+		await open(page, 390);
+		const card = page.locator('#initial-wide');
+		const frame = card.locator('[data-slot="data-table-frame"]');
+		const table = card.getByRole('table');
+		const input = table.getByRole('textbox', { name: 'North on-time rate' });
+		const tableSize = () => table.evaluate(({ clientWidth, clientHeight }) => ({ clientWidth, clientHeight }));
+		const before = await tableSize();
+		await expect(frame).toHaveAttribute('data-scrollable', 'false');
+		await expect(frame).toHaveAttribute('aria-labelledby', 'wrap-heading-0');
+		await expect(input).toHaveCSS('width', '45px');
+
+		await table.getByRole('button', { name: 'Station' }).press('Tab');
+		await expect(input).toBeFocused();
+		await expect(input).toHaveCSS('width', '620px');
+		const region = card.getByRole('region', { name: 'Compact rows with long words', exact: true });
+		await expect(region).toHaveAttribute('tabindex', '0');
+		await expect(region).toHaveCSS('overflow-x', 'auto');
+		expect(await tableSize()).toEqual(before);
+
+		await input.press('Shift+Tab');
+		await expect(frame).toHaveAttribute('data-scrollable', 'false');
+		await expect(frame).not.toHaveAttribute('tabindex');
+		await expect(frame).toHaveAttribute('aria-labelledby', 'wrap-heading-0');
+		await expect(frame).toHaveCSS('overflow-x', 'visible');
+		expect(await tableSize()).toEqual(before);
+	});
+
+	test('starts with reachable reflowed overflow before hydration and preserves the scroll offset', async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 900 });
+		const { promise: held, resolve: resume } = Promise.withResolvers<void>();
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await held;
+			await route.fallback();
+		});
+		try {
+			await page.goto(`${ROUTE}#initial-wide`, { waitUntil: 'domcontentloaded' });
+			await page.evaluate(() => document.fonts.ready);
+			const ready = page.locator('html[data-gallery-ready]');
+			const card = page.locator('#initial-wide');
+			const frame = card.locator('[data-slot="data-table-frame"]');
+			const input = card.getByRole('textbox', { name: 'North on-time rate' });
+			const fittingFrames = page.getByTestId('table-wrap-card').locator('[data-stack-at]');
+			const frameHeights = () => fittingFrames.evaluateAll((frames) => frames.map((frame) => frame.clientHeight));
+			await expect(ready).toHaveCount(0);
+			await expect(frame).not.toHaveAttribute('data-scrollable');
+			await expect(frame).toHaveCSS('overflow-x', 'auto');
+			await expect(card.getByRole('table')).toHaveCSS('overflow-x', 'visible');
+			await expect(input).toHaveCSS('width', '620px');
+			const heights = await frameHeights();
+			const scrollLeft = await frame.evaluate((element) => {
+				element.scrollLeft = element.scrollWidth;
+				return element.scrollLeft;
+			});
+			expect(scrollLeft).toBeGreaterThan(0);
+			const inlineEnd = (await input.boundingBox())!;
+			const scrollport = (await frame.boundingBox())!;
+			expect(inlineEnd.x + inlineEnd.width).toBeLessThanOrEqual(scrollport.x + scrollport.width + 0.5);
+
+			resume();
+			await expect(ready).toBeAttached();
+			const region = card.getByRole('region', { name: 'Compact rows with long words', exact: true });
+			await expect(region).toHaveAttribute('tabindex', '0');
+			expect(await region.evaluate((element) => element.scrollLeft)).toBe(scrollLeft);
+			await expect(page.getByTestId('table-wrap-card').locator('[data-stack-at][data-scrollable="false"]')).toHaveCount(2);
+			expect(await frameHeights()).toEqual(heights);
+		} finally {
+			resume();
+		}
+	});
+
 	test('reflows compact rows and stacked tables without making them scroll containers', async ({ page }) => {
 		await open(page, 390);
 		const rows = page.getByRole('table', { name: 'Stations by on-time rate', exact: true });

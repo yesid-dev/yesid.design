@@ -83,6 +83,7 @@
 	import { cn } from '../cn/index.js';
 	import {
 		attachScrollEdges,
+		EMPTY_SCROLL_EDGES,
 		type ScrollEdgeState,
 	} from '../internal/scroll-edges.js';
 	import ShowMore from './ShowMore.svelte';
@@ -181,7 +182,7 @@
 			initialScroll,
 			observeContent: !!reflowTable,
 			onUpdate(next) {
-				scrollEdges = reflowTable && getComputedStyle(reflowTable).display !== 'block' ? undefined : next;
+			scrollEdges = reflowTable && getComputedStyle(reflowTable).display !== 'block' ? EMPTY_SCROLL_EDGES : next;
 			},
 			onResize() {
 				const style = getComputedStyle(element);
@@ -202,7 +203,7 @@
 
 	const onFrameScroll: HTMLAttributes<HTMLDivElement>['onscroll'] = (event) => {
 		handleScroll?.();
-		if (!scrollMode) restProps.onscroll?.(event);
+		if (!scrollMode) restProps.onscroll?.call(event.currentTarget, event);
 	};
 </script>
 
@@ -311,7 +312,7 @@
 		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
 		data-row-labels={rowLayout?.labels === false ? 'none' : rowLayout?.labels === 'details' ? 'details' : undefined}
 		data-has-row-detail={hasRowDetail || undefined}
-		data-scrollable={scrollEdges?.scrollable ?? false}
+		data-scrollable={scrollEdges?.scrollable ?? (reflows ? undefined : false)}
 		data-scroll-start={scrollEdges?.start || undefined}
 		data-scroll-end={scrollEdges?.end || undefined}
 		data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
@@ -319,6 +320,7 @@
 		style:--dt-min-width-compact={scrollMinWidthCompact}
 		role={scrollRegion ? 'region' : restProps.role}
 		aria-label={scrollRegion ? accessibleCaption : restProps['aria-label']}
+		aria-labelledby={scrollRegion && reflows ? undefined : restProps['aria-labelledby']}
 		tabindex={scrollRegion ? 0 : restProps.tabindex}
 		{...(scrollRegion ? { 'data-lenis-prevent': '' } : {})}
 		onscroll={scrollMode || reflows ? onFrameScroll : restProps.onscroll}
@@ -353,6 +355,12 @@
 		max-width: 100%;
 	}
 	.data-table-frame[data-responsive='rows'] { container: yesid-table / inline-size; }
+	/* The rows frame is its own query container. Allow scrolling until its first measurement. */
+	.data-table-frame[data-responsive='rows']:not([data-scrollable]) {
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: thin;
+	}
 
 	.data-table-frame:is([data-responsive='scroll'], [data-scrollable='true']) {
 		--scroll-fade-surface: var(--background);
@@ -609,6 +617,12 @@
 	}
 
 	@media (max-width: 28rem) {
+		.data-table-frame[data-stack-at='compact']:not([data-scrollable]) {
+			overflow-x: auto;
+			overflow-y: hidden;
+			scrollbar-width: thin;
+		}
+
 		/* Base styles set overflow-x: auto on tables. Reset it when the table becomes a block. */
 		.data-table-frame[data-stack-at='compact'] > .data-table {
 			overflow: visible;
@@ -670,6 +684,12 @@
 	}
 
 	@media (max-width: 1023px) {
+		.data-table-frame[data-stack-at='tablet']:not([data-scrollable]) {
+			overflow-x: auto;
+			overflow-y: hidden;
+			scrollbar-width: thin;
+		}
+
 		.data-table-frame[data-stack-at='tablet'] > .data-table {
 			overflow: visible;
 		}

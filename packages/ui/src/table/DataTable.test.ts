@@ -175,6 +175,24 @@ describe('DataTable', () => {
 		expect(bodyRows[2]!.querySelector('[data-column="wait"]')?.getAttribute('headers')).toContain(waitColId!);
 	});
 
+	it('forwards a reflowed table scroll event with the frame as the handler receiver', async () => {
+		const onscroll = vi.fn(function (this: HTMLDivElement, event: Event) {
+			expect(this).toBe(event.currentTarget);
+		});
+		const view = render(DataTable<Row>, {
+			props: {
+				rows,
+				columns,
+				key: (row) => row.id,
+				caption: 'Waits by route',
+				responsive: { mode: 'rows', primary: 'route', value: 'wait' },
+				onscroll,
+			},
+		});
+		await fireEvent.scroll(view.container.querySelector('[data-slot="data-table-frame"]')!);
+		expect(onscroll).toHaveBeenCalledOnce();
+	});
+
 	it('updates scroll edge fades on scroll and resize, and supports initialScroll end', async () => {
 		let resizeCallback: (() => void) | undefined;
 		vi.stubGlobal(

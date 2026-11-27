@@ -179,6 +179,8 @@
 {#snippet wrapValue(row: WrapRow)}
 	{#if showWideCells && row.name === 'Sherbrooke'}
 		<span class="wide-cell" data-testid="wide-table-cell">Fixed-width service map</span>
+	{:else if row.name === 'North'}
+		<input class="focus-width" aria-label="North on-time rate" value={row.value} />
 	{:else}
 		{row.value}
 	{/if}
@@ -332,14 +334,16 @@
 	<button type="button" aria-pressed={showWideCells} onclick={() => showWideCells = !showWideCells}>
 		Show fixed-width cells
 	</button>
-	{#each wrapExamples as { title, responsive } (title)}
-		<Card edge="neutral" class="p-4 gap-3" style="max-inline-size: 20rem" data-testid="table-wrap-card">
-			<h2>{title}</h2>
+	{#each wrapExamples as { title, responsive }, index (title)}
+		<Card id={responsive.mode === 'rows' ? 'initial-wide' : undefined} edge="neutral" class="p-4 gap-3" style="max-inline-size: 20rem" data-testid="table-wrap-card">
+			<h2 id={`wrap-heading-${index}`}>{title}</h2>
 			<DataTable
 				rows={wrapSort === 'asc' ? wrapRows : wrapRows.toReversed()}
 				columns={wrapColumns}
 				key={(row) => row.name}
 				caption={`${title} with long words`}
+				role="group"
+				aria-labelledby={`wrap-heading-${index}`}
 				{responsive}
 				sort={{ key: 'name', direction: wrapSort }}
 				onSort={() => wrapSort = wrapSort === 'asc' ? 'desc' : 'asc'}
@@ -367,6 +371,14 @@
 	.wide-cell {
 		display: inline-block;
 		inline-size: 600px;
+	}
+	.focus-width {
+		inline-size: 2.8125rem;
+		block-size: 1.5rem;
+	}
+	.focus-width:focus,
+	:global(#initial-wide:target) .focus-width {
+		inline-size: 620px;
 	}
 	.counts {
 		display: grid;
