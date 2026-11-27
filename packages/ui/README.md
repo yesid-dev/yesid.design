@@ -150,12 +150,13 @@ still reserves extra space on the right of the header when enabled.
 
 `Sheet.Content` defaults to `side="bottom"` and also accepts `"right"` and `"center"`. Use
 `side={{ base: 'bottom', md: 'center' }}` for a bottom sheet below 768px and a centered window
-from 768px. Both keys are required and accept any of the three sides. Detents require the
-static bottom side.
+from 768px. Both keys are required and accept any of the three sides. CSS selects the
+presentation before hydration and updates it without moving focus on resize. Detents
+require the static bottom side.
 
 The centered window is at most 40rem wide with 1rem clearance on either side. Set
 `--sheet-center-width` on Content to widen it, for example
-`class="[--sheet-center-width:48rem]"` for citations. Its height follows the content up to
+`style="--sheet-center-width: 48rem"` for citations. Its height follows the content up to
 `min(80dvh, 44rem)`. Use Header, Body and Footer as direct children of Content so Body
 scrolls and Header and Footer stay visible. For long bottom or right sheets, retain
 caller-owned scrolling classes on Body.

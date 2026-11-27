@@ -167,7 +167,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `5e64b1f8f416a09c5eb04fe5ac5c72c0a795cadf12d82eafc19454fdb6d25101`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `3db6ce6e0f359ac418b5a15b7be86782ed0b82ad66021bd8e30c0f70673938d7`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
@@ -3472,7 +3472,7 @@ right: string;
 bottom: string;
 center: string;
 };
-}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:transition-none", {
+}, undefined, "fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0", {
 side: {
 right: string;
 bottom: string;
@@ -3484,7 +3484,7 @@ right: string;
 bottom: string;
 center: string;
 };
-}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:transition-none", unknown, unknown, undefined>>;
+}, undefined, "fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0", unknown, unknown, undefined>>;
 
 // @public (undocumented)
 const ShowMore: Component<ShowMoreProps, {}, "">;

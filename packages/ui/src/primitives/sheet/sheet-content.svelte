@@ -4,15 +4,14 @@
 
 	export const sheetVariants = tv(
 		{
-			base: 'bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:transition-none',
+			base: 'fixed z-[calc(var(--z-index-sheet)+1)] flex flex-col gap-4 transition-none ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
 			variants: {
 				side: {
 					right:
-						'data-[state=closed]:slide-out-to-right-[12px] data-[state=open]:slide-in-from-right-[12px] inset-y-0 right-0 h-full w-3/4 max-w-sm border-l border-border',
+						'bg-popover text-popover-foreground shadow-sheet data-[state=closed]:slide-out-to-right-[12px] data-[state=open]:slide-in-from-right-[12px] inset-y-0 right-0 h-full w-3/4 max-w-sm border-l border-border',
 					bottom:
-						'data-[state=closed]:slide-out-to-bottom-[12px] data-[state=open]:slide-in-from-bottom-[12px] inset-x-0 bottom-0 max-h-[90svh] w-full rounded-t-xl border-t border-border',
-					center:
-						'bg-card text-card-foreground shadow-[0_4px_12px_rgb(0_0_0_/_0.15)] data-[state=closed]:slide-out-to-bottom-[8px] data-[state=open]:slide-in-from-bottom-[8px] inset-0 m-auto h-fit max-h-[min(80dvh,44rem)] w-[min(var(--sheet-center-width,40rem),calc(100vw-2rem))] overflow-hidden rounded-lg border border-border [&>[data-slot=sheet-header]]:shrink-0 [&>[data-slot=sheet-footer]]:shrink-0 [&>[data-slot=sheet-body]]:min-h-0 [&>[data-slot=sheet-body]]:overflow-y-auto [&>[data-slot=sheet-body]]:overscroll-contain [&_[data-slot=sheet-title]]:text-[18px] [&_[data-slot=sheet-title]]:font-semibold',
+						'bg-popover text-popover-foreground shadow-sheet data-[state=closed]:slide-out-to-bottom-[12px] data-[state=open]:slide-in-from-bottom-[12px] inset-x-0 bottom-0 max-h-[90svh] w-full rounded-t-xl border-t border-border',
+					center: 'sheet-center',
 				},
 			},
 			defaultVariants: {
@@ -24,13 +23,19 @@
 	);
 
 	export type SheetSide = VariantProps<typeof sheetVariants>['side'];
+
+	// Match the kit's tablet minimum, even when the consumer customizes their Tailwind breakpoints.
+	const responsiveSides = {
+		bottom: { base: 'max-[768px]:sheet-bottom', md: 'min-[768px]:sheet-bottom' },
+		right: { base: 'max-[768px]:sheet-right', md: 'min-[768px]:sheet-right' },
+		center: { base: 'max-[768px]:sheet-center', md: 'min-[768px]:sheet-center' },
+	} as const;
 </script>
 
 <script lang="ts">
 	import { Dialog as SheetPrimitive } from 'bits-ui';
 	import XIcon from '@lucide/svelte/icons/x';
 	import type { Snippet } from 'svelte';
-	import { MediaQuery } from 'svelte/reactivity';
 	import SheetOverlay from './sheet-overlay.svelte';
 	import { cssHeight, validateDetents, type SheetDetent } from './detents.js';
 	import { sheetDrag } from './drag.js';
@@ -73,18 +78,14 @@
 		children,
 		...restProps
 	}: SheetContentProps = $props();
-	// Matches the kit's tablet minimum. Subscribe only while resolving a responsive side.
-	const md = $derived(typeof side === 'object' && side !== null ? new MediaQuery('min-width: 768px') : undefined);
-	const resolvedSide = $derived.by(() => {
-		if (!side || typeof side !== 'object') return side;
-		return md?.current ? side.md : side.base;
-	});
 	let dragHeight = $state<number>();
 	let dismiss: HTMLButtonElement | null = $state(null);
 	const index = $derived(Math.max(0, detents?.findIndex(d => d.id === detent) ?? 0));
 	const active = $derived(detents?.[index]);
 	const contentClasses = $derived(cn(
-		sheetVariants({ side: resolvedSide }),
+		side && typeof side === 'object'
+			? [sheetVariants.base, responsiveSides[side.base].base, responsiveSides[side.md].md]
+			: sheetVariants({ side }),
 		showCloseButton && '[&_[data-slot=sheet-header]]:pr-12',
 		detents && 'max-h-none gap-0 overflow-hidden',
 		className,
@@ -150,7 +151,6 @@
 	<SheetPrimitive.Content
 		bind:ref
 		data-slot="sheet-content"
-		style="z-index: calc(var(--z-index-sheet) + 1);"
 		class={contentClasses}
 		{...(!modal ? { trapFocus: false, preventScroll: false, interactOutsideBehavior: 'ignore' as const, escapeKeydownBehavior: 'ignore' as const } : {})}
 		{...restProps}

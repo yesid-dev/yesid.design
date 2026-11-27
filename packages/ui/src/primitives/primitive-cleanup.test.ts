@@ -35,10 +35,10 @@ it('preserves every retained computed class string except the enumerated unused 
 			const current = family === 'button'
 				? row!.after.split(' ').filter((token) => !retiredButtonFocus.includes(token) && !retiredHoverHalos.includes(token)).map(token => token === 'transition-all' ? 'transition-[color,background-color,border-color,box-shadow,translate]' : token).join(' ')
 				: row!.after;
-			const withoutSheetMotion = (classes: string) => family === 'sheet'
-				? classes.split(' ').filter(token => !/^(?:transition|ease-|motion-|data-\[state=)/.test(token)).join(' ')
+			const retainedClasses = (classes: string) => family === 'sheet'
+				? classes.split(' ').filter(token => !/^(?:transition|ease-|motion-|data-\[state=|z-)/.test(token)).sort().join(' ')
 				: classes;
-			expect(withoutSheetMotion(variants(props)), `${family} ${JSON.stringify(props)}`).toBe(withoutSheetMotion(current));
+			expect(retainedClasses(variants(props)), `${family} ${JSON.stringify(props)}`).toBe(retainedClasses(current));
 		}
 	}
 });

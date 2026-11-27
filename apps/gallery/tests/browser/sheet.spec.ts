@@ -1,5 +1,18 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openGallery } from './gallery.js';
+
+async function visitReportFiles(page: Page) {
+	await page.goto('/sheet');
+	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+}
+
+async function openReportFiles(page: Page) {
+	const opener = page.getByRole('button', { name: 'Open report files' });
+	await opener.click();
+	const dialog = page.getByRole('dialog', { name: 'Download report files' });
+	await expect(dialog).toBeVisible();
+	return { opener, dialog };
+}
 
 test('Sheet owns its motion styles and respects reduced motion', async ({ page }) => {
 	for (const reducedMotion of ['no-preference', 'reduce'] as const) {
@@ -10,6 +23,7 @@ test('Sheet owns its motion styles and respects reduced motion', async ({ page }
 			['Open schedule note', 'Schedule note'],
 			['Open report files', 'Download report files'],
 		]) {
+			if (trigger === 'Open report files') await visitReportFiles(page);
 			await page.getByRole('button', { name: trigger }).click();
 			const dialog = page.getByRole('dialog', { name: title });
 			await expect(dialog).toBeVisible();
@@ -33,7 +47,8 @@ async function box(locator: Locator) {
 test('responsive Sheet keeps mobile geometry and contains desktop overflow and focus @theme', async ({ page }, testInfo) => {
 	const theme = testInfo.project.name === 'dark' ? 'dark' : 'light';
 	await page.emulateMedia({ reducedMotion: 'reduce' });
-	await openGallery(page, theme);
+	await visitReportFiles(page);
+	await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
 	const opener = page.getByRole('button', { name: 'Open report files' });
 	const dialog = page.getByRole('dialog', { name: 'Download report files' });
 	const overlay = page.locator('[data-slot="sheet-overlay"]');
@@ -92,11 +107,6 @@ test('responsive Sheet keeps mobile geometry and contains desktop overflow and f
 			await expect(dialog.getByRole('heading', { name: 'Cite this report' })).toBeInViewport();
 			expect(await box(header)).toEqual(headerBefore);
 			expect(await box(footer)).toEqual(footerBefore);
-
-			if (width === 1440) {
-				await dialog.evaluate(node => node.style.setProperty('--sheet-center-width', '48rem'));
-				expect((await box(dialog)).width).toBe(768);
-			}
 		}
 
 		if (width === 1024) {
@@ -107,14 +117,60 @@ test('responsive Sheet keeps mobile geometry and contains desktop overflow and f
 		await expect(dialog).toBeHidden();
 		await expect(opener).toBeFocused();
 	}
+});
 
-	await opener.click();
-	await page.setViewportSize({ width: 767, height: 844 });
-	await expect.poll(async () => (await box(dialog)).width).toBe(767);
-	await page.setViewportSize({ width: 768, height: 844 });
-	await expect.poll(async () => (await box(dialog)).width).toBe(640);
-	await expect(firstLink).toBeFocused();
+test('an inline width override keeps a static centered Sheet clickable above its scrim', async ({ page }) => {
+	await page.setViewportSize({ width: 1024, height: 768 });
+	await visitReportFiles(page);
+	await page.getByRole('button', { name: 'Use a wider centered window' }).click();
+	const { dialog, opener } = await openReportFiles(page);
+	expect((await box(dialog)).width).toBe(768);
 	await dialog.getByRole('button', { name: 'Close report files' }).click();
 	await expect(dialog).toBeHidden();
 	await expect(opener).toBeFocused();
+});
+
+test('an open responsive Sheet switches geometry without layout transitions or lost focus', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await page.setViewportSize({ width: 1024, height: 768 });
+	await visitReportFiles(page);
+	const { dialog } = await openReportFiles(page);
+	const firstLink = dialog.getByRole('link', { name: 'summary.csv CSV' });
+	await expect(firstLink).toBeFocused();
+	await dialog.evaluate(async node => {
+		await Promise.all(node.getAnimations().map(animation => animation.finished));
+		node.setAttribute('data-transitions', '');
+		node.addEventListener('transitionrun', event => {
+			if (event.target === node && event instanceof TransitionEvent) {
+				node.setAttribute('data-transitions', `${node.getAttribute('data-transitions')} ${event.propertyName}`);
+			}
+		});
+	});
+	for (const [width, expected] of [[767, 767], [768, 640]]) {
+		await page.setViewportSize({ width, height: 768 });
+		await page.evaluate(() => new Promise<void>(resolve => {
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+		}));
+		expect((await box(dialog)).width).toBe(expected);
+		await expect(dialog).toHaveAttribute('data-transitions', '');
+		await expect(firstLink).toBeFocused();
+	}
+});
+
+test.describe('server layout', () => {
+	test.use({ javaScriptEnabled: false });
+
+	test('an initially open unportalled Sheet renders centered at desktop width', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+		await page.setViewportSize({ width: 1024, height: 768 });
+		await page.goto('/sheet/initially-open');
+		const dialog = page.getByRole('dialog').filter({
+			has: page.getByRole('heading', { name: 'Download report files' }),
+		});
+		await expect(dialog).toBeVisible();
+		const panel = await box(dialog);
+		expect(panel.width).toBe(640);
+		expect(panel.x).toBe(192);
+		expect(panel.y * 2 + panel.height).toBeCloseTo(768, 0);
+	});
 });
