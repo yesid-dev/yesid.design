@@ -1279,6 +1279,8 @@ first row.
 From the desktop breakpoint, each link group sizes to its content. Groups move together to the
 next row when they run out of room, with the same gap between columns. Labels wrap when their
 group needs more than the footer's available width.
+Desktop footers with four or more blocks keep a single row when it fits and distribute blocks as
+evenly as their widths allow when more rows are needed.
 
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
