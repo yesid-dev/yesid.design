@@ -28,7 +28,7 @@
 </script>
 
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { ToggleGroup } from 'bits-ui';
 	import ChevronToggle from './ChevronToggle.svelte';
 
@@ -52,6 +52,10 @@
 	let isOpen = $state(untrack(() => startOpen));
 	function toggleOpen(): void { isOpen = !isOpen; }
 
+	// Disable the native buttons while ToggleGroup initializes its roving tab stop.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+
 	const groupValue = $derived(activeKey ?? '__all__');
 
 	function handleValueChange(value: string) {
@@ -71,6 +75,7 @@
 			class="tap-press flex w-full items-center justify-between label-section text-sm font-semibold py-2.5 min-h-11 transition-colors hover:text-[var(--foreground)] active:text-[var(--foreground)]"
 			aria-expanded={isOpen}
 			aria-controls={collapseId}
+			disabled={!mounted}
 			onclick={toggleOpen}
 		>
 			{label}
@@ -113,6 +118,7 @@
 					{#snippet child({ props })}
 						<button
 							{...props}
+							disabled={!mounted}
 							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 							class="tap-press filter-btn w-full rounded py-3 min-h-11 text-left transition-colors"
 							class:px-2={density === 'compact'}
@@ -137,6 +143,7 @@
 						{#snippet child({ props })}
 							<button
 								{...props}
+								disabled={!mounted}
 							data-selected-style={selectedStyle === 'consistent' ? selectedStyle : undefined}
 								class="tap-press filter-btn w-full rounded border border-border py-3 min-h-11 text-left text-[var(--muted-foreground)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] active:border-[var(--primary)] active:text-[var(--primary)]"
 								class:px-2={density === 'compact'}
@@ -157,6 +164,11 @@
 </div>
 
 <style>
+	button:disabled {
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+
 	.filter-btn {
 		background: var(--card);
 		border: 1px solid var(--border-subtle);
