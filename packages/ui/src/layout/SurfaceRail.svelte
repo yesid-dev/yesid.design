@@ -144,8 +144,16 @@
 				aria-expanded={sheetOpen}
 				aria-label={`${label}${summary ? ` ${summary}` : ''} · ${sheetOpen ? closeAria : openAria}`}
 			>
-				<span class="surface-rail-pill-label">{label}</span>
-				{#if summary}<span class="surface-rail-pill-summary">{summary}</span>{/if}
+				<span class="surface-rail-pill-copy">
+					<span class="surface-rail-pill-label">{label}</span>
+					{#if summary}
+						<span class="surface-rail-pill-summary" data-summary={summary} aria-hidden="true">
+							<span class="surface-rail-pill-summary-space">
+								<span class="surface-rail-pill-summary-text">{summary}</span>
+							</span>
+						</span>
+					{/if}
+				</span>
 				<ChevronToggle open={sheetOpen} size="sm" direction="down" />
 			</button>
 
@@ -229,21 +237,49 @@
 		white-space: nowrap;
 		font-family: var(--font-mono);
 	}
+	.surface-rail-pill-copy {
+		display: grid;
+		grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+		align-items: center;
+		min-inline-size: 0;
+	}
 	.surface-rail-pill-label {
-		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		font-size: var(--text-caption);
 		color: var(--foreground);
 	}
 	.surface-rail-pill-summary {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		font-size: var(--text-micro);
 		letter-spacing: var(--tracking-eyebrow);
 		text-transform: uppercase;
 		color: var(--accent-text);
+	}
+	/* An inline-size container has no intrinsic width. Size its track with a hidden
+	   copy so the pill still hugs the full summary when there is room. */
+	.surface-rail-pill-summary::before {
+		content: attr(data-summary);
+		visibility: hidden;
+		padding-inline-start: 0.5rem;
+	}
+	.surface-rail-pill-summary::before,
+	.surface-rail-pill-summary-space {
+		grid-area: 1 / 1;
+		overflow: hidden;
+	}
+	.surface-rail-pill-summary-space {
+		container: rail-summary / inline-size;
+	}
+	.surface-rail-pill-summary-text {
+		display: block;
+		margin-inline-start: 0.5rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	@container rail-summary (inline-size < calc(0.5rem + 1ch)) {
+		.surface-rail-pill-summary-text { visibility: hidden; }
 	}
 	/* translate, not transform: the sheet's slide-in keyframes animate transform. */
 	:global(.surface-rail-sheet) {

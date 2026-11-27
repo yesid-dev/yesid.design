@@ -635,9 +635,8 @@ width of at least 26 rem, the figure and sentence sit side by side. The sentence
 stacks below either threshold. The large answer uses the display scale within this component.
 `layout="fit"` drops both thresholds: at any width, the figure sits beside the sentence whenever
 its natural width, a 1 rem gap and 12 rem for the sentence fit, and the sentence wraps below it
-otherwise. A long figure, such as a range, wraps at its spaces and breaks inside a number only
-when that number is wider than the line, so put no-break spaces inside numbers (`Intl.NumberFormat`
-does). The default is `layout="threshold"`.
+otherwise. In either layout the figure stays on one line, including its unit. If its natural
+width exceeds the available space, the font scales down to fit. The default is `layout="threshold"`.
 
 `Stamp` takes a `kind` (`record` or `live`) and a full localized `label`. Record uses a square
 and live a dot. For a current live stamp, pass `updatedAt` and `agoLabel` to format the elapsed
@@ -1236,7 +1235,8 @@ trail's JSON-LD with `buildBreadcrumbListJsonLd` from `@yesid/seo-kit/jsonld`. `
 a card that groups controls under `label`. `DashboardGrid` fits as many `minTile`-wide columns as
 the width allows; with `label` (and not `as="ul"` or `as="ol"`) it is a named region.
 `SurfaceRail` is a page's controls rail: a landmark that sticks below `--chrome-offset` from 1024px, and below that a pill
-(`label`, `summary`, `openAria`, `closeAria`) that opens the same rail in a bottom sheet. The
+(`label`, `summary`, `openAria`, `closeAria`) that opens the same rail in a bottom sheet. The pill
+truncates or hides the summary before truncating the label. Its accessible name retains both. The
 `rail` snippet receives `closeSheet` and the current `presentation`. The pill and sheet centre over
 the scrollable content area, excluding any classic scrollbar. Pass the rail to
 `DetailFrame`'s `rail`. With a TocPill on the same page the two pills stack (see TocPill); put
