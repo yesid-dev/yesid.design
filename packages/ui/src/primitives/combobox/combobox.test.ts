@@ -224,12 +224,12 @@ describe('select-only Combobox', () => {
 		expect(trigger.textContent).toContain('Choose a period');
 		expect(trigger.getAttribute('aria-required')).toBe('true');
 		expect(form.querySelector('input')).toBeNull();
-		expect(form.reportValidity()).toBe(false);
-		expect(document.activeElement).toBe(trigger);
-		const option = await screen.findByRole('option', { name: 'Last week' });
 		const state = () => screen.getByTestId('select-state').textContent;
-		await waitFor(() => expect(state()).toBe('none / true / 0 / 1 / 1'));
+		expect(form.checkValidity()).toBe(false);
+		expect(state()).toBe('none / false / 0 / 0 / 0');
 		await fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+		const option = await screen.findByRole('option', { name: 'Last week' });
+		await waitFor(() => expect(state()).toBe('none / true / 0 / 1 / 1'));
 		await waitFor(() => expect(option.hasAttribute('data-highlighted')).toBe(true));
 		await fireEvent.keyDown(trigger, { key: 'Enter' });
 		await waitFor(() => expect(state()).toBe('week / false / 1 / 2 / 2'));

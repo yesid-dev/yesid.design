@@ -23,6 +23,7 @@
 	let comboboxValue = $state<string | null>('operations');
 	let rankMeasure = $state<string | null>('response-time');
 	let reportPeriod = $state<string | null>(null);
+	let reportPeriodChanges = $state(0);
 	let footerStatusRefreshes = $state(0);
 	let sheetOpen = $state(false);
 	let detentOpen = $state(false);
@@ -198,10 +199,13 @@
 				<p class="font-mono text-caption text-muted-foreground">
 					Ranked by: {rankMeasure ?? 'none'}
 				</p>
-				<div data-gallery-demo="combobox-select-only">
+				<form data-gallery-demo="combobox-select-only" data-value={reportPeriod}
+					data-value-changes={reportPeriodChanges} class="grid gap-2" onsubmit={(event) => event.preventDefault()}>
 					<Combobox searchable={false} options={periodOptions} bind:value={reportPeriod}
-						label="Reporting period" placeholder="Choose a period" />
-				</div>
+						label="Reporting period" placeholder="Choose a period" required name="period"
+						onValueChange={() => reportPeriodChanges++} />
+					<Button type="submit" variant="outline" size="cta-sm" class="justify-self-start">Apply period</Button>
+				</form>
 			</Card.Content>
 		</Card.Root>
 

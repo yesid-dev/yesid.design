@@ -88,14 +88,15 @@ picking another option still commits it. The component never commits `null` in t
 seed `value` with the current choice. `ComboboxProps` keeps `clearLabel` required;
 `ComboboxNonClearableProps` types the `clearable: false` mode, where `clearLabel` may be omitted.
 
-The caller supplies the option catalogue, stable values, visible labels, optional glyphs and
-sublabels, precomputed search haystacks, a pure fold function, and all accessible copy. Filtering
-uses token-AND matching over the caller's folded haystack. The package does not import product
-locale or copy modules.
+The caller supplies the option catalogue, stable non-empty values (an empty string means no
+selection), visible labels, optional glyphs and sublabels, precomputed search haystacks, a pure
+fold function, and all accessible copy. Filtering uses token-AND matching over the caller's
+folded haystack. The package does not import product locale or copy modules.
 
 For a short, fixed list, pass `searchable={false}` to open a listbox directly from a labelled
-button. Enter, Space or either arrow key opens the list. Use the arrows to move, Enter or Space
-to select, or Escape to close and keep the previous selection. The trigger retains focus.
+button. Enter, Space or either arrow key opens the list. Typing opens the list and highlights
+the first matching label. Use the arrows to move, Enter or Space to select, or Escape to close
+and keep the previous selection. The trigger retains focus.
 The selected label (or `placeholder` before selection) and option labels wrap as needed.
 `ComboboxSelectOnlyProps` accepts the same bindings, callbacks and form props. It omits the clear
 affordance and ignores `clearLabel`, `emptyLabel`, `fold` and the option `search` field.

@@ -98,6 +98,54 @@ test('select-only labels wrap at 200% and the list follows a fixed trigger', asy
 	}
 });
 
+test('typeahead opens the select-only list without committing until confirmed', async ({ page }) => {
+	await openGallery(page);
+	const demo = page.locator('[data-gallery-demo="combobox-select-only"]');
+	const trigger = demo.getByRole('combobox', { name: 'Reporting period' });
+	const listbox = page.getByRole('listbox', { name: 'Reporting period' });
+	const weekOption = listbox.getByRole('option', { name: new RegExp(week) });
+	await trigger.press('Enter');
+	await listbox.getByRole('option', { name: 'Today', exact: true }).click();
+	await expect(demo).toHaveAttribute('data-value', 'today');
+	await expect(demo).toHaveAttribute('data-value-changes', '1');
+
+	await trigger.press('p');
+	await expect(listbox).toBeVisible();
+	await expect(weekOption).toHaveAttribute('data-highlighted', '');
+	await expect(trigger).toHaveAttribute('aria-activedescendant', (await weekOption.getAttribute('id'))!);
+	await expect(demo).toHaveAttribute('data-value', 'today');
+	await expect(demo).toHaveAttribute('data-value-changes', '1');
+	await trigger.press('Escape');
+	await expect(listbox).toBeHidden();
+	await expect(trigger).toBeFocused();
+	await expect(demo).toHaveAttribute('data-value', 'today');
+	await expect(demo).toHaveAttribute('data-value-changes', '1');
+
+	await trigger.press('p');
+	await expect(weekOption).toHaveAttribute('data-highlighted', '');
+	await trigger.press('Space');
+	await expect(listbox).toBeHidden();
+	await expect(demo).toHaveAttribute('data-value', 'last-week');
+	await expect(demo).toHaveAttribute('data-value-changes', '2');
+});
+
+test('only interactive form validation focuses the select-only trigger', async ({ page }) => {
+	await openGallery(page);
+	const demo = page.locator('[data-gallery-demo="combobox-select-only"]');
+	const trigger = demo.getByRole('combobox', { name: 'Reporting period' });
+	const submit = demo.getByRole('button', { name: 'Apply period' });
+	const nativeSelect = demo.locator('select[name="period"]');
+	await submit.focus();
+	await expect(submit).toBeFocused();
+	expect(await nativeSelect.evaluate((select: HTMLSelectElement) => select.checkValidity())).toBe(false);
+	await expect(submit).toBeFocused();
+	await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+	await submit.press('Enter');
+	await expect(trigger).toBeFocused();
+	await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('an overflowing hint leaves caret keys to an input and still scrolls from a button', async ({ page }) => {
 	await openGallery(page);
 	const input = page.getByRole('textbox', { name: 'Service name' });

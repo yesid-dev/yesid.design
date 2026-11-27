@@ -23,7 +23,7 @@
 
 	/** One selectable option in the combobox. */
 	export interface ComboboxOption {
-		/** The stable id set on `value` when picked. */
+		/** The stable, non-empty id set on `value` when picked. An empty string means no selection. */
 		readonly value: string;
 		/** Primary visible label. */
 		readonly label: string;
@@ -35,7 +35,7 @@
 		readonly search: string;
 	}
 
-	/** One option in a select-only combobox. */
+	/** One option in a select-only combobox. Its value must be a non-empty string. */
 	export type ComboboxSelectOption = Omit<ComboboxOption, 'search'> & {
 		/** Unused in select-only mode. */
 		readonly search?: string;
@@ -178,12 +178,29 @@
 		flushSync(() => (search = nextSearch));
 	}
 
-	function focusInvalidSelect(event: Event): void {
+	function handleSelectKeydown(event: KeyboardEvent, onkeydown: (event: KeyboardEvent) => void): void {
+		if (open && event.key === ' ' && !event.isComposing) {
+			// Bits Select can treat Space as part of its typeahead buffer. Here it always commits.
+			event.preventDefault();
+			onkeydown(new KeyboardEvent('keydown', { key: 'Enter' }));
+			return;
+		}
+		if (open || event.key === ' ' || [...event.key].length !== 1 ||
+			event.altKey || event.ctrlKey || event.metaKey || event.isComposing) {
+			onkeydown(event);
+			return;
+		}
+
 		event.preventDefault();
-		selectTrigger?.focus();
-		if (!open) {
-			open = true;
-			onOpenChange?.(true);
+		const prefix = event.key.toLowerCase();
+		const index = options.findIndex((option) => option.label.toLowerCase().startsWith(prefix));
+		// Use the trigger's normal activation to open and reset Bits Select's typeahead.
+		flushSync(() => selectTrigger?.click());
+		if (!open || index < 0) return;
+		// Navigate by visible label, even when the option starts with a decorative glyph.
+		onkeydown(new KeyboardEvent('keydown', { key: 'Home' }));
+		for (let offset = 0; offset < index; offset++) {
+			onkeydown(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 		}
 	}
 </script>
@@ -215,7 +232,6 @@
 		{scrollAlignment}
 		allowDeselect={false}
 		onValueChange={(nextValue) => commitValue(nextValue || null)}
-		items={options.map((option) => ({ value: option.value, label: option.label }))}
 	>
 		<div class={cn('combobox', className)} data-slot="combobox" data-clearable="false">
 			<BitsSelect.Trigger
@@ -225,12 +241,17 @@
 				aria-label={label}
 				aria-required={required || undefined}
 			>
-				<span class="combobox-select-label">{selectedLabel || placeholder}</span>
-				<span class="combobox-select-chevron" aria-hidden="true">⌄</span>
+				{#snippet child({ props })}
+					<button {...props} onkeydown={(event) => handleSelectKeydown(event, props.onkeydown as (event: KeyboardEvent) => void)}>
+						<span class="combobox-select-label">{selectedLabel || placeholder}</span>
+						<span class="combobox-select-chevron" aria-hidden="true">⌄</span>
+					</button>
+				{/snippet}
 			</BitsSelect.Trigger>
 			{#if !disabled && (name || required)}
-				<!-- Preserve native submission and validation without Bits Select's text input. -->
-				<select hidden {name} {required} oninvalid={focusInvalidSelect}>
+				<!-- Native interactive validation focuses the invalid select. Forward focus to the visible trigger. -->
+				<select class="combobox-form-select" tabindex="-1" aria-hidden="true" {name} {required}
+					onfocus={() => selectTrigger?.focus()}>
 					<option value={value ?? ''}>{selectedLabel}</option>
 				</select>
 			{/if}
@@ -435,6 +456,14 @@
 	:global(.combobox-select-trigger[data-placeholder]),
 	.combobox-select-chevron {
 		color: var(--muted-foreground);
+	}
+	.combobox-form-select {
+		position: absolute;
+		inset-inline-start: 0;
+		width: 1px;
+		height: 1px;
+		clip-path: inset(50%);
+		pointer-events: none;
 	}
 	:global(.combobox-select-trigger:disabled) {
 		cursor: default;
