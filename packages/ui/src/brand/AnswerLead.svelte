@@ -144,11 +144,11 @@
 		.answer-figure > :global(.metric-value) {
 			--yesid-answer-natural: 100cqi;
 			--answer-fit-room: calc(var(--yesid-answer-available) + var(--answer-fit-fallback));
-			/* Keep one pixel for rounding only when the natural width needs shrinking. */
-			--answer-fit-rounding: max(0, sign(var(--yesid-answer-natural) - var(--answer-fit-room)));
+			/* Linux glyph rounding added about 1.6% of the column. Allow 3% plus 1px only when shrinking. */
+			--answer-fit-shrinking: max(0, sign(var(--yesid-answer-natural) - var(--answer-fit-room)));
 			/* Scale the whole inline box so inherited letter and word spacing fit too. */
 			zoom: clamp(0.001, tan(atan2(
-				var(--answer-fit-room) - 1px * var(--answer-fit-rounding),
+				var(--answer-fit-room) - var(--answer-fit-shrinking) * (0.03 * var(--answer-fit-room) + 1px),
 				max(1px, var(--yesid-answer-natural))
 			)), 1);
 		}
