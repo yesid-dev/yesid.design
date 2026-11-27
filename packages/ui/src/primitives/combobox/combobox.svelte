@@ -146,7 +146,14 @@
 	// `null` means the field is not being edited.
 	let search = $state<string | null>(null);
 	let selectTrigger = $state<HTMLButtonElement | null>(null);
+	let selectPrefix = '';
+	let lastTypeaheadAt = 0;
+	let lastTypeaheadIndex = -1;
 	const foldedQuery = $derived(searchable && fold ? fold(search ?? '') : '');
+
+	$effect(() => {
+		if (searchable || !open) selectPrefix = '';
+	});
 
 	const filtered = $derived.by(() => {
 		if (!foldedQuery) return options;
@@ -179,24 +186,45 @@
 	}
 
 	function handleSelectKeydown(event: KeyboardEvent, onkeydown: (event: KeyboardEvent) => void): void {
-		if (open && event.key === ' ' && !event.isComposing) {
-			// Bits Select can treat Space as part of its typeahead buffer. Here it always commits.
+		const isSpace = event.key === ' ';
+		const hasModifier = event.altKey || event.ctrlKey || event.metaKey;
+		if (event.isComposing || event.keyCode === 229) {
+			// Suppress the button's native activation while the IME owns the keystroke.
+			if (isSpace || event.key === 'Enter') event.preventDefault();
+			return;
+		}
+		if (isSpace && (hasModifier || event.shiftKey)) {
 			event.preventDefault();
-			onkeydown(new KeyboardEvent('keydown', { key: 'Enter' }));
 			return;
 		}
-		if (open || event.key === ' ' || [...event.key].length !== 1 ||
-			event.altKey || event.ctrlKey || event.metaKey || event.isComposing) {
-			onkeydown(event);
+		if (isSpace || [...event.key].length !== 1) {
+			selectPrefix = '';
+			if (open && isSpace) {
+				event.preventDefault();
+				onkeydown(new KeyboardEvent('keydown', { key: 'Enter' }));
+			} else {
+				onkeydown(event);
+			}
 			return;
 		}
+		if (hasModifier) return;
 
 		event.preventDefault();
-		const prefix = event.key.toLowerCase();
-		const index = options.findIndex((option) => option.label.toLowerCase().startsWith(prefix));
-		// Use the trigger's normal activation to open and reset Bits Select's typeahead.
-		flushSync(() => selectTrigger?.click());
-		if (!open || index < 0) return;
+		const key = event.key.toLowerCase();
+		const previous = open && event.timeStamp - lastTypeaheadAt < 1000 ? selectPrefix : '';
+		const repeats = previous.length > 0 && [...previous].every((char) => char === key);
+		const prefix = repeats ? key : previous + key;
+		const matches = options.flatMap((option, index) =>
+			option.label.toLowerCase().startsWith(prefix) ? [index] : [],
+		);
+		const index = (repeats ? matches.find((index) => index > lastTypeaheadIndex) : undefined) ?? matches[0];
+		if (!open) flushSync(() => onkeydown(new KeyboardEvent('keydown', { key: 'Enter' })));
+		if (!open) return;
+		selectPrefix = previous + key;
+		lastTypeaheadAt = event.timeStamp;
+		lastTypeaheadIndex = index ?? -1;
+		if (index === undefined) return;
+
 		// Navigate by visible label, even when the option starts with a decorative glyph.
 		onkeydown(new KeyboardEvent('keydown', { key: 'Home' }));
 		for (let offset = 0; offset < index; offset++) {

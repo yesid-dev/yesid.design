@@ -146,6 +146,53 @@ test('only interactive form validation focuses the select-only trigger', async (
 	await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 });
 
+for (const keys of [['p', 'l'], ['p', 'p']] as const) {
+	test(`select-only typeahead matches the glyph-prefixed label with ${keys.join(' then ')}`, async ({ page }) => {
+		await openGallery(page);
+		const trigger = page.getByRole('combobox', { name: 'Fruit' });
+		const listbox = page.getByRole('listbox', { name: 'Fruit' });
+		const plum = listbox.getByRole('option', { name: 'Plum', exact: true });
+		await trigger.press(keys[0]);
+		await page.keyboard.press(keys[1]);
+		await expect(plum).toHaveAttribute('data-highlighted', '');
+		await expect(plum).toHaveAttribute('aria-selected', 'false');
+		await expect(trigger).toContainText('Choose a fruit');
+		await page.keyboard.press('Enter');
+		await expect(listbox).toBeHidden();
+		await expect(trigger).toContainText('Plum');
+	});
+}
+
+test('composing keys and modified Space keep the select-only selection intact', async ({ page }) => {
+	await openGallery(page);
+	const demo = page.locator('[data-gallery-demo="combobox-select-only"]');
+	const trigger = demo.getByRole('combobox', { name: 'Reporting period' });
+	const listbox = page.getByRole('listbox', { name: 'Reporting period' });
+	await trigger.focus();
+	for (const modifiers of [{ isComposing: true }, { keyCode: 229 }]) {
+		await trigger.dispatchEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true, ...modifiers });
+		await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+	}
+	await trigger.press('Control+Space');
+	await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+	await trigger.press('p');
+	const option = listbox.getByRole('option', { name: new RegExp(week) });
+	await expect(option).toHaveAttribute('data-highlighted', '');
+	await trigger.dispatchEvent('keydown', { key: ' ', isComposing: true, bubbles: true, cancelable: true });
+	await expect(listbox).toBeVisible();
+	await trigger.press('Control+Space');
+	await expect(listbox).toBeVisible();
+	await expect(option).toHaveAttribute('data-highlighted', '');
+	await expect(demo).toHaveAttribute('data-value-changes', '0');
+	await expect(trigger).toContainText('Choose a period');
+
+	await trigger.press('Alt+ArrowUp');
+	await expect(listbox).toBeHidden();
+	await trigger.press('Space');
+	await expect(listbox).toBeVisible();
+});
+
 test('an overflowing hint leaves caret keys to an input and still scrolls from a button', async ({ page }) => {
 	await openGallery(page);
 	const input = page.getByRole('textbox', { name: 'Service name' });

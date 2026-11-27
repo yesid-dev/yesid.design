@@ -206,6 +206,11 @@
 						onValueChange={() => reportPeriodChanges++} />
 					<Button type="submit" variant="outline" size="cta-sm" class="justify-self-start">Apply period</Button>
 				</form>
+				<Combobox searchable={false} label="Fruit" placeholder="Choose a fruit" options={[
+					{ value: 'pear', label: 'Pear' },
+					{ value: 'plum', label: 'Plum', glyph: '◆' },
+					{ value: 'lime', label: 'Lime' },
+				]} />
 			</Card.Content>
 		</Card.Root>
 
