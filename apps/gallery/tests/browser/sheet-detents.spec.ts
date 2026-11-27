@@ -58,23 +58,29 @@ test('sheet detent height follows viewport and reduced motion', async ({ page })
 	expect(await sheet.evaluate(n => getComputedStyle(n).transitionDuration)).toBe('0s');
 });
 
-test('sheet mouse drag snaps nearest and flicks in direction', async ({ page }) => {
+test('sheet mouse drag snaps nearest and flicks in direction', async ({ page, context }) => {
 	const { sheet, handle } = await open(page);
 	const box = (await handle.boundingBox())!;
 	const x = box.x + box.width / 2;
 	const y = box.y + box.height / 2;
-	await page.mouse.move(x, y);
-	await page.mouse.down();
-	await page.mouse.move(x, y + page.viewportSize()!.height * 0.5 - 130, { steps: 10 });
-	// Hold at release to remove flick velocity from the sample window.
-	await page.waitForTimeout(150);
-	await page.mouse.up();
+	const cdp = await context.newCDPSession(page);
+	const start = Date.now() / 1000 - 1;
+	// Explicit event times keep the velocity samples independent of runner load.
+	async function drag(from: number, to: number, began: number, released: number) {
+		await cdp.send('Input.dispatchMouseEvent', {
+			type: 'mousePressed', x, y: from, button: 'left', buttons: 1, clickCount: 1, timestamp: began,
+		});
+		await cdp.send('Input.dispatchMouseEvent', {
+			type: 'mouseMoved', x, y: to, buttons: 1, timestamp: began + 0.02,
+		});
+		await cdp.send('Input.dispatchMouseEvent', {
+			type: 'mouseReleased', x, y: to, button: 'left', buttons: 0, clickCount: 1, timestamp: released,
+		});
+	}
+	await drag(y, y + page.viewportSize()!.height * 0.5 - 130, start, start + 0.2);
 	await expect(sheet).toHaveAttribute('data-detent', 'peek');
 	const second = (await handle.boundingBox())!;
-	await page.mouse.move(x, second.y + 22);
-	await page.mouse.down();
-	await page.mouse.move(x, second.y - 80, { steps: 2 });
-	await page.mouse.up();
+	await drag(second.y + 22, second.y - 80, start + 0.3, start + 0.34);
 	await expect(sheet).toHaveAttribute('data-detent', 'half');
 });
 

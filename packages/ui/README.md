@@ -148,6 +148,23 @@ It accepts div attributes, `class`, `children` and a bindable `ref`. Replace a `
 with `Sheet.Body` and keep any caller-owned vertical spacing or layout classes. The close control
 still reserves extra space on the right of the header when enabled.
 
+`Sheet.Content` defaults to `side="bottom"` and also accepts `"right"` and `"center"`. Use
+`side={{ base: 'bottom', md: 'center' }}` for a bottom sheet below 768px and a centered window
+from 768px. Both keys are required and accept any of the three sides. Detents require the
+static bottom side.
+
+The centered window is at most 40rem wide with 1rem clearance on either side. Set
+`--sheet-center-width` on Content to widen it, for example
+`class="[--sheet-center-width:48rem]"` for citations. Its height follows the content up to
+`min(80dvh, 44rem)`. Use Header, Body and Footer as direct children of Content so Body
+scrolls and Header and Footer stay visible. For long bottom or right sheets, retain
+caller-owned scrolling classes on Body.
+
+The default modal behavior focuses the first focusable element inside the sheet. Use
+`onOpenAutoFocus` to choose a different initial target. Tab stays inside, Escape and a
+scrim click dismiss the sheet, and focus returns to the trigger on close. Sheet entry
+and exit use short fades and offsets, with no panel animation under reduced motion.
+
 ### Tooltip
 
 Use `Tooltip` from `@yesid/ui/tooltip` for a short, supplemental text hint. The trigger needs its
@@ -355,8 +372,9 @@ active-state details rather than treating the import replacement as sufficient p
 
 ### Sheet and Skeleton
 
-Sheet supports `bottom` and `right`. Its bottom side is the mobile-first default; its overlay, focusable close control, animation,
-and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the
+Sheet supports `bottom`, `right`, and `center`, including a responsive side. Its bottom side is
+the mobile-first default. Its overlay, focusable close control, animation, and side geometry
+are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the
 theme-specific `--skeleton` fill and the kit's `rounded-md` radius, and accepts `busy?: boolean`
 for a standalone pulse. An ancestor with `aria-busy="true"` also enables the pulse. Reduced
 motion keeps the block still. In forced colours the browser maps the fill to the system canvas,

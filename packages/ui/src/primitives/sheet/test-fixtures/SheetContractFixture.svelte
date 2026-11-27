@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Sheet, SheetBody, SheetContent, SheetDescription, SheetTitle } from '../index.js';
+	import { Sheet, SheetBody, SheetContent, SheetDescription, SheetTitle, type SheetContentProps } from '../index.js';
 
-	type Props = { modal?: boolean } & (
+	type Props = { modal?: boolean; side?: SheetContentProps['side'] } & (
 		| { closeLabel: string; showCloseButton?: boolean }
 		| { closeLabel?: string; showCloseButton: false });
 

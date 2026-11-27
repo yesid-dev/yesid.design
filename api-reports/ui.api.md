@@ -3389,7 +3389,10 @@ type SheetContentProps = WithoutChildrenOrChild<Dialog.ContentProps> & {
 } | {
     detents?: undefined;
     handleLabel?: never;
-    side?: SheetSide;
+    side?: SheetSide | {
+        base: NonNullable<SheetSide>;
+        md: NonNullable<SheetSide>;
+    };
 }) & ({
     showCloseButton?: boolean;
     closeLabel: string;
@@ -3467,18 +3470,21 @@ const sheetVariants: TVReturnType<    {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
-}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", {
+}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:transition-none", {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
 }, undefined, TVReturnType<    {
 side: {
 right: string;
 bottom: string;
+center: string;
 };
-}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none", unknown, unknown, undefined>>;
+}, undefined, "bg-popover text-popover-foreground shadow-sheet fixed flex flex-col gap-4 ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 motion-reduce:transition-none", unknown, unknown, undefined>>;
 
 // @public (undocumented)
 const ShowMore: Component<ShowMoreProps, {}, "">;
