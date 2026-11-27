@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { browser } from '$app/env';
+	import { page } from '$app/state';
 	import Search from '@lucide/svelte/icons/search';
 	import { AnswerLead, MetricDisplay, ProductBrand, RoutePlate, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { Card } from '@yesid/ui/card';
@@ -87,8 +89,13 @@
 		{ id: 'd', name: 'Édouard-Montpetit / Louis-Colin', code: '52847', value: null, valueLabel: '', state: c.state },
 	]);
 	let footerCount = $state(5);
+	const footerLinks = $derived(browser && page.url.searchParams.has('long-footer')
+		? french
+			? ['Accessibilité', 'Télécharger les données', 'Alertes et avis de service', 'Vie privée', 'Sources']
+			: ['Accessibility', 'Worst trips and vehicles', 'Service alerts and notices', 'Privacy', 'Sources']
+		: c.links);
 	const footerGroups = $derived(c.footer.slice(0, footerCount).map(
-		(label, i) => ({ label, links: [{ href: '#record', label: c.links[i]! }] }),
+		(label, i) => ({ label, links: [{ href: '#record', label: footerLinks[i]! }] }),
 	));
 	const labels = $derived(french ? { ...LABELS, nav: 'Navigation', theme: 'Thème', openMenu: 'Ouvrir le menu', closeMenu: 'Fermer le menu' } : LABELS);
 	const here = $derived('/app-frame/record-parts/' + data.lang);

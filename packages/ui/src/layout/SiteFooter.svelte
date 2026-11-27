@@ -147,19 +147,6 @@
 	.footer-columns {
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 	}
-	@media (min-width: 64rem) {
-		.footer-columns {
-			display: flex;
-			flex-wrap: wrap;
-		}
-		/* Leave room for a classic scrollbar at the desktop floor. */
-		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
-		.footer-columns > nav { flex: 1 1 min(100%, 6.75rem); }
-		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
-		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
-			display: grid;
-		}
-	}
 	:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
 		padding-block: var(--space-card-gap);
 	}
@@ -232,6 +219,24 @@
 	@container footer-balance (inline-size >= 63rem) {
 		footer[data-balanced-blocks] > .footer-columns {
 			grid-template-columns: minmax(0, 1.5fr) repeat(var(--footer-groups), minmax(0, 1fr));
+		}
+	}
+	@media (min-width: 64rem) {
+		.footer-columns,
+		footer[data-balanced-blocks] > .footer-columns,
+		:global([data-slot='app-frame'][data-rail-layout='compact']) .footer-columns {
+			display: flex;
+			flex-wrap: wrap;
+			column-gap: 1.5rem;
+		}
+		.footer-brand { flex: 1.5 1 min(100%, 10.125rem); }
+		.footer-columns > nav {
+			flex: 0 0 max-content;
+			max-inline-size: 100%;
+		}
+		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
+		.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
+			overflow-wrap: anywhere;
 		}
 	}
 
