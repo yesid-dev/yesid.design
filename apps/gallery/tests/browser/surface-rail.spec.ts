@@ -52,6 +52,49 @@ async function openLongReport(page: Page) {
 	await page.evaluate(() => document.fonts.ready);
 }
 
+for (const [width, height] of [[1280, 720], [1366, 768]] as const) {
+	test(`desktop rail cues remaining content and keeps keyboard focus visible at ${width}×${height}`, { tag: '@theme' }, async ({ page }) => {
+		await page.setViewportSize({ width, height });
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+		await page.goto('/app-frame/rail-motion');
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		const rail = page.getByRole('complementary', { name: 'Controls', exact: true });
+		const remaining = () => rail.evaluate((element) => element.scrollHeight - element.clientHeight - element.scrollTop);
+		const opacity = () => rail.evaluate((element) => getComputedStyle(element, '::after').opacity);
+		await expect.poll(remaining).toBeGreaterThan(0);
+		await expect.poll(opacity).toBe('1');
+		const cue = await rail.evaluate((element) => {
+			const { animationName, backgroundImage, transitionDuration } = getComputedStyle(element, '::after');
+			return { animationName, backgroundImage, transitionDuration };
+		});
+		expect(cue.backgroundImage).toContain('radial-gradient');
+		expect(cue.animationName).toBe('none');
+		expect(cue.transitionDuration).toBe('0s');
+		await rail.getByRole('textbox', { name: 'Report name' }).focus();
+		const last = rail.getByRole('link', { name: 'Go to last section' });
+		for (const next of [
+			...await rail.getByRole('checkbox').all(),
+			rail.getByRole('button', { name: 'Apply controls' }),
+			rail.getByRole('button', { name: 'Hide controls' }),
+			last,
+		]) {
+			await page.keyboard.press('Tab');
+			await expect(next).toBeFocused();
+		}
+		await expect(last).toBeInViewport({ ratio: 1 });
+		expect(await rail.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+		await rail.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+		await expect.poll(remaining).toBeLessThanOrEqual(1);
+		await expect.poll(opacity).toBe('0');
+		await rail.evaluate((element) => { element.scrollTop = 0; });
+		await expect.poll(opacity).toBe('1');
+		await page.goto('/app-frame/controls-rail');
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		await expect.poll(remaining).toBe(0);
+		await expect.poll(opacity).toBe('0');
+	});
+}
+
 test('Controls keep their input, scroll position and focus across presentations', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await openLongReport(page);

@@ -1307,6 +1307,8 @@ truncates or hides the summary before truncating the label. Its accessible name 
 the scrollable content area, excluding any classic scrollbar. Pass the rail to
 `DetailFrame`'s `rail`. With a TocPill on the same page the two pills stack (see TocPill); put
 `.chrome-clearance` on the scrolling element so focused controls stay clear of both.
+`base.css` adds a still shadow to the bottom edge of desktop rails while more content is below.
+Browsers without CSS scroll-state queries use the native scrollbar.
 
 `@yesid/ui/table` exports `DataTable`. Columns give a `header`, a `cell` snippet and optional
 `align`, `numeric` (right-aligned tabular figures), `width` and `rowHeader`. `caption` is

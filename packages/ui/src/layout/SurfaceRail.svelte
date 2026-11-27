@@ -206,9 +206,10 @@
 
 <style>
 	.surface-rail {
+		--surface-rail-gap: 1rem;
 		display: var(--app-frame-rail-display, none);
 		flex-direction: column;
-		gap: 1rem;
+		gap: var(--surface-rail-gap);
 	}
 	.surface-rail:not(.surface-rail--mobile) {
 		position: sticky;
