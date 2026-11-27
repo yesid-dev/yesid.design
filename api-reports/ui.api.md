@@ -3272,6 +3272,7 @@ interface SeoHeadProps {
     ogLocale: string;
     // (undocumented)
     ogLocaleAlternates?: readonly string[];
+    ogUrl?: string;
     // (undocumented)
     siteName: string;
     themeColor?: string;

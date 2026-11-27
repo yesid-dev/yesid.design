@@ -22,10 +22,12 @@
 		/** Resolved string, or content selected by `resolveShareCopy`. */
 		description: string | ShareCopySelection;
 		siteName: string;
-		/** Absolute. Leave it out on error pages: no canonical, `og:url` or hreflang. */
+		/** Absolute. Leave it out on error pages to omit the canonical link and hreflang. */
 		canonical?: string;
 		/** Absolute hreflang links, x-default included when the app wants one. */
 		alternates?: readonly SeoHeadAlternate[];
+		/** Absolute. Defaults to `canonical`. Use when the shared address differs, such as a dated view. */
+		ogUrl?: string;
 		/** `og:locale`, such as `en_CA`. */
 		ogLocale: string;
 		ogLocaleAlternates?: readonly string[];
@@ -50,6 +52,7 @@
 		siteName,
 		canonical,
 		alternates = [],
+		ogUrl,
 		ogLocale,
 		ogLocaleAlternates = [],
 		image,
@@ -61,6 +64,7 @@
 		jsonLd = [],
 	}: SeoHeadProps = $props();
 	const descriptionText = $derived(typeof description === 'string' ? description : description.description);
+	const shareUrl = $derived(ogUrl ?? canonical);
 </script>
 
 <svelte:head>
@@ -87,8 +91,8 @@
 	<meta property="og:image:alt" content={image.alt} />
 	<meta property="og:image:width" content={String(image.width ?? 1200)} />
 	<meta property="og:image:height" content={String(image.height ?? 630)} />
-	{#if canonical}
-		<meta property="og:url" content={canonical} />
+	{#if shareUrl}
+		<meta property="og:url" content={shareUrl} />
 	{/if}
 	<meta property="og:type" content={type} />
 	<meta property="og:site_name" content={siteName} />

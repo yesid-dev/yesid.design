@@ -1495,8 +1495,9 @@ See [Site announcement banner](#site-announcement-banner) for the banner's head 
 `canonical`, `alternates` (`{ hreflang, href }`, x-default included when the app wants one),
 `ogLocale` and `ogLocaleAlternates`, `image` (`{ url, alt, width = 1200, height = 630 }`), `type`
 (`website`), `noIndex`, `twitter` (`{ site, creator }`), `author`, `themeColor` (the dark
-`background` token) and `jsonLd` (one `@graph` script). Without `canonical` it writes no canonical,
-`og:url` or hreflang, which suits error pages. The app keeps its locale, URL and copy policy.
+`background` token) and `jsonLd` (one `@graph` script). To share a different address, such as a dated
+view, pass an absolute `ogUrl`, which defaults to `canonical` and omits `og:url` when neither is set.
+The app keeps its locale, URL and copy policy.
 
 `description` also accepts a selected result from `resolveShareCopy` in
 `@yesid/seo-kit/share-copy`. Resolve ordered content fields once and pass the selected object to
