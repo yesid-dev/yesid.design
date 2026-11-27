@@ -31,16 +31,21 @@ select {
 
 @utility sheet-bottom-layout {
 	@apply bg-popover text-popover-foreground shadow-sheet inset-x-0 bottom-0 max-h-[90svh] w-full rounded-t-xl border-t border-border;
-	@apply data-[state=closed]:slide-out-to-bottom-[12px] data-[state=open]:slide-in-from-bottom-[12px];
+	@apply sheet-edge-motion data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom;
 }
 
 @utility sheet-right-layout {
 	@apply bg-popover text-popover-foreground shadow-sheet inset-y-0 right-0 h-full w-3/4 max-w-sm border-l border-border;
-	@apply data-[state=closed]:slide-out-to-right-[12px] data-[state=open]:slide-in-from-right-[12px];
+	@apply sheet-edge-motion data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right;
+}
+
+@utility sheet-edge-motion {
+	@apply ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500;
 }
 
 @utility sheet-center-layout {
 	@apply inset-0 m-auto h-fit max-h-[min(80dvh,44rem)] w-[min(var(--sheet-center-width,40rem),calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-[0_4px_12px_rgb(0_0_0_/_0.15)];
+	@apply ease-(--ease-out) data-[state=closed]:duration-(--duration-fast) data-[state=open]:duration-(--duration-normal) data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0;
 	@apply data-[state=closed]:slide-out-to-bottom-[8px] data-[state=open]:slide-in-from-bottom-[8px];
 	@apply sheet-center-parts;
 }

@@ -80,7 +80,7 @@
 	const responsiveSide = $derived(typeof side === 'object' ? side : undefined);
 	const contentClasses = $derived(cn(
 		side && typeof side === 'object'
-			? ['fixed flex flex-col gap-4 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none', shortMotion]
+			? 'fixed flex flex-col gap-4 transition-none motion-safe:data-[state=open]:animate-in motion-safe:data-[state=closed]:animate-out motion-reduce:transition-none'
 			: sheetVariants({ side }),
 		'z-[calc(var(--z-index-sheet)+1)]',
 		showCloseButton && '[&_[data-slot=sheet-header]]:pr-12',
