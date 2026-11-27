@@ -117,6 +117,48 @@ test.describe('Phone rows, formatted filter counts and scroll edges', { tag: '@t
 		});
 	}
 
+	test('keeps reflowed French column headers accessible inside 1px boxes at 200% text', async ({ page }) => {
+		await open(page, 390, 200);
+		const tables = page.getByTestId('hidden-header-examples').getByRole('table');
+		await expect(tables).toHaveCount(6);
+		for (const table of await tables.all()) {
+			const caption = await table.locator('caption').textContent();
+			await expect(table.getByRole('columnheader')).toHaveText([
+				'Secteur', 'Ce dont les usagers ont besoin', 'Juste à une minute près',
+			]);
+			const header = table.getByRole('columnheader', { name: 'Ce dont les usagers ont besoin' });
+			await expect(header).toHaveAttribute('scope', 'col');
+			const row = table.getByRole('row').nth(1);
+			const rowHeader = row.getByRole('rowheader', { name: 'North' });
+			const value = row.getByRole('cell', { name: '70%', exact: true });
+			await expect(rowHeader).toHaveAttribute('scope', 'row');
+			await expect(value).toBeVisible();
+			const columnId = await header.getAttribute('id');
+			if (columnId) await expect(value).toHaveAttribute('headers', `${columnId} ${await rowHeader.getAttribute('id')}`);
+
+			const escaped = await table.evaluate((element) => {
+				const head = element.querySelector('thead')!;
+				const hidden = head.querySelector('[data-sortable]') ? [...head.querySelectorAll('th:not([data-sortable])')] : [head];
+				const { left, right } = element.getBoundingClientRect();
+				return hidden.flatMap((root) => [root, ...root.querySelectorAll('*')]).flatMap((node) => {
+					const box = node.getBoundingClientRect();
+					return box.width > 1 || box.left < Math.max(left, 0) - 0.5 || box.right > Math.min(right, innerWidth) + 0.5
+						? [{ tag: node.tagName, width: box.width, left: box.left, right: box.right }]
+						: [];
+				});
+			});
+			expect(escaped, caption ?? '').toEqual([]);
+		}
+		const sorted = tables.filter({ has: page.getByRole('button', { name: 'Secteur', exact: true }) }).first();
+		const sortButton = sorted.getByRole('button', { name: 'Secteur', exact: true });
+		await expect(sortButton).toBeVisible();
+		expect((await sortButton.boundingBox())!.width).toBeGreaterThan(1);
+		await sortButton.press('Enter');
+		await expect(sortButton).toBeFocused();
+		await expect(sorted.getByRole('columnheader', { name: 'Secteur', exact: true })).toHaveAttribute('aria-sort', 'descending');
+		await expect(sorted.getByRole('rowheader').first()).toHaveText(/South/);
+	});
+
 	for (const width of [320, 390]) {
 		test(`keeps oversized words whole and scrollable at ${width}px with 200% text`, async ({ page }) => {
 			await open(page, width, 200);
