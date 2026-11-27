@@ -1284,7 +1284,9 @@ at the end of the row, leaving the remaining room for the primary column. When t
 most 14 rem wide, such as a phone card at 200% text, the primary takes the whole row and the
 value moves below it, start-aligned, so long names and route plates keep whole words. The other
 columns reflow into wrapping details, with separators attached to the end of each preceding detail.
-Pass `labels: false` to omit the per-row column labels in compact rows, `rowDetail` (a snippet
+Compact rows show value and detail labels by default. Pass `labels: false` to omit all per-row
+labels or `labels: 'details'` to omit the value label and keep the detail column labels.
+Both options align the value with the primary when they share a line. Pass `rowDetail` (a snippet
 receiving the row `T`) to visually summarize the remaining columns in one muted detail line
 under the first line when the table is at most 28 rem wide. Put the information and any links or
 controls in the original cells. Assistive technology reads those cells, and the compact layout

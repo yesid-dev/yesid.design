@@ -1677,7 +1677,7 @@ type DataTableResponsive = {
     mode: 'rows';
     primary: string;
     value: string;
-    labels?: boolean;
+    labels?: boolean | 'details';
 };
 
 // @public (undocumented)
