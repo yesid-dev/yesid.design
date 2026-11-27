@@ -128,8 +128,8 @@
 	const rowLayout = $derived(responsive.mode === 'rows' ? responsive : undefined);
 	const scrollLayout = $derived(responsive.mode === 'scroll' ? responsive : undefined);
 	const scrollMode = $derived(responsive.mode === 'scroll');
-	const scrollRegion = $derived(scrollMode && (scrollEdges?.scrollable ?? true));
 	const reflows = $derived(!!stackAt || !!rowLayout);
+	const scrollRegion = $derived((scrollMode || reflows) && (scrollEdges?.scrollable ?? scrollMode));
 	const showStackLabels = $derived(reflows && rowLayout?.labels !== false);
 	const hasRowDetail = $derived(!!rowLayout && !!rowDetail);
 	const lastDetail = $derived(rowLayout && columns
@@ -170,16 +170,18 @@
 	}
 
 	$effect(() => {
-		const element = scrollMode ? frameElement : null;
+		const element = scrollMode || reflows ? frameElement : null;
 		if (!element) {
 			scrollEdges = undefined;
 			handleScroll = undefined;
 			return;
 		}
+		const reflowTable = reflows ? element.firstElementChild : null;
 		const controller = attachScrollEdges(element, {
 			initialScroll,
+			observeContent: !!reflowTable,
 			onUpdate(next) {
-				scrollEdges = next;
+				scrollEdges = reflowTable && getComputedStyle(reflowTable).display !== 'block' ? undefined : next;
 			},
 			onResize() {
 				const style = getComputedStyle(element);
@@ -197,6 +199,11 @@
 			handleScroll = undefined;
 		};
 	});
+
+	const onFrameScroll: HTMLAttributes<HTMLDivElement>['onscroll'] = (event) => {
+		handleScroll?.();
+		if (!scrollMode) restProps.onscroll?.(event);
+	};
 </script>
 
 {#snippet cellContent(column: DataTableColumn<T>, row: T)}
@@ -304,7 +311,7 @@
 		data-row-align={rowAlign === 'middle' ? 'middle' : undefined}
 		data-row-labels={rowLayout?.labels === false ? 'none' : rowLayout?.labels === 'details' ? 'details' : undefined}
 		data-has-row-detail={hasRowDetail || undefined}
-		data-scrollable={scrollMode && (scrollEdges?.scrollable ?? false)}
+		data-scrollable={scrollEdges?.scrollable ?? false}
 		data-scroll-start={scrollEdges?.start || undefined}
 		data-scroll-end={scrollEdges?.end || undefined}
 		data-initial-scroll={initialScroll === 'end' ? 'end' : undefined}
@@ -314,10 +321,10 @@
 		aria-label={scrollRegion ? accessibleCaption : restProps['aria-label']}
 		tabindex={scrollRegion ? 0 : restProps.tabindex}
 		{...(scrollRegion ? { 'data-lenis-prevent': '' } : {})}
-		onscroll={scrollMode ? () => handleScroll?.() : restProps.onscroll}
+		onscroll={scrollMode || reflows ? onFrameScroll : restProps.onscroll}
 >
 	{@render tableMarkup()}
-	{#if scrollMode && scrollEdges?.scrollable}
+	{#if scrollEdges?.scrollable}
 		<div
 			class="data-table-fades"
 			aria-hidden="true"
@@ -347,7 +354,7 @@
 	}
 	.data-table-frame[data-responsive='rows'] { container: yesid-table / inline-size; }
 
-	.data-table-frame[data-responsive='scroll'] {
+	.data-table-frame:is([data-responsive='scroll'], [data-scrollable='true']) {
 		--scroll-fade-surface: var(--background);
 		overflow-x: auto;
 		overflow-y: hidden;
@@ -355,8 +362,8 @@
 		overscroll-behavior-inline: contain;
 		touch-action: pan-x pan-y;
 	}
-	:global([data-slot='card']) .data-table-frame[data-responsive='scroll'],
-	.data-table-frame[data-responsive='scroll'][data-frame='card'] {
+	:global([data-slot='card']) .data-table-frame:is([data-responsive='scroll'], [data-scrollable='true']),
+	.data-table-frame:is([data-responsive='scroll'], [data-scrollable='true'])[data-frame='card'] {
 		--scroll-fade-surface: var(--card);
 	}
 
@@ -638,6 +645,8 @@
 			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
+			overflow-wrap: anywhere;
+			word-break: normal;
 		}
 
 		.data-table-frame[data-stack-at='compact'] .data-table-stack-label {
@@ -696,6 +705,8 @@
 			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
+			overflow-wrap: anywhere;
+			word-break: normal;
 		}
 
 		.data-table-frame[data-stack-at='tablet'] .data-table-stack-label {
@@ -743,8 +754,6 @@
 		.data-table-frame[data-responsive='rows'] > .data-table {
 			display: block;
 			overflow: visible;
-			overflow-wrap: normal;
-			word-break: normal;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > :is(thead, tbody) {
 			display: block;
@@ -808,6 +817,9 @@
 			padding: 0;
 			border: 0;
 			text-align: start;
+			/* Keep normal word boundaries, including inside shrink-to-fit cell content. */
+			overflow-wrap: anywhere;
+			word-break: normal;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'] {
 			flex: 1 1 0%;
@@ -816,7 +828,8 @@
 			order: 1;
 			display: flex;
 			flex-direction: column;
-			align-items: flex-end;
+			/* Keep oversized values reachable from the inline start of the scroll region. */
+			align-items: safe flex-end;
 			align-self: start;
 			inline-size: max-content;
 			max-inline-size: 45%;
@@ -870,7 +883,6 @@
 		}
 		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr > :is(th, td):not([data-row-position], .data-table-row-detail):focus-within {
 			flex-basis: 100%;
-			overflow-wrap: anywhere;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > .data-table-row-detail {
 			display: block;
@@ -881,7 +893,6 @@
 			font-family: inherit;
 			font-weight: 400;
 			line-height: 1.35;
-			overflow-wrap: break-word;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > .data-table-row-detail:empty {
 			display: none;

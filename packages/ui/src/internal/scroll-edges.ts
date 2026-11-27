@@ -50,6 +50,7 @@ export function attachScrollEdges(
 	element: HTMLElement,
 	options: {
 		readonly initialScroll: InitialScroll;
+		readonly observeContent?: boolean;
 		readonly onUpdate: (state: ScrollEdgeState) => void;
 		readonly onResize?: () => void;
 	},
@@ -85,11 +86,24 @@ export function attachScrollEdges(
 	options.onResize?.();
 	options.onUpdate(measureScrollEdges(element));
 
+	const content = element.firstElementChild;
 	let observer: ResizeObserver | undefined;
 	if (typeof ResizeObserver !== 'undefined') {
 		observer = new ResizeObserver(sync);
 		observer.observe(element);
-		if (element.firstElementChild) observer.observe(element.firstElementChild);
+		if (content) observer.observe(content);
+	}
+
+	// A reflowed table can gain overflow without changing its own border box.
+	let contentObserver: MutationObserver | undefined;
+	const view = options.observeContent ? element.ownerDocument.defaultView : null;
+	if (options.observeContent && content) {
+		if (typeof MutationObserver !== 'undefined') {
+			contentObserver = new MutationObserver(sync);
+			contentObserver.observe(content, { attributes: true, characterData: true, childList: true, subtree: true });
+		}
+		content.addEventListener('load', sync, true);
+		view?.addEventListener('resize', sync);
 	}
 
 	return {
@@ -101,6 +115,11 @@ export function attachScrollEdges(
 		},
 		destroy(): void {
 			observer?.disconnect();
+			contentObserver?.disconnect();
+			if (options.observeContent) {
+				content?.removeEventListener('load', sync, true);
+				view?.removeEventListener('resize', sync);
+			}
 		},
 	};
 }
