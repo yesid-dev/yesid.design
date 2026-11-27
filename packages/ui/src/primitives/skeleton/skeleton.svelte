@@ -17,7 +17,7 @@
 </script>
 
 <!--
-Loading placeholder. Surface = bg-muted (solid, no alpha; surfaces stay
+Loading placeholder. Surface = bg-skeleton (solid, no alpha; surfaces stay
 opaque per doctrine). The scoped pulse and reduced-motion guard below
 halt animation for users who opt out.
 -->
@@ -25,7 +25,7 @@ halt animation for users who opt out.
 	bind:this={ref}
 	data-slot="skeleton"
 	aria-hidden="true"
-	class={cn('skeleton-pulse rounded-md bg-muted', className)}
+	class={cn('skeleton-pulse rounded-md bg-skeleton', className)}
 	{...restProps}
 	data-skeleton-busy={busy || undefined}
 >

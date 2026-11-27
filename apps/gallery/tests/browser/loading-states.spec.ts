@@ -131,6 +131,23 @@ test('known empty compact rows keep their one-line height during loading', async
 	expect(Math.abs((await row.boundingBox())!.height - waitingHeight)).toBeLessThanOrEqual(1);
 });
 
+test('skeleton fill separates from its card and the page background @theme', async ({ page }, testInfo) => {
+	await page.goto('/loading-states');
+	await expect(page.locator('html')).toHaveAttribute('data-theme', testInfo.project.name);
+	const card = page.getByTestId('skeleton-card');
+	const skeleton = card.locator('[data-slot="skeleton"]');
+	const colors = testInfo.project.name === 'dark'
+		? { card: 'rgb(26, 26, 26)', page: 'rgb(20, 20, 20)', skeleton: 'rgb(58, 58, 58)' }
+		: { card: 'rgb(249, 250, 253)', page: 'rgb(243, 246, 251)', skeleton: 'rgb(220, 226, 236)' };
+	await expect(card).toHaveCSS('background-color', colors.card);
+	await expect(page.locator('.min-h-screen.bg-background')).toHaveCSS('background-color', colors.page);
+	await expect(skeleton).toHaveCSS('background-color', colors.skeleton);
+
+	await page.emulateMedia({ forcedColors: 'active' });
+	await expect(skeleton).toBeVisible();
+	await expect(skeleton).toHaveCSS('background-color', await card.evaluate((el) => getComputedStyle(el).backgroundColor));
+});
+
 test('busy skeletons pulse until loading ends and respect reduced motion', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await page.goto('/loading-states');

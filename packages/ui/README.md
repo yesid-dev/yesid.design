@@ -356,9 +356,11 @@ active-state details rather than treating the import replacement as sufficient p
 ### Sheet and Skeleton
 
 Sheet supports `bottom` and `right`. Its bottom side is the mobile-first default; its overlay, focusable close control, animation,
-and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the muted
-surface and the kit's `rounded-md` radius, and accepts `busy?: boolean` for a standalone pulse.
-An ancestor with `aria-busy="true"` also enables the pulse. Reduced motion keeps the block still.
+and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the
+theme-specific `--skeleton` fill and the kit's `rounded-md` radius, and accepts `busy?: boolean`
+for a standalone pulse. An ancestor with `aria-busy="true"` also enables the pulse. Reduced
+motion keeps the block still. In forced colours the browser maps the fill to the system canvas,
+so the decorative block blends into the surface while retaining its space.
 A product with no prior local family treats first use as a new
 product-level visual and accessibility decision, not proof supplied by the package.
 

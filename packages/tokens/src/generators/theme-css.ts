@@ -20,6 +20,7 @@ const COLOR_MAP = `/* Semantic color utilities (bg-primary, text-muted-foregroun
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
 	--color-muted-foreground: var(--muted-foreground);
+	--color-skeleton: var(--skeleton);
 	--color-border: var(--border);
 	--color-ring: var(--ring);
 	--color-input: var(--input);

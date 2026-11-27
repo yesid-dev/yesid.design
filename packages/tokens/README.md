@@ -68,6 +68,9 @@ Text links use `primary` as AA text, including inside `.theme-dark` islands. Yel
 wayfinding, hazard and highlight; only the conversion button is clickable yellow. See
 [the doctrine](../../docs/DOCTRINE.md) for registers and colour roles.
 
+Use `--skeleton` or `bg-skeleton` for decorative loading placeholders. The solid fill is
+defined separately for light and dark themes to read against both `--card` and `--background`.
+
 The transport status colours (`--dataviz-status-*`) each travel with a word and a glyph: early is
 blue (▼), on time is neutral reading ink (●), late is red (▲) and unknown is grey (○).
 `--dataviz-status-severe` exists for compatibility and equals late. Interface feedback, such as

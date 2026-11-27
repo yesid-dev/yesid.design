@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '@yesid/ui/card';
 	import { ChartBarSeries, ChartFrame, ChartLegend } from '@yesid/ui/chart';
 	import { Skeleton } from '@yesid/ui/skeleton';
 	import { DataTable, type DataTableColumn, type DataTableResponsive } from '@yesid/ui/table';
@@ -43,7 +44,9 @@
 	</button>
 
 	<h2>Standalone skeleton</h2>
-	<Skeleton busy={loading} class="h-6 w-32" />
+	<Card edge="neutral" class="px-4" data-testid="skeleton-card">
+		<Skeleton busy={loading} class="h-6 w-32" />
+	</Card>
 
 	{#each examples as { label, responsive } (label)}
 		<section data-testid={responsive.mode}>

@@ -9,7 +9,7 @@ it('marks an explicitly busy skeleton while keeping it decorative', async () => 
 	await view.rerender({ busy: true });
 	expect(block.getAttribute('aria-hidden')).toBe('true');
 	expect(block.hasAttribute('data-skeleton-busy')).toBe(true);
-	expect(block.classList.contains('bg-muted')).toBe(true);
+	expect(block.classList.contains('bg-skeleton')).toBe(true);
 	expect(block.classList.contains('rounded-md')).toBe(true);
 	await view.rerender({ busy: false });
 	expect(block.outerHTML).toBe(initial);
