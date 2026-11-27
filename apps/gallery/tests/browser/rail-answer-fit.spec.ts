@@ -123,6 +123,78 @@ for (const [width, textSize] of [[390, 100], [320, 100], [390, 200], [320, 200]]
 	});
 }
 
+for (const width of [390, 1440]) {
+	test.describe(() => {
+		test.use({ viewport: { width, height: 900 } });
+
+		test(`fitting figures retain the original statement line box at ${width}px`, async ({ page }, testInfo) => {
+			await page.goto('/rail-answer-fit');
+			await page.locator('html[data-gallery-ready]').waitFor();
+			await page.evaluate(async () => { await document.fonts.ready; });
+			await page.locator('#answers').evaluate((root) => {
+				root.style.fontSize = '1.25rem';
+				root.style.lineHeight = '1.65';
+				root.style.setProperty('--text-heading', 'min(clamp(2.25rem, var(--text-display), 2.875rem), 22cqi)');
+			});
+
+			const results = [];
+			for (const layout of ['threshold', 'fit']) {
+				for (const size of ['md', 'lg']) {
+					const name = `${layout}-${size}`;
+					const answer = page.getByTestId(name).locator('[data-slot="answer-lead"]').first();
+					const result = await answer.evaluate((current, size) => {
+						function measure(answer: Element) {
+							const statement = answer.querySelector('.answer-statement')!.getBoundingClientRect();
+							const paragraph = answer.querySelector('.answer-value')!.getBoundingClientRect();
+							const sentence = answer.querySelector('.answer-sentence')!.getBoundingClientRect();
+							const metric = answer.querySelector('.metric-value')!;
+							const marker = document.createElement('span');
+							marker.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+							metric.after(marker);
+							const { fontSize, zoom } = getComputedStyle(metric);
+							const baseline = marker.getBoundingClientRect().top - statement.top;
+							marker.remove();
+							return {
+								fontSize,
+								zoom,
+								paragraphHeight: paragraph.height,
+								figureBaseline: baseline,
+								sentenceTop: sentence.top - statement.top,
+								statementHeight: statement.height,
+							};
+						}
+
+						const original = current.cloneNode(true) as HTMLElement;
+						// v0.60.1 laid out MetricValue directly in the paragraph.
+						original.querySelector<HTMLElement>('.answer-statement')!.style.containerType = 'normal';
+						const paragraph = original.querySelector<HTMLElement>('.answer-value')!;
+						paragraph.style.whiteSpace = 'inherit';
+						paragraph.style.overflow = 'visible';
+						const metric = original.querySelector<HTMLElement>('.metric-value')!;
+						metric.style.fontSize = size === 'md' ? 'var(--text-heading)' : 'clamp(2.25rem, var(--text-display), 2.875rem)';
+						paragraph.replaceChildren(metric);
+						const fitted = measure(current);
+						// Measure both at the same document position to avoid coordinate rounding.
+						current.replaceWith(original);
+						const reference = measure(original);
+						original.replaceWith(current);
+						return { reference, current: fitted };
+					}, size);
+					results.push({ name, ...result });
+				}
+			}
+			await testInfo.attach('Original and current statement geometry', {
+				body: JSON.stringify(results, null, 2),
+				contentType: 'application/json',
+			});
+			for (const { name, reference, current } of results) {
+				expect(reference.zoom, name).toBe('1');
+				expect(current, name).toEqual(reference);
+			}
+		});
+	});
+}
+
 test.describe(() => {
 	test.use({ viewport: { width: 390, height: 900 } });
 
