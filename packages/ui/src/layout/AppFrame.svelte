@@ -159,6 +159,7 @@
 						<button
 							type="button"
 							data-slot="button"
+							data-rail-initial-focus
 							class={buttonVariants({ variant: 'outline' })}
 							onclick={context.closeSheet}
 						>

@@ -101,7 +101,7 @@
 			<button
 				bind:this={pillBtn}
 				type="button"
-				class="tap-press surface-rail-pill glass-chrome"
+				class="tap-press surface-rail-pill"
 				onclick={() => setOpen(!sheetOpen)}
 				aria-haspopup="dialog"
 				aria-controls={railId}
@@ -128,8 +128,20 @@
 			id={railId}
 			forceMount
 			preventScroll={false}
+			preventOverflowTextSelection={false}
 			onInteractOutside={(event) => {
 				if (event.target instanceof Node && pillBtn?.contains(event.target)) event.preventDefault();
+			}}
+			onOpenAutoFocus={(event) => {
+				const initialFocus = railEl?.querySelector<HTMLElement>('[data-rail-initial-focus]');
+				if (!initialFocus) return;
+
+				event.preventDefault();
+				void tick().then(() => {
+					if (sheetOpen && railEl && !railEl.contains(document.activeElement)) {
+						initialFocus.focus({ preventScroll: true });
+					}
+				});
 			}}
 			onCloseAutoFocus={(event) => event.preventDefault()}
 		>
@@ -198,6 +210,13 @@
 		.surface-rail {
 			display: var(--app-frame-rail-display, flex);
 		}
+	}
+
+	.surface-rail-pill,
+	.surface-rail-sheet {
+		border: 1px solid var(--border-brand);
+		background: var(--background);
+		box-shadow: var(--shadow-nav);
 	}
 
 	.surface-rail-pill {
@@ -281,10 +300,7 @@
 		overscroll-behavior: contain;
 		touch-action: manipulation;
 		padding: 1rem;
-		border: 1px solid var(--border-brand);
 		border-radius: var(--radius-xl);
-		background: var(--background);
-		box-shadow: var(--shadow-nav);
 		transform-origin: bottom center;
 	}
 	.surface-rail-carrier > :global(.surface-rail-scrim) {

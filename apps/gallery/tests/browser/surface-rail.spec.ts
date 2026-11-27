@@ -69,12 +69,23 @@ test('Controls keep their input, scroll position and focus across presentations'
 	await pill.click();
 	await expect(dialog).toHaveAttribute('aria-modal', 'true');
 	await expect(dialog.getByText('Presentation: mobile')).toBeVisible();
-	await expect.poll(() => dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+	await expect(dialog.getByRole('button', { name: 'Close controls', exact: true })).toBeFocused();
 	await expect.poll(async () => {
 		const [sheetBox, pillBox] = await Promise.all([dialog.boundingBox(), pill.boundingBox()]);
 		return pillBox!.y - sheetBox!.y - sheetBox!.height;
 	}).toBeCloseTo(4, 0);
 	expect((await dialog.boundingBox())!.height).toBeLessThanOrEqual(844 * 0.7);
+
+	const body = page.locator('body');
+	const userSelect = await body.evaluate((element) => element.style.userSelect);
+	const field = (await input.boundingBox())!;
+	await page.mouse.move(field.x + field.width / 2, field.y + field.height / 2);
+	await page.mouse.down();
+	try {
+		expect(await body.evaluate((element) => element.style.userSelect)).toBe(userSelect);
+	} finally {
+		await page.mouse.up();
+	}
 
 	await input.fill('Morning service');
 	await last.scrollIntoViewIfNeeded();
