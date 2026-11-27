@@ -141,6 +141,14 @@
 	];
 
 	const narrowDailyColumns = dailyColumns.slice(0, 3);
+	const frenchHeaders = ['Secteur', 'Ce dont les usagers ont besoin', 'Juste à une minute près'];
+	const frenchColumns = narrowDailyColumns.map((column, index) => ({
+		...column,
+		header: frenchHeaders[index]!,
+		sortable: index === 0,
+		width: index === 0 ? undefined : '22rem',
+	}));
+	let frenchSort = $state<'asc' | 'desc'>('asc');
 
 	const wrapRows = [
 		{ name: 'North', detail: 'Unknown', value: '93%' },
@@ -359,6 +367,22 @@
 			/>
 		</Card>
 	{/each}
+
+	<section class="showcase" data-testid="hidden-header-examples" aria-label="En-têtes de tableaux adaptatifs" lang="fr">
+		{#each wrapExamples as { title, responsive } (title)}
+			{#each [false, true] as sortable (sortable)}
+				<DataTable
+					rows={sortable && frenchSort === 'desc' ? dailyRows.toReversed() : dailyRows}
+					columns={frenchColumns}
+					key={(row) => row.id}
+					caption={`${title}, en-têtes ${sortable ? 'triables' : 'masqués'}`}
+					responsive={responsive.mode === 'rows' ? { mode: 'rows', primary: 'label', value: 'day-1' } : responsive}
+					sort={sortable ? { key: 'label', direction: frenchSort } : undefined}
+					onSort={sortable ? () => frenchSort = frenchSort === 'asc' ? 'desc' : 'asc' : undefined}
+				/>
+			{/each}
+		{/each}
+	</section>
 </div>
 
 <style>

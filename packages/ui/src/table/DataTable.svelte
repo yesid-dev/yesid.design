@@ -688,6 +688,7 @@
 		/* Base styles set overflow-x: auto on tables. Reset it when the table becomes a block. */
 		.data-table-frame[data-stack-at='compact'] > .data-table {
 			overflow: visible;
+			position: relative;
 		}
 
 		.data-table-frame[data-stack-at='compact'] .data-table,
@@ -697,17 +698,21 @@
 			white-space: normal;
 		}
 
-		.data-table-frame[data-stack-at='compact']:not([data-sortable]) .data-table thead,
-		.data-table-frame[data-stack-at='compact'][data-sortable] .data-table thead th:not([data-sortable]) {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			padding: 0;
-			margin: -1px;
-			overflow: hidden;
-			clip: rect(0, 0, 0, 0);
-			white-space: nowrap;
-			border: 0;
+		.data-table-frame[data-stack-at='compact']:not([data-sortable]) > .data-table > thead,
+		.data-table-frame[data-stack-at='compact'] > .data-table > thead > tr > th:not([data-sortable]) {
+			&, & * {
+				position: absolute;
+				inset-block-start: 0;
+				inset-inline-start: 0;
+				inline-size: 1px;
+				max-inline-size: 1px;
+				block-size: 1px;
+				padding: 0;
+				overflow: hidden;
+				clip-path: inset(50%);
+				white-space: nowrap;
+				border: 0;
+			}
 		}
 
 		.data-table-frame[data-stack-at='compact'] .data-table tbody tr {
@@ -754,6 +759,7 @@
 
 		.data-table-frame[data-stack-at='tablet'] > .data-table {
 			overflow: visible;
+			position: relative;
 		}
 
 		.data-table-frame[data-stack-at='tablet'] .data-table,
@@ -763,17 +769,21 @@
 			white-space: normal;
 		}
 
-		.data-table-frame[data-stack-at='tablet']:not([data-sortable]) .data-table thead,
-		.data-table-frame[data-stack-at='tablet'][data-sortable] .data-table thead th:not([data-sortable]) {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			padding: 0;
-			margin: -1px;
-			overflow: hidden;
-			clip: rect(0, 0, 0, 0);
-			white-space: nowrap;
-			border: 0;
+		.data-table-frame[data-stack-at='tablet']:not([data-sortable]) > .data-table > thead,
+		.data-table-frame[data-stack-at='tablet'] > .data-table > thead > tr > th:not([data-sortable]) {
+			&, & * {
+				position: absolute;
+				inset-block-start: 0;
+				inset-inline-start: 0;
+				inline-size: 1px;
+				max-inline-size: 1px;
+				block-size: 1px;
+				padding: 0;
+				overflow: hidden;
+				clip-path: inset(50%);
+				white-space: nowrap;
+				border: 0;
+			}
 		}
 
 		.data-table-frame[data-stack-at='tablet'] .data-table tbody tr {
@@ -836,20 +846,26 @@
 		.data-table-frame[data-responsive='rows'] > .data-table {
 			display: block;
 			overflow: visible;
+			position: relative;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > :is(thead, tbody) {
 			display: block;
 		}
 		.data-table-frame[data-responsive='rows']:not([data-sortable]) > .data-table > thead,
-		.data-table-frame[data-responsive='rows'][data-sortable] > .data-table > thead th:not([data-sortable]) {
-			position: absolute;
-			inline-size: 1px;
-			block-size: 1px;
-			padding: 0;
-			overflow: hidden;
-			clip-path: inset(50%);
-			white-space: nowrap;
-			border: 0;
+		.data-table-frame[data-responsive='rows'] > .data-table > thead > tr > th:not([data-sortable]) {
+			&, & * {
+				position: absolute;
+				inset-block-start: 0;
+				inset-inline-start: 0;
+				inline-size: 1px;
+				max-inline-size: 1px;
+				block-size: 1px;
+				padding: 0;
+				overflow: hidden;
+				clip-path: inset(50%);
+				white-space: nowrap;
+				border: 0;
+			}
 		}
 		.data-table-frame[data-responsive='rows'][data-sortable] > .data-table > thead tr {
 			display: flex;
