@@ -734,8 +734,10 @@ test('grouped menus use one organized column per group on desktop and one column
 			await expect(language(page)).toHaveCount(1);
 
 			await toggle(page).focus();
-			await page.keyboard.press('Tab');
-			await expect(nav.getByRole('link', { name: new RegExp(`^${literal(MENU_ITEMS[0]!.label)}`) })).toBeFocused();
+			for (const item of MENU_ITEMS) {
+				await page.keyboard.press('Tab');
+				await expect(nav.getByRole('link', { name: item.ariaLabel ?? new RegExp(`^${literal(item.label)}`) })).toBeFocused();
+			}
 			await page.keyboard.press('Escape');
 			await expect(menu(page)).toBeHidden();
 			await expect(toggle(page)).toBeFocused();
@@ -764,34 +766,78 @@ for (const theme of ['dark', 'light'] as const) {
 	});
 }
 
-test('four menu groups share the desktop band and keep long destination labels on one line', async ({ page }, testInfo) => {
-	test.skip(testInfo.project.name !== 'desktop', 'One run sets the viewport width and text scale');
-	await page.setViewportSize({ width: 1440, height: 900 });
-	await visitHeader(page, `${HOME}?groups=4&long-menu`);
-	await page.evaluate(() => document.fonts.ready);
-	await toggle(page).click();
-	const nav = menuLinks(page);
-	const labels = nav.locator('.menu-label');
-	await expect(labels).toHaveText([...LONG_MENU_LABELS]);
-	const band = await nav.evaluate((node) => {
-		const overlay = node.parentElement!;
-		const style = getComputedStyle(overlay);
-		return {
-			available: overlay.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-			width: node.getBoundingClientRect().width,
-		};
+for (const locale of LOCALES) {
+	test(`${locale}: grouped columns center with equal gaps and keep long destination labels on one line`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run covers every desktop width');
+		await page.setViewportSize({ width: 1024, height: 900 });
+		await visitHeader(page, `${HOME}?groups=4&long-menu&lang=${locale}`);
+		await toggle(page).click();
+		const nav = menuLinks(page);
+		await expect(nav.locator('.menu-label')).toHaveText([...LONG_MENU_LABELS[locale]]);
+		await page.evaluate(() => document.fonts.ready);
+		let gap: number | undefined;
+		let wideColumns: number[] = [];
+		for (const width of [1024, 1280, 1440, 1920]) {
+			await page.setViewportSize({ width, height: 900 });
+			const { rows, lines, viewport } = await nav.evaluate((node) => {
+				const columns = [...node.querySelectorAll('[data-slot="menu-group"]')].map((group) => {
+					const { top, left, right, width } = group.getBoundingClientRect();
+					return { top, left, right, width };
+				});
+				const tops = new Set(columns.map((column) => column.top));
+				return {
+					rows: [...tops].map((top) => columns.filter((column) => column.top === top)),
+					lines: [...node.querySelectorAll('.menu-label')].map((label) => {
+						const range = document.createRange();
+						range.selectNodeContents(label);
+						return range.getClientRects().length;
+					}),
+					viewport: document.documentElement.clientWidth,
+				};
+			});
+			if (width >= 1280) expect(rows, `groups share one row at ${width}px`).toHaveLength(1);
+			for (const row of rows) {
+				const left = row[0]!.left;
+				const right = viewport - row.at(-1)!.right;
+				expect(Math.abs(left - right), `outer space at ${width}px`).toBeLessThanOrEqual(1);
+				if (width >= 1280) expect(left, `outer inset at ${width}px`).toBeGreaterThan(24);
+				for (const [index, column] of row.slice(1).entries()) {
+					const actualGap = column.left - row[index]!.right;
+					gap ??= actualGap;
+					expect(actualGap, `column gap at ${width}px`).toBeGreaterThan(0);
+					expect(Math.abs(actualGap - gap), `equal gaps at ${width}px`).toBeLessThanOrEqual(1);
+				}
+			}
+			expect(lines, `label lines at ${width}px`).toEqual([1, 1, 1, 1]);
+			if (width === 1440) wideColumns = rows[0]!.map((column) => column.width);
+			if (width === 1920) expect(rows[0]!.map((column) => column.width)).toEqual(wideColumns);
+		}
 	});
-	expect(band.width).toBeCloseTo(band.available, 0);
-	const lines = () => labels.evaluateAll((elements) => elements.map((node) => {
-		const range = document.createRange();
-		range.selectNodeContents(node);
-		return range.getClientRects().length;
+}
+
+test('grouped labels wrap when enlarged text exceeds the desktop menu width', async ({ page }, testInfo) => {
+	test.skip(testInfo.project.name !== 'desktop', 'One run sets the viewport width and text scale');
+	await page.setViewportSize({ width: 768, height: 900 });
+	await visitHeader(page, `${HOME}?groups=4&long-menu`);
+	await toggle(page).click();
+	await page.evaluate(() => document.fonts.ready);
+	await page.locator('html').evaluate((node) => { node.style.fontSize = '300%'; });
+	const nav = menuLinks(page);
+	const range = await nav.getByText(LONG_MENU_LABELS.en[1], { exact: true }).evaluate((node) => {
+		const text = document.createRange();
+		text.selectNodeContents(node);
+		return [...text.getClientRects()].map(({ left, right }) => ({ left, right }));
+	});
+	expect(range.length).toBeGreaterThan(1);
+	for (const { left, right } of range) {
+		expect(left).toBeGreaterThanOrEqual(0);
+		expect(right).toBeLessThanOrEqual(768);
+	}
+	const { scrollWidth, clientWidth } = await nav.evaluate((node) => ({
+		scrollWidth: node.scrollWidth,
+		clientWidth: node.clientWidth,
 	}));
-	expect(await lines()).toEqual([1, 1, 1, 1]);
-	await page.locator('html').evaluate((node) => { node.style.fontSize = '200%'; });
-	const groups = nav.locator('[data-slot="menu-group"]');
-	expect(await groups.evaluateAll((nodes) => new Set(nodes.map((node) => node.getBoundingClientRect().top)).size)).toBe(2);
-	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1440);
+	expect(scrollWidth).toBe(clientWidth);
 	await page.keyboard.press('Escape');
 	await expect(toggle(page)).toBeFocused();
 });

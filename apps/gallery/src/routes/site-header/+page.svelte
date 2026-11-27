@@ -49,11 +49,12 @@
 	const groups = $derived.by(() => {
 		const built = groupCount === 4 ? menuGroupsFor(4, locale) : groupCount === 2 ? menuGroupsFor(2, compact ? 'en' : locale) : undefined;
 		const useLongLabels = groupCount === 4 && browser && page.url.searchParams.has('long-menu');
+		const longLabels = LONG_MENU_LABELS[locale === 'fr' ? 'fr' : 'en'];
 		return built?.map((group, index) => ({
 			...group,
 			items: group.items.map(item => ({
 				...item,
-				...(useLongLabels ? { label: LONG_MENU_LABELS[index]!, ariaLabel: undefined } : {}),
+				...(useLongLabels ? { label: longLabels[index]!, ariaLabel: undefined } : {}),
 				icon: ICONS[item.href],
 			})),
 		}));

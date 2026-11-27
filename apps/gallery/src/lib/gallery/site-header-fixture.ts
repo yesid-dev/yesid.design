@@ -23,7 +23,10 @@ export const MENU_ITEMS: readonly SiteHeaderMenuItem[] = [
 	{ href: '/detail-frame', label: 'Detail', subtitle: 'Detail frame' },
 	{ href: 'https://example.com', label: 'Elsewhere', external: true, ariaLabel: 'Elsewhere (opens in a new tab)' },
 ];
-export const LONG_MENU_LABELS = ['Network health', 'Worst lines and stops', 'How we measure', 'Download the data'] as const;
+export const LONG_MENU_LABELS = {
+	en: ['Network', 'Worst trips and vehicles', 'Methods', 'Open data'],
+	fr: ['Réseau', 'Trajets les moins fiables', 'Méthode', 'Données brutes'],
+} as const;
 
 /**
  * Group headings for the grouped menu fixtures: two groups (the compact shell) and four groups (the
