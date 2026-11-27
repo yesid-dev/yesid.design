@@ -24,6 +24,7 @@ describe('generateThemeCss', () => {
 
     expect(inline).toContain('--color-primary: var(--primary);');
     expect(inline).toContain('--color-muted-foreground: var(--muted-foreground);');
+    expect(inline).toContain('--color-skeleton: var(--skeleton);');
   });
 
   it('is deterministic', () => {

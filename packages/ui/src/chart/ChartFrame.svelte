@@ -9,14 +9,16 @@
 		yDomain: readonly [number, number];
 		children: Snippet<[ChartPlot]>;
 		legend?: Snippet;
+		loading?: boolean;
 	}
 </script>
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import { Skeleton } from '../primitives/skeleton/index.js';
 	import { scale } from './geometry.js';
 
-	let { label, xDomain, yDomain, children, legend, class: className, ...rest }: ChartFrameProps =
+	let { label, xDomain, yDomain, children, legend, loading = false, class: className, ...rest }: ChartFrameProps =
 		$props();
 
 	const componentId = $props.id();
@@ -41,9 +43,12 @@
 	});
 </script>
 
-<figure {...rest} class={cn('chart-frame', className)} data-slot="chart-frame" aria-label={label}>
+<figure {...rest} class={cn('chart-frame', className)} data-slot="chart-frame" aria-label={label} aria-busy={loading || rest['aria-busy']}>
 	<div class="chart-area" bind:clientWidth={measuredWidth} bind:clientHeight={measuredHeight} data-slot="chart-area">
 		<span class="chart-unit" bind:clientWidth={measuredUnit} aria-hidden="true"></span>
+		{#if loading}
+			<Skeleton busy style="position: absolute; inset: 0" />
+		{:else}
 		<svg viewBox="0 0 {width} {height}" aria-hidden="true" focusable="false">
 			<defs>
 				<clipPath id={clipId}>
@@ -52,6 +57,7 @@
 			</defs>
 			{@render children(plot)}
 		</svg>
+		{/if}
 	</div>
 	{@render legend?.()}
 </figure>

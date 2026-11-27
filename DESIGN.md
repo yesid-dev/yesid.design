@@ -20,6 +20,7 @@ colors:
   background: "#141414"
   foreground: "#F5F5F0"
   muted: "#1E1E1E"
+  skeleton: "#3A3A3A"
   muted-foreground: "#949494"
   card: "#1a1a1a"
   popover: "#2A2A2A"

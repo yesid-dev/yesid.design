@@ -28,6 +28,7 @@
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/announcement-banner">Site announcement banner</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/app-frame">App frame with network and date controls</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/record-parts">Service record tables and charts</a></p>
+<p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/loading-states">Loading states</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/app-frame/record-parts/en">Record layouts in a compact app frame</a></p>
 <p class="mt-4"><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/chart-parts">Service charts</a></p>
 <p><a class="inline-flex min-h-[var(--size-tap-min)] items-center underline" href="/live-controls">Switch, freshness stamp and stop ladder</a></p>

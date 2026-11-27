@@ -45,6 +45,9 @@
 		readonly columns: readonly DataTableColumn<T>[];
 		readonly key: (row: T, index: number) => string;
 		readonly caption: string;
+		readonly loading?: boolean;
+		/** Placeholder row count while loading. Defaults to 4. */
+		readonly skeletonRows?: number;
 		readonly responsive?: DataTableResponsive;
 		readonly sort?: { key: string; direction: 'asc' | 'desc' };
 		readonly onSort?: (key: string) => void;
@@ -81,9 +84,12 @@
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import { cn } from '../cn/index.js';
+	import { Skeleton } from '../primitives/skeleton/index.js';
 	import {
 		attachScrollEdges,
 		EMPTY_SCROLL_EDGES,
+		measureScrollEdges,
+		scrollToInlineEnd,
 		type ScrollEdgeState,
 	} from '../internal/scroll-edges.js';
 	import ShowMore from './ShowMore.svelte';
@@ -93,6 +99,8 @@
 		columns,
 		key,
 		caption,
+		loading = false,
+		skeletonRows = 4,
 		responsive = DEFAULT_RESPONSIVE,
 		sort,
 		onSort,
@@ -117,6 +125,7 @@
 	let handleScroll = $state<(() => void) | undefined>(undefined);
 	let requestedCount = $state(0);
 	let pageContext = '';
+	let initialRows: 'pending' | 'loading' | 'loaded' = 'pending';
 
 	const accessibleCaption = $derived.by(() => {
 		const value = caption.trim();
@@ -143,6 +152,7 @@
 	const paging = $derived(pageLabels && pageSize && pageSize > 0 && Number.isInteger(pageSize) ? pageSize : 0);
 	const shown = $derived(paging ? Math.min(Math.max(requestedCount, paging), rows.length) : rows.length);
 	const visibleRows = $derived(paging ? rows.slice(0, shown) : rows);
+	const placeholderCount = $derived(Number.isSafeInteger(skeletonRows) && skeletonRows >= 0 ? skeletonRows : 4);
 	const scrollMinWidth = $derived(scrollLayout?.minWidth);
 	const scrollMinWidthCompact = $derived(scrollLayout?.minWidthCompact);
 	const initialScroll = $derived(scrollLayout?.initialScroll ?? 'start');
@@ -161,6 +171,22 @@
 		const context = `${paging}:${sort?.direction ?? ''}:${sort?.key ?? ''}`;
 		if (context !== pageContext) requestedCount = 0;
 		pageContext = context;
+	});
+
+	$effect.pre(() => {
+		if (initialRows === 'loaded') return;
+		if (loading) {
+			initialRows = 'loading';
+			return;
+		}
+		const startedLoading = initialRows === 'loading';
+		initialRows = 'loaded';
+		const element = frameElement;
+		// Read the placeholder frame before swapping rows, so scrolling away from its end wins.
+		if (!startedLoading || initialScroll !== 'end' || !element || measureScrollEdges(element).end) return;
+		void tick().then(() => {
+			if (!loading && frameElement === element && scrollToInlineEnd(element)) handleScroll?.();
+		});
 	});
 
 	async function showMore(count: number): Promise<void> {
@@ -207,17 +233,21 @@
 	};
 </script>
 
-{#snippet cellContent(column: DataTableColumn<T>, row: T)}
+{#snippet cellContent(column: DataTableColumn<T>, entry?: { row: T })}
 	{#if showStackLabels && !(rowLayout?.labels === 'details' && rowPosition(column.key) === 'value')}
 		<span class="data-table-stack-label" aria-hidden="true">{column.header}</span>
 	{/if}
-	<div class="data-table-cell-content">{@render column.cell(row)}</div>{#if rowLayout && !hasRowDetail && !rowPosition(column.key) && column.key !== lastDetail}
+	<div class="data-table-cell-content">{#if entry}{@render column.cell(entry.row)}{:else}{@render placeholder(column.numeric)}{/if}</div>{#if rowLayout && !hasRowDetail && !rowPosition(column.key) && column.key !== lastDetail}
 		<span class="data-table-row-separator" aria-hidden="true">&#8288;</span>
 	{/if}
 {/snippet}
 
+{#snippet placeholder(numeric = false)}
+	<Skeleton busy class="data-table-placeholder" style={numeric ? 'inline-size: 3ch' : 'inline-size: 8ch'} />
+{/snippet}
+
 {#snippet tableMarkup()}
-	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined}>
+	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined} aria-busy={loading || undefined}>
 		<caption class="data-table-caption">{accessibleCaption}</caption>
 		<thead role={reflows ? 'rowgroup' : undefined}>
 			<tr role={reflows ? 'row' : undefined}>
@@ -235,7 +265,7 @@
 						style:width={column.width}
 					>
 						{#if column.sortable && onSort}
-							<button type="button" class="data-table-sort" aria-label={sortLabels?.by(column.header)} onclick={() => onSort?.(column.key)}>
+							<button type="button" class="data-table-sort" aria-label={sortLabels?.by(column.header)} aria-disabled={loading || undefined} onclick={() => { if (!loading) onSort?.(column.key); }}>
 								<span>{column.header}</span>
 								{#if direction === 'asc'}<ArrowUp size="1em" aria-hidden="true" />
 								{:else if direction === 'desc'}<ArrowDown size="1em" aria-hidden="true" />
@@ -247,6 +277,29 @@
 			</tr>
 		</thead>
 		<tbody bind:this={body} role={reflows ? 'rowgroup' : undefined}>
+			{#if loading}
+				{#each { length: placeholderCount } as _, index}
+					{@const isRowEmpty = rowLayout && rowEmpty && index < rows.length && rowEmpty(rows[index]!)}
+					<tr aria-hidden="true" data-row-empty={isRowEmpty || undefined}>
+						{#each columns as column (column.key)}
+							<svelte:element
+								this={column.rowHeader ? 'th' : 'td'}
+								aria-hidden="true"
+								data-column={column.key}
+								data-row-position={rowPosition(column.key)}
+								data-col={column.header}
+								data-align={columnAlignment(column)}
+								data-numeric={column.numeric || undefined}
+							>
+								{@render cellContent(column)}
+							</svelte:element>
+						{/each}
+						{#if hasRowDetail}
+							<td class="data-table-row-detail" aria-hidden="true">{@render placeholder()}</td>
+						{/if}
+					</tr>
+				{/each}
+			{:else}
 			{#each visibleRows as row, index (key(row, index))}
 			{@const rowHeaderIds = rowLayout
 				? rowHeaderColumns.map((columnIndex) => `${tableId}-row-${index}-${columnIndex}`).join(' ')
@@ -271,7 +324,7 @@
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
-								{@render cellContent(column, row)}
+								{@render cellContent(column, { row })}
 							</th>
 						{:else}
 							<td
@@ -283,7 +336,7 @@
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
 							>
-								{@render cellContent(column, row)}
+								{@render cellContent(column, { row })}
 							</td>
 						{/if}
 					{/each}
@@ -292,6 +345,7 @@
 					{/if}
 				</tr>
 			{/each}
+			{/if}
 		</tbody>
 	</table>
 {/snippet}
@@ -321,6 +375,7 @@
 		role={scrollRegion ? 'region' : restProps.role}
 		aria-label={scrollRegion ? accessibleCaption : restProps['aria-label']}
 		aria-labelledby={scrollRegion && reflows ? undefined : restProps['aria-labelledby']}
+		aria-busy={loading || restProps['aria-busy']}
 		tabindex={scrollRegion ? 0 : restProps.tabindex}
 		{...(scrollRegion ? { 'data-lenis-prevent': '' } : {})}
 		onscroll={scrollMode || reflows ? onFrameScroll : restProps.onscroll}
@@ -340,7 +395,7 @@
 		</div>
 	{/if}
 </div>
-{#if paging && pageLabels}
+{#if !loading && paging && pageLabels}
 	<ShowMore {shown} total={rows.length} pageSize={paging} labels={pageLabels} onMore={showMore} />
 {/if}
 
@@ -572,6 +627,12 @@
 	.data-table-cell-content {
 		min-width: 0;
 	}
+	.data-table :global(.data-table-placeholder) {
+		display: inline-block;
+		max-inline-size: 100%;
+		block-size: 0.7em;
+		vertical-align: 0.05em;
+	}
 
 	.data-table-stack-label,
 	.data-table-row-separator,
@@ -599,6 +660,7 @@
 		cursor: pointer;
 	}
 	.data-table-sort :global(svg) { flex: none; }
+	.data-table-sort[aria-disabled='true'] { cursor: default; }
 	.data-table-sort:focus-visible, .data-table tr[tabindex]:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: -2px;

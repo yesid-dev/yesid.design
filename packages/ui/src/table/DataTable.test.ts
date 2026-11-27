@@ -44,6 +44,57 @@ function mockScrollMetrics(
 }
 
 describe('DataTable', () => {
+	it('keeps its caption and headers while showing decorative rows during loading', async () => {
+		const onSort = vi.fn();
+		const key = vi.fn((row: Row) => row.id);
+		const view = render(DataTable<Row>, {
+			props: {
+				rows,
+				columns: [{ ...columns[0]!, sortable: true }, columns[1]!],
+				key,
+				caption: 'Waits by route',
+				onSort,
+				pageSize: 1,
+				pageLabels: { showing: () => 'Showing one', more: () => 'Show more' },
+				loading: true,
+			},
+		});
+		const frame = view.container.querySelector('[data-slot="data-table-frame"]')!;
+		const grid = screen.getByRole('table', { name: 'Waits by route' });
+		expect(frame.getAttribute('aria-busy')).toBe('true');
+		expect(grid.getAttribute('aria-busy')).toBe('true');
+		expect(within(grid).getAllByRole('columnheader')).toHaveLength(2);
+		expect(grid.querySelectorAll('tbody tr[aria-hidden="true"]')).toHaveLength(4);
+		expect(grid.querySelectorAll('tbody :is(th, td)[aria-hidden="true"] > div > [data-skeleton-busy]')).toHaveLength(8);
+		expect(within(grid).queryByRole('rowheader')).toBeNull();
+		expect(screen.queryByRole('button', { name: 'Show more' })).toBeNull();
+		expect(key).not.toHaveBeenCalled();
+		const sort = screen.getByRole('button', { name: 'Route' }) as HTMLButtonElement;
+		expect(sort.disabled).toBe(false);
+		expect(sort.getAttribute('aria-disabled')).toBe('true');
+		await fireEvent.click(sort);
+		expect(onSort).not.toHaveBeenCalled();
+
+		await view.rerender({ skeletonRows: 2 });
+		expect(grid.querySelectorAll('tbody tr')).toHaveLength(2);
+		await view.rerender({ loading: false });
+		expect(frame.hasAttribute('aria-busy')).toBe(false);
+		expect(grid.hasAttribute('aria-busy')).toBe(false);
+		expect(sort.hasAttribute('aria-disabled')).toBe(false);
+		expect(grid.querySelector('[data-slot="skeleton"]')).toBeNull();
+		expect(within(grid).getByRole('rowheader').textContent?.trim()).toBe('24');
+		expect(screen.getByRole('button', { name: 'Show more' })).toBeDefined();
+		await fireEvent.click(sort);
+		expect(onSort).toHaveBeenCalledWith('route');
+	});
+
+	it('renders the same markup when loading is false or omitted', () => {
+		const props = { rows, columns, key: (row: Row) => row.id, caption: 'Waits by route' };
+		const omitted = render(DataTable<Row>, { props });
+		const inactive = render(DataTable<Row>, { props: { ...props, loading: false, skeletonRows: 8 } });
+		expect(inactive.container.innerHTML).toBe(omitted.container.innerHTML);
+	});
+
 	it('is a table named by its caption, with column and row headers', () => {
 		table();
 
