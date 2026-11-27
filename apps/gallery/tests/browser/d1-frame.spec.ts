@@ -39,14 +39,86 @@ function networkRow(page: Page) {
 	};
 }
 
+function navClearance(page: Page) {
+	return page.evaluate(() => {
+		const probe = document.createElement('div');
+		probe.style.cssText = 'position: fixed; block-size: var(--nav-clearance)';
+		document.body.append(probe);
+		const height = probe.getBoundingClientRect().height;
+		probe.remove();
+		return height;
+	});
+}
+
+test.describe('Inset network header clearance', { tag: '@theme' }, () => {
+	for (const { textSize, clearance } of [{ textSize: 100, clearance: 140 }, { textSize: 200, clearance: 164 }]) {
+		test(`reserves the picker row before hydration with a 320px inset at ${textSize}% text`, async ({ page }) => {
+			await page.setViewportSize({ width: 1280, height: 900 });
+			const path = '/app-frame/network-paint/fr/refresh';
+			const scripts = Promise.withResolvers<void>();
+			await page.route('**/_app/immutable/**/*.js', async (route) => {
+				await scripts.promise;
+				await route.fallback();
+			});
+			await page.route(`**${path}`, async (route) => {
+				const response = await route.fetch();
+				const css = `<style>:root { --site-header-inset-end: 320px; font-size: ${textSize}%; }</style>`;
+				await route.fulfill({ response, body: (await response.text()).replace('</head>', `${css}</head>`) });
+			});
+
+			try {
+				await page.goto(path, { waitUntil: 'domcontentloaded' });
+				const pill = page.getByTestId('nav-pill');
+				const picker = pill.getByRole('combobox', { name: 'Réseau' });
+				const pickerIsBelow = () => picker.evaluate((select) =>
+					select.getBoundingClientRect().top >= select.closest('nav')!.getBoundingClientRect().bottom);
+				await expect(picker).toBeVisible();
+				await expect(pill).not.toHaveClass(/\bnav-hydrated\b/);
+				expect(await pickerIsBelow()).toBe(true);
+				const before = await navClearance(page);
+				expect(before).toBe(clearance);
+
+				scripts.resolve();
+				await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+				await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+				expect(await pickerIsBelow()).toBe(true);
+				expect(await navClearance(page)).toBe(before);
+			} finally {
+				scripts.resolve();
+			}
+		});
+	}
+});
+
 test.describe('Header network short code', { tag: '@theme' }, () => {
-	test('shows the short code inline when only the code fits beside the links', async ({ page }) => {
+	test('reserves the compact row at 200% text before hydration', async ({ page }) => {
+		await page.setViewportSize({ width: 1024, height: 850 });
+		const scripts = Promise.withResolvers<void>();
+		await page.route('**/_app/immutable/**/*.js', async (route) => {
+			await scripts.promise;
+			await route.fallback();
+		});
+		try {
+			await page.goto(path, { waitUntil: 'domcontentloaded' });
+			await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+			const { pill, inRow } = networkRow(page);
+			await expect(pill).not.toHaveClass(/\bnav-hydrated\b/);
+			expect(await inRow()).toBe(false);
+			expect(await navClearance(page)).toBe(164);
+			await page.setViewportSize({ width: 1280, height: 850 });
+			expect(await inRow()).toBe(true);
+			expect(await navClearance(page)).toBe(104);
+		} finally {
+			scripts.resolve();
+		}
+	});
+
+	test('shows the short code in the narrower inline tier', async ({ page }) => {
 		await page.setViewportSize({ width: 1120, height: 850 });
 		await page.goto(`${path}?long-name`);
 		await page.locator('html[data-gallery-ready]').waitFor();
 		await page.evaluate(() => document.fonts.ready);
 		const { pill, select, name, code, inRow } = networkRow(page);
-		const root = page.locator('html');
 		const chrome = page.getByTestId('chrome-size');
 		await expect(name).toHaveText('Riverside · Regional Transit');
 		await expect(name).toBeVisible();
@@ -57,14 +129,11 @@ test.describe('Header network short code', { tag: '@theme' }, () => {
 		await select.focus();
 		const node = await select.elementHandle();
 
-		// The full name needs about 1066px here; the code fits from 1024px.
 		for (const width of [1040, 1024, 1120]) {
 			await page.setViewportSize({ width, height: 850 });
 			const full = width === 1120;
 			await expect(full ? name : code).toBeVisible();
 			await expect(full ? code : name).toBeHidden();
-			await expect(pill).not.toHaveAttribute('data-network-below');
-			await expect(root).not.toHaveAttribute('data-site-header-network-below');
 			expect(await inRow()).toBe(true);
 			expect((await pill.boundingBox())!.height).toBe(fullPill);
 			await expect(chrome).toHaveText(fullChrome);
@@ -76,30 +145,21 @@ test.describe('Header network short code', { tag: '@theme' }, () => {
 		}
 	});
 
-	test('moves the picker below the pill only when the code does not fit either', async ({ page }) => {
+	test('gives the network row more space at 200% text', async ({ page }) => {
 		await page.setViewportSize({ width: 1024, height: 850 });
 		await page.goto(`${path}?long-name`);
 		await page.locator('html[data-gallery-ready]').waitFor();
 		await page.addStyleTag({ content: 'html { font-size: 200%; }' });
 		await page.evaluate(() => document.fonts.ready);
-		const { pill, select, name, code, inRow } = networkRow(page);
-		const root = page.locator('html');
+		const { select, name, code, inRow } = networkRow(page);
 		await select.focus();
 		const node = await select.elementHandle();
 
-		// At 200% text the code fits from about 1208px and the full name from about 1432px.
 		for (const width of [1024, 1300, 1100]) {
 			await page.setViewportSize({ width, height: 850 });
 			const below = width !== 1300;
 			await expect(code).toBeVisible();
 			await expect(name).toBeHidden();
-			if (below) {
-				await expect(pill).toHaveAttribute('data-network-below', '');
-				await expect(root).toHaveAttribute('data-site-header-network-below', '');
-			} else {
-				await expect(pill).not.toHaveAttribute('data-network-below');
-				await expect(root).not.toHaveAttribute('data-site-header-network-below');
-			}
 			await expect.poll(inRow).toBe(!below);
 			await expect(select).toBeFocused();
 			expect(await select.evaluate((control, original) => control === original, node)).toBe(true);
@@ -220,16 +280,12 @@ test.describe('Header network hit area and fit', { tag: '@theme' }, () => {
 					const pillBox = (await pill.boundingBox())!;
 					const pickerBox = (await picker.boundingBox())!;
 					const below = pickerBox.y >= pillBox.y + pillBox.height;
-					const root = page.locator('html');
 					if (width === 1024) expect(below).toBe(true);
+					await expect.poll(() => navClearance(page)).toBe(below ? 164 : 104);
 					if (below) {
 						await expect(picker.getByText('STM', { exact: true })).toBeVisible();
-						await expect(root).toHaveAttribute('data-site-header-network-below', '');
-						const clearance = await root.evaluate((element) =>
-							getComputedStyle(element).getPropertyValue('--nav-network-clearance').trim());
-						await expect(root).toHaveCSS('--nav-extra-clearance', clearance);
-					} else {
-						await expect(root).not.toHaveAttribute('data-site-header-network-below');
+						const chrome = (await page.locator('[data-slot="app-frame-chrome"]').boundingBox())!;
+						expect(chrome.y + chrome.height).toBeGreaterThanOrEqual(pickerBox.y + pickerBox.height);
 					}
 					const trailing = [
 						...(refresh ? [header.getByRole('button', { name: french ? 'Actualiser les données' : 'Refresh data' })] : []),

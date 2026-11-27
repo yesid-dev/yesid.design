@@ -929,7 +929,9 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
 - **NetworkPicker** takes a localized `label`, `networks` entries of
   `{ id, city, name, shortCode }`, a selected ID as `value`, and `onValueChange(id)`.
   It displays “city · name” and uses the short code below 600px. Native options use the full
-  labels at every width. An empty list omits the control.
+  labels at every width. Inside `SiteHeader` the picker uses the pill's dividers in the inline
+  row and matches the pill's surface, edge and shadow in the row below it. An empty list omits
+  the control.
 - **AppFrame** takes `header`, optional `controls`, main `children` and optional `footer` snippets.
   Pass `controlsRail={{ rail, label, summary, openAria, closeAria, mobileVisible }}` for a
   start-side controls column at 64 rem. Controls and evidence use bottom-sheet triggers below
@@ -1010,11 +1012,11 @@ banner visible. With JavaScript disabled, the banner and link remain available.
 
 `SiteHeader` is the floating pill header with a full-screen metro-line menu on a bits-ui Dialog.
 Pass a `network` snippet to place a network control after inline search at desktop widths and
-below the pill when the header is narrower than 1024 px. Use `NetworkPicker` for the compact
-short code and the full accessible option names. From 1024 px, a picker whose full name does not
-fit beside the links shows its short code in the pill, and moves below the pill only when the code
-does not fit either. Below 1024 px of viewport width, the network row scrolls away with the page.
-Tabbing to the network control brings it back for keyboard use.
+below the pill at narrower widths. At the default text size the picker moves inline when the
+header reaches 1024 px and shows the full name from 1120 px. Both steps allow more room when
+text is enlarged. The native options keep their full names at every width. The row below the
+pill scrolls away with the page. Tabbing to the network control brings it back for keyboard
+use. Opening the menu hides the control and preserves the space reserved for the row.
 For search inside an `AppFrame`, provide the inline field in `search` and put the compact search
 button in `actions` with `data-slot="nav-compact-search"`. This marker is the product's hook for
 compact search. The kit shows the marked button in place of the inline field when the frame is
@@ -1103,7 +1105,9 @@ required, with an empty footer string hiding it. The header opens with the named
 `#main`, shown on focus, and the pill is the page's banner. Every product renders the same skeleton: `SiteHeader`, then
 `<main id="main">`, then `SiteFooter` outside `main`.
 `--site-header-inset-end` narrows the header beside a docked panel, animated over
-`--site-header-inset-duration`. The menu starts below the app's `--chrome-offset` (default `--nav-clearance`); page offsets read
+`--site-header-inset-duration`. Set the inset as a length on `:root` for a panel present on
+first paint, so the header and document clearance use the same value before hydration. The
+menu starts below the app's `--chrome-offset` (default `--nav-clearance`), and page offsets read
 `--nav-clearance` from `base.css`.
 
 `menuGroups?: readonly SiteHeaderMenuGroup[]` supplies visible group headings and ordered items.

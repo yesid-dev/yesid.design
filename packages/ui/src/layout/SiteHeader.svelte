@@ -145,21 +145,21 @@
 	let hydrated = $state(false);
 	let fallbackControls = $state<HTMLSpanElement>();
 	let headerElement: HTMLElement;
-	let networkInline = $state(false);
 	let networkElement = $state<HTMLDivElement>();
 	let trailingControls = $state<HTMLDivElement>();
 
-	// CSS already places the picker on the wide row. Move the same node to match keyboard order.
-	$effect(() => {
+	// CSS owns placement. Move the same node to match keyboard order on mount and resize.
+	function orderNetwork() {
 		const control = networkElement;
 		const trailing = trailingControls;
-		const inline = networkInline;
 		const pill = control?.parentElement as (HTMLElement & {
 			moveBefore?: (node: Node, before: Node | null) => void;
 		}) | null | undefined;
 		if (!control || !trailing || !pill) return;
 
-		const before = inline ? trailing : null;
+		const below = getComputedStyle(control).position === 'absolute';
+		control.toggleAttribute('data-network-below', below);
+		const before = below ? null : trailing;
 		if (control.nextElementSibling === before) return;
 		if (typeof pill.moveBefore === 'function') {
 			pill.moveBefore(control, before);
@@ -170,7 +170,8 @@
 				focused.focus({ preventScroll: true });
 			}
 		}
-	});
+	}
+	$effect(orderNetwork);
 
 	onMount(() => {
 		if (!compactMenuControls) {
@@ -190,6 +191,7 @@
 	function measureHeader(node: HTMLElement) {
 		const observer = new ResizeObserver(([entry]) => {
 			narrow = entry.contentRect.width < 600;
+			orderNetwork();
 		});
 		observer.observe(node);
 		return { destroy: () => observer.disconnect() };
@@ -197,10 +199,8 @@
 	function followPageScroll(node: HTMLElement) {
 		if (CSS.supports('(animation-timeline: scroll(root block)) and (animation-range: 0px 100dvh)')) return;
 		const view = node.ownerDocument.defaultView!;
-		const compact = view.matchMedia('(width < 1024px)');
 		let previous = -1;
 		const update = () => {
-			if (!compact.matches) return;
 			const scroll = Math.min(view.innerHeight, Math.max(0, view.scrollY));
 			if (scroll === previous) return;
 			previous = scroll;
@@ -382,7 +382,7 @@
 						class:nav-pill-compact-controls={compactMenuControls}
 						class:nav-pill-network={!!network}
 						class:nav-hydrated={hydrated}
-						use:linksFit={{ paused: active, links, onNetworkInline: network ? (inline: boolean) => (networkInline = inline) : undefined }}
+						use:linksFit={{ paused: active, links }}
 					>
 						{#if brand}{@render brand()}{:else}
 							<Wordmark href={home} text={wordmark} autoPlay={wordmarkAutoPlay} class="nav-wordmark" />
@@ -574,7 +574,8 @@
 		   own dividers and ProductBrand's inside the pill (owner live QA, 16 November 2026). The
 		   compaction tiers below only change this value, never the 44px targets. */
 		--nav-split-space: 20px;
-		background: color-mix(in srgb, var(--background) 92%, transparent);
+		--nav-surface: color-mix(in srgb, var(--background) 92%, transparent);
+		background: var(--nav-surface);
 		-webkit-backdrop-filter: blur(var(--glass-blur));
 		backdrop-filter: blur(var(--glass-blur));
 		border: var(--nav-border) solid var(--border-brand);
@@ -651,19 +652,46 @@
 		display: inline-flex;
 	}
 	.nav-network {
+		--network-picker-background: transparent;
+		--network-picker-border-width: 0px;
+		--network-picker-name-display: none;
+		--network-picker-code-display: inline;
 		display: flex;
 		align-items: center;
 		min-inline-size: 0;
-		margin-inline-start: 0.5rem;
+	}
+	.nav-network:has(> :global(*))::before {
+		content: '';
+		inline-size: 2px;
+		block-size: 18px;
+		background: var(--border-brand);
+		margin-inline: var(--nav-split-space);
+		flex-shrink: 0;
+	}
+	.nav-network :global([data-slot='network-picker']) {
+		font-weight: 500;
+		line-height: 1.2;
+		white-space: nowrap;
 	}
 	.nav-trailing { display: contents; }
-	@container site-header (width >= 1024px) {
+	/* Allow extra room for enlarged text at the desktop step. */
+	@container site-header (width >= max(1024px, calc(824px + 12.5em))) {
+		.nav-pill-network {
+			/* Leave room for wider fallback text when the desktop links first appear. */
+			--nav-split-space: clamp(12px, calc(5cqi - 50px), 20px);
+		}
 		.nav-pill-network > .nav-network { order: 1; }
 		.nav-pill-network > .nav-trailing {
 			display: flex;
 			flex: none;
 			align-items: center;
 			order: 2;
+		}
+	}
+	@container site-header (width >= max(1120px, calc(800px + 20em))) {
+		.nav-network {
+			--network-picker-name-display: inline;
+			--network-picker-code-display: none;
 		}
 	}
 
@@ -697,11 +725,17 @@
 		.nav-search {
 			display: none;
 		}
-		.nav-pill:has(.nav-network:not(.nav-collapsed) > :global(*)) {
+	}
+	@container site-header (width < max(1024px, calc(824px + 12.5em))) {
+		.nav-pill:has(.nav-network > :global(*)) {
 			position: relative;
 			margin-block-end: var(--nav-network-clearance);
 		}
 		.nav-network {
+			--network-picker-background: var(--nav-surface);
+			--network-picker-border-width: var(--nav-border);
+			--network-picker-border-color: var(--border-brand);
+			--network-picker-shadow: var(--shadow-nav);
 			position: absolute;
 			inset-block-start: calc(100% + 0.5rem);
 			inset-inline-start: 50%;
@@ -710,22 +744,22 @@
 			inline-size: max-content;
 			max-inline-size: calc(100vw - 1rem);
 		}
-	}
-	.nav-pill[data-network-below]:not([data-network-measuring]):has(.nav-network:not(.nav-collapsed) > :global(*)) {
-		position: relative;
-		margin-block-end: var(--nav-network-clearance);
-	}
-	.nav-pill[data-network-below]:not([data-network-measuring]) .nav-network {
-		position: absolute;
-		inset-block-start: calc(100% + 0.5rem);
-		inset-inline-start: 50%;
-		translate: -50% 0;
-		margin-inline: 0;
-		inline-size: max-content;
-		max-inline-size: calc(100vw - 1rem);
-	}
-	@media (width >= 1024px) {
-		:global(:root[data-site-header-network-below]) { --nav-extra-clearance: var(--nav-network-clearance); }
+		.nav-network:has(> :global(*))::before { display: none; }
+		.nav-network :global([data-slot='network-picker']) {
+			-webkit-backdrop-filter: blur(var(--glass-blur));
+			backdrop-filter: blur(var(--glass-blur));
+		}
+		/* Clip the departing row at the pill edge. Keyboard focus brings the same control back. */
+		.nav-network:not(.nav-collapsed, :global(.app-frame-chrome.tall-chrome *)):not(:has(:focus-visible)) {
+			--network-scroll: var(--site-header-network-scroll, 0px);
+			translate: -50% calc(-1 * var(--network-scroll));
+			clip-path: inset(calc(var(--network-scroll) - 0.5rem + var(--nav-border)) -32px -32px);
+			@supports (animation-timeline: scroll(root block)) and (animation-range: 0px 100dvh) {
+				animation: scroll-compact-network auto linear both;
+				animation-timeline: scroll(root block);
+				animation-range: 0px 100dvh;
+			}
+		}
 	}
 	@property --site-header-network-scroll {
 		syntax: '<length>';
@@ -734,19 +768,6 @@
 	}
 	@keyframes scroll-compact-network {
 		to { --site-header-network-scroll: 100dvh; }
-	}
-	@media (width < 1024px) {
-		/* Clip the departing row at the pill edge. Keyboard focus brings the same control back. */
-		.nav-pill .nav-network:not(.nav-collapsed, :global(.app-frame-chrome.tall-chrome *)):not(:has(:focus-visible)) {
-			--network-scroll: var(--site-header-network-scroll, 0px);
-			translate: -50% calc(-1 * var(--network-scroll));
-			clip-path: inset(calc(var(--network-scroll) - 0.5rem + var(--nav-border)) -4px -4px);
-			@supports (animation-timeline: scroll(root block)) and (animation-range: 0px 100dvh) {
-				animation: scroll-compact-network auto linear both;
-				animation-timeline: scroll(root block);
-				animation-range: 0px 100dvh;
-			}
-		}
 	}
 	/* linkTiers: caller widths for a wider brand, named in px at the default 16px font size. */
 	@container site-header (width < 48em) {

@@ -167,7 +167,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
-- `./base.css` — direct asset `./base.css` (`default`), sha256 `c5536865b5a179755e0b62443ba9dc11c32573f13022d00ff696ac4703e9bfe3`
+- `./base.css` — direct asset `./base.css` (`default`), sha256 `5e64b1f8f416a09c5eb04fe5ac5c72c0a795cadf12d82eafc19454fdb6d25101`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `def6ee095570b4f79fa58674d90f4b99175b34463370338ef87db4c1d8c4e2f0`
 
 ## Declaration namespaces
