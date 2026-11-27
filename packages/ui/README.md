@@ -694,7 +694,11 @@ seconds from the shared clock. Pass `late` with the supplied stale-since `label`
 and keep the label stable. Pass `paused` on a live stamp with a localized paused `label`,
 such as `Paused · last updated at 2 p.m.`, to show a neutral pause mark and hold that label
 steady. If both `late` and `paused` are set, the pause mark takes precedence. Clock updates
-are ordinary text changes.
+are ordinary text changes. An active stamp reserves room from its initial render for `label`
+and representative `agoLabel` values for seconds, minutes, hours and days. The visible age
+uses tabular digits, and the reserved text wraps with it in narrow containers. Use a pure
+formatter so the same elapsed seconds produce the same text during rendering and sizing.
+Wording wider than the sampled labels can still grow the stamp to fit.
 
 ### CornerMarks, StatusDot, MetricDisplay, SectionHeading, and SectionIcon
 

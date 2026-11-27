@@ -4,6 +4,15 @@
 	import { Switch } from '@yesid/ui/switch';
 
 	let paused = $state(false);
+	let updatedAt = $state(new Date('2026-11-27T12:00:00Z'));
+
+	function agoLabel(seconds: number): string {
+		const age = seconds < 60 ? `${seconds} s`
+			: seconds < 3600 ? `${Math.floor(seconds / 60)} min`
+			: seconds < 86400 ? `${Math.floor(seconds / 3600)} h`
+			: `${Math.floor(seconds / 86400)} d`;
+		return `Service information updated ${age} ago`;
+	}
 
 	const stops: readonly StopLadderStop[] = [
 		{ id: 'main', name: 'Main Street', code: '201', href: '#main-street', timingPoint: true, value: 0, valueLabel: 'On time' },
@@ -22,6 +31,15 @@
 	<p><Stamp kind="live" {paused} label={paused ? 'Paused · last updated at 2 p.m.' : 'Live · last updated at 2 p.m.'} /></p>
 </section>
 
+<section aria-labelledby="live-age">
+	<h2 id="live-age">Live age</h2>
+	<div class="age-row" data-testid="live-age-row">
+		<span>Now</span>
+		<Stamp kind="live" label="Live service" {updatedAt} {agoLabel} />
+		<button type="button" onclick={() => { updatedAt = new Date(); }}>Refresh</button>
+	</div>
+</section>
+
 <section>
 	<h2>Delay by stop</h2>
 	<StopLadder label="Stops along route 24" {stops} max={10}
@@ -36,4 +54,12 @@
 	h2 { margin-block-end: 0.75rem; font-size: var(--text-heading); }
 	section { margin-block: 1.5rem; min-inline-size: 0; }
 	p { margin-block-start: 0.75rem; }
+	.age-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+	.age-row button { min-block-size: var(--size-tap-min); }
 </style>
