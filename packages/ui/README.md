@@ -57,6 +57,9 @@ installed source, relative to the stylesheet that holds the directive:
 `@yesid/tokens/tokens.css`, which defines `--size-tap-min: 44px`; products do not need to redeclare
 it. Product copy, placeholders, labels, options and localized prefixes always stay in the caller.
 
+Use `max-inline-size: var(--measure-listing)` (`46rem`) for a single listing or results column,
+such as search results or a directory, between the lede and body measures.
+
 ## Current public component contracts
 
 ### Rendered-element ownership

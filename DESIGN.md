@@ -220,6 +220,8 @@ Four CSS Grid recipes: Full-Bleed · Contained · Content+Sidebars · Edge-Title
 widths cap at `64rem` (content) / `72rem` (wide). Page gutters scale via `--space-page-x`.
 Section spacing scales via `--space-section-y`. Consumer integration guidance lives in
 docs/BUILD-A-YESID-PRODUCT.md.
+Use `--measure-listing` (`46rem`) for a single listing or results column,
+such as search results or a directory, between the lede and body measures.
 SiteHeader accepts a caller-owned `brand` snippet and `wordmarkAutoPlay={false}` for its default
 wordmark. Empty menus omit the menu button and keep the identity controls reachable in the pill.
 The theme and language toggles stay in the pill at every width (D19); priority 2 links show from a
