@@ -11,6 +11,120 @@ async function openFrame(page: Page, path = '/app-frame'): Promise<void> {
 	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 }
 
+for (const theme of ['light', 'dark']) {
+	for (const width of [390, 1024, 1440]) {
+		test(`floating chrome stays clear at ${width}px in ${theme}`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 844 });
+			await page.addInitScript((value) => localStorage.setItem('theme', value), theme);
+			await page.goto('/app-frame/network-paint/en/quiet');
+			await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+			const pill = page.getByTestId('nav-pill');
+			await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+			await page.evaluate(() => document.fonts.ready);
+
+			const chromeRow = page.locator(chrome);
+			const controls = page.locator('[data-slot="app-frame-controls"]');
+			const ground = await page.locator('[data-slot="app-frame"]').evaluate((element) => {
+				const probe = document.createElement('span');
+				probe.style.backgroundColor = 'var(--background)';
+				element.append(probe);
+				const color = getComputedStyle(probe).backgroundColor;
+				probe.remove();
+				return color;
+			});
+			const paint = () => chromeRow.evaluate((element) => {
+				const { backgroundColor, backgroundImage } = getComputedStyle(element);
+				return { backgroundColor, backgroundImage };
+			});
+			const clear = { backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none' };
+			const assertPaint = async (position: string) => {
+				expect.soft(await paint(), position).toEqual(clear);
+				expect.soft(await controls.evaluate((element) => getComputedStyle(element).backgroundColor), position).toBe(ground);
+				await expect(pill).not.toHaveCSS('background-color', clear.backgroundColor);
+				await expect(pill).toHaveCSS('backdrop-filter', /^blur\([1-9]/);
+			};
+			await assertPaint('at the top');
+
+			const pin = page.getByRole('button', { name: 'Pin report' });
+			const pillBox = (await pill.boundingBox())!;
+			const pinBox = (await pin.boundingBox())!;
+			const y = Math.round(pillBox.y + pillBox.height / 2);
+			const x = Math.floor(Math.min(pillBox.x, pinBox.x + pinBox.width) / 2);
+			const scrollTop = Math.round(pinBox.y + pinBox.height / 2 - y);
+			await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), scrollTop);
+			await expect.poll(() => page.evaluate(() => scrollY)).toBe(scrollTop);
+			expect(await pill.boundingBox()).toEqual(pillBox);
+			await assertPaint('after scrolling');
+			expect(x).toBeGreaterThan(pinBox.x);
+			expect(x).toBeLessThan(pillBox.x);
+			await page.mouse.click(x, y);
+			expect.soft(await pin.getAttribute('aria-pressed'), 'click reaches the report button').toBe('true');
+
+			const word = await page.locator('#map').evaluate((element) => {
+				const range = document.createRange();
+				range.setStart(element.firstChild!, 0);
+				range.setEnd(element.firstChild!, 3);
+				const { left, right, top, height } = range.getBoundingClientRect();
+				return { start: left + 1, end: right - 1, documentY: Math.round(scrollY + top + height / 2) };
+			});
+			const textScroll = word.documentY - y;
+			await page.evaluate((top) => scrollTo({ top, behavior: 'instant' }), textScroll);
+			await expect.poll(() => page.evaluate(() => scrollY)).toBe(textScroll);
+			expect(word.end).toBeLessThan(pillBox.x);
+			// Chromium clamps the selection endpoint to the scroll-padding edge during a drag.
+			await page.addStyleTag({ content: 'html.chrome-clearance { scroll-padding-block-start: 0; }' });
+			await page.mouse.move(word.start, y);
+			await page.mouse.down();
+			await page.mouse.move(word.end, y, { steps: 5 });
+			await page.mouse.up();
+			expect((await page.evaluate(() => getSelection()?.toString()))?.trim()).toBe('The');
+		});
+	}
+}
+
+test('the announcement and focused skip link stay clickable inside a wrapped header', async ({ page }) => {
+	await openFrame(page, '/app-frame/network-paint/en/announcement');
+	const banner = page.getByRole('region', { name: 'Today’s service report' });
+	await expect(banner).toBeVisible();
+	await banner.getByRole('button', { name: 'Dismiss announcement' }).click();
+	await expect(banner).toBeHidden();
+
+	const skip = page.getByRole('link', { name: LABELS.skipToContent });
+	await skip.focus();
+	await skip.click();
+	await expect(page.getByRole('main')).toBeFocused();
+});
+
+test('the wrapped header keeps pill controls and links clickable', async ({ page }) => {
+	await openFrame(page, '/app-frame/network-paint/en/refresh');
+	const pill = page.getByTestId('nav-pill');
+	await expect(pill).toHaveClass(/\bnav-hydrated\b/);
+	const theme = pill.getByTestId('theme-toggle');
+	const checked = await theme.getAttribute('aria-checked');
+	await theme.click();
+	await expect(theme).toHaveAttribute('aria-checked', checked === 'true' ? 'false' : 'true');
+	const network = pill.getByRole('combobox', { name: 'Network' });
+	await network.click();
+	await expect(network).toBeFocused();
+	await page.keyboard.press('Escape');
+	const search = pill.getByRole('searchbox', { name: 'Search the network' });
+	if (page.viewportSize()!.width >= 1024) {
+		await search.click();
+		await expect(search).toBeFocused();
+	}
+	await pill.getByRole('button', { name: 'Refresh data' }).click();
+	await pill.getByRole('button', { name: LABELS.openMenu }).click();
+	await expect(page.getByRole('dialog', { name: LABELS.menu })).toBeVisible();
+	await pill.getByRole('button', { name: LABELS.closeMenu }).click();
+	await expect(page.getByRole('dialog', { name: LABELS.menu })).toBeHidden();
+	if (page.viewportSize()!.width >= 1280) {
+		await pill.getByRole('link', { name: 'Overview' }).click();
+		await expect(page).toHaveURL(/#overview$/);
+	}
+	await pill.getByTestId('language-toggle').click();
+	await expect(page).toHaveURL(/\/fr\/refresh$/);
+});
+
 test('ready ranges commit resolved dates and custom validation names and focuses the field', async ({ page }) => {
 	await page.setViewportSize({ width: 320, height: 850 });
 	await openFrame(page);

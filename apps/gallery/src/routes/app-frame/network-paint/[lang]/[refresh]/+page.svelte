@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { ProductBrand, type NavigationLifecycle } from '@yesid/ui/brand';
 	import { Button } from '@yesid/ui/button';
-	import { AppFrame, NetworkPicker, SiteHeader } from '@yesid/ui/layout';
+	import { AnnouncementBanner, AppFrame, NetworkPicker, SiteHeader } from '@yesid/ui/layout';
 	import { LABELS, LANGUAGE_NAMES, LOCALES } from '#lib/gallery/site-header-fixture.js';
 	import type { PageProps } from './$types';
 
@@ -27,39 +27,73 @@
 		{ id: 'ott', city: 'Ottawa', name: 'OC Transpo', shortCode: 'OC Transpo' },
 	]);
 	let selected = $state('stm');
-	const href = (lang: string) => `/app-frame/network-paint/${lang}/${data.refresh ? 'refresh' : 'quiet'}`;
+	let pinned = $state(false);
+	const href = (lang: string) => `/app-frame/network-paint/${lang}/${data.variant}`;
 </script>
 
 <svelte:head><title>Network header first paint</title></svelte:head>
 
 <AppFrame mainLabel={french ? 'Espace de service' : 'Service workspace'}>
 	{#snippet header()}
-		<SiteHeader {navigation} {labels} home={href(data.lang)} {links}
-			linkTiers={{ priority2: 1280, priority3: 1280 }}
-			menuItems={[{ href: '#overview', label: french ? 'Lire le rapport' : 'Read the report' }]}
-			language={{ locale: data.lang, locales: LOCALES, names: LANGUAGE_NAMES, label: french ? 'Langue' : 'Language', href }}>
-			{#snippet brand()}<ProductBrand product="Transit" href={href(data.lang)} houseHref="/" />{/snippet}
-			{#snippet search()}
-				<input class="search" type="search" aria-label={french ? 'Chercher dans le réseau' : 'Search the network'} />
-			{/snippet}
-			{#snippet network()}
-				<NetworkPicker label={french ? 'Réseau' : 'Network'} {networks} value={selected} onValueChange={(id) => (selected = id)} />
-			{/snippet}
-			{#snippet actions()}
-				{#if data.refresh}
-					<Button type="button" variant="ghost" size="icon-tap" aria-label={french ? 'Actualiser les données' : 'Refresh data'}>
-						<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-							<path d="M15 5v4h-4M15 9a6 6 0 1 0-2 4.5" />
-						</svg>
-					</Button>
-				{/if}
-			{/snippet}
-		</SiteHeader>
+		<div class="frame-nav">
+			{#if data.variant === 'announcement'}
+				<AnnouncementBanner id="service-report" message={french ? 'Relevé du jour' : 'Today’s service report'}
+					href="#map" closeLabel={french ? 'Fermer l’annonce' : 'Dismiss announcement'} />
+			{/if}
+			<SiteHeader {navigation} {labels} home={href(data.lang)} {links}
+				linkTiers={{ priority2: 1280, priority3: 1280 }}
+				menuItems={[{ href: '#overview', label: french ? 'Lire le rapport' : 'Read the report' }]}
+				language={{ locale: data.lang, locales: LOCALES, names: LANGUAGE_NAMES, label: french ? 'Langue' : 'Language', href }}>
+				{#snippet brand()}<ProductBrand product="Transit" href={href(data.lang)} houseHref="/" />{/snippet}
+				{#snippet search()}
+					<input class="search" type="search" aria-label={french ? 'Chercher dans le réseau' : 'Search the network'} />
+				{/snippet}
+				{#snippet network()}
+					<NetworkPicker label={french ? 'Réseau' : 'Network'} {networks} value={selected} onValueChange={(id) => (selected = id)} />
+				{/snippet}
+				{#snippet actions()}
+					{#if data.variant === 'refresh'}
+						<Button type="button" variant="ghost" size="icon-tap" aria-label={french ? 'Actualiser les données' : 'Refresh data'}>
+							<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+								<path d="M15 5v4h-4M15 9a6 6 0 1 0-2 4.5" />
+							</svg>
+						</Button>
+					{/if}
+				{/snippet}
+			</SiteHeader>
+		</div>
 	{/snippet}
-	<h1 id="overview">{french ? 'Aperçu du réseau' : 'Service overview'}</h1>
-	<p id="map">{french ? 'Les derniers relevés du service.' : 'The latest service report.'}</p>
+	{#snippet controls()}
+		<a href="#map">{french ? 'Dernier relevé' : 'Latest report'}</a>
+	{/snippet}
+	<section class="report">
+		<h1 id="overview">{french ? 'Aperçu du réseau' : 'Service overview'}</h1>
+		<button class="pin-report" type="button" aria-pressed={pinned} onclick={() => (pinned = !pinned)}>
+			{french ? 'Épingler le relevé' : 'Pin report'}
+		</button>
+		<p id="map">{french ? 'Les derniers relevés du service.' : 'The latest service report.'}</p>
+		<table>
+			<thead><tr><th>{french ? 'Heure' : 'Hour'}</th><th>STM</th><th>OC Transpo</th></tr></thead>
+			<tbody>
+				{#each Array(24) as _, hour (hour)}
+					<tr><th scope="row">{String(hour).padStart(2, '0')}:00</th><td>{hour * 13}</td><td>{hour * 9}</td></tr>
+				{/each}
+			</tbody>
+		</table>
+	</section>
 </AppFrame>
 
 <style>
+	.frame-nav { display: contents; pointer-events: none; }
+	@media (min-width: 1024px) { .frame-nav { display: block; } }
 	.search { inline-size: clamp(11rem, 22cqi, 20rem); min-block-size: var(--size-tap-min); border: 1px solid var(--border); }
+	.report {
+		background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+		background-size: 1.5rem 1.5rem;
+	}
+	.report h1 { padding-inline: var(--space-page-x); }
+	.report p { padding-inline: 0.5rem; }
+	.pin-report { min-block-size: var(--size-tap-min); padding-inline: 0.5rem; }
+	table { inline-size: 100%; text-align: start; }
+	th, td { padding: 0.5rem var(--space-page-x); border-block-end: 1px solid var(--border); }
 </style>

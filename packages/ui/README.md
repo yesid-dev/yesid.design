@@ -939,11 +939,14 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   root font size, including page overrides. The `rail` snippet receives `SurfaceRailContext` and can
   render `ControlsRail`. In a paired reading frame, the rail starts at the page gutter
   and sits 1 rem below the chrome when sticky. In `fullViewport` the
-  controls rail floats over `main`. `chromeHeight` measures the header and any retained strip.
+  controls rail floats over `main`. `chromeHeight` measures the header and any controls row.
   Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
-  from the first render. `bind:chromeHeight` reports their combined height in CSS pixels after
-  layout and on resize. Within the frame, `--app-frame-chrome-height` exposes that measurement.
+  from the first render. The chrome around the pill is transparent and lets pointer events reach
+  the page. Custom header content can set `pointer-events: auto` on its interactive elements.
+  The controls row paints its own background. `bind:chromeHeight` reports the combined
+  row heights in CSS pixels after layout and on resize. Within the frame, `--app-frame-chrome-height`
+  exposes that measurement.
   `--chrome-offset` is the sticky clearance and becomes zero when tall chrome scrolls away.
   `--app-frame-header-height` measures the header row alone. Set
   `--app-frame-chrome-height-ssr` and `--app-frame-header-height-ssr` on a parent to supply
