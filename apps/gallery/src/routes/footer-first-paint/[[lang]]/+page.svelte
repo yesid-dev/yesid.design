@@ -20,6 +20,8 @@
 	]);
 </script>
 
+<svelte:head><title>yesid.design · Footer first paint</title></svelte:head>
+
 <!-- Keep the footer above the fold and exercise the compact shell's adoption of the boot state. -->
 <div data-slot="app-frame" data-rail-layout={railLayout}>
 	<div id="report" class="px-6 py-8"><h1>Service report</h1></div>
