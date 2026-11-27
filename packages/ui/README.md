@@ -1156,9 +1156,10 @@ menu starts below the app's `--chrome-offset` (default `--nav-clearance`), and p
 Each group has `{ label, items }`. When supplied, groups replace `menuItems`, including an empty
 array. `menuItems` is optional and defaults to an empty array.
 Keep every header destination in the selected menu source. Headings use the supplied case and copy.
-Grouped menus lay out as organized columns from 768px (one column per group while they fit, then
-wrapping) and as one column below it; each heading still labels its own list and reading and tab
-order stay group order across the columns.
+Grouped menus form a centered block of content-sized columns from 768px. Groups wrap onto another
+row when space runs out, and long labels wrap if their column reaches the available width. Below
+768px the groups stack in one column. Each heading labels its own list, and reading and tab order
+follow the supplied group order.
 
 Every vertical divider in the pill takes one inline space on both sides, from `--nav-split-space`
 on `.nav-pill`: 20px by default and 10px, 4px and 2px at the phone compaction tiers. `ProductBrand`

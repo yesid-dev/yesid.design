@@ -1079,10 +1079,7 @@
 		margin-bottom: auto;
 	}
 
-	/* Grouped menus (owner ruling, 16 November 2026): organized columns on desktop, one column on
-	   phones. Every group keeps its heading and its list paired inside one cell, so the heading
-	   still labels its list and reading and tab order stay group order across the columns. The
-	   flat `menuItems` presentation is unchanged: this only applies when `menuGroups` is supplied. */
+	/* Each group keeps its heading and list together in reading and tab order. */
 	.menu-content-grouped {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -1100,13 +1097,18 @@
 	}
 	@media (min-width: 768px) {
 		.menu-content-grouped {
-			grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-			column-gap: 3rem;
-			row-gap: 2rem;
-			max-width: none;
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: center;
+			gap: 2rem 1.5rem;
+			inline-size: fit-content;
+			max-inline-size: min(100%, var(--container-wide));
+		}
+		.menu-content-grouped .menu-group {
+			max-inline-size: 100%;
+			overflow-wrap: anywhere;
 		}
 		.menu-content-grouped:has(> .menu-group:nth-child(4)) {
-			column-gap: var(--space-card-gap);
 			--menu-grouped-label-size: var(--text-menu-label-mobile);
 		}
 	}
