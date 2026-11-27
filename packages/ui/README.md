@@ -1324,8 +1324,8 @@ at the end of the row, leaving the remaining room for the primary column. When t
 most 14 rem wide, such as a phone card at 200% text, the primary takes the whole row and the
 value moves below it, start-aligned, so long names and route plates keep whole words. The other
 columns reflow into wrapping details, with separators attached to the end of each preceding detail.
-In `rows` and `stack` layouts, a word can break if it is wider than its line. If fixed-width
-content still overflows, the frame allows horizontal scrolling before hydration. Once interactive,
+In `rows` and `stack` layouts, body cells preserve whole words, including in nested badges. If
+content overflows, the frame allows horizontal scrolling before hydration. Once interactive,
 the frame becomes a caption-named, keyboard-scrollable region with edge fades whenever content overflows.
 Compact rows show value and detail labels by default. Pass `labels: false` to omit all per-row
 labels or `labels: 'details'` to omit the value label and keep the detail column labels.

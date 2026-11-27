@@ -721,7 +721,7 @@
 			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
-			overflow-wrap: anywhere;
+			overflow-wrap: normal;
 			word-break: normal;
 		}
 
@@ -787,7 +787,7 @@
 			gap: 0.5rem;
 			padding: 0.25rem 0;
 			border: 0;
-			overflow-wrap: anywhere;
+			overflow-wrap: normal;
 			word-break: normal;
 		}
 
@@ -869,7 +869,7 @@
 			font-weight: 600;
 		}
 		.data-table-frame[data-responsive='rows'] .data-table-sort {
-			overflow-wrap: anywhere;
+			overflow-wrap: break-word;
 			word-break: normal;
 		}
 		.data-table-frame[data-responsive='rows'] .data-table-sort > span {
@@ -899,8 +899,8 @@
 			padding: 0;
 			border: 0;
 			text-align: start;
-			/* Keep normal word boundaries, including inside shrink-to-fit cell content. */
-			overflow-wrap: anywhere;
+			/* Preserve the minimum word width of nested flex and grid items. */
+			overflow-wrap: normal;
 			word-break: normal;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > [data-row-position='primary'] {

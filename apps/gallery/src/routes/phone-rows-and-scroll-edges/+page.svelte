@@ -143,8 +143,8 @@
 	const narrowDailyColumns = dailyColumns.slice(0, 3);
 
 	const wrapRows = [
-		{ name: 'North', detail: 'Eastbound', value: '93%' },
-		{ name: 'Sherbrooke', detail: 'Fahrgastinformationssystemverfügbarkeitsberichte', value: '88%' },
+		{ name: 'North', detail: 'Unknown', value: '93%' },
+		{ name: 'Sherbrooke', detail: 'NorthboundExpress', value: '88%' },
 	];
 	type WrapRow = (typeof wrapRows)[number];
 	const wrapColumns: DataTableColumn<WrapRow>[] = [
@@ -185,7 +185,16 @@
 		{row.value}
 	{/if}
 {/snippet}
-{#snippet wrapDetail(row: WrapRow)}<span data-wrap-word>{row.detail}</span>{/snippet}
+{#snippet wrapDetail(row: WrapRow)}
+	{#if row.name === 'North'}
+		<span class="service-status">
+			<span class="service-code">24</span>
+			<span class="service-badge"><span data-wrap-word>{row.detail}</span></span>
+		</span>
+	{:else}
+		<span data-wrap-word>{row.detail}</span>
+	{/if}
+{/snippet}
 
 <div class="showcase" data-testid="phone-rows-and-scroll-edges">
 	<h1>Phone rows, formatted filter counts and scroll edges</h1>
@@ -367,6 +376,17 @@
 	.wrap-name {
 		display: inline-block;
 		font-size: var(--text-heading);
+	}
+	.service-status {
+		display: inline-flex;
+		inline-size: 78px;
+		gap: 0.375rem;
+	}
+	.service-code {
+		flex: 0 0 32px;
+	}
+	.service-badge {
+		display: inline-flex;
 	}
 	.wide-cell {
 		display: inline-block;
