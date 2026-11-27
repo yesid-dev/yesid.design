@@ -13,6 +13,8 @@
 		{ key: 'onTime', header: 'On time', width: '25%', numeric: true, cell: onTime },
 		{ key: 'service', header: 'Service', width: '35%', cell: service },
 	];
+	const endColumns: DataTableColumn<Row>[] = [columns[0]!, { key: 'service', header: 'Latest service', cell: wideService }];
+	const retainedRows = [{ ...rows[0]!, onTime: '' }, rows[1]!];
 	const examples = [
 		{ label: 'Scrollable table', responsive: { mode: 'scroll', minWidth: '32rem' } },
 		{ label: 'Stacked table', responsive: { mode: 'stack', at: 'compact' } },
@@ -32,6 +34,7 @@
 {#snippet station(row: Row)}{row.station}{/snippet}
 {#snippet onTime(row: Row)}{row.onTime}{/snippet}
 {#snippet service(row: Row)}{row.service}{/snippet}
+{#snippet wideService(row: Row)}<div class="wide-cell">{row.service}</div>{/snippet}
 
 <section class="examples" data-testid="loading-states">
 	<h1>Loading states</h1>
@@ -62,6 +65,33 @@
 		</section>
 	{/each}
 
+	<section>
+		<h2>Latest service</h2>
+		<DataTable
+			{loading}
+			rows={loading ? [] : rows}
+			columns={endColumns}
+			key={(row) => row.station}
+			caption="Latest service"
+			responsive={{ mode: 'scroll', minWidth: '32rem', initialScroll: 'end' }}
+		/>
+	</section>
+
+	<section>
+		<h2>Refreshing service reports</h2>
+		<DataTable
+			{loading}
+			rows={retainedRows}
+			skeletonRows={3}
+			{columns}
+			key={(row) => row.station}
+			caption="Refreshing service reports"
+			responsive={{ mode: 'rows', primary: 'station', value: 'onTime', labels: false }}
+			rowEmpty={(row) => row.onTime === ''}
+			rowDetail={service}
+		/>
+	</section>
+
 	<section class="chart">
 		<h2>Chart</h2>
 		<ChartFrame {loading} label="On-time service" xDomain={[-0.5, 1.5]} yDomain={[0, 100]}>
@@ -85,5 +115,6 @@
 		max-inline-size: 68rem;
 	}
 	.examples > section { inline-size: 100%; min-inline-size: 0; }
+	.wide-cell { inline-size: 36rem; }
 	.chart { display: flex; flex-direction: column; min-block-size: 21rem; }
 </style>

@@ -21,11 +21,12 @@ for (const width of [390, 1440]) {
 		await page.goto('/loading-states');
 		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 		await page.evaluate(() => document.fonts.ready);
-		const modes = ['scroll', 'stack', 'rows'];
+		const modes = ['scroll', 'stack', 'rows'] as const;
 		const before = [];
 		for (const mode of modes) {
 			const example = page.getByTestId(mode);
-			await expect(example.getByRole('table')).toHaveAccessibleName(/table|rows/i);
+			const caption = { scroll: 'Scrollable table', stack: 'Stacked table', rows: 'Compact rows' }[mode];
+			await expect(example.getByRole('table', { name: caption })).toHaveAttribute('aria-busy', 'true');
 			await expect(example.getByRole('columnheader', { name: 'Station' })).toHaveCount(1);
 			await expect(example.getByRole('button', { name: 'Station' })).toBeDisabled();
 			await expect(example.locator('tbody [data-slot="skeleton"]')).toHaveCount(6);
@@ -62,7 +63,73 @@ for (const width of [390, 1440]) {
 		await expectNoHorizontalOverflow(page);
 		await expectAccessible(page, { include: '[data-testid="loading-states"]' });
 	});
+
+	test(`sorting retains focus throughout a refresh at ${width}px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 900 });
+		await page.goto('/loading-states');
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		await page.getByRole('button', { name: 'Show loaded examples' }).click();
+		const table = page.getByRole('table', { name: 'Compact rows' });
+		const header = table.getByRole('columnheader', { name: 'Station' });
+		const sort = header.getByRole('button');
+		await sort.focus();
+		await expect(sort).toBeFocused();
+		// Trigger a refresh without transferring focus to the Gallery control.
+		await page.getByRole('button', { name: 'Show loading examples' }).evaluate((button: HTMLButtonElement) => button.click());
+		await expect(table).toHaveAttribute('aria-busy', 'true');
+		await expect(sort).toBeDisabled();
+		await expect(sort).toBeFocused();
+		await page.keyboard.press('Enter');
+		await page.keyboard.press('Space');
+		await expect(header).toHaveAttribute('aria-sort', 'ascending');
+		await page.getByRole('button', { name: 'Show loaded examples' }).evaluate((button: HTMLButtonElement) => button.click());
+		await expect(table).not.toHaveAttribute('aria-busy');
+		await expect(sort).toBeFocused();
+		await page.keyboard.press('Enter');
+		await expect(header).toHaveAttribute('aria-sort', 'descending');
+	});
 }
+
+for (const position of ['end', 'moved'] as const) {
+	test(`first loaded rows preserve the ${position} scroll position on a phone`, async ({ page }) => {
+		await page.setViewportSize({ width: 390, height: 900 });
+		await page.goto('/loading-states');
+		await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+		const frame = page.getByRole('region', { name: 'Latest service' });
+		const getScroll = () => frame.evaluate((element) => ({ left: element.scrollLeft, max: element.scrollWidth - element.clientWidth }));
+		await expect.poll(async () => {
+			const { left, max } = await getScroll();
+			return max > 0 && Math.abs(left - max) <= 1;
+		}).toBe(true);
+		if (position === 'moved') {
+			await frame.evaluate((element) => { element.scrollLeft = 40; });
+		}
+		const before = await getScroll();
+		await page.getByRole('button', { name: 'Show loaded examples' }).click();
+		await expect.poll(async () => {
+			const { left, max } = await getScroll();
+			return max > before.max && Math.abs(left - (position === 'end' ? max : before.left)) <= 1;
+		}).toBe(true);
+	});
+}
+
+test('known empty compact rows keep their one-line height during loading', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 900 });
+	await page.goto('/loading-states');
+	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+	await page.evaluate(() => document.fonts.ready);
+	const table = page.getByRole('table', { name: 'Refreshing service reports' });
+	const placeholders = table.locator('tbody tr');
+	await expect(placeholders).toHaveCount(3);
+	await expect(placeholders.nth(0)).toHaveAttribute('data-row-empty', 'true');
+	await expect(placeholders.nth(1)).not.toHaveAttribute('data-row-empty');
+	await expect(placeholders.nth(2)).not.toHaveAttribute('data-row-empty');
+	const waitingHeight = (await placeholders.first().boundingBox())!.height;
+	await page.getByRole('button', { name: 'Show loaded examples' }).click();
+	const row = table.getByRole('row', { name: /Central/ });
+	await expect(row).toHaveCount(1);
+	expect(Math.abs((await row.boundingBox())!.height - waitingHeight)).toBeLessThanOrEqual(1);
+});
 
 test('busy skeletons pulse until loading ends and respect reduced motion', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'no-preference' });

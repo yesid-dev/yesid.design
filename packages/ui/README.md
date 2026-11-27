@@ -357,8 +357,8 @@ active-state details rather than treating the import replacement as sufficient p
 
 Sheet supports `bottom` and `right`. Its bottom side is the mobile-first default; its overlay, focusable close control, animation,
 and side geometry are package-owned. Skeleton is decorative (`aria-hidden="true"`), uses the muted
-surface and a 6px radius, and accepts `busy?: boolean` for a standalone pulse. An ancestor with
-`aria-busy="true"` also enables the pulse. Reduced motion keeps the block still.
+surface and the kit's `rounded-md` radius, and accepts `busy?: boolean` for a standalone pulse.
+An ancestor with `aria-busy="true"` also enables the pulse. Reduced motion keeps the block still.
 A product with no prior local family treats first use as a new
 product-level visual and accessibility decision, not proof supplied by the package.
 
@@ -1282,9 +1282,13 @@ localized headings and keep the native table roles at enlarged text.
 Pass `loading` to render Skeleton rows with the same columns, responsive layout and one-line
 cell spacing as the table. Keep the caption, columns and layout props in place while data loads.
 `skeletonRows` defaults to 4 and accepts a non-negative integer. Set it to the expected first-page
-count when known. The frame reports `aria-busy="true"`, the placeholder cells are decorative,
-sort buttons are disabled and pagination is hidden. Table columns with content-dependent widths,
-and rows with wrapped or custom cells, may grow when data arrives. Set column widths with
+count when known. The table and frame report `aria-busy="true"` and the placeholder cells are
+decorative. Sort buttons retain keyboard focus and are unavailable during loading. Pagination
+is hidden. In compact rows, `rowEmpty` also applies to placeholder rows with corresponding data.
+With `initialScroll: 'end'`, the table carries the inline-end position into the first loaded rows
+if the viewer is still at that edge. The table renders as before when loading is off.
+Table columns with content-dependent widths and rows with wrapped or custom cells may grow
+when data arrives. Set column widths with
 `borderCollapse="separate"` when the loading and loaded table need the same column widths.
 
 `rowAlign="middle"` centres body cells vertically, so a short figure lines up with the middle of

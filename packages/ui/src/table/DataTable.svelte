@@ -88,6 +88,8 @@
 	import {
 		attachScrollEdges,
 		EMPTY_SCROLL_EDGES,
+		measureScrollEdges,
+		scrollToInlineEnd,
 		type ScrollEdgeState,
 	} from '../internal/scroll-edges.js';
 	import ShowMore from './ShowMore.svelte';
@@ -123,6 +125,7 @@
 	let handleScroll = $state<(() => void) | undefined>(undefined);
 	let requestedCount = $state(0);
 	let pageContext = '';
+	let initialRows: 'pending' | 'loading' | 'loaded' = 'pending';
 
 	const accessibleCaption = $derived.by(() => {
 		const value = caption.trim();
@@ -168,6 +171,22 @@
 		const context = `${paging}:${sort?.direction ?? ''}:${sort?.key ?? ''}`;
 		if (context !== pageContext) requestedCount = 0;
 		pageContext = context;
+	});
+
+	$effect.pre(() => {
+		if (initialRows === 'loaded') return;
+		if (loading) {
+			initialRows = 'loading';
+			return;
+		}
+		const startedLoading = initialRows === 'loading';
+		initialRows = 'loaded';
+		const element = frameElement;
+		// Read the placeholder frame before swapping rows, so scrolling away from its end wins.
+		if (!startedLoading || initialScroll !== 'end' || !element || measureScrollEdges(element).end) return;
+		void tick().then(() => {
+			if (!loading && frameElement === element && scrollToInlineEnd(element)) handleScroll?.();
+		});
 	});
 
 	async function showMore(count: number): Promise<void> {
@@ -228,7 +247,7 @@
 {/snippet}
 
 {#snippet tableMarkup()}
-	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined}>
+	<table class={cn('data-table', tableClass)} data-slot="data-table" role={reflows ? 'table' : undefined} aria-busy={loading || undefined}>
 		<caption class="data-table-caption">{accessibleCaption}</caption>
 		<thead role={reflows ? 'rowgroup' : undefined}>
 			<tr role={reflows ? 'row' : undefined}>
@@ -246,7 +265,7 @@
 						style:width={column.width}
 					>
 						{#if column.sortable && onSort}
-							<button type="button" class="data-table-sort" aria-label={sortLabels?.by(column.header)} disabled={loading} onclick={() => { if (!loading) onSort?.(column.key); }}>
+							<button type="button" class="data-table-sort" aria-label={sortLabels?.by(column.header)} aria-disabled={loading || undefined} onclick={() => { if (!loading) onSort?.(column.key); }}>
 								<span>{column.header}</span>
 								{#if direction === 'asc'}<ArrowUp size="1em" aria-hidden="true" />
 								{:else if direction === 'desc'}<ArrowDown size="1em" aria-hidden="true" />
@@ -259,8 +278,9 @@
 		</thead>
 		<tbody bind:this={body} role={reflows ? 'rowgroup' : undefined}>
 			{#if loading}
-				{#each { length: placeholderCount } as _}
-					<tr aria-hidden="true">
+				{#each { length: placeholderCount } as _, index}
+					{@const isRowEmpty = rowLayout && rowEmpty && index < rows.length && rowEmpty(rows[index]!)}
+					<tr aria-hidden="true" data-row-empty={isRowEmpty || undefined}>
 						{#each columns as column (column.key)}
 							<svelte:element
 								this={column.rowHeader ? 'th' : 'td'}
@@ -640,7 +660,7 @@
 		cursor: pointer;
 	}
 	.data-table-sort :global(svg) { flex: none; }
-	.data-table-sort:disabled { cursor: default; }
+	.data-table-sort[aria-disabled='true'] { cursor: default; }
 	.data-table-sort:focus-visible, .data-table tr[tabindex]:focus-visible {
 		outline: 2px solid var(--ring);
 		outline-offset: -2px;
