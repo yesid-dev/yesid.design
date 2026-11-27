@@ -39,7 +39,7 @@
 				{#if value !== null}
 					<p class="answer-value" id={figureId}>
 						<span class="answer-fit">
-							<span class="answer-figure"><MetricValue {value} {size} /></span>
+							<span class="answer-figure" data-slot="answer-fit-measure"><MetricValue {value} {size} /></span>
 							<span class="answer-measure font-heading font-extrabold leading-none tabular-nums"
 								data-value={value}></span>
 						</span>
