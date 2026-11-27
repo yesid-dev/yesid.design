@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.62.0-rc.2
+## 0.62.0
 
 <!-- release-fragment: metric-matched-font-fallbacks -->
 - `@yesid/tokens` (patch): Use metric-adjusted local fallbacks while Inter and JetBrains Mono load to reduce
