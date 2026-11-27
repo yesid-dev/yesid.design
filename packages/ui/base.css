@@ -250,6 +250,30 @@ pre, code, table {
 	background: color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
+@supports (container-type: scroll-state) {
+	[data-slot='surface-rail']:not(.surface-rail--mobile) {
+		--surface-rail-cue-size: 0.75rem;
+		container: surface-rail-scroll / scroll-state;
+	}
+	[data-slot='surface-rail']:not(.surface-rail--mobile)::after {
+		content: '';
+		position: sticky;
+		inset-block-end: 0;
+		flex: none;
+		block-size: var(--surface-rail-cue-size);
+		/* Cancel the cue's height and flex gap so it overlays the rail without adding overflow. */
+		margin-block-start: calc(-1 * (var(--surface-rail-cue-size) + var(--surface-rail-gap)));
+		z-index: 1;
+		pointer-events: none;
+		opacity: 0;
+		background: radial-gradient(farthest-side at center bottom,
+			color-mix(in srgb, var(--foreground) 20%, transparent), transparent);
+	}
+	@container surface-rail-scroll scroll-state(scrollable: block-end) {
+		[data-slot='surface-rail']:not(.surface-rail--mobile)::after { opacity: 1; }
+	}
+}
+
 .circuit-grid {
 	position: relative;
 	/* Tiles anchor every line to the top-left corner, so the grid holds still when the box grows. */
