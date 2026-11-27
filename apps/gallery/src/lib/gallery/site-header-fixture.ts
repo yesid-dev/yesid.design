@@ -25,7 +25,7 @@ export const MENU_ITEMS: readonly SiteHeaderMenuItem[] = [
 ];
 export const LONG_MENU_LABELS = {
 	en: ['Network', 'Worst trips and vehicles', 'Methods', 'Open data'],
-	fr: ['Réseau', 'Trajets les moins fiables', 'Méthode', 'Données'],
+	fr: ['Réseau', 'Trajets les moins fiables', 'Méthode', 'Données brutes'],
 } as const;
 
 /**

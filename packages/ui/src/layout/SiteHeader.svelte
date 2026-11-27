@@ -1097,12 +1097,14 @@
 	}
 	@media (min-width: 768px) {
 		.menu-content-grouped {
+			--menu-column-gap: 1.5rem;
 			display: flex;
 			flex-flow: row wrap;
 			justify-content: center;
-			gap: 2rem 1.5rem;
+			gap: 2rem var(--menu-column-gap);
 			inline-size: fit-content;
-			max-inline-size: min(100%, var(--container-wide));
+			/* Allow space for the three gaps in a four-column menu. */
+			max-inline-size: min(100%, calc(var(--container-wide) + 3 * var(--menu-column-gap)));
 		}
 		.menu-content-grouped .menu-group {
 			max-inline-size: 100%;
