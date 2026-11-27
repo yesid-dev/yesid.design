@@ -21,7 +21,7 @@ test('Sheet owns its motion styles and respects reduced motion', async ({ page }
 		for (const [trigger, title, duration] of [
 			['Open details', 'Operational detail', '0.5s'],
 			['Open schedule note', 'Schedule note', '0.5s'],
-			['Open report files', 'Download report files', '0.2s'],
+			['Open report files', 'Download report files', (page.viewportSize()?.width ?? 0) < 768 ? '0.5s' : '0.2s'],
 		] as const) {
 			if (trigger === 'Open report files') await visitReportFiles(page);
 			await page.getByRole('button', { name: trigger }).click();
@@ -31,7 +31,10 @@ test('Sheet owns its motion styles and respects reduced motion', async ({ page }
 			if (reducedMotion === 'no-preference') {
 				await expect(dialog).toHaveCSS('animation-duration', duration);
 				if (trigger === 'Open report files') {
-					await expect(dialog).toHaveCSS('animation-timing-function', 'cubic-bezier(0.2, 0.8, 0.2, 1)');
+					const easing = duration === '0.2s'
+						? 'cubic-bezier(0.2, 0.8, 0.2, 1)'
+						: 'cubic-bezier(0.4, 0, 0.2, 1)';
+					await expect(dialog).toHaveCSS('animation-timing-function', easing);
 				}
 			}
 			await page.keyboard.press('Escape');
@@ -39,6 +42,65 @@ test('Sheet owns its motion styles and respects reduced motion', async ({ page }
 		}
 	}
 });
+
+for (const width of [390, 1024]) {
+	for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+		test(`responsive Sheet matches each side's open and close motion at ${width}px (${reducedMotion}) @motion`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 844 });
+			await page.emulateMedia({ reducedMotion });
+			await visitReportFiles(page, '/sheet/motion');
+
+			const animations = await page.evaluateHandle(() => {
+				const samples: Array<{ name: string; timing: EffectTiming; keyframes: ComputedKeyframe[] }> = [];
+				document.addEventListener('animationstart', event => {
+					const panel = event.target;
+					if (!(panel instanceof HTMLElement) || panel.dataset.slot !== 'sheet-content') return;
+					const animation = panel.getAnimations().find(item =>
+						item instanceof CSSAnimation && item.animationName === event.animationName,
+					);
+					if (animation?.effect instanceof KeyframeEffect) {
+						samples.push({
+							name: event.animationName,
+							timing: animation.effect.getTiming(),
+							keyframes: animation.effect.getKeyframes(),
+						});
+					}
+				});
+				return samples;
+			});
+
+			async function openAndClose(label: string) {
+				const before = (await animations.jsonValue()).length;
+				await page.getByRole('button', { name: label, exact: true }).click();
+				const dialog = page.getByRole('dialog', { name: label, exact: true });
+				await expect(dialog).toBeVisible();
+				if (reducedMotion === 'reduce') {
+					await expect(dialog).toHaveCSS('animation-name', 'none');
+					await expect(dialog).toHaveCSS('transition-property', 'none');
+				} else {
+					await expect.poll(async () => (await animations.jsonValue()).length).toBe(before + 1);
+					await dialog.evaluate(async node => {
+						await Promise.all(node.getAnimations().map(animation => animation.finished));
+					});
+				}
+				await page.keyboard.press('Escape');
+				await expect(page.locator('[data-slot="sheet-content"]')).toHaveCount(0);
+				const samples = (await animations.jsonValue()).slice(before);
+				expect(samples.map(sample => sample.name)).toEqual(reducedMotion === 'reduce' ? [] : ['enter', 'exit']);
+				return samples;
+			}
+
+			for (const [responsive, base, md] of [
+				['Bottom to center', 'Bottom', 'Center'],
+				['Right to bottom', 'Right', 'Bottom'],
+				['Center to right', 'Center', 'Right'],
+			] as const) {
+				const expected = await openAndClose(width < 768 ? base : md);
+				expect(await openAndClose(responsive), responsive).toEqual(expected);
+			}
+		});
+	}
+}
 
 async function box(locator: Locator) {
 	const bounds = await locator.boundingBox();
