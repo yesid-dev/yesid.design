@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.61.0-rc.1
+
+<!-- release-fragment: combobox-select-only -->
+- `@yesid/ui` (minor): Use `<Combobox searchable={false} ...>` to replace a local button list for short, fixed choices.
+  Pass options with `value` and `label`, keep the same `value` binding, and supply an accessible
+  `label`. The button opens the list without bringing up the phone keyboard, keeps the chosen
+  value when selected again, and wraps labels when space is tight.
+
+  Overflowing tooltips leave caret and value navigation keys to text-entry triggers.
+
+<!-- release-fragment: datatable-detail-labels -->
+- `@yesid/ui` (minor): DataTable's compact `rows` mode accepts `labels: 'details'`. It hides the value column's in-row label and keeps the extra column labels. Switch from `labels: false` when the value is clear on its own and the extra columns still need labels.
+
+<!-- release-fragment: datatable-reflow-overflow -->
+- `@yesid/ui` (patch): DataTable keeps overflow visible when it reflows into stacked or compact rows, preventing an unfocusable scroll region. You can remove any local overflow override added for reflowed DataTables.
+
+<!-- release-fragment: rail-pill-answer-fit -->
+- `@yesid/ui` (patch): SurfaceRail's floating pill keeps the label visible first. It truncates or hides the summary on narrow layouts while keeping the full summary in the button's accessible name. Remove local rules that omit the summary below a narrow shell.
+
+  In browsers with CSS fitting support, AnswerLead keeps each figure and its unit on one line
+  within its column from first render, including with JavaScript disabled. Figures that fit
+  keep their normal size. Other browsers use the original size and wrapping rules. Remove local
+  `--text-heading` caps used to fit AnswerLead figures where CSS fitting is supported.
+
 ## 0.60.1
 
 <!-- release-fragment: combobox-fixed-strategy -->
