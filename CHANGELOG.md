@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.62.0-rc.1
+
+<!-- release-fragment: app-frame-first-paint-rails -->
+- `@yesid/ui` (patch): AppFrame uses the computed root font size to choose paired or compact rails before first paint
+  when the theme boot script is installed. Gallery checks cover 1440px at regular and doubled root
+  text sizes with app modules withheld and verify the main area keeps its width through hydration.
+  Hash-based CSP integrations must use the updated hash from `@yesid/ui/boot.json`.
+
+<!-- release-fragment: filter-group-hydration -->
+- `@yesid/ui` (patch): FilterGroup renders its disclosure toggle and choices visibly disabled until they can respond
+  to input. The initial open state, selection and layout are preserved through hydration.
+
+<!-- release-fragment: listing-measure -->
+- `@yesid/tokens` (minor): Added `--measure-listing` (`46rem`) for a single listing or results column such as search results
+  or a directory. Use it as the maximum inline size between the lede and body measures.
+
+<!-- release-fragment: stamp-stable-live-age -->
+- `@yesid/ui` (patch): Reserve room for live Stamp ages before hydration so ordinary clock ticks leave neighbouring content in place. Localized age labels still wrap in narrow containers.
+
+<!-- release-fragment: surface-rail-closed-dialog -->
+- `@yesid/ui` (patch): Closed compact SurfaceRail sheets stay mounted and are explicitly hidden from the accessibility
+  tree. A unit test verifies that a closed sheet exposes no dialog role and opening it restores the role.
+
 ## 0.61.0
 
 <!-- release-fragment: answer-fit-slot -->
