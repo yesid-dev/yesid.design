@@ -526,12 +526,13 @@ tokens. Without `children` the code shows as a plain, focusable `<pre>`.
 The four original yesid.dev construction artworks: crossing sign, helmet, barricade and Montréal
 balise, with their original responsive ground positions. The caller owns the positioned scene
 above its footer. Optional `lighting` preserves the warm scene treatment. Pass a stable marker
-before the growing ground as `revealAt` and, for nested scrolling, its viewport as `revealRoot`.
-Reveal starts when that collapsed footer edge enters 5% of the active viewport and completes
-over the next 25vh of scrolling, reversing proportionally on return. There is no timed transition,
-timeout, stagger or delay. Bind `progress` to unfold the caller-owned background below the marker;
-keeping the marker before the changing height avoids scroll feedback. Reduced motion switches
-instantly and SSR without JavaScript remains plain and visible. No fetch, parser or HTML injection.
+before the ground as `revealAt` and, for nested scrolling, its viewport as `revealRoot`.
+Reveal starts when that footer edge enters 5% of the active viewport and completes over the next
+25vh of scrolling, reversing proportionally on return. There is no timed transition, timeout,
+stagger or delay. Give the caller-owned ground its final height from the first paint and let
+`progress` drive only transforms or opacity, so the footer and everything after it stay still while
+the props rise. Reduced motion switches instantly and SSR without JavaScript remains plain and
+visible. No fetch, parser or HTML injection.
 `layout="spread"` distributes artwork evenly; `layout="around-fixture"` spaces mobile artwork
 evenly in one row around a centred 40px gap for a separate light. `floodlight` includes an unlit
 fixture in the moving group.
