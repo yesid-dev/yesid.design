@@ -726,8 +726,11 @@ set. `SectionIcon` is the closed `SectionIconName` set that `TocBadge` also uses
 
 The listing filter family; every label comes from the caller. `FilterGroup` is a single choice
 with an "All" reset (`allLabel`) mapped to `null`; choosing the active item again clears it
-unless `allowDeselect={false}`. With `collapsible` it gets a header toggle and starts at `startOpen` (true) on every mount. `FilterSection` wraps one block of a filter
-panel with the dashed rule. `FilterSummary` shows `countLabel.singular` or `countLabel.plural`
+unless `allowDeselect={false}`. With `collapsible` it gets a header toggle and starts at
+`startOpen` (true) on every mount. The toggle and choices, including the reset, render visibly
+disabled until the component mounts. They keep their initial selection and layout as they become
+interactive. `FilterSection` wraps one block of a filter panel with the dashed rule.
+`FilterSummary` shows `countLabel.singular` or `countLabel.plural`
 (each with a `{count}` placeholder) by the plural rule of `locale`, formatting `{count}` with
 `new Intl.NumberFormat(locale)` while choosing singular or plural from the raw number, plus a
 `clearLabel` button.

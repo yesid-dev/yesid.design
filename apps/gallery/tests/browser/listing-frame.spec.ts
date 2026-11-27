@@ -99,6 +99,7 @@ async function expectTabTo(page: Page, target: Locator): Promise<void> {
 test('filter panel is usable at this width', async ({ page, browser, baseURL }) => {
 	const viewport = page.viewportSize()!;
 	await page.goto('/listing-frame');
+	await page.locator('html[data-gallery-ready]').waitFor();
 	const { search, toggle, firstButton, clear } = listing(page);
 
 	if (viewport.width >= DESKTOP_MIN_WIDTH) {
@@ -116,8 +117,9 @@ test('filter panel is usable at this width', async ({ page, browser, baseURL }) 
 		await plain.goto('/listing-frame');
 		const plainListing = listing(plain);
 		await expect(plainListing.firstButton).toBeVisible();
+		await expect(plainListing.firstButton).toBeDisabled();
 		await plainListing.search.focus();
-		await expectTabTo(plain, plainListing.firstButton);
+		await expectTabTo(plain, plainListing.clear);
 		await context.close();
 		return;
 	}
@@ -127,11 +129,8 @@ test('filter panel is usable at this width', async ({ page, browser, baseURL }) 
 	await expectTabTo(page, toggle);
 	await expectTabTo(page, clear);
 
-	// Server controls exist before hydration wires their handlers. Wait for the real action.
-	await expect(async () => {
-		if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
-		await expect(toggle).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
-	}).toPass();
+	await toggle.click();
+	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 	await expect(firstButton).toBeVisible();
 	await expectTabTo(page, firstButton);
 
