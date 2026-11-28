@@ -19,6 +19,7 @@
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import { observeSize } from '../internal/observe-size.js';
 	import { Card } from '../primitives/card/index.js';
 	import type { MapRect } from './placement.js';
 
@@ -45,7 +46,7 @@
 	}
 
 	$effect(() => {
-		if (!stage || typeof ResizeObserver === 'undefined') return;
+		if (!stage) return;
 		const canvas = stage;
 		// An unmounted bind:this target can be null.
 		const overlays = [left, right, legendButton, legendPanel].filter((element) => element != null);
@@ -66,11 +67,9 @@
 			viewport = { width: root.width, height: root.height, exclusions };
 		}
 
-		const observer = new ResizeObserver(measure);
-		observer.observe(canvas);
-		for (const overlay of overlays) observer.observe(overlay);
-		measure();
-		return () => observer.disconnect();
+		// The first size callback measures after layout, before the first paint.
+		const stops = [canvas, ...overlays].map((element) => observeSize(element, measure));
+		return () => stops.forEach((stop) => stop());
 	});
 </script>
 

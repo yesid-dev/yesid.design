@@ -48,10 +48,16 @@ describe('HourGrid', () => {
 		vi.stubGlobal(
 			'ResizeObserver',
 			class {
-				constructor(cb: () => void) {
-					resizeCallback = cb;
+				readonly targets = new Set<Element>();
+				constructor(cb: (entries: { target: Element }[]) => void) {
+					resizeCallback = () => cb([...this.targets].map((target) => ({ target })));
 				}
-				observe() {}
+				observe(target: Element) {
+					this.targets.add(target);
+				}
+				unobserve(target: Element) {
+					this.targets.delete(target);
+				}
 				disconnect() {}
 			},
 		);
@@ -95,10 +101,16 @@ describe('HourGrid', () => {
 		vi.stubGlobal(
 			'ResizeObserver',
 			class {
-				constructor(cb: () => void) {
-					resizeCallback = cb;
+				readonly targets = new Set<Element>();
+				constructor(cb: (entries: { target: Element }[]) => void) {
+					resizeCallback = () => cb([...this.targets].map((target) => ({ target })));
 				}
-				observe() {}
+				observe(target: Element) {
+					this.targets.add(target);
+				}
+				unobserve(target: Element) {
+					this.targets.delete(target);
+				}
 				disconnect() {}
 			},
 		);
@@ -109,10 +121,12 @@ describe('HourGrid', () => {
 		const wrap = view.container.querySelector<HTMLElement>('.scroll-wrap')!;
 		const scroller = view.getByRole('region', { name: 'Recent daily readings' });
 		expect(scroller.dataset.initialScroll).toBe('end');
-		expect(scroller.hasAttribute('data-scroll-hydrated')).toBe(true);
 
+		// The handoff from the server's row-reverse layout waits for the first size callback, which
+		// browsers run after layout and before paint.
 		mockScrollMetrics(scroller, { clientWidth: 300, scrollWidth: 700, scrollLeft: 0 });
 		resizeCallback?.();
+		expect(scroller.hasAttribute('data-scroll-hydrated')).toBe(true);
 		await vi.waitFor(() => {
 			expect(scroller.scrollLeft).toBe(400);
 			expect(wrap.dataset.scrollStart).toBe('true');
