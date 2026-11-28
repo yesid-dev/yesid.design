@@ -29,3 +29,27 @@ it('keeps the ordered ladder, stop links, highlight, and missing readings', () =
 	expect(within(second).getByText('Too few trips')).toBeInTheDocument();
 	expect(ladder.querySelectorAll('.track[aria-hidden="true"]')).toHaveLength(1);
 });
+
+it('puts the threshold label after the list, only when its rule is drawn', async () => {
+	const base = {
+		label: 'Delay by stop',
+		max: 10,
+		columns: { stop: 'Stop', value: 'Delay' },
+		stops: [{ id: 'first', name: 'First stop', value: 7, valueLabel: '7 minutes late' }],
+	};
+	const threshold = { value: 7.5, label: 'Five-minute threshold' };
+	const view = render(StopLadder, { props: { ...base, threshold } });
+	const ladder = screen.getByRole('list', { name: 'Delay by stop' });
+	const text = screen.getByText(threshold.label);
+
+	expect(ladder.compareDocumentPosition(text)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+	// The label and the rule are placed from the same fraction of the track.
+	expect(text.parentElement!.style.getPropertyValue('--stop-threshold')).toBe('0.75');
+	expect(ladder.style.getPropertyValue('--stop-threshold')).toBe('0.75');
+
+	await view.rerender({ ...base, threshold, stops: [] });
+	expect(screen.queryByText(threshold.label)).toBeNull();
+
+	await view.rerender({ ...base, threshold: undefined });
+	expect(screen.queryByText(threshold.label)).toBeNull();
+});

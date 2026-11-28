@@ -1539,8 +1539,10 @@ Also from `@yesid/ui/chart`:
   when there is no estimate.
 - **StopLadder** shows stops in the supplied order and draws each stop's bar against a common
   positive `max`. Supply a formatted `valueLabel` and optional state wording for a null value.
-  A `threshold` labels a continuous comparison line. A `highlight` names a span between two
-  stop IDs. Linked stops use the kit's text link treatment with a 44px minimum tap target.
+  A `threshold` draws a continuous comparison line with its label at the foot. The label follows
+  the line: it starts near a line at the start of the track, centres on one in the middle and ends
+  at one at the end. It stays on one line unless it is wider than the room the ladder has for it.
+  A `highlight` names a span between two stop IDs. Linked stops use the kit's text link treatment with a 44px minimum tap target.
   Each code sits beside the name when there is room. Stop names and readings stay side by side.
   Labels wrap at word boundaries, with breaks inside a word reserved for words wider than the
   available line.
