@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.63.0-rc.1
+
+<!-- release-fragment: error-page-status-sign -->
+- `@yesid/ui` (patch): ErrorPage shows every status code on the construction scene's sign, like the 404 poster, instead of a
+  separate line above the heading. Statuses other than 404 are still announced with `role="alert"`, and
+  without a scene the code stays above the heading.
+
+<!-- release-fragment: page-boundary-stroke -->
+- `@yesid/ui` (minor): PageSections `stroke="continuous"` draws every hand-drawn page boundary, article header edges included,
+  as one unbroken stroke instead of the pen-lifted segments (`segmented` stays the default). The page
+  boundary's ink reads `--page-boundary-color` (default `--primary`), so a product can mute it once in its
+  theme; other hand-drawn lines are unchanged.
+
+<!-- release-fragment: preloaded-fonts-never-swap -->
+- `@yesid/tokens` (patch): Stop the preloaded Inter and JetBrains Mono latin faces from swapping in after the first paint.
+  They now use `font-display: optional`, so text no longer moves when a font arrives late. On a slow
+  first visit, that page view keeps the metric-adjusted fallback, and the next page view uses the
+  web font. The latin-ext faces, which load only when a page uses them, still swap. No migration.
+
+<!-- release-fragment: quiet-chrome-options -->
+- `@yesid/ui` (minor): SiteFooter `edge="none"` draws no top edge for quiet pages. SegmentedChoice reads its label font from
+  `--segmented-choice-font` (default the mono font), so a product can switch it once in its theme. The
+  SiteHeader menu reveal lands within 200ms: the per-item stagger is capped at 50ms and items fade in over
+  150ms; reduced motion still shows the menu without movement.
+
+<!-- release-fragment: site-header-native-menu-fallback -->
+- `@yesid/ui` (patch): Make SiteHeader destinations available in a native popover before hydration and with JavaScript
+  disabled. An open fallback upgrades to the existing dialog and keeps the focused menu link.
+
 ## 0.62.2
 
 <!-- release-fragment: desktop-footer-balance -->
