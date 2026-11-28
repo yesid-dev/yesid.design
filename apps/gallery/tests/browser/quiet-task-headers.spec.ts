@@ -107,6 +107,39 @@ test.describe('error page options', { tag: '@theme' }, () => {
 		});
 	}
 
+	test('the poster sign keeps its label at 4.5:1 and its code at 3:1', async ({ page }) => {
+		for (const status of [404, 500] as const) {
+			await open(page, `/error-page/${optionsSegment({ status })}`);
+			// Paint each fill to a pixel so color-mix resolves to the sRGB the reader sees.
+			const contrast = await page.evaluate(() => {
+				const canvas = document.createElement('canvas');
+				canvas.width = canvas.height = 1;
+				const context = canvas.getContext('2d', { willReadFrequently: true })!;
+				const rgb = (selector: string) => {
+					context.clearRect(0, 0, 1, 1);
+					context.fillStyle = getComputedStyle(document.querySelector(selector)!).fill;
+					context.fillRect(0, 0, 1, 1);
+					return [...context.getImageData(0, 0, 1, 1).data.slice(0, 3)];
+				};
+				const luminance = (channels: number[]) => {
+					const [r, g, b] = channels.map((value) => {
+						const c = value / 255;
+						return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+					});
+					return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+				};
+				const ratio = (a: number[], b: number[]) => {
+					const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+					return (high! + 0.05) / (low! + 0.05);
+				};
+				const panel = rgb('.sign-bg');
+				return { label: ratio(rgb('.sign-label'), panel), code: ratio(rgb('.sign-code'), panel) };
+			});
+			expect(contrast.label, `STATION on the ${status} sign`).toBeGreaterThanOrEqual(4.5);
+			expect(contrast.code, `${status} digits on the sign`).toBeGreaterThanOrEqual(3);
+		}
+	});
+
 	for (const width of [390, 1440]) {
 		test(`illustration=small-after keeps its geometry through hydration at ${width} px`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 900 });
