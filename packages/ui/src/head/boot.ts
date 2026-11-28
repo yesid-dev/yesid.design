@@ -1,5 +1,6 @@
 import { SECTIONS_CHOICE_KEY, SECTIONS_READY_EVENT } from '../brand/sections-preference.js';
 import { FRAME_RAIL_MIN_REM } from '../layout/frame-rail-layout.js';
+import { footerBalanceBootSource } from './footer-balance-source.js';
 import { hasBulkSectionsInHtml } from './section-eligibility.js';
 
 /** Runs before first paint to apply theme, AppFrame rail layout and section geometry.
@@ -14,8 +15,14 @@ export const themeBootScript = `(() => {
 		const rem = parseFloat(getComputedStyle(root).fontSize);
 		if (rem > 0) root.dataset.appFrameRails = innerWidth >= ${FRAME_RAIL_MIN_REM} * rem ? 'paired' : 'compact';
 	};
+	${footerBalanceBootSource}
+	let discoverFooters = () => {};
+	try { discoverFooters = bootFooterBalance(root); } catch {}
 	// The boot script runs before the head stylesheets. Measure in the first rendering frame.
-	requestAnimationFrame(measureAppFrameRails);
+	requestAnimationFrame(() => {
+		measureAppFrameRails();
+		discoverFooters();
+	});
 	addEventListener('resize', () => {
 		if (document.querySelector('[data-slot="app-frame"]:not([data-rail-layout])')) measureAppFrameRails();
 	});

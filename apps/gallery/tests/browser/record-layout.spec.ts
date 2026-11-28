@@ -370,6 +370,73 @@ test.describe('Record parts reflow', { tag: '@theme' }, () => {
 			}
 		});
 
+		for (const width of [1024, 1280]) {
+			for (const scale of [100, 200]) {
+				test(`${lang}: the footer stays in place through hydration at ${width}px and ${scale}% text`, async ({ page }) => {
+					await page.setViewportSize({ width, height: 900 });
+					await page.addInitScript((size) => {
+						const applyScale = () => { document.documentElement.style.fontSize = `${size}%`; };
+						if (document.documentElement) applyScale();
+						else {
+							const parser = new MutationObserver(() => {
+								if (!document.documentElement) return;
+								applyScale();
+								parser.disconnect();
+							});
+							parser.observe(document, { childList: true });
+						}
+						const shifts: number[] = [];
+						(window as Window & { footerShifts?: number[] }).footerShifts = shifts;
+						new PerformanceObserver((list) => {
+							for (const entry of list.getEntries() as (PerformanceEntry & {
+								hadRecentInput: boolean;
+								value: number;
+								sources: { node?: Node }[];
+							})[]) {
+								if (!entry.hadRecentInput && entry.sources.some(({ node }) => {
+									const element = node instanceof Element ? node : node?.parentElement;
+									return element?.closest('footer[data-slot="footer"]');
+								})) shifts.push(entry.value);
+							}
+						}).observe({ type: 'layout-shift', buffered: true });
+					}, scale);
+
+					let release!: () => void;
+					const held = new Promise<void>((resolve) => { release = resolve; });
+					await page.route('**/_app/immutable/**/*.js', async (route) => {
+						await held;
+						await route.fallback();
+					});
+					try {
+						await page.goto(`/footer-first-paint/${lang}`, { waitUntil: 'commit' });
+						const footer = page.locator('footer[data-slot="footer"]');
+						await expect(footer).toBeInViewport();
+						await page.waitForFunction(() => performance.getEntriesByName('first-contentful-paint').length > 0);
+						await page.evaluate(() => document.fonts.ready);
+						await expect(page.locator('html[data-gallery-ready]')).toHaveCount(0);
+						const boxes = () => footer.locator('.footer-columns > *').evaluateAll((blocks) =>
+							blocks.map((block) => {
+								const { x, y, width, height } = block.getBoundingClientRect();
+								return { x, y, width, height };
+							}),
+						);
+						const before = await boxes();
+						const rows = [...new Set(before.map(({ y }) => y))].map((y) => before.filter((box) => box.y === y).length);
+						expect(rows).toEqual(scale === 100 ? [4] : [2, 2]);
+						const countShifts = () => page.evaluate(() => (window as Window & { footerShifts?: number[] }).footerShifts!.length);
+						const initialShifts = await countShifts();
+						release();
+						await expect(page.locator('html[data-gallery-ready]')).toBeAttached();
+						await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+						expect(await boxes()).toEqual(before);
+						expect(await countShifts()).toBe(initialShifts);
+					} finally {
+						release();
+					}
+				});
+			}
+		}
+
 		test(`${lang}: the phone footer pairs groups when their text fits`, async ({ page }) => {
 			await page.setViewportSize({ width: 390, height: 900 });
 			await page.goto(path(lang));
