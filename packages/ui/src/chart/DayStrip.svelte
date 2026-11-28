@@ -106,8 +106,11 @@
 	}
 	.day-strip-value {
 		inline-size: max-content;
-		/* A figure may use the tile's padding and border; a longer one wraps inside the tile. */
-		max-inline-size: calc(100% + 0.5rem + 2px);
+		/*
+		 * A figure may use the tile's padding, border and half the gap on each side, so it never
+		 * reaches a neighbouring tile; a longer one wraps. Text widths differ between platforms.
+		 */
+		max-inline-size: calc(100% + 0.75rem + 2px);
 		font-size: var(--text-small);
 		font-variant-numeric: tabular-nums;
 		font-weight: 600;

@@ -1,17 +1,22 @@
 import { expect, test, type Locator } from '@playwright/test';
 import { expectNoHorizontalOverflow } from '@yesid/config/playwright';
 
-/** Figures that break onto a second line, or reach outside their own tile. */
+/**
+ * Figures that break onto a second line, or reach past half the gap beside their own tile, where
+ * they could meet a neighbouring figure.
+ */
 function misplacedFigures(strip: Locator) {
 	return strip.locator('.day-strip-value').evaluateAll((figures) =>
 		figures.flatMap((figure) => {
+			const halfGap = Number.parseFloat(getComputedStyle(figure.closest('ol')!).columnGap) / 2;
 			const range = document.createRange();
 			range.selectNodeContents(figure);
 			const lines = new Set([...range.getClientRects()].map((rect) => Math.round(rect.top))).size;
 			const text = range.getBoundingClientRect();
 			const tile = figure.closest('li')!.getBoundingClientRect();
 			const outside = Math.max(tile.left - text.left, text.right - tile.right);
-			return lines > 1 || outside > 0.5 ? [{ figure: figure.textContent, lines, outside }] : [];
+			const pastReach = outside - halfGap;
+			return lines > 1 || pastReach > 0.5 ? [{ figure: figure.textContent, lines, pastReach }] : [];
 		}),
 	);
 }
@@ -80,10 +85,10 @@ for (const { width, textSize } of [
 		}
 		for (const [name, { listWidth }] of Object.entries(geometry)) {
 			const misplaced = await misplacedFigures(page.getByTestId(`strip-${name}`));
-			// A strip narrower than one minimum tile (3.3rem) can only keep a long figure inside it.
+			// A strip narrower than one minimum tile (3.3rem) can only wrap a long figure.
 			const narrowerThanATile = listWidth < (3.3 * 16 * textSize) / 100;
 			expect(
-				narrowerThanATile ? misplaced.filter(({ outside }) => outside > 0.5) : misplaced,
+				narrowerThanATile ? misplaced.filter(({ pastReach }) => pastReach > 0.5) : misplaced,
 				`${name} figures`,
 			).toEqual([]);
 		}
@@ -104,11 +109,11 @@ test('a figure stays on one line inside its tile at every strip width', async ({
 		expect(await misplacedFigures(strip), `strip width ${width}px`).toEqual([]);
 	}
 
-	// A longer figure than the tile holds wraps inside it instead of running into its neighbours.
+	// A longer figure than the tile holds wraps instead of running into its neighbours.
 	await strip.evaluate((element) => { element.style.inlineSize = '200px'; });
 	const long = strip.locator('.day-strip-value').first();
 	await long.evaluate((element) => { element.textContent = '10 h 30 min'; });
 	const [wrapped] = await misplacedFigures(strip);
 	expect(wrapped!.lines).toBeGreaterThan(1);
-	expect(wrapped!.outside).toBeLessThanOrEqual(0.5);
+	expect(wrapped!.pastReach).toBeLessThanOrEqual(0.5);
 });

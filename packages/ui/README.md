@@ -1533,7 +1533,8 @@ width on every row: a row holds up to seven, each at least 3.3rem wide, so a nar
 text holds fewer (a week stays on one row from 394px of strip width at the default text size). A
 strip with fewer days than a row holds stretches them across it. A figure up to 3.3rem wide, such as
 `100 %`, `17.5 h` or `71,5 %`, stays on one line while the strip is at least one tile wide. A longer
-one can wrap inside its tile, so keep `value` short. A strip in a parent that sizes to its content,
+one can wrap, so keep `value` short. A figure reaches at most half the gap past its tile, never a
+neighbouring tile. A strip in a parent that sizes to its content,
 such as an inline block or a flex row item, takes its width from its key and may use more rows; let
 it stretch.
 
