@@ -15,8 +15,8 @@ it('server markup renders full height, visible static props and fixtures on the 
 	expect(body).toContain('data-state="static"');
 	expect(body).toContain('data-progress="1"');
 	expect(body).toContain('data-slot="construction-ground-fixtures"');
-	// Without JavaScript the reveal is finished, so fixtures stand above the ground.
-	expect(body).toContain('data-fixtures="revealed"');
+	// Without JavaScript the reveal is finished, so the clip above the ground is fully open.
+	expect(body).toContain('data-fixtures="true"');
 	expect(body).toContain('data-testid="ssr-fixture"');
 	expect(body).toContain('data-lit="true"');
 });

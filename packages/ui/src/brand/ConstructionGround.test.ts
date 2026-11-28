@@ -147,11 +147,11 @@ describe('ConstructionGround focus and keyboard opening', () => {
 	});
 });
 
-describe('ConstructionGround fixtures state', () => {
+describe('ConstructionGround fixtures marker', () => {
 	const floorOf = (container: Element) =>
 		container.querySelector<HTMLElement>('[data-slot="construction-ground-floor"]')!;
 
-	it('marks fixtures as revealing until the ground is open, and nothing without fixtures', () => {
+	it('marks only a ground with fixtures, whatever the reveal state', () => {
 		vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
 		const bare = render(ConstructionGround, { props: { layout: 'spread', floodlight: true } });
 		expect(floorOf(bare.container).hasAttribute('data-fixtures')).toBe(false);
@@ -161,28 +161,8 @@ describe('ConstructionGround fixtures state', () => {
 
 		const view = render(ConstructionGround, { props: { fixtures: html('<div>Lit lamp</div>') } });
 		const floor = floorOf(view.container);
-		expect(floor.dataset.fixtures).toBe('revealing');
+		expect(floor.dataset.fixtures).toBe('true');
 		fireEvent.keyDown(document, { key: 'End' });
-		expect(floor.dataset.fixtures).toBe('revealed');
-	});
-
-	it('follows the reveal in both directions', async () => {
-		vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
-		const root = document.createElement('div');
-		Object.defineProperty(root, 'clientHeight', { value: 800 });
-		root.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 800);
-		const view = render(ConstructionGround, {
-			props: { revealRoot: root, fixtures: html('<div>Lit lamp</div>') },
-		});
-		const floor = floorOf(view.container);
-		const anchor = view.container.querySelector('[data-slot="construction-ground-anchor"]')!;
-
-		// The reveal runs while the marker climbs from 760px to 560px.
-		for (const [top, state] of [[660, 'revealing'], [560, 'revealed'], [561, 'revealing']] as const) {
-			anchor.getBoundingClientRect = () => new DOMRect(0, top, 1, 1);
-			root.dispatchEvent(new Event('scroll'));
-			await tick();
-			expect(floor.dataset.fixtures, `marker at ${top}px`).toBe(state);
-		}
+		expect(floor.dataset.fixtures).toBe('true');
 	});
 });

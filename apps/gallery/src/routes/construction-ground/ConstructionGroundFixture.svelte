@@ -138,12 +138,15 @@
 	.ground-wrapper {
 		--construction-ground-height: 240px;
 		--construction-end-inset: clamp(6rem, 12vw, 9rem);
+		/* The beam's top above the ground line; what stands above the ground is reserved. */
+		--beam-top: 364px;
+		--construction-ground-headroom: calc(var(--beam-top) - var(--construction-ground-height));
+		padding-block-start: var(--construction-ground-headroom);
 		width: 100%;
 	}
 
 	.stationary-fixture {
 		--lamp-width: 64px;
-		--beam-top: 364px;
 		position: absolute;
 		bottom: 0;
 		inset-inline-end: clamp(1rem, 4vw, 3rem);
@@ -175,7 +178,7 @@
 	}
 
 	@media (min-width: 1280px) {
-		.stationary-fixture {
+		.ground-wrapper {
 			--beam-top: 430px;
 		}
 	}
@@ -184,10 +187,10 @@
 		.ground-wrapper {
 			--construction-ground-height: 100px;
 			--construction-end-inset: 4.25rem;
+			--beam-top: 330px;
 		}
 		.stationary-fixture {
 			--lamp-width: 40px;
-			--beam-top: 330px;
 		}
 	}
 </style>
