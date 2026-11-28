@@ -134,3 +134,57 @@ describe('ListingBody polite status contract', () => {
 		expect(slot(view, 'listing-body-result-status')).toBeNull();
 	});
 });
+
+describe('ListingBody presentation', () => {
+	const every = {
+		title: 'Every measured line',
+		titleAside,
+		search,
+		summary,
+		resultCountText: '3 results',
+		sort,
+		more,
+	};
+	const ownClasses = (element: Element) =>
+		[...element.classList].filter((name) => !name.startsWith('svelte-'));
+	const childSlots = (view: View) =>
+		[...slot(view, 'listing-body')!.children].map((child) => child.getAttribute('data-slot'));
+
+	it('draws the framed section by default and when asked for it', () => {
+		for (const view of [body(), body({ presentation: 'section' })]) {
+			expect(ownClasses(slot(view, 'listing-body')!)).toEqual(['listing-body']);
+			view.unmount();
+		}
+	});
+
+	it('regions drops the frame class and keeps slot order, heading name and count status', () => {
+		const view = body({ presentation: 'regions', ...every });
+		const root = slot(view, 'listing-body')!;
+
+		expect(ownClasses(root)).toEqual(['listing-body-regions']);
+		expect(view.container.querySelector('.listing-body')).toBeNull();
+		expect(root.getAttribute('aria-labelledby')).toBe(slot(view, 'listing-body-title')!.id);
+		expect(childSlots(view)).toEqual([
+			'listing-body-header',
+			'listing-body-search',
+			'listing-body-summary',
+			'listing-body-result-status',
+			'listing-body-sort',
+			'listing-body-results',
+			'listing-body-more',
+		]);
+		const status = slot(view, 'listing-body-result-status')!;
+		expect(status.getAttribute('role')).toBe('status');
+		expect(status.classList.contains('sr-only')).toBe(true);
+		expect(status.textContent).toBe('3 results');
+	});
+
+	it('regions renders nothing for absent regions', () => {
+		const view = body({ presentation: 'regions' });
+		const root = slot(view, 'listing-body')!;
+
+		expect(childSlots(view)).toEqual(['listing-body-results']);
+		expect(root.children).toHaveLength(1);
+		expect(root.hasAttribute('aria-labelledby')).toBe(false);
+	});
+});

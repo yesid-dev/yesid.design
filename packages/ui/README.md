@@ -920,6 +920,14 @@ status (`resultCountText`, `role="status"`), optional `sort`, `children` (a `Dat
 no space; present regions keep their first-paint dimensions through hydration. Values, sort keys,
 paging and state meanings stay with the caller.
 
+`presentation` is `section` (default) or `regions`. `section` draws the card's own border, background
+and padding, with 12px between regions below 768px and 16px from 768px. `regions` is for a parent card
+that already has a frame: the same slots in the same order, with no border, background or padding,
+inherited text colour and 12px between present regions at every width. The parent owns the frame, the
+spacing around the regions and anything above or below them. A region is absent when its prop is not
+passed; pass `undefined` instead of a snippet that renders nothing, which would keep its wrapper and
+gap.
+
 ## Detail frame and article header
 
 `DetailFrame` is the detail and article page template: the `header` snippet, a rule, an
