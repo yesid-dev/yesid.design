@@ -55,7 +55,7 @@ signer flags for releases signed under another repository name.
 
 ## Develop
 
-You need Bun 1.3.11 ([`.bun-version`](.bun-version)) and Node 22.17 or newer ([`.nvmrc`](.nvmrc)).
+You need Bun 1.4.5 ([`.bun-version`](.bun-version)) and Node 22.17 or newer ([`.nvmrc`](.nvmrc)).
 
 ```sh
 git clone https://github.com/yesid-dev/yesid.design.git
