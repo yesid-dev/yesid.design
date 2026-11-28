@@ -521,23 +521,33 @@ server with `@yesid/seo-kit/highlight` and render its markup as `children` insid
 `aria-label` if it needs a name. `base.css` colors the `syn-*` classes through the `--syntax-*`
 tokens. Without `children` the code shows as a plain, focusable `<pre>`.
 
-### ConstructionProps
+### ConstructionProps and ConstructionGround
 
-The four original yesid.dev construction artworks: crossing sign, helmet, barricade and Montréal
-balise, with their original responsive ground positions. The caller owns the positioned scene
-above its footer. Optional `lighting` preserves the warm scene treatment. Pass a stable marker
-before the ground as `revealAt` and, for nested scrolling, its viewport as `revealRoot`.
-Reveal starts when that footer edge enters 5% of the active viewport and completes over the next
-25vh of scrolling, reversing proportionally on return. There is no timed transition, timeout,
-stagger or delay. Give the caller-owned ground its final height from the first paint and let
-`progress` drive only transforms or opacity, so the footer and everything after it stay still while
-the props rise. Reduced motion switches instantly and SSR without JavaScript remains plain and
-visible. No fetch, parser or HTML injection.
+`ConstructionGround` wraps `ConstructionProps` and owns the revealed ground above a footer, so
+the space opens with the props as they rise instead of sitting empty ahead of them. Set the ground
+height responsively with `--construction-ground-height` (default `240px`) on an ancestor. Pass
+`layout`, `floodlight`, `lighting` and `revealRoot` through to `ConstructionProps`; `ConstructionGround`
+owns its reveal marker and scroll `progress` internally and does not accept `revealAt` or `progress`.
+Use the optional `fixtures` snippet for stationary pieces such as a lit `ConstructionFloodlight`
+and its beam: they render on the same stage outside the moving props group and rise with the ground.
+The internal reveal marker sits `max(5vh, 30vh - height) + 120px` above the ground so the footer
+stays below the viewport throughout the reveal; focus landing after the ground, `End`, and
+`PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced
+motion and SSR without JavaScript hold the full height with the props shown in place.
+
+Use raw `ConstructionProps` for always-visible artwork (omit `revealAt`) or when a caller must
+control a fixed-height positioned scene directly. It renders the four original yesid.dev
+construction artworks: crossing sign, helmet, barricade and Montréal balise, with their original
+responsive ground positions. Optional `lighting` preserves the warm scene treatment. When used
+directly with `revealAt` (and optional `revealRoot` for nested scrolling), reveal starts when the
+marker enters 5% of the active viewport and completes over the next 25vh of scrolling, reversing
+proportionally on return, with no timed transition, timeout, stagger or delay. Reduced motion
+switches instantly and SSR without JavaScript remains plain and visible. No fetch, parser or HTML
+injection.
 `layout="spread"` distributes artwork evenly; `layout="around-fixture"` spaces mobile artwork
 evenly in one row around a centred 40px gap for a separate light. `floodlight` includes an unlit
-fixture in the moving group.
-Omit `revealAt` for always-visible artwork. Stationary lit fixtures remain outside the group.
-Spread layout honors `--construction-end-inset` for a caller's stationary fixture/wordmark area.
+fixture in the moving group. Stationary lit fixtures remain outside the group. Spread layout honors
+`--construction-end-inset` for a caller's stationary fixture/wordmark area.
 
 `ConstructionFloodlight` is the original stationary fixture, unlit by default; `lit` enables its
 original lens and halo. The caller owns positioning and any beam. Keep it outside the moving props.

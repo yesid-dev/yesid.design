@@ -22,6 +22,7 @@ export const GALLERY_COVERAGE = {
 		'CodeBlock',
 		'CollapsibleSection',
 		'CornerMarks',
+		'ConstructionGround',
 		'ConstructionProps',
 		'ConstructionFloodlight',
 		'ErrorIllustration',
