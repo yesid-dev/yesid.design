@@ -2363,6 +2363,7 @@ type ListingBody = ReturnType<typeof ListingBody>;
 interface ListingBodyProps {
     children: Snippet;
     more?: Snippet;
+    presentation?: 'section' | 'regions';
     resultCountText?: string;
     search?: Snippet;
     sort?: Snippet;

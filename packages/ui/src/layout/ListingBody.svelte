@@ -3,11 +3,17 @@
   frame-level filters. Owns region order and spacing rhythm: title row, search, summary, sort,
   results, more. Absent regions emit no element and reserve no space. With `resultCountText`, an
   always-present visually hidden polite status announces count changes.
+  `presentation="regions"` drops the card's own frame for a parent card that already has one.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
 
 	export interface ListingBodyProps {
+		/**
+		 * `section` (default) draws the bordered, padded card. `regions` draws no border, background
+		 * or padding and keeps present regions 12px apart at every width, for use inside a parent card.
+		 */
+		presentation?: 'section' | 'regions';
 		/** Card heading, e.g. "Every measured line". */
 		title?: string;
 		/** Heading element level when `title` is set. Defaults to 2. */
@@ -34,6 +40,7 @@
 
 <script lang="ts">
 	let {
+		presentation = 'section',
 		title,
 		titleLevel = 2,
 		titleAside,
@@ -50,7 +57,7 @@
 </script>
 
 <section
-	class="listing-body"
+	class={presentation === 'regions' ? 'listing-body-regions' : 'listing-body'}
 	data-slot="listing-body"
 	aria-labelledby={hasTitle ? titleId : undefined}
 >
@@ -93,13 +100,17 @@
 </section>
 
 <style>
-	.listing-body {
+	.listing-body,
+	.listing-body-regions {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
 		width: 100%;
 		min-width: 0;
+	}
+
+	.listing-body {
 		padding: var(--space-card-gap);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
