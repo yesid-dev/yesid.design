@@ -237,3 +237,39 @@ describe('persistent summary', () => {
 		}
 	});
 });
+
+describe('permalink', () => {
+	const variants = [
+		['default', {}],
+		['article-summary', { headerVariant: 'article-summary', subtitle: 'Completed week' }],
+		['static', { collapsible: false }],
+	] as const;
+
+	it.each(variants)('links the %s header to its anchor from outside the heading and the toggle', (_, props) => {
+		const view = section({ ...props, anchor: 'method', permalink: true, permalinkLabel: 'Link to this section' });
+		const link = view.getByRole('link', { name: 'Link to this section: Section' });
+		expect(link.getAttribute('href')).toBe('#method');
+		expect(view.container.querySelector('h2')?.id).toBe('method');
+		expect(link.closest('h2, button')).toBeNull();
+	});
+
+	it.each(variants)('adds no link and no heading id to the %s header without the prop', (_, props) => {
+		const view = section({ ...props, anchor: 'method', permalinkLabel: 'Link to this section' });
+		expect(view.container.querySelector('[data-slot="heading-permalink"], .section-permalink-host')).toBeNull();
+		expect(view.container.querySelector('h2')?.hasAttribute('id')).toBe(false);
+	});
+
+	it.each([{ anchor: 'method' }, { permalinkLabel: 'Link to this section' }])(
+		'needs both an anchor and a label: %o',
+		(props) => {
+			const view = section({ ...props, permalink: true });
+			expect(view.container.querySelector('[data-slot="heading-permalink"]')).toBeNull();
+		},
+	);
+
+	it('leaves the disclosure alone when the permalink is clicked', async () => {
+		const view = section({ anchor: 'method', permalink: true, permalinkLabel: 'Link to this section' });
+		await click(view.getByRole('link', { name: 'Link to this section: Section' }));
+		expect(isOpen(view)).toBe(true);
+	});
+});

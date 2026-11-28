@@ -20,6 +20,13 @@
 		independent?: boolean;
 		/** Emits `data-toc` so TocNav and TocPill can target this section. */
 		anchor?: string;
+		/**
+		 * Adds a permalink to `anchor` in the section's side inset and gives the heading `id={anchor}`,
+		 * so the anchor must be unique on the page. Shown only with `anchor` and `permalinkLabel`.
+		 */
+		permalink?: boolean;
+		/** The localized start of the permalink's accessible name, such as "Link to this section". */
+		permalinkLabel?: string;
 		/** A product signal that opens the section whenever it changes, like a reader click. */
 		openSignal?: number | null;
 		icon?: Snippet;

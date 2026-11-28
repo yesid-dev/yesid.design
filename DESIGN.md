@@ -155,6 +155,7 @@ components:
   TocPill: {}
   ToggleChip: {}
   Wordmark: {}
+  HeadingPermalink: {}
   LanguageToggle: {}
 ---
 
@@ -289,7 +290,7 @@ Borders use semantic tokens (`border`, `border-subtle`, `border-strong`).
 
 ## Components
 
-See `@yesid/ui/brand` (39 components: `AnswerLead`, `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `ProductBrand`, `RailTitle`, `RoutePlate`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `Stamp`, `StatusMark`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `LanguageToggle`) and
+See `@yesid/ui/brand` (40 components: `AnswerLead`, `BlueprintShell`, `ChevronToggle`, `CodeBlock`, `CollapsibleSection`, `CornerMarks`, `CornerMeta`, `ConstructionFloodlight`, `ConstructionProps`, `ErrorIllustration`, `FilterGroup`, `FilterSection`, `FilterSummary`, `ManifestoCanvas`, `MetricDisplay`, `MetroStation`, `ProductBrand`, `RailTitle`, `RoutePlate`, `SectionsToggle`, `SearchInput`, `SectionHeading`, `SliderButton`, `SectionIcon`, `SectionLabel`, `SegmentedChoice`, `StatusDot`, `Stamp`, `StatusMark`, `StopLabel`, `TerminalCursor`, `TerminalPanel`, `ThemeToggle`, `TocBadge`, `TocNav`, `TocPill`, `ToggleChip`, `Wordmark`, `HeadingPermalink`, `LanguageToggle`) and
 14 primitive subpaths (`@yesid/ui/badge`, `@yesid/ui/button`, `@yesid/ui/card`, `@yesid/ui/collapsible`, `@yesid/ui/combobox`, `@yesid/ui/footer`, `@yesid/ui/resizable`, `@yesid/ui/scroll-area`, `@yesid/ui/separator`, `@yesid/ui/sheet`, `@yesid/ui/skeleton`, `@yesid/ui/switch`, `@yesid/ui/tabs`, `@yesid/ui/tooltip`). Design-system documentation:
 the public `@yesid/ui` package documentation and the living Gallery.
 

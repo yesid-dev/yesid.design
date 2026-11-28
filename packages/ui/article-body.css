@@ -1,0 +1,132 @@
+/* Shared reading roles for detail pages, legal copy and the home biography.
+   Opt in once, after base.css. The desktop step reads `--desktop-min` from @yesid/tokens/tokens.css,
+   so the build must resolve that custom media query. List markers, quote bars, rules and code chips
+   belong to the product's prose styles. */
+.reading-detail {
+	--reading-prose-size: var(--text-reading);
+	--reading-code-size: var(--text-reading-code);
+	--reading-heading-size: var(--text-reading-heading);
+}
+
+@media (--desktop-min) {
+	.reading-detail {
+		--reading-prose-size: var(--text-reading-desktop);
+		--reading-code-size: var(--text-reading-code-desktop);
+		--reading-heading-size: var(--text-reading-heading-desktop);
+	}
+}
+
+.reading-detail .reading-support {
+	--reading-prose-size: var(--text-reading-support);
+}
+
+.reading-detail :is(.article-body, .reading-support) {
+	min-width: 0;
+	font-family: var(--font-body);
+	font-size: var(--reading-prose-size);
+	line-height: 1.7;
+	color: color-mix(in srgb, var(--foreground) 85%, transparent);
+	overflow-wrap: anywhere;
+}
+
+.reading-detail .article-body {
+	max-width: 70ch;
+}
+
+/* Diagram labels keep the typography Mermaid used to measure their boxes. The reading root is never
+   one of these elements; excluding it keeps this rule above single-class element rules. */
+.reading-detail :is(.article-body, .reading-support) :is(p, ul, ol, li, blockquote, td, th):not(svg *):not(.reading-detail) {
+	font-size: var(--reading-prose-size);
+	line-height: 1.7;
+}
+
+.reading-detail .section-header .section-title,
+.reading-detail .article-body .section-title {
+	margin: 0;
+	font-size: var(--reading-heading-size);
+	line-height: 1.3;
+}
+
+.reading-detail :is(.article-body, .reading-support) figcaption {
+	font-size: var(--text-reading-caption);
+	line-height: 1.6;
+}
+
+.reading-detail :is(.article-body, .reading-support) code:not(pre code) {
+	font-family: var(--font-mono);
+	font-size: var(--text-reading-inline-code);
+}
+
+/* Light code chips need a stronger border to remain visible on paper. */
+[data-theme="light"] .article-body code:not(pre code) {
+	background: var(--muted);
+	border-color: var(--border-strong);
+}
+
+.reading-detail :is(.article-body, .reading-support) :is(.terminal-code, .terminal-code-body, pre) {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.reading-detail :is(.article-body, .reading-support) pre {
+	font-family: var(--font-mono);
+	font-size: var(--reading-code-size);
+	line-height: 1.6;
+	white-space: pre;
+	word-break: normal;
+	overflow-wrap: normal;
+	overflow-x: auto;
+}
+
+.reading-detail :is(.article-body, .reading-support) pre code {
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.reading-detail .article-body table {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.reading-detail .article-body :is(h2, h3, h4) {
+	position: relative;
+	font-family: var(--font-heading);
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--foreground);
+	margin: 1.5em 0 0.65em;
+}
+
+.reading-detail .article-body h2 { font-size: 1.4em; font-weight: 700; }
+.reading-detail .article-body h3 { font-size: 1.2em; }
+.reading-detail .article-body h4 { font-size: 1.05em; }
+
+/* Also styles hand-written `a.heading-anchor` permalinks, such as those added to rendered HTML. */
+.reading-detail .article-body .heading-anchor {
+	position: absolute;
+	right: 100%;
+	margin-right: 0.5rem;
+	color: var(--primary);
+	text-decoration: none;
+	opacity: 0;
+	transform: translateX(-4px);
+	transition: opacity var(--duration-normal) var(--ease-default), transform var(--duration-normal) var(--ease-default);
+}
+
+.reading-detail .article-body :is(h2, h3, h4):hover .heading-anchor {
+	opacity: var(--opacity-muted);
+	transform: translateX(0);
+}
+
+.reading-detail .article-body :is(h2, h3, h4) .heading-anchor:focus-visible {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reading-detail .article-body .heading-anchor {
+		transform: none;
+		transition-property: opacity;
+	}
+}

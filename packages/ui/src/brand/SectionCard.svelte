@@ -9,6 +9,7 @@
 	import { Card } from '../primitives/card/index.js';
 	import type { CollapsibleSectionProps } from './CollapsibleSection.svelte';
 	import ChevronToggle from './ChevronToggle.svelte';
+	import HeadingPermalink from './HeadingPermalink.svelte';
 	import { noteSectionReady } from './sections-preference.js';
 
 	let {
@@ -23,6 +24,8 @@
 		accentColor = 'var(--primary)',
 		collapsible = true,
 		anchor,
+		permalink = false,
+		permalinkLabel,
 		openSignal = null,
 		icon,
 		headerActions,
@@ -53,6 +56,8 @@
 			.filter(Boolean).join(' ') || undefined,
 	);
 	const hasHeaderMark = $derived(index !== null || icon !== undefined);
+	// The link sits beside the heading, never inside the toggle button or the heading's own name.
+	const linked = $derived(permalink && anchor && permalinkLabel ? { target: anchor, label: permalinkLabel } : undefined);
 
 	// Server HTML is complete and readable even for a declared-closed section without JavaScript.
 	const isOpen = $derived(!collapsible || !initialized || open);
@@ -107,10 +112,27 @@
 	{/if}
 {/snippet}
 
+{#snippet permalinkAnchor()}
+	{#if linked}
+		<HeadingPermalink target={linked.target} label={linked.label} />
+	{/if}
+{/snippet}
+
+{#snippet headerButton()}
+	<button
+		{...triggerProps}
+		bind:this={trigger}
+		class="section-header section-pad-x flex w-full items-center gap-2.5 py-4 text-left"
+	>
+		{@render legacyHeaderContent()}
+		<ChevronToggle open={isOpen} direction="right" />
+	</button>
+{/snippet}
+
 {#snippet legacyHeaderContent()}
 	{@render headerMark()}
 	<span class="section-title-group flex flex-1 flex-col gap-0.5">
-		<h2 class="section-title font-heading text-lg font-bold text-[var(--foreground)]">
+		<h2 id={linked?.target} class="section-title font-heading text-lg font-bold text-[var(--foreground)]">
 			{title}
 		</h2>
 		{#if subtitle}
@@ -144,8 +166,9 @@
 				<div
 					class="section-heading-row"
 					class:section-heading-row--actions={headerActions !== undefined}
+					class:section-permalink-host={linked}
 				>
-					<h2 class="section-heading">
+					<h2 id={linked?.target} class="section-heading">
 						<button
 							{...triggerProps}
 							bind:this={trigger}
@@ -168,6 +191,7 @@
 							</span>
 						</button>
 					</h2>
+					{@render permalinkAnchor()}
 					{#if headerActions}
 						<div class="section-header-actions" data-card-interactive>
 							{@render headerActions()}
@@ -185,19 +209,18 @@
 						<span class="section-subtitle__text">{subtitle}</span>
 					</p>
 				{/if}
+			{:else if linked}
+				<div class="section-permalink-host">
+					{@render headerButton()}
+					{@render permalinkAnchor()}
+				</div>
 			{:else}
-				<button
-					{...triggerProps}
-					bind:this={trigger}
-					class="section-header section-pad-x flex w-full items-center gap-2.5 py-4 text-left"
-				>
-					{@render legacyHeaderContent()}
-					<ChevronToggle open={isOpen} direction="right" />
-				</button>
+				{@render headerButton()}
 			{/if}
 		{:else}
-			<div class="section-pad-x flex items-center gap-2.5 py-4">
+			<div class={['section-pad-x flex items-center gap-2.5 py-4', linked && 'section-permalink-host']}>
 				{@render legacyHeaderContent()}
+				{@render permalinkAnchor()}
 			</div>
 		{/if}
 
@@ -258,6 +281,8 @@
 	   dark: no shadow (owner rulings, 15 November 2026). */
 	:global([data-slot='card'].section-card):has(
 		> [data-slot='collapsible'] > .section-header:hover,
+		> [data-slot='collapsible'] > .section-permalink-host > .section-header:hover,
+		> [data-slot='collapsible'] > .section-permalink-host > .section-header:focus-visible,
 		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:hover,
 		> [data-slot='collapsible'] > .section-header:focus-visible,
 		> [data-slot='collapsible'] > .section-heading-row > .section-heading > .section-header:focus-visible
@@ -267,6 +292,46 @@
 
 	.section-header {
 		cursor: pointer;
+	}
+
+	/* The permalink hangs in the side inset, so showing it moves nothing. These selectors outrank
+	   article-body.css when a section card sits inside an article body. */
+	.section-permalink-host {
+		position: relative;
+	}
+
+	.section-permalink-host > :global(a[data-slot='heading-permalink']) {
+		position: absolute;
+		inset-block: 0;
+		inset-inline: 0 auto;
+		display: flex;
+		width: max(var(--collapsible-pad-x), 1rem);
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		outline-offset: -2px;
+		font-family: var(--font-heading);
+		font-size: var(--text-body);
+		font-weight: 700;
+	}
+
+	/* A 24px target on phones too, where the inset and its focus ring are 16px and stop at the title. */
+	.section-permalink-host > :global(a[data-slot='heading-permalink'])::after {
+		content: '';
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: 0;
+		width: 1.5rem;
+	}
+
+	.section-permalink-host:hover > :global(a[data-slot='heading-permalink']) {
+		opacity: var(--opacity-muted);
+		transform: none;
+	}
+
+	.section-permalink-host > :global(a[data-slot='heading-permalink']:focus-visible) {
+		opacity: 1;
+		transform: none;
 	}
 
 	.section-header:focus-visible {
@@ -464,6 +529,7 @@
 		line-clamp: 2;
 	}
 	:global(.section-card[data-section-initial='closed']:not([data-section-ready]) > [data-slot='collapsible'] > .section-header .chevron),
+	:global(.section-card[data-section-initial='closed']:not([data-section-ready]) > [data-slot='collapsible'] > .section-permalink-host > .section-header .chevron),
 	:global(.section-card[data-section-initial='closed']:not([data-section-ready]) > [data-slot='collapsible'] > .section-heading-row .chevron) {
 		transform: none;
 		transition: none;

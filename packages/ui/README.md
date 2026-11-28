@@ -636,6 +636,66 @@ takes no glow.
 </CollapsibleSection>
 ```
 
+`permalink` with `permalinkLabel` adds a [`HeadingPermalink`](#headingpermalink) to the card's
+`anchor`, in the header's side inset, so showing it moves nothing. It sits beside the heading and
+the toggle button, never inside them, so following it does not toggle the card and the heading keeps
+its own name. The heading takes `id={anchor}`, so the fragment also works without JavaScript; keep
+that anchor unique on the page. No link renders without both `anchor` and `permalinkLabel`.
+
+```svelte
+<CollapsibleSection title="Method" anchor="method" permalink permalinkLabel="Link to this section">
+  <p>Detailed method and evidence.</p>
+</CollapsibleSection>
+```
+
+### HeadingPermalink
+
+A `#` link to a heading, hidden until its heading is hovered or the link takes keyboard focus, at
+full strength when focused. Under reduced motion it fades without sliding. `target` is the heading's
+id; `label` is the localized start of the accessible name and is required, because the package ships
+no translated defaults ("Link to this section", "Lien vers cette section"). The name is
+"{label}: {text of the target}", read with `aria-labelledby`, so it is complete in server markup.
+
+It hangs to the left of its heading, so leave a gutter of about one heading character plus 0.5rem. Its
+styles are its own, so it works outside `.article-body`; an `h1` to `h6` that holds it directly
+becomes its positioning box. A link inside a heading also joins that heading's name. Wrap the
+heading's text and name the heading from it, as below, so heading navigation reads the text alone.
+Point `target` at an element that holds only the heading: the whole text of the target is read.
+
+```svelte
+<h2 id="hours" aria-labelledby="hours-text">
+  <span id="hours-text">Opening hours</span><HeadingPermalink target="hours" label="Link to this section" />
+</h2>
+```
+
+### Article body
+
+`@yesid/ui/article-body.css` holds the reading roles for detail pages, legal copy and long prose.
+Import it once, after `base.css`, in the stylesheet that imports `@yesid/tokens/tokens.css`:
+
+```css
+@import '@yesid/tokens/tokens.css';
+@import 'tailwindcss';
+@import '@yesid/ui/base.css';
+@import '@yesid/ui/article-body.css';
+```
+
+Its desktop step uses the tokens' `--desktop-min` custom media query. To import it from a script
+instead, the build needs postcss-global-data and postcss-custom-media, as for Svelte styles
+([tokens](../tokens/README.md)); without them the desktop sizes never apply.
+
+| Class | Role |
+| --- | --- |
+| `.reading-detail` | The reading root. Sets `--reading-prose-size`, `--reading-code-size` and `--reading-heading-size` from the `--text-reading*` tokens, one step up from 1024px. Section card titles inside it take the heading size. |
+| `.article-body` | The prose column, at most 70ch: body type for `p`, `ul`, `ol`, `li`, `blockquote`, `th` and `td`, the `h2` to `h4` scale and margins, figure captions, inline code and `pre` type, and tables that scroll sideways. In the light theme inline code takes the `--muted` fill and `--border-strong` edge colour. |
+| `.reading-support` | Supporting text beside or below the column, one size step smaller. |
+| `.heading-anchor` | A heading permalink. `HeadingPermalink` renders it; hand-written links, such as ones added to rendered HTML, get the same look inside `.article-body`. |
+
+Every rule but the light inline-code one needs the `.reading-detail` root. The module sets type and
+layout only: list markers, quote bars, rules, table borders, code chips and link decoration come from
+`base.css` or the product's prose styles. Give a `pre` or table that can scroll `tabindex="0"`, so
+keyboard readers can scroll it. Gallery's `/article-body` shows it.
+
 ### TocNav, TocPill, and section navigation
 
 TocNav is a desktop contents card; it skips rail entries and keeps its own independent toggle.
