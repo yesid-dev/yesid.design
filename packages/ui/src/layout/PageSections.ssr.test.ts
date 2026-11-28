@@ -50,3 +50,15 @@ it('alternates the built-in article edge with the later page edges before hydrat
 	]);
 	expect(body.slice(body.indexOf('id="c"'))).not.toContain('page-section-boundary');
 });
+
+it('draws every hand-drawn edge as one unbroken stroke with stroke="continuous"', () => {
+	const { body } = render(PageSectionsFixture, { props: { mode: 'editorial', stroke: 'continuous' } });
+	const edges = [...body.matchAll(/data-slot="(article-header-boundary|page-section-boundary)"[^>]*data-stroke-segments="(\d)"/g)];
+	expect(edges.map(match => [match[1], match[2]])).toEqual([
+		['article-header-boundary', '1'],
+		['page-section-boundary', '1'],
+		['page-section-boundary', '1'],
+	]);
+	// No pen-lift mask on a continuous stroke.
+	expect(body).not.toContain('-strokes)');
+});

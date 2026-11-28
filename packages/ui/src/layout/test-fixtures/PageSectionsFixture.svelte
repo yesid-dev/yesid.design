@@ -6,9 +6,13 @@
 	import Masthead from '../Masthead.svelte';
 	import PageSection from '../PageSection.svelte';
 	import PageSections from '../PageSections.svelte';
-	import type { PageDivider } from '../page-sections.js';
+	import type { PageBoundaryStroke, PageDivider } from '../page-sections.js';
 
-	let { mode, divider }: { mode: 'wrapped' | 'masthead' | 'late' | 'frames' | 'editorial' | 'outside'; divider?: PageDivider } = $props();
+	let { mode, divider, stroke }: {
+		mode: 'wrapped' | 'masthead' | 'late' | 'frames' | 'editorial' | 'outside';
+		divider?: PageDivider;
+		stroke?: PageBoundaryStroke;
+	} = $props();
 	let showLead = $state(false);
 	const body = createRawSnippet(() => ({ render: () => '<p>Body</p>' }));
 	const header = createRawSnippet(() => ({ render: () => '<h1>Header</h1>' }));
@@ -60,7 +64,7 @@
 		</PageSection>
 	</PageSections>
 {:else if mode === 'editorial'}
-	<PageSections divider="hand-drawn">
+	<PageSections divider="hand-drawn" {stroke}>
 		<PageSection id="a">
 			<ArticleHeader title="Field notes" backHref="/" backLabel="Back" presentation="reading" />
 			<p>Article text</p>

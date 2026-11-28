@@ -2302,6 +2302,7 @@ declare namespace Layout {
         ReadingFrameUpdated,
         PageSections,
         PageSectionsProps,
+        PageBoundaryStroke,
         PageDivider,
         PageSection,
         PageSectionProps,
@@ -2672,6 +2673,9 @@ type OnNavigate = (callback: (navigation: NavigationEvent) => NavigationResult) 
 function openSection(id: string, root?: Element | Document): boolean;
 
 // @public
+type PageBoundaryStroke = 'segmented' | 'continuous';
+
+// @public
 type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
 
 // @public (undocumented)
@@ -2697,6 +2701,7 @@ interface PageSectionsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childr
     // (undocumented)
     children: Snippet;
     divider?: PageDivider;
+    stroke?: PageBoundaryStroke;
 }
 
 // @public

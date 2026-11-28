@@ -9,12 +9,17 @@
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
-	import type { PageDivider } from './page-sections.js';
+	import type { PageBoundaryStroke, PageDivider } from './page-sections.js';
 
 	export interface PageSectionsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
 		children: Snippet;
 		/** The divider between sections: `dimension` (default), `hand-drawn` or `hazard`. */
 		divider?: PageDivider;
+		/**
+		 * The hand-drawn boundary's ink: `segmented` (default) or one `continuous` stroke. Its colour
+		 * is `--page-boundary-color` (default `--primary`).
+		 */
+		stroke?: PageBoundaryStroke;
 	}
 </script>
 
@@ -22,10 +27,10 @@
 	import { cn } from '../cn/index.js';
 	import { createPageSectionsRegistry, providePageSections } from './page-sections.js';
 
-	let { children, divider = 'dimension', class: className, ...rest }: PageSectionsProps = $props();
+	let { children, divider = 'dimension', stroke = 'segmented', class: className, ...rest }: PageSectionsProps = $props();
 
-	// The registry reads the prop, so a section's boundary follows a change to the parent's choice.
-	providePageSections(createPageSectionsRegistry(() => divider));
+	// The registry reads the props, so a section's boundary follows a change to the parent's choice.
+	providePageSections(createPageSectionsRegistry(() => divider, () => stroke));
 </script>
 
 <div {...rest} class={cn('page-sections', className)} data-slot="page-sections">

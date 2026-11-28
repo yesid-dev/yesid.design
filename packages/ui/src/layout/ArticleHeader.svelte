@@ -240,7 +240,7 @@
 		</div>
 	</section>
 </div>
-<DrawnPageBoundary {inkIndex} slot="article-header-boundary" />
+<DrawnPageBoundary {inkIndex} continuous={registry?.stroke() === 'continuous'} slot="article-header-boundary" />
 
 <style>
 	.article-header {
