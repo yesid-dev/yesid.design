@@ -1,8 +1,20 @@
+import { expectAccessible } from '@yesid/config/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { LABELS } from '../../src/lib/gallery/site-header-fixture.js';
+import { HOME, LABELS, MENU_GROUP_LABELS, MENU_ITEMS } from '../../src/lib/gallery/site-header-fixture.js';
 
 const language = (page: Page) => page.getByRole('link', { name: /^Language:/ });
 const trigger = (page: Page) => page.getByRole('button', { name: LABELS.openMenu, exact: true });
+const menu = (page: Page) => page.getByRole('navigation', { name: LABELS.menu });
+
+async function expectMenuLinks(page: Page) {
+	const links = menu(page).getByRole('link');
+	await expect(links).toHaveText(MENU_ITEMS.map(({ label }) => label));
+	expect(await links.evaluateAll((nodes) => nodes.map((link) => link.getAttribute('href')))).toEqual(MENU_ITEMS.map(({ href }) => href));
+	await expect(links.first()).toHaveAttribute('aria-current', 'page');
+	await expect(links.last()).toHaveAttribute('target', '_blank');
+	await expect(links.last()).toHaveAttribute('rel', 'noopener noreferrer');
+	return links;
+}
 
 async function tabTo(page: Page, target: ReturnType<Page['getByRole']>) {
 	for (let i = 0; i < 40; i++) {
@@ -18,13 +30,26 @@ for (const width of [320, 390, 599]) {
 		const page = await context.newPage();
 		try {
 			await page.goto(`${baseURL}/site-header-compact`);
-			await trigger(page).tap();
+			await expect(menu(page)).toBeHidden();
+			await trigger(page).focus();
+			await page.keyboard.press('Enter');
+			await expect(menu(page).getByRole('heading')).toHaveText([...MENU_GROUP_LABELS.en[2]]);
+			for (const heading of MENU_GROUP_LABELS.en[2]) {
+				await expect(menu(page).getByRole('list', { name: heading })).toHaveCount(1);
+			}
+			const links = await expectMenuLinks(page);
+			for (const link of await links.all()) {
+				await page.keyboard.press('Tab');
+				await expect(link).toBeFocused();
+			}
 			await expect(language(page)).toBeVisible();
 			await page.keyboard.press('Escape');
-			await tabTo(page, trigger(page));
+			await expect(menu(page)).toBeHidden();
+			await expect(trigger(page)).toBeFocused();
 			await page.keyboard.press('Enter');
 			await expect(language(page)).toHaveCount(1);
-			await expect(page.getByTestId('language-toggle')).toHaveCount(1);
+			await expect(page.locator('.fallback-menu').getByTestId('language-toggle')).toBeVisible();
+			await expect(page.getByTestId('nav-pill').getByTestId('language-toggle')).toBeHidden();
 			await expect(page.getByRole('switch', { name: LABELS.theme })).toHaveCount(1);
 			await tabTo(page, page.getByRole('switch', { name: LABELS.theme }));
 			await tabTo(page, language(page));
@@ -88,6 +113,62 @@ for (const width of [320, 390, 599]) {
 			const href = await language(page).getAttribute('href');
 			await language(page).tap();
 			await expect(page).toHaveURL(new URL(href!, baseURL!).href);
+		} finally {
+			release();
+			await context.unrouteAll({ behavior: 'wait' });
+			await context.close();
+		}
+	});
+}
+
+test('the regular header opens its list and light-dismisses without JavaScript', async ({ browser, baseURL }) => {
+	const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+	const page = await context.newPage();
+	try {
+		await page.goto(`${baseURL}${HOME}`);
+		await expect(menu(page)).toBeHidden();
+		await trigger(page).focus();
+		await page.keyboard.press('Enter');
+		const links = await expectMenuLinks(page);
+		await expect(menu(page).getByRole('list')).toHaveCount(1);
+		for (const link of await links.all()) {
+			await page.keyboard.press('Tab');
+			await expect(link).toBeFocused();
+		}
+		await page.keyboard.press('Escape');
+		await expect(menu(page)).toBeHidden();
+		await expect(trigger(page)).toBeFocused();
+		await trigger(page).click();
+		await expect(menu(page)).toBeVisible();
+		await page.mouse.click(4, 100);
+		await expect(menu(page)).toBeHidden();
+	} finally { await context.close(); }
+});
+
+for (const { route, width } of [{ route: '/site-header-compact', width: 390 }, { route: HOME, width: 768 }]) {
+	test(`an early tap at ${width}px hands the open list and focused link to the dialog`, async ({ browser, baseURL }) => {
+		const context = await browser.newContext({ hasTouch: true, reducedMotion: 'reduce', viewport: { width, height: 844 } });
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => { release = resolve; });
+		await context.route('**/_app/immutable/**/*.js', async (route) => { await gate; await route.continue(); });
+		const page = await context.newPage();
+		try {
+			await page.goto(`${baseURL}${route}`, { waitUntil: 'commit' });
+			await expect(page.locator('html')).not.toHaveAttribute('data-gallery-ready', 'true');
+			await trigger(page).tap();
+			await expect(menu(page)).toBeVisible();
+			const links = await expectMenuLinks(page);
+			await expectAccessible(page, { include: '.fallback-menu' });
+			await links.nth(1).focus();
+			release();
+			await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
+			const dialog = page.getByRole('dialog', { name: LABELS.menu });
+			await expect(dialog).toBeVisible();
+			await expect(page.locator('.fallback-menu')).toHaveCount(0);
+			await expect(dialog.getByRole('link', { name: /^Listing/ })).toBeFocused();
+			await page.keyboard.press('Escape');
+			await expect(dialog).toBeHidden();
+			await expect(trigger(page)).toBeFocused();
 		} finally {
 			release();
 			await context.unrouteAll({ behavior: 'wait' });
