@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.65.0-rc.1
+
+<!-- release-fragment: data-table-fonts -->
+- `@yesid/ui` (minor): `DataTable` columns take `font: 'mono' | 'body'`; `body` sets that column's body cells in the body
+  font, and numeric columns keep tabular figures. The CSS custom property `--data-table-header-font`
+  sets the font of header cells and of the labels beside stacked and compact-row values. Without
+  either, tables render as before. No migration. A product that wrapped words or headers in its own
+  font classes can drop them.
+
+<!-- release-fragment: listing-body-regions -->
+- `@yesid/ui` (minor): `ListingBody` takes `presentation="section" | "regions"`. `regions` renders the same slots in the
+  same order with no border, background or padding of its own and 12px between present regions at every
+  width, for use inside a card that already has a frame. The default, `section`, is unchanged. No
+  migration.
+
+<!-- release-fragment: site-footer-streamed-columns -->
+- `@yesid/ui` (patch): `SiteFooter` keeps itself invisible until the browser has parsed all of it, inside or outside
+  `AppFrame`. When a load painted a partly parsed footer on desktop, each link group that arrived
+  later narrowed the brand block and moved the groups beside it, a layout shift before hydration.
+  The footer now appears once, complete and in its final place. No migration.
+
+<!-- release-fragment: site-header-streamed-pill -->
+- `@yesid/ui` (patch): `SiteHeader` keeps its pill invisible until the browser has parsed all of it. A slow load could
+  paint the pill while the parser was still reading it, then widen the centred pill from both sides
+  as the theme, language and menu controls arrived, a layout shift before hydration. The pill now
+  appears once, complete and in its final place, as soon as its markup has been read. No migration.
+
+<!-- release-fragment: stop-ladder-threshold-label -->
+- `@yesid/ui` (patch): `StopLadder` now shows its threshold label at the foot of the threshold line instead of in the
+  column headings. The label follows the line and stays on one line unless it is wider than the room
+  the ladder has for it. A ladder with no stops draws no line and now shows no label either. No API
+  change and no migration.
+
 ## 0.64.1
 
 <!-- release-fragment: continuous-boundary-clip -->
