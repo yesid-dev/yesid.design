@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.64.0-rc.2
+
+<!-- release-fragment: construction-ground -->
+- `@yesid/ui` (minor): Add `ConstructionGround` to `@yesid/ui/brand`, a scroll-revealed ground wrapper around
+  `ConstructionProps` sized via `--construction-ground-height` (default `240px`) with an optional
+  `fixtures` snippet for stationary stage pieces. It opens its height with the rising props while
+  keeping the footer below the viewport, opens synchronously before scroll on focus after the ground
+  or page-navigation keys (`End`, `PageDown`, `Space`), and renders full height under reduced motion
+  and SSR/no-JS.
+
+<!-- release-fragment: navigation-goto-focus -->
+- `@yesid/ui` (patch): `createNavigationLifecycle` no longer resets page focus after a programmatic `goto` when the app
+  passes no `subscribeNavigation`. Its fallback still resets focus for eventless link commits such as
+  redirect hops, but a `goto` already gets the focus its caller asked for from the router, so
+  `goto(url, { reset: false })` now keeps focus on the control that triggered it (for example a
+  `SegmentedChoice` that writes the URL). No migration.
+
 ## 0.64.0-rc.1
 
 <!-- release-fragment: app-frame-streamed-footer -->
