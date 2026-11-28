@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.62.2-rc.1
+
+<!-- release-fragment: desktop-footer-balance -->
+- `@yesid/ui` (patch): Balance the desktop SiteFooter when its content-sized blocks need more than one row. Keep fitting
+  labels on one line and preserve the original reading and keyboard order.
+
+<!-- release-fragment: desktop-rail-scroll-cue -->
+- `@yesid/ui` (patch): Show a still bottom-edge scroll cue on desktop SurfaceRail while more content is below. The cue
+  follows CSS scroll state and keeps the rail's existing keyboard scrolling.
+
+<!-- release-fragment: footer-balance-first-paint -->
+- `@yesid/ui` (patch): Balance desktop footer rows before the first paint. Server-rendered footers use the theme boot
+  script, and client-rendered footers measure as they connect. If the theme boot CSP hash is pinned
+  in `script-src`, update it to the new `hash` in `@yesid/ui/boot.json`.
+
 ## 0.62.1
 
 <!-- release-fragment: center-site-header-menu -->
