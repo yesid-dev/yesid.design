@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.65.0-rc.1
+## 0.65.0
 
 <!-- release-fragment: data-table-fonts -->
 - `@yesid/ui` (minor): `DataTable` columns take `font: 'mono' | 'body'`; `body` sets that column's body cells in the body
