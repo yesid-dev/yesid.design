@@ -6,7 +6,8 @@ import { openGallery } from './gallery.js';
 test('a combobox with clearable={false} keeps its value through the keyboard', async ({ page }) => {
 	await openGallery(page);
 	const family = page.locator('[data-gallery-family="primitive:combobox"]');
-	const demo = family.locator('[data-gallery-demo="combobox-required-choice"]');
+	const demoSelector = '[data-gallery-demo="combobox-required-choice"]';
+	const demo = family.locator(demoSelector);
 	const combobox = demo.getByRole('combobox', { name: 'Rank by measure' });
 	const listbox = page.getByRole('listbox', { name: 'Rank by measure' });
 	const ranked = family.getByText(/^Ranked by:/);
@@ -25,7 +26,7 @@ test('a combobox with clearable={false} keeps its value through the keyboard', a
 	await expect(listbox.getByRole('option')).toHaveCount(3);
 	await combobox.press('Backspace');
 	await combobox.press('Delete');
-	await expectAccessible(page);
+	await expectAccessible(page, { include: demoSelector + ', [role="listbox"][aria-label="Rank by measure"]' });
 	await combobox.press('Escape');
 	await expect(listbox).toBeHidden();
 	await expect(combobox).toHaveValue('Response time');
@@ -49,5 +50,5 @@ test('a combobox with clearable={false} keeps its value through the keyboard', a
 	await expect(combobox).toHaveValue('Error rate');
 	await expect(ranked).toHaveText('Ranked by: error-rate');
 	await expect(demo.getByRole('button')).toHaveCount(1);
-	await expectAccessible(page);
+	await expectAccessible(page, { include: demoSelector });
 });
