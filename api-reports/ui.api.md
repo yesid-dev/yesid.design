@@ -2255,6 +2255,8 @@ declare namespace Layout {
         ErrorPageIllustration,
         ErrorPageLink,
         ErrorPageProps,
+        ListingBody,
+        ListingBodyProps,
         ListingFrame,
         ListingFrameProps,
         SiteFooter,
@@ -2308,6 +2310,25 @@ declare namespace Layout {
         ListingRail,
         ListingRailProps
     }
+}
+
+// @public (undocumented)
+const ListingBody: Component<ListingBodyProps, {}, "">;
+
+// @public (undocumented)
+type ListingBody = ReturnType<typeof ListingBody>;
+
+// @public (undocumented)
+interface ListingBodyProps {
+    children: Snippet;
+    more?: Snippet;
+    resultCountText?: string;
+    search?: Snippet;
+    sort?: Snippet;
+    summary?: Snippet;
+    title?: string;
+    titleAside?: Snippet;
+    titleLevel?: 2 | 3;
 }
 
 // @public (undocumented)
