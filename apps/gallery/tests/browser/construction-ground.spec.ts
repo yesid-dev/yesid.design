@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectAccessible, expectNoHorizontalOverflow, expectTapTargets } from '@yesid/config/playwright';
+import { firstPaintedRow } from './construction-ground-pixels';
 
 const groundFloor = (page: Page) => page.locator('[data-slot="construction-ground-floor"]');
 const groundProps = (page: Page) => page.locator('[data-slot="construction-props"]');
-const groundAnchor = (page: Page) => page.locator('[data-slot="construction-ground-anchor"]');
 const footer = (page: Page) => page.getByTestId('footer');
 
 const floorHeight = (page: Page) =>
@@ -12,18 +12,20 @@ const floorHeight = (page: Page) =>
 const footerTop = (page: Page) =>
 	footer(page).evaluate((el) => el.getBoundingClientRect().top);
 
-// A script scroll dispatches its scroll event before the next frame's callbacks, so once that
-// frame arrives the reveal has read the new position. Without the wait a slow runner can read the
-// previous step's height while data-state already says "revealing".
-const placeMarker = (page: Page, viewportShare: number) =>
-	groundAnchor(page).evaluate(async (el, share) => {
-		window.scrollBy(0, el.getBoundingClientRect().top - window.innerHeight * share);
-		await new Promise<void>((done) => requestAnimationFrame(() => done()));
-	}, viewportShare);
+const progress = (page: Page) =>
+	groundFloor(page).evaluate((el) => Number(el.style.getPropertyValue('--ground-progress')));
 
-async function openFixture(page: Page, lang: 'en' | 'fr') {
+// A script scroll dispatches its scroll event before the next frame's callbacks, so once that
+// frame arrives the reveal has read the new position.
+const scrollIntoGround = (page: Page, distance: number) =>
+	groundFloor(page).evaluate(async (el, distance) => {
+		window.scrollBy(0, el.getBoundingClientRect().top - window.innerHeight + distance);
+		await new Promise<void>((done) => requestAnimationFrame(() => done()));
+	}, distance);
+
+async function openFixture(page: Page, variant: 'en' | 'fr' | 'spread') {
 	if (page.url() !== 'about:blank') await page.goto('about:blank');
-	await page.goto(`/construction-ground/${lang}`, { waitUntil: 'load' });
+	await page.goto(`/construction-ground/${variant}`, { waitUntil: 'load' });
 	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 	await page.evaluate(async () => {
 		await document.fonts.ready;
@@ -31,7 +33,12 @@ async function openFixture(page: Page, lang: 'en' | 'fr') {
 	});
 }
 
-async function wheelToFooter(page: Page) {
+const layoutShifts = (page: Page) =>
+	page.evaluate(
+		() => (window as unknown as { __groundShifts: { value: number; startTime: number; sources: string[] }[] }).__groundShifts,
+	);
+
+async function trackLayoutShifts(page: Page) {
 	await page.evaluate(() => {
 		const shifts: { value: number; startTime: number; sources: string[] }[] = [];
 		Object.assign(window, { __groundShifts: shifts });
@@ -52,7 +59,10 @@ async function wheelToFooter(page: Page) {
 			}
 		}).observe({ type: 'layout-shift', buffered: true });
 	});
+}
 
+async function wheelToFooter(page: Page) {
+	await trackLayoutShifts(page);
 	for (let step = 0; step < 120; step += 1) {
 		const atBottom = await page.evaluate(
 			() => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1,
@@ -64,9 +74,7 @@ async function wheelToFooter(page: Page) {
 		await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
 	}
 	await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))));
-	return page.evaluate(
-		() => (window as unknown as { __groundShifts: { value: number; startTime: number; sources: string[] }[] }).__groundShifts,
-	);
+	return layoutShifts(page);
 }
 
 for (const width of [1440, 1024, 390] as const) {
@@ -84,7 +92,7 @@ for (const width of [1440, 1024, 390] as const) {
 				if (reducedMotion === 'reduce') {
 					expect(await floorHeight(page)).toBe(expectedHeight);
 				} else {
-					await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
+					expect(await progress(page)).toBe(0);
 					expect(await floorHeight(page)).toBe(0);
 				}
 
@@ -96,7 +104,7 @@ for (const width of [1440, 1024, 390] as const) {
 				});
 
 				expect(shifts, `${width}px ${lang} ${reducedMotion}: ${JSON.stringify(shifts)}`).toEqual([]);
-				await expect(groundProps(page)).toHaveAttribute('data-state', 'visible');
+				await expect.poll(() => progress(page)).toBe(1);
 				expect(await floorHeight(page)).toBe(expectedHeight);
 				await expect(page.getByTestId('ground-stationary-fixture')).toBeVisible();
 				await expectNoHorizontalOverflow(page);
@@ -105,34 +113,64 @@ for (const width of [1440, 1024, 390] as const) {
 	}
 }
 
-test('the ground opens with the props while the footer stays below the viewport', async ({ page }, info) => {
-	test.skip(info.project.name !== 'desktop', 'Desktop reveal geometry check');
-	await page.emulateMedia({ reducedMotion: 'no-preference' });
-	await page.setViewportSize({ width: 1440, height: 900 });
-	await openFixture(page, 'en');
+for (const [width, height, ground] of [[390, 844, 100], [1024, 768, 240], [1440, 900, 240]] as const) {
+	for (const variant of ['en', 'spread'] as const) {
+		test(`the ${variant} ground opens at the viewport edge at ${width}px`, { tag: '@theme' }, async ({ page }, info) => {
+			await page.emulateMedia({ reducedMotion: 'no-preference' });
+			await page.setViewportSize({ width, height });
+			await openFixture(page, variant);
+			await expect(page.locator('html')).toHaveAttribute('data-theme', info.project.name);
+			await trackLayoutShifts(page);
 
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
-	expect(await floorHeight(page)).toBe(0);
+			const artwork = groundProps(page).locator('[data-construction-prop] > svg, [data-construction-fixture] svg');
+			const artLayout = () => artwork.evaluateAll((elements) => elements.map((element) => {
+				const { width, height, top } = element.getBoundingClientRect();
+				return { width, height, top };
+			}));
+			const initial = await artLayout();
+			expect(initial).toHaveLength(variant === 'spread' ? 5 : 4);
+			expect(await progress(page)).toBe(0);
 
-	for (const share of [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]) {
-		await placeMarker(page, share);
-		expect(await footerTop(page), `footer below viewport at marker ${share}`).toBeGreaterThanOrEqual(900 + 120);
+			for (const distance of [0, 2, ground / 4, ground / 2, ground - 2]) {
+				await scrollIntoGround(page, distance);
+				expect(await progress(page)).toBeCloseTo(distance / ground, 2);
+				expect(await floorHeight(page)).toBe(distance);
+				const bottom = await groundFloor(page).evaluate((el) => el.getBoundingClientRect().bottom);
+				expect(Math.abs(bottom - height)).toBeLessThanOrEqual(0.02);
+				expect(await footerTop(page)).toBeGreaterThanOrEqual(height - 0.02);
+
+				const visible = await artLayout();
+				for (const [i, art] of visible.entries()) {
+					expect(art.width).toBeCloseTo(initial[i]!.width, 2);
+					expect(art.height).toBeCloseTo(initial[i]!.height, 2);
+					// Artwork starts rising from the ground line as soon as the floor opens.
+					expect(Math.abs(art.top - (bottom - art.height * distance / ground))).toBeLessThan(1);
+				}
+			}
+
+			// Allow for the transparent margins in the lit artwork while checking its first pixels.
+			await scrollIntoGround(page, ground / 10);
+			const band = await page.evaluate(() => ({
+				x: 0,
+				y: window.scrollY + window.innerHeight - 16,
+				width: document.documentElement.clientWidth,
+				height: 16,
+			}));
+			expect(await firstPaintedRow(page, '[data-slot="construction-props"]', band)).not.toBeNull();
+
+			await scrollIntoGround(page, ground + 2);
+			expect(await progress(page)).toBe(1);
+			expect(await floorHeight(page)).toBe(ground);
+			expect(await footerTop(page)).toBeLessThan(height);
+			const top = await groundFloor(page).evaluate((el) => el.getBoundingClientRect().top);
+			for (const art of await artLayout()) expect(art.top).toBeGreaterThanOrEqual(top);
+			await page.evaluate(() => window.scrollTo(0, 0));
+			await expect.poll(() => progress(page)).toBe(0);
+			expect(await floorHeight(page)).toBe(0);
+			expect(await layoutShifts(page)).toEqual([]);
+		});
 	}
-
-	await placeMarker(page, 0.95 - 0.125);
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'revealing');
-	const midHeight = await floorHeight(page);
-	expect(midHeight).toBeGreaterThan(60);
-	expect(midHeight).toBeLessThan(180);
-
-	await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'visible');
-	expect(await floorHeight(page)).toBe(240);
-
-	await page.evaluate(() => window.scrollTo(0, 0));
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
-	expect(await floorHeight(page)).toBe(0);
-});
+}
 
 test('focus into footer, End, and PageDown each open the ground before the footer enters view', async ({ page }, info) => {
 	test.skip(info.project.name !== 'desktop', 'Keyboard and focus opening check');
@@ -141,7 +179,7 @@ test('focus into footer, End, and PageDown each open the ground before the foote
 
 	// 1. Focus moving into the footer opens the ground synchronously and keeps the link in view.
 	await openFixture(page, 'en');
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
+	expect(await progress(page)).toBe(0);
 	expect(await floorHeight(page)).toBe(0);
 	const footerLink = footer(page).getByRole('link').first();
 	await footerLink.focus();
@@ -152,7 +190,7 @@ test('focus into footer, End, and PageDown each open the ground before the foote
 
 	// 1b. Shift+Tab from the top lands in the footer with the ground open and link in view.
 	await openFixture(page, 'en');
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
+	expect(await progress(page)).toBe(0);
 	await page.keyboard.press('Shift+Tab');
 	const focused = page.locator(':focus');
 	await expect(focused).toHaveCount(1);
@@ -163,7 +201,7 @@ test('focus into footer, End, and PageDown each open the ground before the foote
 
 	// 2. End key opens the ground before jumping to the bottom.
 	await openFixture(page, 'en');
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'hidden');
+	expect(await progress(page)).toBe(0);
 	await page.keyboard.press('End');
 	await expect(groundFloor(page)).toHaveAttribute('data-opened', 'true');
 	expect(await floorHeight(page)).toBe(240);
@@ -197,8 +235,8 @@ test('reduced motion holds full height in place and never slides', async ({ page
 
 	expect(await floorHeight(page)).toBe(240);
 	const initialFooterY = await footer(page).evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
-	await placeMarker(page, 0.95 - 0.125);
-	await expect(groundProps(page)).toHaveAttribute('data-state', 'visible');
+	await scrollIntoGround(page, 120);
+	expect(await progress(page)).toBe(1);
 	expect(await floorHeight(page)).toBe(240);
 	const stageTransform = await page
 		.locator('[data-slot="construction-ground-stage"]')

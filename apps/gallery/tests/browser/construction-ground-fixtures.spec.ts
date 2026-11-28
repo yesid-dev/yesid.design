@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoHorizontalOverflow } from '@yesid/config/playwright';
+import { firstPaintedRow } from './construction-ground-pixels';
 
 const floor = (page: Page) => page.locator('[data-slot="construction-ground-floor"]');
 const fixtures = (page: Page) => page.locator('[data-slot="construction-ground-fixtures"]');
@@ -24,11 +25,13 @@ async function open(page: Page) {
 	await page.evaluate(() => document.fonts.ready);
 }
 
-/** Scrolls so the internal marker sits where the reveal has reached `progress`. */
+/** Scrolls one ground height from where the collapsed floor reaches the viewport. */
 async function revealTo(page: Page, progress: number) {
-	await page.locator('[data-slot="construction-ground-anchor"]').evaluate((anchor, share) => {
-		window.scrollBy(0, anchor.getBoundingClientRect().top - window.innerHeight * share);
-	}, 0.95 - 0.25 * progress);
+	await floor(page).evaluate((element, share) => {
+		const stage = element.querySelector('[data-slot="construction-ground-stage"]')!;
+		const y = window.scrollY + element.getBoundingClientRect().top - window.innerHeight;
+		window.scrollTo(0, Math.ceil(y + stage.getBoundingClientRect().height * share));
+	}, progress);
 	await frames(page);
 }
 
@@ -48,52 +51,6 @@ function layout(page: Page) {
 			above: box(host.previousElementSibling!),
 		};
 	});
-}
-
-/**
- * The first page row `target` paints in a band of the whole page, found by comparing the pixels with
- * it shown and hidden; null when it paints nothing there. The band may lie outside the viewport.
- */
-async function firstPaintedRow(
-	page: Page,
-	target: string,
-	band: { x: number; y: number; width: number; height: number },
-) {
-	const picture = async () => (await page.screenshot({ fullPage: true, clip: band })).toString('base64');
-	// Inline styles, because an added style tag never reports loading when JavaScript is off.
-	const show = (visible: boolean) =>
-		page.locator(target).evaluate((element: HTMLElement | SVGElement, on) => {
-			element.style.visibility = on ? '' : 'hidden';
-		}, visible);
-	const shown = await picture();
-	await show(false);
-	const hidden = await picture();
-	await show(true);
-	const row = await page.evaluate(
-		async (pictures) => {
-			const [a, b] = await Promise.all(
-				pictures.map(async (data) => {
-					const image = new Image();
-					image.src = `data:image/png;base64,${data}`;
-					await image.decode();
-					const canvas = document.createElement('canvas');
-					canvas.width = image.width;
-					canvas.height = image.height;
-					const context = canvas.getContext('2d')!;
-					context.drawImage(image, 0, 0);
-					return context.getImageData(0, 0, image.width, image.height);
-				}),
-			);
-			for (let index = 0; index < a!.data.length; index += 4) {
-				if ([0, 1, 2].some((channel) => a!.data[index + channel] !== b!.data[index + channel])) {
-					return Math.floor(index / 4 / a!.width);
-				}
-			}
-			return null;
-		},
-		[shown, hidden],
-	);
-	return row === null ? null : band.y + row;
 }
 
 /** How far above the ground's top the beam is painted, in px, looking well past its full height. */
@@ -165,7 +122,7 @@ for (const size of SIZES) {
 
 		const steps: { target: number; progress: number; painted: number }[] = [];
 		// Forward to the end, then back, since the opening follows scrolling both ways.
-		for (const target of [0.8, 0.85, 0.95, 1.002, 0.85]) {
+		for (const target of [0.8, 0.85, 0.95, 1, 0.85]) {
 			await revealTo(page, target);
 			const measured = await paintedAboveGround(page);
 			steps.push({ target, progress: measured.progress, painted: measured.painted });
@@ -198,7 +155,7 @@ for (const size of SIZES) {
 		await page.setViewportSize({ width, height });
 		await open(page);
 
-		for (const target of [0.8, 0.9, 1.002]) {
+		for (const target of [0.8, 0.9, 1]) {
 			await revealTo(page, target);
 			const { paintedTop, above, floor: groundBox, progress } = await paintedAboveGround(page);
 			expect(groundBox.top - above.bottom, 'space reserved above the ground').toBeGreaterThanOrEqual(headroom - 0.5);
@@ -248,7 +205,7 @@ for (const size of SIZES) {
 			await open(page);
 			if (short) await shortenGround(page);
 
-			for (const target of [0.1, 0.5, 0.85, 0.95, 1.002]) {
+			for (const target of [0.1, 0.5, 0.85, 0.95, 1]) {
 				await revealTo(page, target);
 				const { progress, above, inside } = await propsAboveGround(page);
 				expect(above, `props paint ${above}px above the ground at progress ${progress}`).toBe(0);
@@ -276,7 +233,7 @@ test('under reduced motion the props stay below the top of a ground shorter than
 test('nothing shows higher than the declared headroom, and none above the ground without one', async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await open(page);
-	await revealTo(page, 1.002);
+	await revealTo(page, 1);
 
 	for (const declared of [95, 0]) {
 		await page.addStyleTag({
@@ -313,7 +270,7 @@ test('fixtures read the reveal from --ground-progress', async ({ page }) => {
 		expect(state.beam).toBeCloseTo(Math.max(0, Math.min(1, (state.progress - 0.1) / 0.2)), 2);
 	}
 
-	await revealTo(page, 1.002);
+	await revealTo(page, 1);
 	expect(await read()).toEqual({ progress: 1, beam: 1, lamp: 0 });
 	await page.evaluate(() => window.scrollTo(0, 0));
 	await expect.poll(async () => (await read()).progress).toBe(0);
@@ -335,7 +292,7 @@ test('reduced motion shows the whole beam and a finished reveal before any scrol
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await open(page);
 
-	// At the top of the page the reveal marker has not been reached.
+	// At the top of the page the floor is still below the viewport.
 	await expect(fixtures(page)).toHaveCSS('--ground-progress', '1');
 	await expect(beam(page)).toHaveCSS('opacity', '1');
 	const measured = await paintedAboveGround(page);

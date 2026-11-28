@@ -11,14 +11,10 @@ afterEach(() => {
 });
 
 describe('ConstructionGround structure and prop passthrough', () => {
-	it('passes layout, floodlight, lighting and revealRoot through to ConstructionProps', () => {
+	it('passes layout, floodlight and lighting through to ConstructionProps', () => {
 		vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
-		const root = document.createElement('div');
-		Object.defineProperty(root, 'clientHeight', { value: 800 });
-		root.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 800);
-
 		const view = render(ConstructionGround, {
-			props: { layout: 'spread', floodlight: true, lighting: true, revealRoot: root },
+			props: { layout: 'spread', floodlight: true, lighting: true },
 		});
 
 		const propsEl = view.container.querySelector('[data-slot="construction-props"]')!;
@@ -56,8 +52,8 @@ describe('ConstructionGround structure and prop passthrough', () => {
 		expect(_badProgress).toBeDefined();
 
 		const root = document.createElement('div');
-		Object.defineProperty(root, 'clientHeight', { value: 800 });
-		root.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 800);
+		Object.defineProperties(root, { clientHeight: { value: 800 }, clientTop: { value: 2 } });
+		root.getBoundingClientRect = () => new DOMRect(0, 100, 1200, 804);
 
 		const externalMarker = document.createElement('div');
 		externalMarker.getBoundingClientRect = () => new DOMRect(0, 0, 1, 1);
@@ -65,23 +61,21 @@ describe('ConstructionGround structure and prop passthrough', () => {
 		const view = render(ConstructionGround, {
 			props: {
 				revealRoot: root,
-				// Even if forced at runtime, external revealAt is ignored in favour of internal marker.
+				// Even if forced at runtime, revealAt and progress do not control the ground.
 				...({ revealAt: externalMarker, progress: 0 } as Record<string, unknown>),
 			},
 		});
 
-		const anchor = view.container.querySelector('[data-slot="construction-ground-anchor"]')!;
-		const propsEl = view.container.querySelector('[data-slot="construction-props"]')!;
+		const floor = view.container.querySelector<HTMLElement>('[data-slot="construction-ground-floor"]')!;
+		const stage = view.container.querySelector('[data-slot="construction-ground-stage"]')!;
+		stage.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 240);
 
-		anchor.getBoundingClientRect = () => new DOMRect(0, 800, 1, 1);
-		root.dispatchEvent(new Event('scroll'));
-		await tick();
-		expect(Number(propsEl.getAttribute('data-progress'))).toBe(0);
-
-		anchor.getBoundingClientRect = () => new DOMRect(0, 660, 1, 1);
-		root.dispatchEvent(new Event('scroll'));
-		await tick();
-		expect(Number(propsEl.getAttribute('data-progress'))).toBe(0.5);
+		for (const [top, progress] of [[903, 0], [902, 0], [901, 1 / 240], [782, 0.5], [662, 1], [782, 0.5]]) {
+			floor.getBoundingClientRect = () => new DOMRect(0, top, 1200, 0);
+			root.dispatchEvent(new Event('scroll'));
+			await tick();
+			expect(Number(floor.style.getPropertyValue('--ground-progress'))).toBe(progress);
+		}
 	});
 });
 

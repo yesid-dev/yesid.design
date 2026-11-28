@@ -4,7 +4,7 @@
 	import { theme } from '@yesid/ui/state';
 	import { COPY, type Lang } from './copy';
 
-	let { lang = 'en' }: { lang?: Lang } = $props();
+	let { lang = 'en', movingFloodlight = false }: { lang?: Lang; movingFloodlight?: boolean } = $props();
 	const c = $derived(COPY[lang]);
 </script>
 
@@ -36,16 +36,20 @@
 		{/each}
 	</main>
 
-	<div class="ground-wrapper" data-testid="construction-ground-host">
-		<ConstructionGround layout="spread" lighting>
-			{#snippet fixtures()}
-				<!-- The beam stands far above the ground; both pieces move from --ground-progress alone. -->
-				<div class="stationary-fixture" data-testid="ground-stationary-fixture">
-					<span class="beam" data-testid="ground-beam" aria-hidden="true"></span>
-					<span class="lamp" data-testid="ground-lamp"><ConstructionFloodlight lit /></span>
-				</div>
-			{/snippet}
-		</ConstructionGround>
+	<div class="ground-wrapper" class:headroom={!movingFloodlight} data-testid="construction-ground-host">
+		{#if movingFloodlight}
+			<ConstructionGround layout="spread" floodlight />
+		{:else}
+			<ConstructionGround layout="spread" lighting>
+				{#snippet fixtures()}
+					<!-- The beam stands above the ground; both pieces move from --ground-progress. -->
+					<div class="stationary-fixture" data-testid="ground-stationary-fixture">
+						<span class="beam" data-testid="ground-beam" aria-hidden="true"></span>
+						<span class="lamp" data-testid="ground-lamp"><ConstructionFloodlight lit /></span>
+					</div>
+				{/snippet}
+			</ConstructionGround>
+		{/if}
 	</div>
 
 	<SiteFooter
@@ -137,12 +141,14 @@
 
 	.ground-wrapper {
 		--construction-ground-height: 240px;
+		width: 100%;
+	}
+	.headroom {
 		--construction-end-inset: clamp(6rem, 12vw, 9rem);
 		/* The beam's top above the ground line; what stands above the ground is reserved. */
 		--beam-top: 364px;
 		--construction-ground-headroom: calc(var(--beam-top) - var(--construction-ground-height));
 		padding-block-start: var(--construction-ground-headroom);
-		width: 100%;
 	}
 
 	.stationary-fixture {
@@ -186,6 +192,8 @@
 	@media (max-width: 767px) {
 		.ground-wrapper {
 			--construction-ground-height: 100px;
+		}
+		.headroom {
 			--construction-end-inset: 4.25rem;
 			--beam-top: 330px;
 		}

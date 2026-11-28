@@ -3,8 +3,8 @@
 
   The ground opens with the props: its block-size grows from 0 to --construction-ground-height
   (default 240px) as they rise, so no empty gap sits above the footer before scrolling there:
-  - an internal reveal marker sits above the ground by max(5vh, 30vh - height) + 120px, so the
-    footer stays below the viewport for the entire reveal;
+  - the reveal starts when the floor reaches the viewport bottom and runs for one ground height,
+    keeping the ground line at the viewport bottom until the floor is fully open;
   - the stage is pinned to the ground's top and moves by transform only;
   - focus landing after the ground, End, and Page Down / Space within two screens open the ground
     synchronously via flushSync before the browser scrolls;
@@ -48,11 +48,42 @@
 		fixtures,
 	}: ConstructionGroundProps = $props();
 
-	let marker = $state<HTMLElement>();
 	let ground = $state<HTMLElement>();
-	// Full until ConstructionProps measures: SSR and no-JS keep full height and show the props.
+	let stage = $state<HTMLElement>();
+	// SSR and no-JS keep full height and show the props.
 	let progress = $state(1);
 	let opened = $state(false);
+
+	$effect(() => {
+		const floor = ground;
+		const artwork = stage;
+		const root = revealRoot;
+		if (!floor || !artwork || opened) return;
+
+		const viewport = root ?? window;
+		const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const update = () => {
+			const height = artwork.getBoundingClientRect().height;
+			const viewportHeight = root?.clientHeight ?? document.documentElement.clientHeight;
+			const viewportTop = root ? root.getBoundingClientRect().top + root.clientTop : 0;
+			// The floor's top is independent of its own height, even as the footer moves.
+			const distance = viewportTop + viewportHeight - floor.getBoundingClientRect().top;
+			progress = motion.matches || height === 0 ? 1 : Math.max(0, Math.min(1, distance / height));
+		};
+		update();
+		motion.addEventListener('change', update);
+		viewport.addEventListener('scroll', update, { passive: true });
+		if (!root) window.addEventListener('resize', update);
+		const resize = new ResizeObserver(update);
+		resize.observe(root ?? document.documentElement);
+		resize.observe(artwork);
+		return () => {
+			motion.removeEventListener('change', update);
+			viewport.removeEventListener('scroll', update);
+			if (!root) window.removeEventListener('resize', update);
+			resize.disconnect();
+		};
+	});
 
 	function open(): boolean {
 		if (opened) return false;
@@ -87,12 +118,6 @@
 
 <div class="construction-ground" data-slot="construction-ground">
 	<div
-		bind:this={marker}
-		class="construction-ground-anchor"
-		data-slot="construction-ground-anchor"
-		aria-hidden="true"
-	></div>
-	<div
 		bind:this={ground}
 		class="construction-ground-floor"
 		data-slot="construction-ground-floor"
@@ -100,15 +125,8 @@
 		data-opened={opened || undefined}
 		data-fixtures={fixtures ? true : undefined}
 	>
-		<div class="construction-ground-stage" data-slot="construction-ground-stage">
-			<ConstructionProps
-				{layout}
-				{floodlight}
-				{lighting}
-				{revealRoot}
-				revealAt={opened ? undefined : marker}
-				bind:progress
-			/>
+		<div bind:this={stage} class="construction-ground-stage" data-slot="construction-ground-stage">
+			<ConstructionProps {layout} {floodlight} {lighting} />
 			{#if fixtures}
 				<div class="construction-ground-fixtures" data-slot="construction-ground-fixtures">
 					{@render fixtures()}
@@ -121,15 +139,6 @@
 <style>
 	.construction-ground {
 		flex-shrink: 0;
-	}
-	.construction-ground-anchor {
-		position: relative;
-		inset-block-start: calc(
-			-1 * (max(5vh, 30vh - var(--construction-ground-height, 240px)) + 120px)
-		);
-		block-size: 0;
-		inline-size: 1px;
-		pointer-events: none;
 	}
 	.construction-ground-floor {
 		position: relative;
@@ -144,6 +153,10 @@
 		transform: translateY(
 			calc((var(--ground-progress, 1) - 1) * var(--construction-ground-height, 240px))
 		);
+	}
+	.construction-ground-stage
+		> :global([data-slot='construction-props'] :is([data-construction-prop] > svg, [data-construction-fixture] svg)) {
+		translate: 0 calc((1 - var(--ground-progress, 1)) * 100%);
 	}
 	.construction-ground-fixtures {
 		position: absolute;
@@ -185,6 +198,10 @@
 		}
 		.construction-ground-stage {
 			transform: none;
+		}
+		.construction-ground-stage
+			> :global([data-slot='construction-props'] :is([data-construction-prop] > svg, [data-construction-fixture] svg)) {
+			translate: none;
 		}
 		/* The ground is whole wherever the page is scrolled, so fixtures see a finished reveal. */
 		.construction-ground-floor[data-fixtures] {

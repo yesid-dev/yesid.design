@@ -7,7 +7,6 @@ it('server markup renders full height, visible static props and fixtures on the 
 	const { body } = render(Fixture);
 
 	expect(body).toContain('data-slot="construction-ground"');
-	expect(body).toContain('data-slot="construction-ground-anchor"');
 	expect(body).toContain('data-slot="construction-ground-floor"');
 	expect(body).toContain('--ground-progress: 1');
 	expect(body).toContain('data-slot="construction-ground-stage"');

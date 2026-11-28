@@ -526,8 +526,8 @@ tokens. Without `children` the code shows as a plain, focusable `<pre>`.
 `ConstructionGround` wraps `ConstructionProps` and owns the revealed ground above a footer, so
 the space opens with the props as they rise instead of sitting empty ahead of them. Set the ground
 height responsively with `--construction-ground-height` (default `240px`) on an ancestor. Pass
-`layout`, `floodlight`, `lighting` and `revealRoot` through to `ConstructionProps`; `ConstructionGround`
-owns its reveal marker and scroll `progress` internally and does not accept `revealAt` or `progress`.
+`layout`, `floodlight` and `lighting` to configure the artwork. Use `revealRoot` for a nested scroll
+viewport. `ConstructionGround` owns its scroll progress and does not accept `revealAt` or `progress`.
 Use the optional `fixtures` snippet for stationary pieces such as a lit `ConstructionFloodlight`
 and its beam: they render on the same stage outside the moving props group, in a layer the size of
 the ground, and the ground clips them like the rest of the stage.
@@ -564,9 +564,10 @@ CSS, with no timed transition; read it, never set it. For example, a lamp that r
 
 Under reduced motion and without JavaScript, the full ground and the whole headroom show at once.
 Focus or a key that opens the ground shows both too.
-The internal reveal marker sits `max(5vh, 30vh - height) + 120px` above the ground so the footer
-stays below the viewport throughout the reveal; focus landing after the ground, `End`, and
-`PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced
+When the collapsed floor reaches the active viewport's bottom edge, it grows by one pixel for
+each pixel scrolled until it reaches the resolved ground height. The ground line stays at the
+viewport edge and the footer stays below it throughout the reveal. Focus landing after the ground,
+`End`, and `PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced
 motion and SSR without JavaScript hold the full height with the props shown in place.
 
 Use raw `ConstructionProps` for always-visible artwork (omit `revealAt`) or when a caller must
