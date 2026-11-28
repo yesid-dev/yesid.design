@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.64.0-rc.1
+
+<!-- release-fragment: app-frame-streamed-footer -->
+- `@yesid/ui` (patch): `AppFrame` keeps its footer invisible until the browser has parsed all of it. On a page shorter
+  than the viewport, a slow device could paint a partly parsed footer at the bottom of the screen
+  and then grow it upward as the rest of the HTML arrived, a layout shift before hydration. The
+  footer now appears once, complete and in its final place. Long pages paint as early as before.
+  No migration.
+
+<!-- release-fragment: article-body-heading-permalink -->
+- `@yesid/ui` (minor): Adds three opt-in pieces for long prose; nothing changes for existing callers.
+
+  - `@yesid/ui/article-body.css`: the reading roles `.reading-detail`, `.article-body`, `.reading-support`
+    and `.heading-anchor`, ported from yesid.dev. Import it once after `base.css`. To adopt, replace the
+    local copy and keep product selectors (such as gallery captions or deliverable items) and prose
+    decoration in the product.
+  - `HeadingPermalink` (`@yesid/ui/brand`): a `#` link that shows on heading hover or keyboard focus,
+    named "{label}: {heading text}". `target` and the localized `label` are required.
+  - `CollapsibleSection` `permalink` and `permalinkLabel`: a `HeadingPermalink` to the section's
+    `anchor`. With it, the section heading takes `id={anchor}`.
+
+<!-- release-fragment: listing-body -->
+- `@yesid/ui` (minor): Add `ListingBody` to `@yesid/ui/layout`, an embedded listing results card for pages that already own
+  their title, dated answer and frame-level filters. It orders the title row, search, summary,
+  visually hidden polite status (`resultCountText`), sort, results and paging footer (`more`),
+  omitting absent regions without reserving space.
+
 ## 0.63.0
 
 <!-- release-fragment: menu-reveal-within-200ms -->
