@@ -46,11 +46,11 @@
 			const width = Math.round(frameWidth) === root.clientWidth ? view.innerWidth : frameWidth;
 			pairedRails = width >= FRAME_RAIL_MIN_REM * rem;
 		};
+		// The observer's first callback measures after layout, before the first paint.
 		const observer = new ResizeObserver(measure);
 		observer.observe(marker);
 		observer.observe(frame);
 		view.addEventListener('resize', measure);
-		measure();
 		return { destroy() {
 			observer.disconnect();
 			view.removeEventListener('resize', measure);
@@ -68,7 +68,6 @@
 		observer.observe(headerRow);
 		observer.observe(chrome);
 		window.addEventListener('resize', measure);
-		measure();
 		return { destroy() {
 			observer.disconnect();
 			window.removeEventListener('resize', measure);
@@ -86,7 +85,6 @@
 		};
 		const observer = new ResizeObserver(measure);
 		observer.observe(main);
-		measure();
 		return () => observer.disconnect();
 	});
 

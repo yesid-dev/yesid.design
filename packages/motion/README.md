@@ -81,6 +81,7 @@ applies; `exclude` takes an extra selector for product-specific surfaces and add
 ## Smooth scroll
 
 `initLenis()` starts Lenis on the window, driven by the GSAP ticker and bridged to ScrollTrigger.
+Lenis joins the ticker only while a smooth scroll runs, so an idle page lets GSAP's ticker sleep.
 It does nothing under reduced motion or on touch devices. `initLenis({ wrapper, content })`
 scrolls an element instead; `content` must wrap the whole scrolling flow so Lenis tracks its
 height. `getLenis()` returns the instance for app-owned navigation and lock handling.

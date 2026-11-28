@@ -20,6 +20,7 @@ import { shouldAnimate } from '../policy.js';
 
 let instance: Lenis | null = null;
 let tickerCallback: ((time: number) => void) | null = null;
+let ticking = false;
 let isTouchDevice = false;
 
 /**
@@ -61,11 +62,35 @@ export function initLenis(scroller?: LenisScroller): void {
 	// Bridge: Lenis scroll events update GSAP ScrollTrigger
 	instance.on('scroll', ScrollTrigger.update);
 
-	// Drive Lenis from GSAP's RAF ticker for frame-perfect sync
-	tickerCallback = (time: number) => {
-		instance?.raf(time * 1000);
+	// Drive Lenis from GSAP's RAF ticker for frame-perfect sync, but only while Lenis animates a
+	// scroll. A ticker listener keeps GSAP from ever sleeping, so an idle page would run a frame
+	// callback forever. Every smooth scroll starts in scrollTo, which marks it 'smooth'
+	// synchronously, and the flag clears when the animation completes or stops.
+	const lenis = instance;
+	let lastFrame = 0;
+	let frameMs = 1000 / 60;
+	const tick = (time: number) => {
+		const now = time * 1000;
+		// Lenis steps by the time since its last raf. After a pause, step one frame, as it did
+		// when the ticker never stopped.
+		if (lastFrame) frameMs = now - lastFrame;
+		else lenis.time = now - frameMs;
+		lastFrame = now;
+		lenis.raf(now);
+		if (lenis.isScrolling !== 'smooth') {
+			gsap.ticker.remove(tick);
+			ticking = false;
+		}
 	};
-	gsap.ticker.add(tickerCallback);
+	tickerCallback = tick;
+	const scrollTo = lenis.scrollTo.bind(lenis);
+	lenis.scrollTo = (...args: Parameters<Lenis['scrollTo']>) => {
+		scrollTo(...args);
+		if (ticking || lenis.isScrolling !== 'smooth') return;
+		ticking = true;
+		lastFrame = 0;
+		gsap.ticker.add(tick);
+	};
 	gsap.ticker.lagSmoothing(0);
 }
 
@@ -78,6 +103,7 @@ export function destroyLenis(): void {
 	if (tickerCallback) {
 		gsap.ticker.remove(tickerCallback);
 		tickerCallback = null;
+		ticking = false;
 	}
 	instance.destroy();
 	instance = null;

@@ -15,6 +15,7 @@
 
 <script lang="ts">
 	import { cn } from '../cn/index.js';
+	import { observeSize } from '../internal/observe-size.js';
 	import { Skeleton } from '../primitives/skeleton/index.js';
 	import { scale } from './geometry.js';
 
@@ -30,6 +31,18 @@
 	const height = $derived(measuredHeight || 224);
 	const unit = $derived(measuredUnit || 16);
 
+	// Sizes come from the shared ResizeObserver: a size binding would also read them on mount and
+	// force a layout while the rest of the page is still mounting.
+	function measureArea(area: HTMLElement) {
+		return { destroy: observeSize(area, () => {
+			measuredWidth = area.clientWidth;
+			measuredHeight = area.clientHeight;
+		}) };
+	}
+	function measureUnit(marker: HTMLElement) {
+		return { destroy: observeSize(marker, () => (measuredUnit = marker.clientWidth)) };
+	}
+
 	const plot: ChartPlot = $derived.by(() => {
 		const left = Math.min(3.75 * unit, 0.36 * width);
 		const right = Math.max(left + 1, width - unit * 0.5);
@@ -44,8 +57,8 @@
 </script>
 
 <figure {...rest} class={cn('chart-frame', className)} data-slot="chart-frame" aria-label={label} aria-busy={loading || rest['aria-busy']}>
-	<div class="chart-area" bind:clientWidth={measuredWidth} bind:clientHeight={measuredHeight} data-slot="chart-area">
-		<span class="chart-unit" bind:clientWidth={measuredUnit} aria-hidden="true"></span>
+	<div class="chart-area" use:measureArea data-slot="chart-area">
+		<span class="chart-unit" use:measureUnit aria-hidden="true"></span>
 		{#if loading}
 			<Skeleton busy style="position: absolute; inset: 0" />
 		{:else}

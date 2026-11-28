@@ -1,3 +1,5 @@
+import { observeSize } from './observe-size.js';
+
 export type InitialScroll = 'start' | 'end';
 
 export interface ScrollEdgeState {
@@ -85,28 +87,32 @@ export function attachScrollEdges(
 		});
 	};
 
-	if (options.initialScroll === 'end') {
-		// Preserve any pre-hydration scroll offset taken while `row-reverse` was active, then hand off
-		// synchronously to standard `scrollLeft` before the browser paints the hydrated frame.
-		const offsetFromEnd = element.hasAttribute('data-scroll-hydrated')
-			? 0
-			: Math.abs(element.scrollLeft);
-		element.setAttribute('data-scroll-hydrated', '');
-		applyInitialEnd(offsetFromEnd);
-	} else {
-		element.removeAttribute('data-scroll-hydrated');
-	}
-
-	options.onResize?.();
-	options.onUpdate(measureScrollEdges(element));
+	const start = (): void => {
+		if (options.initialScroll === 'end') {
+			// Preserve any pre-hydration scroll offset taken while `row-reverse` was active, then hand
+			// off to standard `scrollLeft` before the browser paints the hydrated frame.
+			const offsetFromEnd = element.hasAttribute('data-scroll-hydrated')
+				? 0
+				: Math.abs(element.scrollLeft);
+			element.setAttribute('data-scroll-hydrated', '');
+			applyInitialEnd(offsetFromEnd);
+		} else {
+			element.removeAttribute('data-scroll-hydrated');
+		}
+		options.onResize?.();
+		options.onUpdate(measureScrollEdges(element));
+	};
 
 	const content = element.firstElementChild;
-	let observer: ResizeObserver | undefined;
-	if (typeof ResizeObserver !== 'undefined') {
-		observer = new ResizeObserver(scheduleSync);
-		observer.observe(element);
-		if (content) observer.observe(content);
-	}
+	// The first size callback runs after layout and before paint, so the first measurement reads a
+	// laid-out frame instead of forcing a layout while the page is still mounting.
+	let started = false;
+	const onSize = (): void => {
+		if (started) return scheduleSync();
+		started = true;
+		start();
+	};
+	const stopObserving = [observeSize(element, onSize), ...(content ? [observeSize(content, onSize)] : [])];
 
 	// A reflowed table can gain overflow without changing its own border box or DOM.
 	let contentObserver: MutationObserver | undefined;
@@ -129,7 +135,7 @@ export function attachScrollEdges(
 			options.onUpdate(measureScrollEdges(element));
 		},
 		destroy(): void {
-			observer?.disconnect();
+			for (const stop of stopObserving) stop();
 			contentObserver?.disconnect();
 			if (pendingFrame !== undefined) view?.cancelAnimationFrame(pendingFrame);
 			if (options.observeContent && content) {

@@ -249,10 +249,16 @@ describe('DataTable', () => {
 		vi.stubGlobal(
 			'ResizeObserver',
 			class {
-				constructor(cb: () => void) {
-					resizeCallback = cb;
+				readonly targets = new Set<Element>();
+				constructor(cb: (entries: { target: Element }[]) => void) {
+					resizeCallback = () => cb([...this.targets].map((target) => ({ target })));
 				}
-				observe() {}
+				observe(target: Element) {
+					this.targets.add(target);
+				}
+				unobserve(target: Element) {
+					this.targets.delete(target);
+				}
 				disconnect() {}
 			},
 		);
@@ -304,10 +310,16 @@ describe('DataTable', () => {
 		vi.stubGlobal(
 			'ResizeObserver',
 			class {
-				constructor(cb: () => void) {
-					endResize = cb;
+				readonly targets = new Set<Element>();
+				constructor(cb: (entries: { target: Element }[]) => void) {
+					endResize = () => cb([...this.targets].map((target) => ({ target })));
 				}
-				observe() {}
+				observe(target: Element) {
+					this.targets.add(target);
+				}
+				unobserve(target: Element) {
+					this.targets.delete(target);
+				}
 				disconnect() {}
 			},
 		);

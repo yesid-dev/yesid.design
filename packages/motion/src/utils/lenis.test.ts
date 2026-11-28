@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initLenis, destroyLenis, getLenis } from './lenis.js';
 
@@ -99,6 +100,35 @@ describe('motion/utils/lenis', () => {
 		initLenis();
 		destroyLenis();
 		expect(ScrollTrigger.normalizeScroll).not.toHaveBeenCalled();
+	});
+
+	it('desktop: drives Lenis from the GSAP ticker only while a smooth scroll runs', () => {
+		initLenis();
+		const lenis = getLenis()!;
+		// jsdom lays nothing out, so give the scroller room to move.
+		Object.defineProperty(lenis, 'limit', { value: 1000 });
+		expect(gsap.ticker.add).not.toHaveBeenCalled();
+
+		lenis.scrollTo(120, { immediate: true });
+		expect(gsap.ticker.add).not.toHaveBeenCalled();
+
+		lenis.scrollTo(240, { duration: 0.1 });
+		expect(lenis.isScrolling).toBe('smooth');
+		expect(gsap.ticker.add).toHaveBeenCalledTimes(1);
+		const tick = vi.mocked(gsap.ticker.add).mock.calls[0]![0] as (time: number) => void;
+
+		// The first frame after the pause advances one frame, not the whole time since the last raf.
+		tick(50);
+		expect(lenis.isScrolling).toBe('smooth');
+		expect(lenis.animatedScroll).toBeGreaterThan(120);
+		expect(lenis.animatedScroll).toBeLessThan(240);
+		lenis.scrollTo(300, { duration: 0.1 });
+		expect(gsap.ticker.add).toHaveBeenCalledTimes(1);
+
+		for (let frame = 1; frame <= 12; frame++) tick(50 + frame / 60);
+		expect(lenis.isScrolling).toBe(false);
+		expect(lenis.animatedScroll).toBe(300);
+		expect(gsap.ticker.remove).toHaveBeenCalledWith(tick);
 	});
 
 	it('does not create a Lenis instance under reduced motion (MOTION-GATED tier)', () => {
