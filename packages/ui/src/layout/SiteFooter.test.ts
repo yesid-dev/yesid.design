@@ -117,6 +117,14 @@ describe('edge option', () => {
 		expect(edge.childElementCount).toBe(0);
 	});
 
+	it('draws no edge with edge="none"', () => {
+		const view = footer({ edge: 'none' });
+
+		expect(root(view).querySelector('[data-slot="footer-hazard-edge"]')).toBeNull();
+		expect(root(view).querySelector('[data-slot="footer-street-edge"]')).toBeNull();
+		expect(navs(view)).toHaveLength(groups.length);
+	});
+
 	it('keeps groups, status and the in-view observer unchanged with the hazard edge', async () => {
 		const observer = stubObserver();
 		const view = footer({ edge: 'hazard', statusStart: html('<address>Montreal</address>') });
