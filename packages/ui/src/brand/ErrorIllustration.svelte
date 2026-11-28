@@ -145,15 +145,16 @@
 		stroke: color-mix(in srgb, var(--accent) 15%, transparent);
 	}
 
+	/* Station signage in both themes: the label clears 4.5:1 and the code 3:1 on the panel. */
 	.sign-bg {
-		fill: color-mix(in srgb, var(--signage-bg) 90%, transparent);
+		fill: var(--signage-bg);
 		stroke: color-mix(in srgb, var(--primary) 30%, transparent);
 	}
 	.sign-label {
-		fill: color-mix(in srgb, var(--primary) 50%, transparent);
+		fill: color-mix(in srgb, var(--signage-text) 75%, var(--signage-bg));
 	}
 	.sign-code {
-		fill: var(--primary);
+		fill: var(--signage-text);
 	}
 
 	.cone-body {

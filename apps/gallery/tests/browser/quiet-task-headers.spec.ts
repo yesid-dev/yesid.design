@@ -76,6 +76,70 @@ test.describe('error page options', { tag: '@theme' }, () => {
 		});
 	}
 
+	for (const illustration of ILLUSTRATIONS) {
+		test(`illustration=${illustration} shows a 500 on the poster, or above the heading without a scene`, async ({ page }) => {
+			for (const [width, lang] of [[390, 'fr'], [1440, 'en']] as const) {
+				const words = copy[lang];
+				await page.setViewportSize({ width, height: 800 });
+				await open(page, `/error-page/${optionsSegment({ illustration, status: 500, lang })}`);
+				const status = page.getByRole('alert');
+				await expect(status).toContainText('500');
+				// The page's own 5xx copy shows; nothing says the route was not found.
+				await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.serverHeading);
+				await expect(page.getByText(words.serverBody)).toBeVisible();
+				const terminal = page.getByTestId('terminal-line');
+				await expect(terminal).toContainText('500');
+				await expect(terminal).toContainText(words.serverStatusNote);
+				await expect(terminal).not.toContainText(words.statusNote);
+				if (illustration === 'none') {
+					await expect(status).toBeVisible();
+					continue;
+				}
+				const code = page.locator('.sign-code');
+				await expect(code).toHaveText('500');
+				const [codeBox, signBox] = [await box(code), await box(page.locator('.sign-bg'))];
+				expect(codeBox.x).toBeGreaterThanOrEqual(signBox.x);
+				expect(codeBox.y).toBeGreaterThanOrEqual(signBox.y);
+				expect(codeBox.x + codeBox.width).toBeLessThanOrEqual(signBox.x + signBox.width);
+				expect(codeBox.y + codeBox.height).toBeLessThanOrEqual(signBox.y + signBox.height);
+				expect((await box(status)).width, 'the alert is visually hidden').toBeLessThanOrEqual(1);
+			}
+		});
+	}
+
+	test('the poster sign keeps its label at 4.5:1 and its code at 3:1', async ({ page }) => {
+		for (const status of [404, 500] as const) {
+			await open(page, `/error-page/${optionsSegment({ status })}`);
+			// Paint each fill to a pixel so color-mix resolves to the sRGB the reader sees.
+			const contrast = await page.evaluate(() => {
+				const canvas = document.createElement('canvas');
+				canvas.width = canvas.height = 1;
+				const context = canvas.getContext('2d', { willReadFrequently: true })!;
+				const rgb = (selector: string) => {
+					context.clearRect(0, 0, 1, 1);
+					context.fillStyle = getComputedStyle(document.querySelector(selector)!).fill;
+					context.fillRect(0, 0, 1, 1);
+					return [...context.getImageData(0, 0, 1, 1).data.slice(0, 3)];
+				};
+				const luminance = (channels: number[]) => {
+					const [r, g, b] = channels.map((value) => {
+						const c = value / 255;
+						return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+					});
+					return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+				};
+				const ratio = (a: number[], b: number[]) => {
+					const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+					return (high! + 0.05) / (low! + 0.05);
+				};
+				const panel = rgb('.sign-bg');
+				return { label: ratio(rgb('.sign-label'), panel), code: ratio(rgb('.sign-code'), panel) };
+			});
+			expect(contrast.label, `STATION on the ${status} sign`).toBeGreaterThanOrEqual(4.5);
+			expect(contrast.code, `${status} digits on the sign`).toBeGreaterThanOrEqual(3);
+		}
+	});
+
 	for (const width of [390, 1440]) {
 		test(`illustration=small-after keeps its geometry through hydration at ${width} px`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 900 });
