@@ -22,6 +22,19 @@ test('a short page never shows its footer growing while the footer streams in', 
 	}
 });
 
+test('a footer outside AppFrame never moves its columns while the footer streams in', async ({ page, baseURL }) => {
+	const proxy = await streamingProxy(baseURL!, '/footer-first-paint', insideFooter);
+	try {
+		await watchBox(page, footer);
+		await page.goto(proxy.url);
+		const result = await settle(page, footer);
+		expect(result.settled.y + result.settled.height, 'the footer ends inside the first viewport').toBeLessThanOrEqual(result.viewport + 1);
+		expectSteadyWhileStreaming(result, 'footer');
+	} finally {
+		await proxy.close();
+	}
+});
+
 test('a long page paints before its footer finishes streaming', async ({ page, baseURL }) => {
 	const proxy = await streamingProxy(baseURL!, '/app-frame/record-parts/en', insideFooter);
 	try {
