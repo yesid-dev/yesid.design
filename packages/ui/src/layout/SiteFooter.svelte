@@ -151,12 +151,17 @@
 			{/if}
 		</div>
 	{/if}
+	<span class="footer-end" hidden></span>
 </footer>
 
 <style>
 	footer {
 		padding-bottom: env(safe-area-inset-bottom, 0px);
 	}
+	/* The parser can stop inside the footer while the HTML streams. Each block that arrives later
+	   narrows the growing brand block on desktop and moves the groups beside it. Keep the footer
+	   invisible until its last element is parsed. */
+	footer:not(:has(> .footer-end)) { visibility: hidden; }
 
 	.footer-columns {
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
