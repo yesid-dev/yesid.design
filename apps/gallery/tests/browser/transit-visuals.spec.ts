@@ -67,10 +67,13 @@ for (const width of [390, 1440]) {
 		test(`chart corner labels have breathing room at ${width}px / ${scale}%`, async ({ page }) => {
 			await open(page, '/chart-parts', width, scale);
 			const chart = page.getByRole('figure', { name: 'On-time departures, 20 to 26 November' });
-			const date = chart.locator('text').filter({ hasText: /^20 Nov$/ });
-			const value = chart.locator('text').filter({ hasText: /^75%$/ });
-			await expect(date).toHaveCount(1);
-			await expect(value).toHaveCount(1);
+			const axisLabels = (axis: 'x' | 'y') =>
+				chart.locator(`[data-slot="chart-axis"][data-axis="${axis}"] > text`).filter({ visible: true });
+			const date = axisLabels('x').first();
+			// The fixture orders the value ticks from bottom to top.
+			const value = axisLabels('y').first();
+			await expect(date).toBeVisible();
+			await expect(value).toBeVisible();
 			await expect.poll(async () => {
 				const dateBox = (await date.boundingBox())!;
 				const valueBox = (await value.boundingBox())!;
