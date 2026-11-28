@@ -1243,7 +1243,10 @@ not matter, and every registered section after the first is preceded by a bounda
 page: `dimension` (the default), `hand-drawn` for the drawn page edge yesid.dev uses, or `hazard`
 for the kit tape. The choice lives on `PageSections`, so a change follows immediately without touching the
 sections. Hand-drawn page boundaries alternate four and five pen strokes from edge to edge,
-with small gaps and a slight wobble. Editorial header edges count in that same document order.
+with small gaps and a slight wobble; `stroke="continuous"` on `PageSections` draws each as one
+unbroken stroke instead (`segmented` is the default). Their ink is `--page-boundary-color`
+(default `--primary`), so a product can mute every page boundary once in its theme while other
+hand-drawn lines keep the orange. Editorial header edges count in that same document order.
 Only the upper half of the 20px canvas paints at the joined edge, leaving zero layout height.
 Standalone and card separators draw their full 8px canvas with one stroke. Dimension and hazard
 boundaries are rows in the flow.

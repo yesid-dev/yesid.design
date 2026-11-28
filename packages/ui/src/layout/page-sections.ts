@@ -8,6 +8,12 @@ import { getContext, setContext } from 'svelte';
 export type PageDivider = 'dimension' | 'hand-drawn' | 'hazard';
 
 /**
+ * How the hand-drawn page boundary is inked: `segmented` (default) lifts the pen four or five times
+ * along the edge; `continuous` draws one unbroken stroke.
+ */
+export type PageBoundaryStroke = 'segmented' | 'continuous';
+
+/**
  * The section registry behind `PageSections` and `PageSection` (D22). Every registered section
  * except the first is preceded by its boundary, so every section but the last ends with the
  * page's divider and none sits before the footer. Article headers share the hand-drawn sequence.
@@ -32,6 +38,7 @@ export interface PageSectionsRegistry {
 	position(entry: PageSectionEntry): PageSectionPosition;
 	refresh(): void;
 	divider(): PageDivider;
+	stroke(): PageBoundaryStroke;
 }
 
 const SECTIONS = Symbol('yesid-page-sections');
@@ -39,6 +46,7 @@ const SECTION = Symbol('yesid-page-section');
 
 export function createPageSectionsRegistry(
 	divider: () => PageDivider = () => 'dimension',
+	stroke: () => PageBoundaryStroke = () => 'segmented',
 ): PageSectionsRegistry {
 	const entries: PageSectionEntry[] = [];
 	const ordered = (): PageSectionEntry[] => {
@@ -77,6 +85,7 @@ export function createPageSectionsRegistry(
 		},
 		refresh,
 		divider,
+		stroke,
 	};
 }
 

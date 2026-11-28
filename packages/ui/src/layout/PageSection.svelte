@@ -58,7 +58,10 @@
 
 {#if registry && position.sectionsBefore > 0}
 	{#if divider === 'hand-drawn'}
-		<DrawnPageBoundary inkIndex={position.sectionsBefore - 1 + position.headersBefore} />
+		<DrawnPageBoundary
+			inkIndex={position.sectionsBefore - 1 + position.headersBefore}
+			continuous={registry?.stroke() === 'continuous'}
+		/>
 	{:else}
 		<Separator variant={divider} class="page-section-boundary" data-slot="page-section-boundary" />
 	{/if}

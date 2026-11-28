@@ -71,7 +71,7 @@ export type { ReadingFrameProps, ReadingFrameSection, ReadingFrameUpdated } from
 
 export { default as PageSections } from './PageSections.svelte';
 export type { PageSectionsProps } from './PageSections.svelte';
-export type { PageDivider } from './page-sections.js';
+export type { PageBoundaryStroke, PageDivider } from './page-sections.js';
 
 export { default as PageSection } from './PageSection.svelte';
 export type { PageSectionProps } from './PageSection.svelte';
