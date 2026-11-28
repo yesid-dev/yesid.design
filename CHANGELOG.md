@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.65.1
+
+<!-- release-fragment: day-strip-tile-width -->
+- `@yesid/ui` (patch): `DayStrip` tiles now have one width on every row. The tiles in a wrapped last row no longer stretch
+  wider than those above. The smallest tile is 3.3rem (was 2.3rem), and a tile no longer widens to fit
+  its own figure, so a narrow strip can hold fewer days per row: a week stays on one row from 394px of
+  strip width at the default text size. In a parent that sizes to its content, the strip takes its width from its key and may use more rows. No API change and no
+  migration. A product that replaced a wrapped strip with its own layout for this reason can drop it.
+
+<!-- release-fragment: kit-forced-layouts -->
+- `@yesid/motion` (patch), `@yesid/ui` (patch): Mounting `DataTable`, `HourGrid`, `ChartFrame`, `MapFrame` and `AppFrame` no longer forces a
+  synchronous layout. They read their sizes in ResizeObserver callbacks, which run after layout and
+  before the first paint, so what renders is unchanged. A scrolling table with
+  `initialScroll: 'end'` still moves to its end before that paint.
+
+  `initLenis()` now drives Lenis from the GSAP ticker only while a smooth scroll runs. An idle page
+  no longer runs a GSAP frame callback every frame, and scrolling behaves as before. No migration.
+
 ## 0.65.0
 
 <!-- release-fragment: data-table-fonts -->
