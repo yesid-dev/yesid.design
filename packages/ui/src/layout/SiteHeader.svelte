@@ -223,7 +223,6 @@
 	let menuOpen = $state(false);
 	// True while the menu is visible, including its close animation; the pill's compact state follows this.
 	let active = $state(false);
-	let entering = $state(false);
 	let closing = $state(false);
 
 	let dismissVersion = 0;
@@ -252,24 +251,12 @@
 
 	$effect(() => {
 		if (menuOpen) {
-			entering = true;
 			active = true;
 			closing = false;
 		} else if (active && !closing) {
 			closing = true;
 			if (isPrefersReducedMotion()) finishClose();
 		}
-	});
-
-	// Paint the menu in its entering state, then drop the class so it transitions in.
-	$effect(() => {
-		if (!entering || closing || !overlay) return;
-		if (isPrefersReducedMotion()) {
-			entering = false;
-			return;
-		}
-		const timer = setTimeout(() => (entering = false), 30);
-		return () => clearTimeout(timer);
 	});
 
 	// Close anyway if transitionend never fires.
@@ -283,7 +270,6 @@
 		if (!active || menuOpen || !closing) return;
 		active = false;
 		closing = false;
-		entering = false;
 	}
 
 	function close() {
@@ -507,7 +493,6 @@
 					<div
 						bind:this={overlay}
 						class="menu-overlay"
-						class:entering
 						class:closing
 						ontransitionend={(event) => {
 							if (closing && event.target === overlay && event.propertyName === 'transform') finishClose();
@@ -1124,13 +1109,16 @@
 		transform: scaleY(1);
 		transform-origin: top center;
 		transition:
-			opacity var(--duration-normal) var(--ease-default),
-			transform var(--duration-slow) cubic-bezier(0.33, 1, 0.68, 1);
+			opacity var(--duration-fast) var(--ease-default),
+			transform var(--duration-fast) cubic-bezier(0.33, 1, 0.68, 1);
 	}
-	.menu-overlay.entering {
-		opacity: 0;
-		transform: scaleY(0);
-		transition: none;
+	/* The reveal starts from these as soon as the menu is inserted, with no timer in between, so the
+	   whole menu lands within 200ms of the tap. Without support the menu simply appears. */
+	@starting-style {
+		.menu-overlay {
+			opacity: 0;
+			transform: scaleY(0);
+		}
 	}
 	.menu-overlay.closing {
 		opacity: 0;
@@ -1199,17 +1187,8 @@
 		text-decoration: none;
 		opacity: 1;
 		transform: translateY(0);
-		/* A quick reveal: the stagger is capped so the whole menu lands within 200ms. */
-		--menu-item-delay: min(calc(var(--item-index) * 10ms), 50ms);
-		transition:
-			opacity var(--duration-fast) var(--ease-default) var(--menu-item-delay),
-			transform var(--duration-fast) var(--ease-default) var(--menu-item-delay),
-			color var(--duration-fast);
-	}
-	.menu-overlay.entering .menu-item {
-		opacity: 0;
-		transform: translateY(16px);
-		transition: none;
+		/* No per-item entrance: the panel's 150ms reveal shows the items with it. */
+		transition: color var(--duration-fast);
 	}
 	.menu-overlay.closing .menu-item {
 		opacity: 0;
