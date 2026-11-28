@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.64.0-rc.2
+## 0.64.0
 
 <!-- release-fragment: construction-ground -->
 - `@yesid/ui` (minor): Add `ConstructionGround` to `@yesid/ui/brand`, a scroll-revealed ground wrapper around
