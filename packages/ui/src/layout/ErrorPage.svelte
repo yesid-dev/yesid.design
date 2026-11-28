@@ -1,7 +1,8 @@
 <!--
   Error route body: hazard rule, construction scene, label, heading, body, suggested
-  destinations and a terminal status line. The scene shows its 404 sign only for 404s; other
-  statuses also announce the numeric status. The app owns copy and <svelte:head>.
+  destinations and a terminal status line. The scene's sign shows the status like a poster; other
+  statuses than 404 are also announced, and show their number above the heading only when there is no
+  scene. The app owns copy and <svelte:head>.
   `label`, `tape` and `illustration` keep today's page by default; `illustration="small-after"`
   puts a small scene after the heading, body and destinations instead of a large one first.
 -->
@@ -73,7 +74,7 @@
 
 {#snippet scene()}
 	<div class="error-illustration" class:error-illustration--small={illustration === 'small-after'}>
-		<ErrorIllustration code={notFound ? String(status) : undefined} {signLabel} />
+		<ErrorIllustration code={String(status)} {signLabel} />
 	</div>
 {/snippet}
 
@@ -101,7 +102,8 @@
 				</div>
 			{/if}
 			{#if !notFound}
-				<p class="error-status" role="alert">
+				<!-- With a scene the sign carries the number; the alert still announces it. -->
+				<p class="error-status" class:error-status-on-sign={illustration !== 'none'} role="alert">
 					<span class="error-glyph" aria-hidden="true">◆</span>
 					<span class="error-code">{status}</span>
 				</p>
@@ -216,6 +218,15 @@
 		font-family: var(--font-mono);
 		font-size: var(--text-title);
 		line-height: 1;
+	}
+
+	.error-status-on-sign {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	.error-glyph {

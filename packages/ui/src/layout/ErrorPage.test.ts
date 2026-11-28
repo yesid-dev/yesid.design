@@ -43,7 +43,7 @@ describe('404', () => {
 });
 
 describe('other statuses', () => {
-	it('announces the status, keeps the destinations and detail, and never signs the scene as 404', () => {
+	it('announces the status, keeps the destinations and detail, and signs the scene with its own status', () => {
 		const view = page({
 			status: 500,
 			heading: 'Something went wrong',
@@ -55,7 +55,7 @@ describe('other statuses', () => {
 		expect(view.getByText('Database unavailable')).toBeInTheDocument();
 		expect(view.getByRole('link', { name: 'Home' }).getAttribute('href')).toBe('/');
 		expect(view.getByTestId('construction-scene')).toBeInTheDocument();
-		expect(signText(view)).not.toContain('404');
+		expect(signText(view)).toContain('500');
 		expect(terminal(view)).toContain('route --status 500');
 	});
 });
@@ -64,8 +64,9 @@ describe('illustration sign', () => {
 	it.each([
 		[404, 'SAMPLE', ['SAMPLE', '404']],
 		[404, undefined, ['404']],
-		[500, 'SAMPLE', ['SAMPLE']],
-		[500, undefined, []],
+		[500, 'SAMPLE', ['SAMPLE', '500']],
+		[500, undefined, ['500']],
+		[503, undefined, ['503']],
 	])('for status %i with signLabel %j shows %j', (status, signLabel, expected) => {
 		expect(signText(page({ status, signLabel }))).toEqual(expected);
 	});

@@ -3,8 +3,9 @@ import type { ErrorPageIllustration, ErrorPageLink } from '@yesid/ui/layout';
 /**
  * Gallery options for /error-page/[options], a prerendered path so the chosen props are in the
  * first markup. The segment joins tokens with dots: an illustration, a language, and any of
- * `no-label`, `no-tape`, `unnamed` (no `suggestionsLabel`) and `construction` (a heading with a
- * long word, for enlarged text). /error-page itself is today's page.
+ * `no-label`, `no-tape`, `unnamed` (no `suggestionsLabel`), `construction` (a heading with a
+ * long word, for enlarged text) and `500` (a server error instead of a 404). /error-page itself is
+ * today's page.
  */
 export interface ErrorPageGalleryOptions {
 	illustration: ErrorPageIllustration;
@@ -12,6 +13,7 @@ export interface ErrorPageGalleryOptions {
 	tape: boolean;
 	named: boolean;
 	construction: boolean;
+	status: 404 | 500;
 	lang: ErrorPageGalleryLang;
 }
 
@@ -26,13 +28,14 @@ export const DEFAULT_OPTIONS: ErrorPageGalleryOptions = {
 	tape: true,
 	named: true,
 	construction: false,
+	status: 404,
 	lang: 'en',
 };
 
 /** The path segment for a set of options; `parseOptions` reads it back. */
 export function optionsSegment(options: Partial<ErrorPageGalleryOptions>): string {
-	const { illustration, label, tape, named, construction, lang } = { ...DEFAULT_OPTIONS, ...options };
-	return [illustration, !label && 'no-label', !tape && 'no-tape', !named && 'unnamed', construction && 'construction', lang]
+	const { illustration, label, tape, named, construction, status, lang } = { ...DEFAULT_OPTIONS, ...options };
+	return [illustration, !label && 'no-label', !tape && 'no-tape', !named && 'unnamed', construction && 'construction', status === 500 && '500', lang]
 		.filter(Boolean)
 		.join('.');
 }
@@ -47,6 +50,7 @@ export function parseOptions(segment: string): ErrorPageGalleryOptions | undefin
 		else if (token === 'no-tape') options.tape = false;
 		else if (token === 'unnamed') options.named = false;
 		else if (token === 'construction') options.construction = true;
+		else if (token === '500') options.status = 500;
 		else return undefined;
 	}
 	return options;
@@ -58,6 +62,7 @@ export const OPTION_SEGMENTS: readonly string[] = [
 	optionsSegment({ illustration: 'small-after', label: false, tape: false }),
 	optionsSegment({ illustration: 'small-after', label: false, tape: false, named: false }),
 	...LANGS.map((lang) => optionsSegment({ construction: true, lang })),
+	...ILLUSTRATIONS.flatMap((illustration) => LANGS.map((lang) => optionsSegment({ illustration, status: 500, lang }))),
 ];
 
 interface ErrorPageGalleryCopy {

@@ -31,8 +31,8 @@
 
 <div lang={options.lang} class="contents">
 	<ErrorPage
-		status={404}
-		label={options.label ? words.label : undefined}
+		status={options.status}
+		label={options.label ? words.label.replace('404', String(options.status)) : undefined}
 		tape={options.tape}
 		illustration={options.illustration}
 		heading={long

@@ -76,6 +76,29 @@ test.describe('error page options', { tag: '@theme' }, () => {
 		});
 	}
 
+	for (const illustration of ILLUSTRATIONS) {
+		test(`illustration=${illustration} shows a 500 on the poster, or above the heading without a scene`, async ({ page }) => {
+			for (const width of [390, 1440]) {
+				await page.setViewportSize({ width, height: 800 });
+				await open(page, `/error-page/${optionsSegment({ illustration, status: 500 })}`);
+				const status = page.getByRole('alert');
+				await expect(status).toContainText('500');
+				if (illustration === 'none') {
+					await expect(status).toBeVisible();
+					continue;
+				}
+				const code = page.locator('.sign-code');
+				await expect(code).toHaveText('500');
+				const [codeBox, signBox] = [await box(code), await box(page.locator('.sign-bg'))];
+				expect(codeBox.x).toBeGreaterThanOrEqual(signBox.x);
+				expect(codeBox.y).toBeGreaterThanOrEqual(signBox.y);
+				expect(codeBox.x + codeBox.width).toBeLessThanOrEqual(signBox.x + signBox.width);
+				expect(codeBox.y + codeBox.height).toBeLessThanOrEqual(signBox.y + signBox.height);
+				expect((await box(status)).width, 'the alert is visually hidden').toBeLessThanOrEqual(1);
+			}
+		});
+	}
+
 	for (const width of [390, 1440]) {
 		test(`illustration=small-after keeps its geometry through hydration at ${width} px`, async ({ page }) => {
 			await page.setViewportSize({ width, height: 900 });

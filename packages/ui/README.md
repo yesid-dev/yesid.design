@@ -1285,8 +1285,8 @@ evenly as their widths allow when more rows are needed.
 
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
-`statusNote` is given. For 404 the scene's sign shows the code; other statuses announce the code
-with `role="alert"`. The app keeps its copy and `<svelte:head>`. Every part renders by default and
+`statusNote` is given. The scene's sign shows the status code like a poster. Statuses other than 404
+also announce the code with `role="alert"`, and show it above the heading only when there is no scene. The app keeps its copy and `<svelte:head>`. Every part renders by default and
 each can be turned off: `label` is optional (omit it to start with the heading),
 `tape={false}` drops the hazard rule (`tape="dimension"` draws the dimension line instead, D22), and `illustration` places the scene: `'large-first'` (the
 default, a large scene above the copy), `'small-after'` (a small scene after the heading, body,
