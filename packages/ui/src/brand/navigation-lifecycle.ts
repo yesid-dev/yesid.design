@@ -155,7 +155,9 @@ export function createNavigationLifecycle(
 		// Re-close it before waiting, or the focus trap can block this navigation forever.
 		menu?.close();
 		// Unknown fallback commits use ordinary page focus even if the triggering link disabled Kit's reset.
-		const reset = current.resetFocus || (!hasSubscription && !event.event) ? resetFocusAfterNavigation() : undefined;
+		// A programmatic goto is never unknown: the router already applies the focus its caller asked for.
+		const fallback = !hasSubscription && !event.event && event.type !== 'goto';
+		const reset = current.resetFocus || fallback ? resetFocusAfterNavigation() : undefined;
 		const after = reset ? () => { if (version === current.version) reset(); } : undefined;
 		if (menu?.active) return new Promise<void>((resolve) => waiting.add(resolve)).then(() => after);
 		return after;
