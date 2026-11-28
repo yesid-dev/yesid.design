@@ -1419,7 +1419,11 @@ next row when they run out of room, with the same gap between columns. Labels wr
 group needs more than the footer's available width. While the HTML streams, the footer stays
 invisible until the parser has read all of it, so its groups never shift as later ones arrive.
 Desktop footers with four or more blocks keep a single row when it fits and distribute blocks as
-evenly as their widths allow when more rows are needed.
+evenly as their widths allow when more rows are needed. If five or more link groups fit together
+but adding the brand would wrap them, the links share their own row below the brand.
+
+The tagline uses `var(--font-mono)` by default. Set `--site-footer-tagline-font: var(--font-body)`
+on the footer or an ancestor to render the tagline in the body font.
 
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
@@ -1477,9 +1481,10 @@ header cells use the inherited text font.
   stacked and compact-row values. Declare it once, for example
   `:root { --data-table-header-font: var(--font-body); }`, to set every table on a site. Unset,
   header cells and stacked labels are mono, and a compact-row label takes its cell's font.
-- `font: 'body'` on a column sets its body cells in the body font, for words. `font: 'mono'`, the
-  default, changes nothing: data cells stay mono, and row header cells and the detail line of
-  compact rows keep the text font. A `numeric` column keeps tabular figures in either font.
+- Set `font: 'body'` for words or `font: 'mono'` for codes and figures. Both options apply to row
+  headers in standard, stacked and compact rows. Omit `font` to keep the default fonts above.
+  The detail line of compact rows inherits the text font for data cells. A `numeric` column
+  keeps tabular figures in either font.
 
 Pass `loading` to render Skeleton rows with the same columns, responsive layout and one-line
 cell spacing as the table. Keep the caption, columns and layout props in place while data loads.

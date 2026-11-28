@@ -41,6 +41,9 @@
 		flex: none;
 		inline-size: 1em;
 		block-size: 1em;
+		/* A baseline-aligned SVG sits entirely above the baseline. Centre it on the capitals. */
+		position: relative;
+		inset-block-start: calc(0.5em - 0.5cap);
 		color: var(--dataviz-status-unknown);
 	}
 	[data-status='early'] > .status-glyph { color: var(--dataviz-status-early); }

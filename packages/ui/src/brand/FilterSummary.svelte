@@ -43,7 +43,7 @@
 	{#if canClear}
 		<button
 			type="button"
-			class="tap-feedback inline-flex min-w-0 max-w-full items-center min-h-11 px-2 font-mono text-caption text-primary underline transition-colors hover:text-[var(--foreground)] active:text-[var(--foreground)]"
+			class="tap-feedback inline-flex min-w-0 max-w-full items-center min-h-11 px-2 font-body text-caption text-primary underline transition-colors hover:text-[var(--foreground)] active:text-[var(--foreground)]"
 			data-slot="clear-filters"
 			onclick={onClear}
 		>

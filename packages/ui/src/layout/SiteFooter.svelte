@@ -166,6 +166,10 @@
 	.footer-columns {
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 	}
+	/* The tagline always follows the brand snippet. Keep its server markup unchanged. */
+	.footer-brand > :global(span.font-mono:last-child) {
+		font-family: var(--site-footer-tagline-font, var(--font-mono));
+	}
 	:global(:is([data-slot='app-frame'][data-rail-layout='compact'], :root[data-app-frame-rails='compact'] [data-slot='app-frame']:not([data-rail-layout]))) .footer-columns {
 		padding-block: var(--space-card-gap);
 	}

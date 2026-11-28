@@ -40,6 +40,11 @@
 	</div>
 </section>
 
+<section class="map-panel" aria-labelledby="map-freshness">
+	<h2 id="map-freshness">Map data</h2>
+	<Stamp kind="live" label="Live" {updatedAt} agoLabel={(seconds) => seconds < 60 ? 'Live' : agoLabel(seconds)} />
+</section>
+
 <section>
 	<h2>Delay by stop</h2>
 	<StopLadder label="Stops along route 24" {stops} max={10}
@@ -62,4 +67,5 @@
 		gap: 0.5rem;
 	}
 	.age-row button { min-block-size: var(--size-tap-min); }
+	.map-panel { inline-size: min(238px, 100%); }
 </style>

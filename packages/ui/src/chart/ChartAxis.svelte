@@ -14,14 +14,16 @@
 	}
 
 	/** Keep a legible gap as the label grows or the available width shrinks. */
-	function xLabels(ticks: readonly ChartTick[], plot: ChartPlot): Set<ChartTick> {
-		const visible = new Set<ChartTick>();
+	function xLabels(ticks: readonly ChartTick[], plot: ChartPlot): Map<ChartTick, number> {
+		const visible = new Map<ChartTick, number>();
 		let previousRight = -Infinity;
 		for (const tick of [...ticks].sort((a, b) => plot.x(a.value) - plot.x(b.value))) {
-			const right = plot.x(tick.value);
-			const left = right - tick.label.length * plot.unit * 0.48;
-			if (left < 0 || left < previousRight + plot.unit * 0.35) continue;
-			visible.add(tick);
+			const width = tick.label.length * plot.unit * 0.5;
+			// At large text sizes the leading date may need to move inside the SVG.
+			const right = visible.size ? plot.x(tick.value) : Math.max(plot.x(tick.value), width);
+			const left = right - width;
+			if (right > plot.right || left < previousRight + plot.unit * 0.35) continue;
+			visible.set(tick, right);
 			previousRight = right;
 		}
 		return visible;
@@ -38,22 +40,23 @@
 			? pixel >= plot.left && pixel <= plot.right
 			: pixel >= plot.top && pixel <= plot.bottom);
 	}));
-	const labels = $derived(horizontal ? xLabels(shown, plot) : new Set(shown));
+	const horizontalLabels = $derived(horizontal ? xLabels(shown, plot) : null);
 </script>
 
 <g data-slot="chart-axis" data-axis={axis}>
 	{#each shown as tick}
 		{@const pixel = scale(tick.value)}
+		{@const labelX = horizontal ? horizontalLabels?.get(tick) : plot.left - plot.unit * 0.4}
 		{#if grid ?? !horizontal}
 			<line
 				x1={horizontal ? pixel : plot.left} x2={horizontal ? pixel : plot.right}
 				y1={horizontal ? plot.top : pixel} y2={horizontal ? plot.bottom : pixel}
 			/>
 		{/if}
-		{#if labels.has(tick)}
+		{#if labelX !== undefined}
 			<text
-				x={horizontal ? pixel : plot.left - plot.unit * 0.4}
-				y={horizontal ? plot.bottom + plot.unit * 0.65 : pixel}
+				x={labelX}
+				y={horizontal ? plot.bottom + plot.unit : pixel}
 				text-anchor="end"
 				dominant-baseline={horizontal ? 'hanging' : 'central'}
 			>{tick.label}</text>

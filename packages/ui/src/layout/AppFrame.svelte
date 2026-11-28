@@ -18,6 +18,7 @@
 
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { observeSize } from '../internal/observe-size.js';
 	import { buttonVariants } from '../primitives/button/button.svelte';
 	import SurfaceRail from './SurfaceRail.svelte';
 	import type { SurfaceRailContext } from './SurfaceRail.svelte';
@@ -30,6 +31,7 @@
 	let frameBody = $state<HTMLDivElement>();
 	let frameMain = $state<HTMLElement>();
 	let mainGutters = $state({ left: 0, right: 0 });
+	let firstPillHeight = $state<number>();
 	setContext(frameRailLayout, () => pairedRails ?? false);
 
 	function observeRailLayout(marker: HTMLElement) {
@@ -89,6 +91,17 @@
 	});
 
 	$effect(() => {
+		const body = frameBody;
+		if (!body || pairedRails || !controlsRail || !evidence ||
+			controlsRail.mobileVisible === false || evidence.mobileVisible === false) {
+			firstPillHeight = undefined;
+			return;
+		}
+		const pill = body.querySelector<HTMLButtonElement>(':scope > [data-slot="surface-rail-mobile"] > button');
+		if (pill) return observeSize(pill, () => { firstPillHeight = pill.offsetHeight; });
+	});
+
+	$effect(() => {
 		if (fullViewport || chromeHeight === undefined) return;
 		const scroller = document.documentElement;
 		const property = '--chrome-clearance-top';
@@ -103,7 +116,7 @@
 		const bottomPriority = scroller.style.getPropertyPriority(bottomProperty);
 		const hasMobileRail = (controlsRail && controlsRail.mobileVisible !== false)
 			|| (evidence && evidence.mobileVisible !== false);
-		const compactPadding = pairedRails === false && hasMobileRail && frameBody
+		const compactPadding = pairedRails === false && hasMobileRail && frameBody && firstPillHeight !== 0
 			? getComputedStyle(frameBody).getPropertyValue('--app-frame-compact-clearance').trim()
 			: '';
 		const currentBottom = compactPadding ? getComputedStyle(scroller).scrollPaddingBlockEnd : '';
@@ -134,6 +147,7 @@
 	data-lenis-prevent={fullViewport ? '' : undefined}
 	style:--app-frame-header-height={headerHeight === undefined ? undefined : `${headerHeight}px`}
 	style:--app-frame-chrome-height={chromeHeight === undefined ? undefined : `${chromeHeight}px`}
+	style:--app-frame-first-pill-height={firstPillHeight === undefined ? undefined : `${firstPillHeight}px`}
 >
 	<span class="app-frame-rail-breakpoint" aria-hidden="true" use:observeRailLayout></span>
 	<div class="app-frame-chrome" class:tall-chrome={tallChrome} data-slot="app-frame-chrome" use:measureChrome>
@@ -179,6 +193,7 @@
 
 <style>
 	.app-frame {
+		--app-frame-pill-stack: max(3.25rem, 52px, calc(var(--app-frame-first-pill-height, 44px) + 8px));
 		--app-frame-header-height: var(--app-frame-header-height-ssr, var(--nav-clearance, 0px));
 		--chrome-offset: var(--app-frame-chrome-height, var(--app-frame-chrome-height-ssr, var(--app-frame-header-height)));
 		--app-frame-main-min: var(--size-tap-min);
@@ -344,10 +359,10 @@
 		--app-frame-main-min: max(var(--size-tap-min), calc(var(--app-frame-compact) * var(--app-frame-compact-clearance)));
 	}
 	.app-frame:has(.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile'])) > :is(.app-frame-chrome, .app-frame-body) {
-		--app-frame-compact-clearance: calc(var(--floating-pill-clearance) + max(3.25rem, 52px));
+		--app-frame-compact-clearance: calc(var(--floating-pill-clearance) + var(--app-frame-pill-stack));
 	}
 	.app-frame-body > :global([data-slot='surface-rail-mobile']) ~ :global([data-slot='surface-rail-mobile']) {
-		--surface-rail-stack-offset: calc(var(--app-frame-compact) * max(3.25rem, 52px));
+		--surface-rail-stack-offset: calc(var(--app-frame-compact) * var(--app-frame-pill-stack));
 	}
 	.full-viewport .app-frame-body:has(> :global([data-slot='surface-rail-mobile'])) .app-frame-main {
 		scroll-padding-block-end: calc(var(--app-frame-compact) * var(--app-frame-main-min));

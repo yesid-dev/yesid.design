@@ -21,13 +21,9 @@ test.describe('Rail pill reflow', { tag: '@theme' }, () => {
 			await expect(pill).toBeVisible();
 			const labelClips = await label.evaluate((el) => el.scrollWidth > el.clientWidth);
 			expect(labelClips, name).toBe(false);
-			if (width === 320) {
-				await expect(summary, name).toBeHidden();
-			} else {
-				await expect(summary, name).toBeVisible();
-				const summaryClips = await summary.evaluate((el) => el.scrollWidth > el.clientWidth);
-				expect(summaryClips, name).toBe(textSize === 200);
-			}
+			await expect(summary, name).toBeVisible();
+			const summaryClips = await summary.evaluate((el) => el.scrollWidth > el.clientWidth);
+			expect(summaryClips, name).toBe(false);
 
 			await expectNoHorizontalOverflow(page);
 		}

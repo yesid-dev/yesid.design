@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BandBar, HourGrid, RangeMark, StopLadder, type BandBarBand, type HourGridCell, type StopLadderStop } from '@yesid/ui/chart';
+	import { BandBar, ChartAxis, ChartFrame, ChartLineSeries, HourGrid, RangeMark, StopLadder, type BandBarBand, type HourGridCell, type StopLadderStop } from '@yesid/ui/chart';
 	import { Card } from '@yesid/ui/card';
 
 	const mix: readonly BandBarBand[] = [
@@ -42,6 +42,16 @@
 		<BandBar label="No status measurements" bands={[]}>
 			{#snippet absent()}<p>No measured departures.</p>{/snippet}
 		</BandBar>
+	</section>
+	<section>
+		<h2>On-time departures by day</h2>
+		<ChartFrame label="On-time departures, 20 to 26 November" xDomain={[0, 6]} yDomain={[75, 100]}>
+			{#snippet children(plot)}
+				<ChartAxis {plot} axis="y" ticks={[{ value: 75, label: '75%' }, { value: 100, label: '100%' }]} />
+				<ChartAxis {plot} axis="x" ticks={[{ value: 0, label: '20 Nov' }, { value: 6, label: '26 Nov' }]} />
+				<ChartLineSeries {plot} points={[{ x: 0, y: 76 }, { x: 3, y: 83 }, { x: 6, y: 81 }]} />
+			{/snippet}
+		</ChartFrame>
 	</section>
 	<section>
 		<h2>Departures by hour</h2>

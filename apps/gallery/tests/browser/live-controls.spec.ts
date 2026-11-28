@@ -140,8 +140,12 @@ test.describe('Switch, Stamp and StopLadder', { tag: '@theme' }, () => {
 			await page.addStyleTag({ content: `html { font-size: ${textSize}%; }` });
 			const row = page.getByTestId('live-age-row');
 			const stamp = row.locator('[data-slot="stamp"]');
-			const bounds = () => row.locator(':scope > *').evaluateAll((children) =>
-				children.map((element) => element.getBoundingClientRect().toJSON()));
+			// An age can gain a line as its visible text grows at 200%. Its reserved width stays stable.
+			const bounds = () => row.locator(':scope > *').evaluateAll((children, enlarged) =>
+				children.map((element) => {
+					const { x, y, width, height } = element.getBoundingClientRect();
+					return enlarged ? { x, width } : { x, y, width, height };
+				}), textSize === 200);
 			const expectAge = (age: string) => expect.poll(() => stamp.ariaSnapshot()).toBe(
 				`- text: Service information updated ${age} ago`,
 			);

@@ -47,7 +47,7 @@
 		const left = Math.min(3.75 * unit, 0.36 * width);
 		const right = Math.max(left + 1, width - unit * 0.5);
 		const top = unit * 0.75;
-		const bottom = Math.max(top + 1, height - unit * 1.75);
+		const bottom = Math.max(top + 1, height - unit * 2);
 		return {
 			x: scale(xDomain, left, right),
 			y: scale(yDomain, bottom, top),

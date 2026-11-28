@@ -1,6 +1,18 @@
-/** Preserve block order and the fewest rows, then minimize the difference in row counts. */
+/** Preserve block order and the fewest rows, then keep the link groups together when possible. */
 export function footerRowMargins(widths: readonly number[], available: number, gap: number): number[] {
 	const count = widths.length;
+	const margins = Array<number>(count).fill(0);
+	if (count >= 6) {
+		const linksWidth = widths.slice(1).reduce((total, width) => total + width, (count - 2) * gap);
+		const brandWithGap = widths[0]! + gap;
+		if (brandWithGap + linksWidth <= available) return margins;
+		if (linksWidth <= available) {
+			// The links can share a full row after the brand. Force a break only if flex needs one.
+			margins[0] = Math.max(0, available - brandWithGap - widths[1]! + 1);
+			return margins;
+		}
+	}
+
 	const scores = Array<number>(count + 1).fill(Infinity);
 	const starts = Array<number>(count + 1).fill(0);
 	scores[0] = 0;
@@ -20,7 +32,6 @@ export function footerRowMargins(widths: readonly number[], available: number, g
 		}
 	}
 
-	const margins = Array<number>(count).fill(0);
 	for (let end = starts[count]!; end > 0; end = starts[end]!) {
 		const start = starts[end]!;
 		const withNext = widths.slice(start, end + 1).reduce((width, block) => width + block, (end - start) * gap);
