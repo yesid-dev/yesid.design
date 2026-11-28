@@ -7,8 +7,8 @@
 	import { DIVIDER_COPY, DIVIDER_LANGS } from '#lib/gallery/dividers-fixture.ts';
 
 	let { data } = $props();
-	// `?divider=hand-drawn|hazard` and `?edge=hazard` exercise the owner's 16 November 2026 options;
-	// the page keeps the dimension default without them.
+	// `?divider=hand-drawn|hazard` and `?edge=hazard` exercise the owner's 16 November 2026 options,
+	// and `?stroke=continuous` the one-stroke hand-drawn edge; the page keeps the dimension default without them.
 	let params = $state(new URLSearchParams());
 	onMount(() => (params = new URLSearchParams(page.url.searchParams.toString())));
 	const divider = $derived.by(() => {
@@ -16,6 +16,7 @@
 		return value === 'hand-drawn' || value === 'hazard' ? value : undefined;
 	});
 	const edge = $derived(params.get('edge') === 'hazard' ? 'hazard' : undefined);
+	const stroke = $derived(params.get('stroke') === 'continuous' ? 'continuous' : undefined);
 	const copy = $derived(DIVIDER_COPY[data.lang]);
 	const home = $derived(`/dividers/${data.lang}`);
 	const groups = $derived([
@@ -39,7 +40,7 @@
 <!-- D22: the page draws no divider itself. PageSections ends every section but the last with the
      dimension line, across the wrapper around the last section, and SiteFooter draws its street edge. -->
 <main id="main" lang={data.lang} data-ripple-exempt>
-	<PageSections data-register="expressive" data-testid="divider-sections" {divider}>
+	<PageSections data-register="expressive" data-testid="divider-sections" {divider} {stroke}>
 		<PageSection id={first.id} aria-labelledby="{first.id}-heading" class="divider-section">
 			<div class="mx-auto max-w-5xl px-6">
 				<h1 class="font-heading text-display font-bold">{copy.title}</h1>

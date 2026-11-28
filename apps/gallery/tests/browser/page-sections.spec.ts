@@ -7,10 +7,11 @@ import { column, isInk, strokes } from './pixels.js';
 // - the wrapped final section draws nothing before the footer.
 const THEMES = ['dark', 'light'] as const;
 
-async function paintedRuns(page: Page, boundary: Locator) {
+/** Painted ink columns along a boundary, read from a band `above` px over and `below` px under its edge. */
+async function paintedRuns(page: Page, boundary: Locator, { above = 8, below = 2 } = {}) {
 	await boundary.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
 	const box = (await boundary.boundingBox())!;
-	const clip = { x: Math.ceil(box.x), y: Math.floor(box.y) - 8, width: Math.floor(box.width), height: 10 };
+	const clip = { x: Math.ceil(box.x), y: Math.floor(box.y) - above, width: Math.floor(box.width), height: above + below };
 	const visible = await page.screenshot({ clip });
 	const hidden = await page.screenshot({
 		clip, style: '[data-variant="hand-drawn"] .hand-drawn-line-art { visibility: hidden !important; }',
@@ -75,6 +76,28 @@ for (const width of [390, 768, 1024, 1440]) {
 		await page.goto('/detail-frame');
 		await page.evaluate(() => document.fonts.ready);
 		await check(page.locator('[data-slot="article-header-boundary"]'), 4, 'article header boundary');
+	});
+}
+
+for (const width of [390, 1440]) {
+	test(`a continuous hand-drawn edge paints one unbroken line at ${width}px`, async ({ page }, testInfo) => {
+		test.skip(testInfo.project.name !== 'desktop', 'One run per width');
+		await page.setViewportSize({ width, height: 900 });
+		await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+		await page.goto('/dividers/en?divider=hand-drawn&stroke=continuous');
+		await page.evaluate(() => document.fonts.ready);
+		const boundaries = page.getByTestId('divider-sections')
+			.locator('[data-slot="page-section-boundary"][data-variant="hand-drawn"][data-stroke-segments="1"]');
+		await expect(boundaries).toHaveCount(3);
+		for (const [index, boundary] of (await boundaries.all()).entries()) {
+			// The whole 20px line art, so a curve that dips below the edge still counts as ink.
+			const { width: inkWidth, runs } = await paintedRuns(page, boundary, { above: 10, below: 10 });
+			const label = `continuous boundary ${index + 1}`;
+			await testInfo.attach(label, { body: JSON.stringify({ width: inkWidth, runs }), contentType: 'application/json' });
+			expect(runs, label).toHaveLength(1);
+			expect(runs[0]!.start, `${label} left edge`).toBeLessThanOrEqual(2);
+			expect(runs[0]!.end, `${label} right edge`).toBeGreaterThanOrEqual(inkWidth - 2);
+		}
 	});
 }
 
