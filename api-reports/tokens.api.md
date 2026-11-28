@@ -34,7 +34,7 @@
 - `./tokens.json` — direct asset `./tokens.json` (`default`), sha256 `15cac95cc57b8e7b6261304736e298029be26b31dc5dee1a13c9b60a7a769bc3`
 - `./tokens.css` — direct asset `./tokens.css` (`default`), sha256 `c83e66f9c9345ae651b6c798309144fcd2bd0737bdc816fa3b1f3ff93fc418ee`
 - `./theme.css` — direct asset `./theme.css` (`default`), sha256 `a19d555000d7b9d0129c81f0ca4478805dfebf10f2d159913e21c9fbdf09a5b3`
-- `./fonts.css` — direct asset `./fonts.css` (`default`), sha256 `b8635bfd55fcd8e897958d7d43875eb045e8b967754bcf025fa912fa5ddee565`
+- `./fonts.css` — direct asset `./fonts.css` (`default`), sha256 `a178259a046e1a0f59ab8dc6056568befb1b9addb19541bd66f648b7f42a844d`
 
 ## Declaration namespaces
 

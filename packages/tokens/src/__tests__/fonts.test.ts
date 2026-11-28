@@ -23,6 +23,24 @@ describe('preloadFont', () => {
   });
 });
 
+describe('font display', () => {
+  const faces = [...readFileSync(new URL('../../fonts.css', import.meta.url), 'utf8').matchAll(/@font-face\s*\{([^}]+)\}/g)]
+    .map((match) => match[1]!)
+    .filter((face) => face.includes('url('));
+
+  it('never swaps in a preloaded face after the first paint', () => {
+    const preloaded = faces.filter((face) => preloadFont(face.match(/url\(([^)]+)\)/)![1]!));
+    expect(preloaded).toHaveLength(2);
+    for (const face of preloaded) expect(face).toContain('font-display: optional;');
+  });
+
+  it('still swaps in the latin-ext faces, which load only when a page uses them', () => {
+    const onDemand = faces.filter((face) => !preloadFont(face.match(/url\(([^)]+)\)/)![1]!));
+    expect(onDemand).toHaveLength(2);
+    for (const face of onDemand) expect(face).toContain('font-display: swap;');
+  });
+});
+
 describe('metric-adjusted font fallbacks', () => {
   const readCss = (name: string) => readFileSync(new URL(`../../${name}.css`, import.meta.url), 'utf8');
 

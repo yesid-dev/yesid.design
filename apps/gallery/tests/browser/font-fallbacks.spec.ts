@@ -21,7 +21,10 @@ for (const width of [390, 1024]) {
 			const { height, y } = element.getBoundingClientRect();
 			const text = document.createRange();
 			text.selectNodeContents(element);
-			return { height, y, lines: text.getClientRects().length };
+			const lines = [...text.getClientRects()];
+			// Where the text ends: what moves the boxes placed after it when glyph widths change.
+			const end = Math.max(...lines.map(({ right }) => right));
+			return { height, y, lines: lines.length, end };
 		}));
 		const loadedWebFonts = () => page.evaluate((names) => [...document.fonts]
 			.filter((face) => names.includes(face.family.replaceAll('"', '').replaceAll("'", '')) && face.status === 'loaded')
@@ -71,6 +74,8 @@ for (const width of [390, 1024]) {
 		expect(after.map(({ lines }) => lines), evidence).toEqual(before.map(({ lines }) => lines));
 		for (const [index, block] of after.entries()) {
 			expect(Math.abs(block.height - before[index]!.height), evidence).toBeLessThanOrEqual(0.5);
+			// The preloaded faces never swap in after the first paint, so the text keeps its width.
+			expect(Math.abs(block.end - before[index]!.end), evidence).toBeLessThanOrEqual(0.5);
 		}
 		expect(shift, evidence).toBeLessThan(0.001);
 	});
