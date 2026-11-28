@@ -176,6 +176,7 @@
 		{#if evidence}<SurfaceRail {...evidence} class="app-frame-evidence" />{/if}
 	</div>
 	{@render footer?.()}
+	<span class="app-frame-end" hidden></span>
 </div>
 
 <style>
@@ -236,6 +237,10 @@
 	   viewport the same way and lets the lock reach it. */
 	:global(html:has([data-slot='app-frame'])) { overflow-x: visible; }
 	:global(body:has([data-slot='app-frame'])) { overflow-x: clip; }
+	/* The parser can stop inside the footer while the HTML streams. On a short page main fills
+	   the viewport, so the partial footer would paint at the bottom and grow upward as the rest
+	   arrives. Keep what follows the body invisible until the frame's last element is parsed. */
+	.app-frame:not(:has(> .app-frame-end)) > .app-frame-body ~ :global(*) { visibility: hidden; }
 	.app-frame-chrome {
 		position: sticky;
 		inset-block-start: 0;
