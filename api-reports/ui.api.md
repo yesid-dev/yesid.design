@@ -915,6 +915,8 @@ declare namespace Brand {
         CornerMetaProps,
         ConstructionFloodlight,
         ConstructionFloodlightProps,
+        ConstructionGround,
+        ConstructionGroundProps,
         ConstructionProps,
         ConstructionPropsProps,
         ErrorIllustration,
@@ -1491,6 +1493,21 @@ type ConstructionFloodlight = ReturnType<typeof ConstructionFloodlight>;
 interface ConstructionFloodlightProps {
     // (undocumented)
     lit?: boolean;
+}
+
+// @public (undocumented)
+const ConstructionGround: Component<ConstructionGroundProps, {}, "">;
+
+// @public (undocumented)
+type ConstructionGround = ReturnType<typeof ConstructionGround>;
+
+// @public (undocumented)
+interface ConstructionGroundProps {
+    fixtures?: Snippet;
+    floodlight?: boolean;
+    layout?: 'original' | 'spread' | 'around-fixture';
+    lighting?: boolean;
+    revealRoot?: Element;
 }
 
 // @public (undocumented)
@@ -2139,6 +2156,8 @@ declare namespace Index {
         CornerMetaProps,
         ConstructionFloodlight,
         ConstructionFloodlightProps,
+        ConstructionGround,
+        ConstructionGroundProps,
         ConstructionProps,
         ConstructionPropsProps,
         ErrorIllustration,

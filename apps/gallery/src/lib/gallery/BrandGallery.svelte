@@ -7,6 +7,7 @@
 		CodeBlock,
 		CollapsibleSection,
 		CornerMarks,
+		ConstructionGround,
 		ConstructionProps,
 		ConstructionFloodlight,
 		ErrorIllustration,
@@ -49,6 +50,7 @@
 	let slide = $state(1);
 	let manifestoHost = $state<HTMLElement>();
 	let constructionEnd = $state<HTMLElement>();
+	let groundScroller = $state<HTMLElement>();
 	let filterMode = $state<string | null>('tram');
 	let searchText = $state('');
 	let grain = $state('week');
@@ -342,6 +344,27 @@
 		<Card.Root data-gallery-family="brand:ConstructionFloodlight">
 			<Card.Header><Card.Title>ConstructionFloodlight</Card.Title><Card.Description>Stationary original fixture, unlit by default; the app owns any beam.</Card.Description></Card.Header>
 			<Card.Content><div class="flex gap-8"><div class="w-16"><ConstructionFloodlight /></div><div class="w-16"><ConstructionFloodlight lit /></div></div></Card.Content>
+		</Card.Root>
+		<Card.Root data-gallery-family="brand:ConstructionGround">
+			<Card.Header>
+				<Card.Title>ConstructionGround</Card.Title>
+				<Card.Description>Scroll-revealed ground that opens with ConstructionProps above a footer; see the <a class="underline" href="/construction-ground/en">full-page reveal fixture</a>.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div
+					bind:this={groundScroller}
+					class="relative h-48 overflow-y-auto rounded-md border border-border bg-muted"
+					role="region"
+					aria-label="Construction ground preview"
+					tabindex="0"
+				>
+					<div class="p-4 text-small text-muted-foreground">Scroll inside to reveal the ground.</div>
+					<div style="--construction-ground-height: 120px">
+						<ConstructionGround layout="spread" floodlight revealRoot={groundScroller} />
+					</div>
+				</div>
+			</Card.Content>
 		</Card.Root>
 
 		<Card.Root data-gallery-family="brand:ManifestoCanvas">
