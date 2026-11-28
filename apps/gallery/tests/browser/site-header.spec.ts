@@ -854,21 +854,38 @@ test('compact placement follows the header container and adapts while open', asy
 	}
 });
 
-test('entrance delays follow reading order and the whole menu lands within 200ms', async ({ page }) => {
+test('the menu reveals with its panel and lands within 200ms of the tap', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await visitHeader(page, `${HOME}?compact`);
-	await toggle(page).click();
+	// The panel fades in from its starting style as soon as it is inserted, rather than popping in.
+	const panelOpacity = await page.evaluate(async () => {
+		document.querySelector<HTMLButtonElement>('[data-testid="nav-menu-toggle"]')!.click();
+		const seen: number[] = [];
+		for (let frame = 0; frame < 8; frame++) {
+			await new Promise((resolve) => requestAnimationFrame(resolve));
+			const overlay = document.querySelector('.menu-overlay');
+			if (overlay) seen.push(Number(getComputedStyle(overlay).opacity));
+		}
+		return seen;
+	});
+	expect(panelOpacity.some((opacity) => opacity > 0 && opacity < 1), `panel opacity per frame: ${panelOpacity}`).toBe(true);
 	const items = menuLinks(page).getByRole('link');
-	for (const [index, delay] of ['0s', '0.01s', '0.02s', '0.03s'].entries()) {
-		await expect(items.nth(index)).toHaveCSS('transition-delay', `${delay}, ${delay}, 0s`);
-	}
+	// Panel and items each settle within 150ms of the reveal starting, leaving the tap-to-reveal
+	// frame inside the 200ms budget; the items have no staggered entrance of their own.
 	const seconds = (value: string) => Math.max(...value.split(',').map((part) => parseFloat(part)));
+	const timing = (selector: string) => page.locator(selector).first().evaluate((node) => {
+		const style = getComputedStyle(node);
+		return [style.transitionDelay, style.transitionDuration] as const;
+	});
+	const [panelDelay, panelDuration] = await timing('.menu-overlay');
+	expect(seconds(panelDelay) + seconds(panelDuration), 'panel settled within 150ms').toBeLessThanOrEqual(0.15 + 1e-9);
 	for (const item of await items.all()) {
 		const [delay, duration] = await item.evaluate((node) => {
 			const style = getComputedStyle(node);
 			return [style.transitionDelay, style.transitionDuration];
 		});
-		expect(seconds(delay) + seconds(duration), 'item fully shown within 200ms').toBeLessThanOrEqual(0.2 + 1e-9);
+		const itemSeconds = Math.max(...delay.split(',').map((part, index) => parseFloat(part) + parseFloat(duration.split(',')[index] ?? '0')));
+		expect(itemSeconds, 'item settled within 150ms').toBeLessThanOrEqual(0.15 + 1e-9);
 	}
 	for (const group of await menuLinks(page).getByRole('list').all()) {
 		await expect(group.getByRole('link').last().locator('.menu-line')).toHaveCount(0);
