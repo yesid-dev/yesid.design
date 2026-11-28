@@ -14,7 +14,3 @@ it('prefers two plus two, three plus two, and three plus three', () => {
 it('leaves an oversized block on its own row and still balances the remaining blocks', () => {
 	expect(footerRowMargins([340, 100, 100, 100, 100], 340, 10)).toEqual([0, 0, 21, 0, 0]);
 });
-
-it('keeps five fitting link groups together below the brand', () => {
-	expect(footerRowMargins([162, 150, 150, 150, 150, 150], 896, 24)).toEqual([561, 0, 0, 0, 0, 0]);
-});

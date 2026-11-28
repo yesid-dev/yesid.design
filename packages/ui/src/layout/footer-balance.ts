@@ -1,13 +1,6 @@
-/** Preserve block order and the fewest rows, keeping five or more link groups together when they fit. */
+/** Preserve block order and the fewest rows, then minimize the difference in row counts. */
 export function footerRowMargins(widths: readonly number[], available: number, gap: number): number[] {
 	const count = widths.length;
-	const linksWidth = widths.slice(1).reduce((total, width) => total + width, (count - 2) * gap);
-	if (count >= 6 && linksWidth <= available && widths[0]! + gap + linksWidth > available) {
-		// Let the brand take its own row before splitting a fitting row of navigation.
-		const margins = Array<number>(count).fill(0);
-		margins[0] = Math.max(0, available - widths[0]! - widths[1]! - gap + 1);
-		return margins;
-	}
 	const scores = Array<number>(count + 1).fill(Infinity);
 	const starts = Array<number>(count + 1).fill(0);
 	scores[0] = 0;

@@ -1477,9 +1477,10 @@ header cells use the inherited text font.
   stacked and compact-row values. Declare it once, for example
   `:root { --data-table-header-font: var(--font-body); }`, to set every table on a site. Unset,
   header cells and stacked labels are mono, and a compact-row label takes its cell's font.
-- `font: 'body'` on a column sets its body cells in the body font, for words. `font: 'mono'`, the
-  default, changes nothing: data cells stay mono, and row header cells and the detail line of
-  compact rows keep the text font. A `numeric` column keeps tabular figures in either font.
+- Set `font: 'body'` for words or `font: 'mono'` for codes and figures. Both options apply to row
+  headers in standard, stacked and compact rows. Omit `font` to keep the default fonts above.
+  The detail line of compact rows inherits the text font for data cells. A `numeric` column
+  keeps tabular figures in either font.
 
 Pass `loading` to render Skeleton rows with the same columns, responsive layout and one-line
 cell spacing as the table. Keep the caption, columns and layout props in place while data loads.

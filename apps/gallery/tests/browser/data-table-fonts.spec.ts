@@ -91,6 +91,22 @@ test('without either option the table keeps its fonts', async ({ page }) => {
 	}
 });
 
+test('explicit fonts apply to row headers in table, stacked and compact rows', async ({ page }) => {
+	await open(page);
+	const { body, mono } = await tokenFamilies(page);
+	for (const width of [390, 1440]) {
+		await page.setViewportSize({ width, height: 900 });
+		for (const layout of LAYOUTS) {
+			const fixture = page.getByTestId(`fonts-row-headers-${layout}`);
+			const table = fixture.getByRole('table');
+			await expect(table).toHaveCSS('display', width === 390 || layout === 'rows' ? 'block' : 'table');
+			const rowHeaders = table.locator('tbody tr:first-child th[scope="row"]');
+			await expect(rowHeaders).toHaveCount(3);
+			expect(await fontsOf(rowHeaders), `${layout} at ${width}px`).toEqual(['serif', mono, body]);
+		}
+	}
+});
+
 test('labels beside stacked and compact-row values follow the header font', async ({ page }) => {
 	await open(page);
 	const { body, mono } = await tokenFamilies(page);

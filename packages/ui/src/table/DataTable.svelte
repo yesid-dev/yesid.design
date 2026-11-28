@@ -35,8 +35,8 @@
 		readonly align?: DataTableAlign;
 		readonly numeric?: boolean;
 		/**
-		 * `body` sets the column's body cells in the body font, for words. `mono`, the default, keeps
-		 * the table's own fonts. Numeric columns keep tabular figures in either.
+		 * Chooses the column's font for body cells, including row headers. Omit to use the table's
+		 * defaults. Numeric columns keep tabular figures in either font.
 		 */
 		readonly font?: 'mono' | 'body';
 		readonly width?: string;
@@ -295,7 +295,7 @@
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
-								data-font={column.font === 'body' ? 'body' : undefined}
+								data-font={column.rowHeader || column.font === 'body' ? column.font : undefined}
 							>
 								{@render cellContent(column)}
 							</svelte:element>
@@ -329,7 +329,7 @@
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
-								data-font={column.font === 'body' ? 'body' : undefined}
+								data-font={column.font}
 							>
 								{@render cellContent(column, { row })}
 							</th>
@@ -617,8 +617,12 @@
 	}
 
 	.data-table tbody td {
-		font-family: var(--font-mono);
 		color: var(--foreground);
+	}
+
+	.data-table tbody td,
+	.data-table tbody th[data-font='mono'] {
+		font-family: var(--font-mono);
 	}
 
 	.data-table tbody [data-font='body'] {
@@ -962,8 +966,9 @@
 			flex: 0 1 auto;
 			margin-block-start: 0.125rem;
 			color: var(--muted-foreground);
-			font-family: inherit;
 			font-weight: 400;
+
+			&:not(th[data-font]) { font-family: inherit; }
 		}
 		.data-table-frame[data-has-row-detail] > .data-table > tbody > tr,
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr[data-row-empty] {

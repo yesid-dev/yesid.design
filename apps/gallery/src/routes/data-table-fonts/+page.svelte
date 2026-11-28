@@ -25,6 +25,12 @@
 		{ id: 'tablet', responsive: { mode: 'stack', at: 'tablet' } },
 		{ id: 'rows', responsive: { mode: 'rows', primary: 'line', value: 'trips' } },
 	];
+	const rowHeaderColumns: DataTableColumn<Row>[] = [
+		{ key: 'line', header: 'Line', rowHeader: true, cell: lineCell },
+		{ key: 'code', header: 'Stop code', rowHeader: true, font: 'mono', cell: codeCell },
+		{ key: 'status', header: 'Status', rowHeader: true, font: 'body', cell: statusCell },
+		{ key: 'trips', header: 'Trips', numeric: true, cell: tripsCell },
+	];
 
 	function columns(fonts: boolean): DataTableColumn<Row>[] {
 		const font = fonts ? ('body' as const) : undefined;
@@ -81,6 +87,15 @@
 			</div>
 		{/each}
 	</div>
+
+	<div class="row-header-fonts">
+		<h2>Row-header fonts</h2>
+		{#each layouts as { id, responsive } (id)}
+			<div class={id} data-testid={`fonts-row-headers-${id}`}>
+				<DataTable {rows} columns={rowHeaderColumns} key={(row) => row.id} caption={`Row-header fonts, ${id}`} {responsive} />
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
@@ -99,6 +114,9 @@
 	.brand {
 		--data-table-header-font: var(--font-body);
 	}
+
+	/* Make an inherited row-header font distinguishable from either explicit font. */
+	.row-header-fonts { font-family: serif; }
 
 	/* The rows layout follows its own width, so a narrow box shows it at every viewport. */
 	.rows {

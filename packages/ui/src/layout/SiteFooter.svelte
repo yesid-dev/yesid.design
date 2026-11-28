@@ -115,7 +115,7 @@
 	>
 		<div class="footer-brand flex flex-col items-start">
 			{@render brand()}
-			<span class="mt-2 font-mono text-xs text-[var(--muted-foreground)]">{tagline}</span>
+			<span class="mt-2 font-body text-xs text-[var(--muted-foreground)]">{tagline}</span>
 		</div>
 		{#each groups as group (group.label)}
 			<nav aria-label={group.navLabel ?? group.label} data-testid={group.testId}>
@@ -256,6 +256,14 @@
 		.footer-columns > :is(.footer-brand, nav) { min-inline-size: 0; }
 		.footer-columns :global(:is([data-slot='footer-group-label'], [data-slot='footer-link'])) {
 			overflow-wrap: anywhere;
+		}
+	}
+
+	@media (64rem <= width < 72rem) {
+		/* Give five navigation groups a row of their own at the first desktop widths. */
+		footer[data-balanced-blocks='6'] > .footer-columns > .footer-brand {
+			flex-basis: auto;
+			inline-size: 100%;
 		}
 	}
 

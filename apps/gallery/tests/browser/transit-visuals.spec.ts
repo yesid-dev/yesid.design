@@ -155,7 +155,9 @@ for (const width of [390, 1440]) {
 
 test('five fitting footer link groups stay together at the laptop wrap point', async ({ page }) => {
 	await open(page, '/app-frame/record-parts/fr?wide-groups', 1024);
-	const columns = page.getByRole('contentinfo').locator('.footer-columns');
+	const footer = page.getByRole('contentinfo');
+	const tagline = footer.getByText('Relevé des lignes', { exact: true });
+	const columns = footer.locator('.footer-columns');
 	const rows = () => columns.evaluate((element) => {
 		const counts = new Map<number, number>();
 		for (const child of element.children) {
@@ -167,7 +169,9 @@ test('five fitting footer link groups stay together at the laptop wrap point', a
 	await expect.poll(rows).toEqual([1, 5]);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await expect.poll(rows).toEqual([6]);
+	await expectBodyFont(tagline);
 	await page.setViewportSize({ width: 390, height: 900 });
 	await expect.poll(rows).toEqual([1, 2, 2, 1]);
+	await expectBodyFont(tagline);
 	await expectNoHorizontalOverflow(page);
 });
