@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.62.2-rc.1
+## 0.62.2
 
 <!-- release-fragment: desktop-footer-balance -->
 - `@yesid/ui` (patch): Balance the desktop SiteFooter when its content-sized blocks need more than one row. Keep fitting
