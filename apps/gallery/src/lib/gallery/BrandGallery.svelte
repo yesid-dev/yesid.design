@@ -13,6 +13,7 @@
 		FilterGroup,
 		FilterSection,
 		FilterSummary,
+		HeadingPermalink,
 		LanguageToggle,
 		ManifestoCanvas,
 		MetricDisplay,
@@ -370,6 +371,18 @@
 				<CollapsibleSection title="Additional notes" subtitle="Connections and access" index={1} open={false}>
 					<p class="text-small">Check the connection details before setting out.</p>
 				</CollapsibleSection>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root data-gallery-family="brand:HeadingPermalink">
+			<Card.Header>
+				<Card.Title>HeadingPermalink</Card.Title>
+				<Card.Description>Hover or focus the heading to show its link. The caller writes the label.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<h3 id="gallery-permalink" class="font-heading font-bold" aria-labelledby="gallery-permalink-text">
+					<span id="gallery-permalink-text">Weekend service</span><HeadingPermalink target="gallery-permalink" label="Link to this section" />
+				</h3>
 			</Card.Content>
 		</Card.Root>
 

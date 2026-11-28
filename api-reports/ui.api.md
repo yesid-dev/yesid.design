@@ -156,6 +156,10 @@
 
 - `default` → `./station-tabs.css`
 
+### `./article-body.css`
+
+- `default` → `./article-body.css`
+
 ### `./base.css`
 
 - `default` → `./base.css`
@@ -167,6 +171,7 @@
 ## Direct public assets
 
 - `./station-tabs.css` — direct asset `./station-tabs.css` (`default`), sha256 `00af002eb573b00f418b0d9bc9c8755cf8e07a64a51fdfcda8e6a60e9ca7b0d4`
+- `./article-body.css` — direct asset `./article-body.css` (`default`), sha256 `d1f695dcc99c6631c7fdacdb8f9f31e77c4d74db03d1c4260e312d8e5dd9b753`
 - `./base.css` — direct asset `./base.css` (`default`), sha256 `6fd4e8dabf2c00b9ff7651025d4bd666ec30ea579ea5ddaab6b46999898deb23`
 - `./boot.json` — direct asset `./src/head/boot.json` (`default`), sha256 `ee6082ae88a0b60ccd33c026a8d952ec00922b7869773a3e8573244af3fa60e0`
 
@@ -984,6 +989,7 @@ declare namespace Brand {
         SectionJump,
         Wordmark,
         WordmarkProps,
+        HeadingPermalink,
         LanguageToggle,
         LanguageToggleProps,
         createNavigationLifecycle,
@@ -1395,6 +1401,8 @@ interface CollapsibleSectionProps {
     // (undocumented)
     open?: boolean;
     openSignal?: number | null;
+    permalink?: boolean;
+    permalinkLabel?: string;
     // (undocumented)
     subtitle?: string;
     summary?: Snippet;
@@ -2042,6 +2050,18 @@ declare namespace Head {
 }
 
 // @public (undocumented)
+const HeadingPermalink: Component<HeadingPermalinkProps, {}, "">;
+
+// @public (undocumented)
+type HeadingPermalink = ReturnType<typeof HeadingPermalink>;
+
+// @public (undocumented)
+interface HeadingPermalinkProps {
+    label: string;
+    target: string;
+}
+
+// @public (undocumented)
 const HourGrid: Component<HourGridProps, {}, "">;
 
 // @public (undocumented)
@@ -2193,6 +2213,7 @@ declare namespace Index {
         SectionJump,
         Wordmark,
         WordmarkProps,
+        HeadingPermalink,
         LanguageToggle,
         LanguageToggleProps,
         createNavigationLifecycle,

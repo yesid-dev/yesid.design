@@ -28,6 +28,7 @@ export const GALLERY_COVERAGE = {
 		'FilterGroup',
 		'FilterSection',
 		'FilterSummary',
+		'HeadingPermalink',
 		'LanguageToggle',
 		'ManifestoCanvas',
 		'MetricDisplay',

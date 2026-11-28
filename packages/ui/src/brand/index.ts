@@ -122,6 +122,8 @@ export { createSectionJump, useSectionJump, type SectionJump } from './section-j
 export { default as Wordmark } from './Wordmark.svelte';
 export type { WordmarkProps } from './Wordmark.svelte';
 
+export { default as HeadingPermalink } from './HeadingPermalink.svelte';
+
 export { default as LanguageToggle } from './LanguageToggle.svelte';
 export type { LanguageToggleProps } from './LanguageToggle.svelte';
 
