@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.63.0-rc.2
+## 0.63.0
 
 <!-- release-fragment: menu-reveal-within-200ms -->
 - `@yesid/ui` (patch): The SiteHeader menu now lands within 200ms of the tap, measured from the tap: the panel fades and
