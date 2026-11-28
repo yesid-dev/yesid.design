@@ -1528,7 +1528,14 @@ ends. Set `reference` on a line and select the corresponding legend kind for a d
 Each cell has an `id`, short `label`, optional full `dateLabel`, and either
 `report: { value, fraction }` or `report: null`. Give the formatted figure as `value` and a
 fraction between zero and one for the bar. A null report renders a dashed empty track and
-announces the supplied missing label. A reported zero still presents its figure.
+announces the supplied missing label. A reported zero still presents its figure. Tiles share one
+width on every row: a row holds up to seven, each at least 3.3rem wide, so a narrow strip or large
+text holds fewer (a week stays on one row from 394px of strip width at the default text size). A
+strip with fewer days than a row holds stretches them across it. A figure up to 3.3rem wide, such as
+`100 %`, `17.5 h` or `71,5 %`, stays on one line while the strip is at least one tile wide. A longer
+one can wrap inside its tile, so keep `value` short. A strip in a parent that sizes to its content,
+such as an inline block or a flex row item, takes its width from its key and may use more rows; let
+it stretch.
 
 Also from `@yesid/ui/chart`:
 
