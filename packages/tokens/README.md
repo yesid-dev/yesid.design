@@ -8,12 +8,24 @@ the bundled Inter and JetBrains Mono fonts.
 
 Import order in the app stylesheet: `@yesid/tokens/tokens.css`, then `tailwindcss`, then
 `@yesid/ui/base.css`, which brings `theme.css`. Import `@yesid/tokens/fonts.css` from the root
-layout and preload only the latin faces in SvelteKit:
+layout and preload exactly the latin faces. They use `font-display: optional`, so a latin face that
+is not preloaded usually misses the first paint, and that page view keeps the fallback font. In
+SvelteKit:
 
 ```ts
 import { preloadFont } from '@yesid/tokens/fonts';
 
 resolve(event, { preload: ({ type, path }) => type !== 'font' || preloadFont(path) });
+```
+
+Without SvelteKit, serve the two files in the package's `fonts/` folder that `preloadFont` accepts,
+`inter-latin-wght-normal.woff2` and `jetbrains-mono-latin-wght-normal.woff2`, and link them in
+`<head>` before the stylesheet that declares the faces. Keep `crossorigin` even on the same origin:
+fonts load in CORS mode, and a preload without it is fetched twice.
+
+```html
+<link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 ```
 
 Compact density is opt-in: set `data-density="compact"` on `<html>` or on a subtree to apply the
