@@ -1061,7 +1061,9 @@ Import `DateRangePicker`, `NetworkPicker` and `AppFrame` from `@yesid/ui/layout`
   render `ControlsRail`. In a paired reading frame, the rail starts at the page gutter
   and sits 1 rem below the chrome when sticky. In `fullViewport` the
   controls rail floats over `main`. `chromeHeight` measures the header and any controls row.
-  Use `mainLabel` to name the main landmark and `footer` for the site footer. Place
+  Use `mainLabel` to name the main landmark and `footer` for the site footer. While the HTML
+  streams, the footer stays invisible until the parser has read all of it, so on a page shorter
+  than the viewport it never paints part-built at the bottom and grows upward. Place
   `SiteHeader` in `header`. The pill and controls stick together and reserve their space in flow
   from the first render. The chrome around the pill is transparent and lets pointer events reach
   the page. Custom header content can set `pointer-events: auto` on its interactive elements.
