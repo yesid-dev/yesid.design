@@ -1421,6 +1421,9 @@ invisible until the parser has read all of it, so its groups never shift as late
 Desktop footers with four or more blocks keep a single row when it fits and distribute blocks as
 evenly as their widths allow when more rows are needed.
 
+The tagline uses `var(--font-mono)` by default. Set `--site-footer-tagline-font: var(--font-body)`
+on the footer or an ancestor to render the tagline in the body font.
+
 `ErrorPage` is the error route body: hazard rule, `ErrorIllustration`, `label`, `heading`, `body`,
 optional `detail`, `suggestions` in a navigation named `suggestionsLabel`, and a terminal line when
 `statusNote` is given. The scene's sign shows the status code like a poster. Statuses other than 404

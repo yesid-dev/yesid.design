@@ -13,15 +13,15 @@ async function open(page: Page, path: string, width: number, scale = 100) {
 	await page.evaluate(() => document.fonts.ready);
 }
 
-async function expectBodyFont(locator: Locator) {
-	expect(await locator.evaluate((node) => {
+async function expectFont(locator: Locator, token: '--font-body' | '--font-mono') {
+	expect(await locator.evaluate((node, token) => {
 		const sample = document.createElement('span');
-		sample.style.fontFamily = 'var(--font-body)';
-		node.after(sample);
+		sample.style.fontFamily = `var(${token})`;
+		node.before(sample);
 		const matches = getComputedStyle(node).fontFamily === getComputedStyle(sample).fontFamily;
 		sample.remove();
 		return matches;
-	})).toBe(true);
+	}, token)).toBe(true);
 }
 
 for (const width of [390, 1440]) {
@@ -31,10 +31,19 @@ for (const width of [390, 1440]) {
 		await field.press('ArrowDown');
 		await page.getByRole('option', { name: 'Measure 1', exact: true }).click();
 		await expect(field).toHaveValue('Measure 1');
-		await expectBodyFont(field);
+		await expectFont(field, '--font-body');
 
 		await open(page, '/listing-frame', width);
-		await expectBodyFont(page.getByRole('button', { name: 'Effacer les filtres' }));
+		await expectFont(page.getByRole('button', { name: 'Effacer les filtres' }), '--font-body');
+	});
+
+	test(`footer tagline defaults to mono and follows its font override at ${width}px`, async ({ page }) => {
+		const path = '/app-frame/record-parts/fr';
+		const tagline = page.getByRole('contentinfo').getByText('Relevé des lignes', { exact: true });
+		await open(page, path, width);
+		await expectFont(tagline, '--font-mono');
+		await open(page, `${path}?body-tagline`, width);
+		await expectFont(tagline, '--font-body');
 	});
 
 	for (const scale of [100, 200]) {
@@ -156,7 +165,6 @@ for (const width of [390, 1440]) {
 test('five fitting footer link groups stay together at the laptop wrap point', async ({ page }) => {
 	await open(page, '/app-frame/record-parts/fr?wide-groups', 1024);
 	const footer = page.getByRole('contentinfo');
-	const tagline = footer.getByText('Relevé des lignes', { exact: true });
 	const columns = footer.locator('.footer-columns');
 	const rows = () => columns.evaluate((element) => {
 		const counts = new Map<number, number>();
@@ -169,9 +177,7 @@ test('five fitting footer link groups stay together at the laptop wrap point', a
 	await expect.poll(rows).toEqual([1, 5]);
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await expect.poll(rows).toEqual([6]);
-	await expectBodyFont(tagline);
 	await page.setViewportSize({ width: 390, height: 900 });
 	await expect.poll(rows).toEqual([1, 2, 2, 1]);
-	await expectBodyFont(tagline);
 	await expectNoHorizontalOverflow(page);
 });

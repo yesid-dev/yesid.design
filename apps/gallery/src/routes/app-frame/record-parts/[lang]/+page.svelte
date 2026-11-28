@@ -90,6 +90,7 @@
 	]);
 	let footerCount = $state(5);
 	const wideGroups = $derived(browser && page.url.searchParams.has('wide-groups'));
+	const bodyTagline = $derived(browser && page.url.searchParams.has('body-tagline'));
 	const footerLinks = $derived(browser && page.url.searchParams.has('long-footer')
 		? french
 			? ['Accessibilité', 'Télécharger les données', 'Alertes et avis de service', 'Vie privée', 'Sources']
@@ -124,7 +125,7 @@
 {#snippet longNameTrips(_row: LongNameRow)}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/snippet}
 {#snippet footerStatus()}<span>État du service</span>{/snippet}
 {#snippet exampleFooter()}
-	<div class:wide-groups={wideGroups}>
+	<div class:wide-groups={wideGroups} style:--site-footer-tagline-font={bodyTagline ? 'var(--font-body)' : undefined}>
 		<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
 			{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
 		</SiteFooter>
