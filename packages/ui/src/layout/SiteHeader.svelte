@@ -461,6 +461,7 @@
 								{@render network()}
 							</div>
 						{/if}
+						<span class="nav-pill-end" hidden></span>
 					</nav>
 					{#if !hydrated && hasMenu}
 						<div bind:this={fallbackMenu} id="{contentId}-fallback" popover="auto" class="fallback-menu">
@@ -642,6 +643,10 @@
 		box-shadow: var(--shadow-nav);
 		padding: var(--nav-padding-y) 28px;
 	}
+	/* The parser can stop inside the pill while the HTML streams. The pill is centred, so each
+	   control that arrives later would widen it from both sides. Keep it invisible until its last
+	   element is parsed. */
+	.nav-pill:not(:has(> .nav-pill-end)) { visibility: hidden; }
 	/* Layout transitions serve the menu's fold, which needs the app script. Before hydration they
 	   would animate the pill whenever its styles apply late, moving the toggles. */
 	.nav-pill.nav-hydrated {
