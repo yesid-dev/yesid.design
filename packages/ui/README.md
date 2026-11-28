@@ -1422,7 +1422,7 @@ the scrollable content area, excluding any classic scrollbar. Pass the rail to
 Browsers without CSS scroll-state queries use the native scrollbar.
 
 `@yesid/ui/table` exports `DataTable`. Columns give a `header`, a `cell` snippet and optional
-`align`, `numeric` (right-aligned tabular figures), `width` and `rowHeader`. `caption` is
+`align`, `numeric` (right-aligned tabular figures), `font`, `width` and `rowHeader`. `caption` is
 required and names the table. `responsive` stacks each row into label and value pairs below 448px
 (`at: 'compact'`) or 1024px (`at: 'tablet'`), or scrolls sideways (`mode: 'scroll'`, with
 `minWidth`, `minWidthCompact` and optional `initialScroll: 'start' | 'end'`); a scrolling table
@@ -1435,6 +1435,17 @@ other attributes go to the frame. The frame uses the caller's `role`, `aria-labe
 when it is outside scroll region mode. An overflowing frame adds a decorative fade wrapper after
 the table. Target the table with `tableClass` or `[data-slot="data-table"]`. Stacked rows wrap
 localized headings and keep the native table roles at enlarged text.
+
+Mono is for numbers, codes and stamps. By default header cells and data cells are mono, and row
+header cells use the inherited text font.
+
+- `--data-table-header-font` sets the font of header cells, sort buttons and the labels beside
+  stacked and compact-row values. Declare it once, for example
+  `:root { --data-table-header-font: var(--font-body); }`, to set every table on a site. Unset,
+  header cells and stacked labels are mono, and a compact-row label takes its cell's font.
+- `font: 'body'` on a column sets its body cells in the body font, for words. `font: 'mono'`, the
+  default, changes nothing: data cells stay mono, and row header cells and the detail line of
+  compact rows keep the text font. A `numeric` column keeps tabular figures in either font.
 
 Pass `loading` to render Skeleton rows with the same columns, responsive layout and one-line
 cell spacing as the table. Keep the caption, columns and layout props in place while data loads.
