@@ -56,16 +56,21 @@
 		--day-strip-ink: var(--foreground);
 	}
 	.day-strip-cells {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		/*
+		 * Up to seven days a row, fewer when 3.3rem tiles do not fit. Every row shares the same
+		 * columns; a strip shorter than one row stretches its tiles across it. Columns cannot grow
+		 * to their content, so the minimum is wide enough for a figure such as "71,5 %".
+		 */
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, max(3.3rem, calc((100% - 1.5rem) / 7))), 1fr));
 		gap: 0.25rem;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 	.day-strip-cells > li {
-		flex: 1 0 min(100%, max(2.3rem, calc((100% - 1.5rem) / 7)));
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: auto 3rem auto;
 		gap: 0.25rem;
 		justify-items: center;
@@ -101,7 +106,11 @@
 	}
 	.day-strip-value {
 		inline-size: max-content;
-		max-inline-size: 100%;
+		/*
+		 * A figure may use the tile's padding, border and half the gap on each side, so it never
+		 * reaches a neighbouring tile; a longer one wraps. Text widths differ between platforms.
+		 */
+		max-inline-size: calc(100% + 0.75rem + 2px);
 		font-size: var(--text-small);
 		font-variant-numeric: tabular-nums;
 		font-weight: 600;
