@@ -39,8 +39,10 @@
 	<div class="ground-wrapper" data-testid="construction-ground-host">
 		<ConstructionGround layout="spread" lighting>
 			{#snippet fixtures()}
+				<!-- The beam stands far above the ground; both pieces move from --ground-progress alone. -->
 				<div class="stationary-fixture" data-testid="ground-stationary-fixture">
-					<ConstructionFloodlight lit />
+					<span class="beam" data-testid="ground-beam" aria-hidden="true"></span>
+					<span class="lamp" data-testid="ground-lamp"><ConstructionFloodlight lit /></span>
 				</div>
 			{/snippet}
 		</ConstructionGround>
@@ -140,12 +142,42 @@
 	}
 
 	.stationary-fixture {
+		--lamp-width: 64px;
+		--beam-top: 364px;
 		position: absolute;
 		bottom: 0;
 		inset-inline-end: clamp(1rem, 4vw, 3rem);
-		width: 64px;
+		width: var(--lamp-width);
 		line-height: 0;
 		pointer-events: none;
+	}
+
+	/* The lamp rises over the first fifth of the reveal. */
+	.lamp {
+		display: block;
+		translate: 0 calc((1 - clamp(0, var(--ground-progress) / 0.2, 1)) * 100%);
+	}
+
+	/* A cone from the lens (the lamp is 52 units tall in a 64-unit box), on from 10% to 30%. */
+	.beam {
+		position: absolute;
+		inset-block-end: calc(var(--lamp-width) * 52 / 64 - 2px);
+		inset-inline-end: 0;
+		inline-size: min(20rem, 70vw);
+		block-size: calc(var(--beam-top) - var(--lamp-width) * 52 / 64 + 2px);
+		background: linear-gradient(
+			to top,
+			color-mix(in srgb, var(--accent) 55%, transparent),
+			color-mix(in srgb, var(--accent) 14%, transparent)
+		);
+		clip-path: polygon(0 0, 100% 0, calc(100% - var(--lamp-width) * 0.3) 100%, calc(100% - var(--lamp-width) * 0.7) 100%);
+		opacity: clamp(0, (var(--ground-progress) - 0.1) / 0.2, 1);
+	}
+
+	@media (min-width: 1280px) {
+		.stationary-fixture {
+			--beam-top: 430px;
+		}
 	}
 
 	@media (max-width: 767px) {
@@ -154,7 +186,8 @@
 			--construction-end-inset: 4.25rem;
 		}
 		.stationary-fixture {
-			width: 40px;
+			--lamp-width: 40px;
+			--beam-top: 330px;
 		}
 	}
 </style>

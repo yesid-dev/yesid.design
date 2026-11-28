@@ -529,7 +529,25 @@ height responsively with `--construction-ground-height` (default `240px`) on an 
 `layout`, `floodlight`, `lighting` and `revealRoot` through to `ConstructionProps`; `ConstructionGround`
 owns its reveal marker and scroll `progress` internally and does not accept `revealAt` or `progress`.
 Use the optional `fixtures` snippet for stationary pieces such as a lit `ConstructionFloodlight`
-and its beam: they render on the same stage outside the moving props group and rise with the ground.
+and its beam: they render on the same stage outside the moving props group, in a layer the size of
+the ground. While the reveal runs, the ground clips them like the rest of the stage. When it
+finishes, they may extend above the ground, so a tall beam appears there in full at that moment; the
+ground still clips its left and right sides. Keep fixtures at or above the ground line: once
+revealed, nothing clips one that hangs below it. They paint over whatever sits above the ground, so
+reserve that space or stack the content over them.
+
+`--ground-progress` is a supported CSS custom property inside `fixtures`: the reveal as a number
+from 0 to 1. It follows scrolling in both directions, and is 1 once focus or a key has opened the
+ground, in server HTML without JavaScript and under reduced motion. Drive fixture motion from it in
+CSS, with no timed transition; read it, never set it. For example, a lamp that rises over the first
+20% of the reveal and a beam that comes on from 10% to 30%:
+
+```css
+.lamp { translate: 0 calc((1 - clamp(0, var(--ground-progress) / 0.2, 1)) * 100%); }
+.beam { opacity: clamp(0, (var(--ground-progress) - 0.1) / 0.2, 1); }
+```
+
+Whatever those styles say, nothing above the ground shows until the reveal finishes.
 The internal reveal marker sits `max(5vh, 30vh - height) + 120px` above the ground so the footer
 stays below the viewport throughout the reveal; focus landing after the ground, `End`, and
 `PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced

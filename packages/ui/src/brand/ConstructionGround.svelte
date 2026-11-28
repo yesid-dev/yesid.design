@@ -8,7 +8,9 @@
   - the stage is pinned to the ground's top and moves by transform only;
   - focus landing after the ground, End, and Page Down / Space within two screens open the ground
     synchronously via flushSync before the browser scrolls;
-  - reduced motion and SSR/no-JS render full height with the props in place.
+  - reduced motion and SSR/no-JS render full height with the props in place;
+  - fixtures are clipped to the ground until the reveal finishes, then may stand above it. Inside
+    them, --ground-progress is the reveal from 0 to 1.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -22,7 +24,12 @@
 		floodlight?: boolean;
 		/** Active scroll viewport; omit for the window. */
 		revealRoot?: Element;
-		/** Stationary pieces (such as a lit ConstructionFloodlight and its beam) on the stage outside the moving props group. */
+		/**
+		 * Stationary pieces (such as a lit ConstructionFloodlight and its beam) on the stage outside
+		 * the moving props group. The ground clips them until the reveal finishes; then they may extend
+		 * above it, while its sides still clip. Inside them the CSS custom property
+		 * `--ground-progress` is the reveal from 0 to 1, for fixture motion.
+		 */
 		fixtures?: Snippet;
 	}
 </script>
@@ -89,6 +96,7 @@
 		data-slot="construction-ground-floor"
 		style:--ground-progress={opened ? 1 : progress}
 		data-opened={opened || undefined}
+		data-fixtures={fixtures ? (opened || progress >= 1 ? 'revealed' : 'revealing') : undefined}
 	>
 		<div class="construction-ground-stage" data-slot="construction-ground-stage">
 			<ConstructionProps
@@ -140,12 +148,23 @@
 		inset: 0;
 		pointer-events: none;
 	}
+	/* Once the stage has arrived, fixtures may stand above the ground. Its sides keep clipping. */
+	.construction-ground-floor[data-fixtures='revealed'] {
+		overflow-y: visible;
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.construction-ground-floor {
 			block-size: var(--construction-ground-height, 240px);
 		}
 		.construction-ground-stage {
 			transform: none;
+		}
+		/* The ground is whole wherever the page is scrolled, so fixtures see a finished reveal. */
+		.construction-ground-floor[data-fixtures] {
+			overflow-y: visible;
+		}
+		.construction-ground-fixtures {
+			--ground-progress: 1;
 		}
 	}
 </style>
