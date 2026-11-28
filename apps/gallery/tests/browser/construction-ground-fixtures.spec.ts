@@ -213,6 +213,66 @@ for (const size of SIZES) {
 	});
 }
 
+/** A ground shorter than the moving props, which the Gallery's own heights never are. */
+const SHORT_GROUND = 60;
+
+const shortenGround = (page: Page) =>
+	page.addStyleTag({
+		content: `[data-testid="construction-ground-host"]{--construction-ground-height:${SHORT_GROUND}px!important}`,
+	});
+
+/** The first page row the moving props paint above the ground's top, with the fixtures hidden. */
+async function propsAboveGround(page: Page) {
+	await page.locator('[data-slot="construction-ground-fixtures"]').evaluate((element: HTMLElement) => {
+		element.style.visibility = 'hidden';
+	});
+	const now = await layout(page);
+	const width = await page.evaluate(() => document.documentElement.clientWidth);
+	const top = Math.floor(now.floor.top);
+	const above = await firstPaintedRow(page, '[data-slot="construction-props"]', { x: 0, y: top - 300, width, height: 300 });
+	// The same comparison inside the ground finds the props, so an empty result above it means something.
+	const inside = await firstPaintedRow(page, '[data-slot="construction-props"]', {
+		x: 0,
+		y: Math.ceil(now.floor.top),
+		width,
+		height: Math.max(1, Math.floor(now.floor.height)),
+	});
+	return { progress: now.progress, above: above === null ? 0 : top - above, inside };
+}
+
+for (const size of SIZES) {
+	for (const short of [false, true]) {
+		const name = short ? `a ${SHORT_GROUND}px ground, shorter than its props` : 'the Gallery ground';
+		test(`only fixtures use the headroom: props stay below the top of ${name}, ${size.width}px`, async ({ page }) => {
+			await page.setViewportSize({ width: size.width, height: size.height });
+			await open(page);
+			if (short) await shortenGround(page);
+
+			for (const target of [0.1, 0.5, 0.85, 0.95, 1.002]) {
+				await revealTo(page, target);
+				const { progress, above, inside } = await propsAboveGround(page);
+				expect(above, `props paint ${above}px above the ground at progress ${progress}`).toBe(0);
+				if (target >= 0.5) expect(inside, `props show inside the ground at ${progress}`).not.toBeNull();
+			}
+		});
+	}
+}
+
+test('under reduced motion the props stay below the top of a ground shorter than them', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await open(page);
+	await shortenGround(page);
+
+	const { above, inside } = await propsAboveGround(page);
+	expect(above, `props paint ${above}px above the ground`).toBe(0);
+	await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+	await frames(page);
+	const reached = await propsAboveGround(page);
+	expect(reached.above, `props paint ${reached.above}px above the ground once reached`).toBe(0);
+	expect(reached.inside ?? inside, 'props show inside the ground').not.toBeNull();
+});
+
 test('nothing shows higher than the declared headroom, and none above the ground without one', async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await open(page);

@@ -547,7 +547,9 @@ Until 80% of the reveal nothing shows above the ground. Over the last 20% the cl
 the ground's top, in step with scrolling and reversing with it, until fixtures can stand the whole
 headroom above the ground. Nothing shows higher than the headroom, so with that space reserved a
 fixture never covers page content. The ground still clips fixtures at its sides and at the ground
-line. A ground with fixtures is one stacking layer.
+line. Only fixtures use the headroom: the moving props keep their size and stay clipped at the
+ground's top throughout, even where one is taller than the ground. A ground with fixtures is one
+stacking layer.
 
 `--ground-progress` is a supported CSS custom property inside `fixtures`: the reveal as a number
 from 0 to 1. It follows scrolling in both directions, and is 1 once focus or a key has opened the

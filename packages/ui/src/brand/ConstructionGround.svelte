@@ -10,8 +10,8 @@
     synchronously via flushSync before the browser scrolls;
   - reduced motion and SSR/no-JS render full height with the props in place;
   - fixtures may stand up to --construction-ground-headroom (default 0) above the ground. That
-    edge opens upward over the last fifth of the reveal. Inside them, --ground-progress is the
-    reveal from 0 to 1.
+    edge opens upward over the last fifth of the reveal. The moving props stay clipped at the
+    ground's top. Inside fixtures, --ground-progress is the reveal from 0 to 1.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -165,6 +165,20 @@
 				0 0
 		);
 	}
+	/*
+	 * Only fixtures use the headroom: each moving prop stays clipped at the ground's top, or one taller
+	 * than the ground would show above it. Props stand on the ground line, and in inset() 100% is the
+	 * prop's own height. Their group has no box of its own to clip. Each prop already clips itself, so
+	 * the other edges, and the top when nothing is cut, stay 1px outside its box and smooth nothing.
+	 */
+	.construction-ground-floor[data-fixtures]
+		.construction-ground-stage
+		> :global([data-slot='construction-props'] :is([data-construction-prop], [data-construction-fixture])) {
+		clip-path: inset(
+			max(-1px, calc(100% - var(--ground-progress, 1) * var(--construction-ground-height, 240px)))
+				-1px -1px
+		);
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.construction-ground-floor {
 			block-size: var(--construction-ground-height, 240px);
@@ -178,6 +192,11 @@
 		}
 		.construction-ground-fixtures {
 			--ground-progress: 1;
+		}
+		.construction-ground-floor[data-fixtures]
+			.construction-ground-stage
+			> :global([data-slot='construction-props'] :is([data-construction-prop], [data-construction-fixture])) {
+			clip-path: inset(max(-1px, calc(100% - var(--construction-ground-height, 240px))) -1px -1px);
 		}
 	}
 </style>
