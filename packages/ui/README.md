@@ -1176,13 +1176,15 @@ the prop; see [compact controls](../../docs/migrations/compact-controls.md). It 
 until removal. `compactControls` defaults to `false`. When enabled, below 600px of header container width the
 pill hides theme and language controls and the open menu shows them with `labels.theme`,
 `language.label` and the supplied language names. At 600px and wider the controls stay in the pill.
-Only one copy is rendered. The language control retains `preserveState` and lifecycle focus handling.
+Only one set of controls is visible. The language control retains `preserveState` and lifecycle focus handling.
 Use `actions` for a labelled button such as Search in the freed pill space.
 
-Before hydration, the menu button opens the existing controls with a native HTML popover,
-including when JavaScript is delayed or disabled. Language is a real navigation link; the theme
-switch is reachable and needs JavaScript to act.
-Hydration hands off to the dialog without changing the pill's layout. Compact mode also keeps
+Before hydration, the menu button opens the same destinations in a native HTML popover, including
+when JavaScript is delayed or disabled. The browser handles Tab order, Escape and light dismiss.
+With compact controls at narrow widths, the popover also shows the theme and language controls.
+Language is a real navigation link. The theme switch is reachable and needs JavaScript to act.
+Hydration hands an open popover to the dialog and retains the focused menu link when possible.
+Compact mode also keeps
 priority-1 links eligible below 375px when they fit, and keeps priority 2 from 500px because
 its controls are in the menu; priority 3 folds away below 1024px. Without `compactControls`,
 links fold away below 375px.

@@ -143,7 +143,8 @@
 
 	let narrow = $state(false);
 	let hydrated = $state(false);
-	let fallbackControls = $state<HTMLSpanElement>();
+	let fallbackMenu = $state<HTMLDivElement>();
+	let fallbackFocusIndex = -1;
 	let headerElement: HTMLElement;
 	let networkElement = $state<HTMLDivElement>();
 	let trailingControls = $state<HTMLDivElement>();
@@ -174,15 +175,16 @@
 	$effect(orderNetwork);
 
 	onMount(() => {
-		if (!compactMenuControls) {
-			hydrated = true;
-			return;
+		if (compactMenuControls) {
+			// Match the CSS container before relocating the pill controls.
+			narrow = headerElement.getBoundingClientRect().width - parseFloat(getComputedStyle(headerElement).paddingInlineEnd) < 600;
 		}
-		// Match the CSS container before relocating controls. A native disclosure may already be open.
-		narrow = headerElement.getBoundingClientRect().width - parseFloat(getComputedStyle(headerElement).paddingInlineEnd) < 600;
-		if (fallbackControls?.matches(':popover-open')) {
-			fallbackControls.hidePopover();
-			menuOpen = active = narrow;
+		if (typeof fallbackMenu?.hidePopover === 'function' && fallbackMenu.matches(':popover-open')) {
+			const focused = fallbackMenu.ownerDocument.activeElement;
+			fallbackFocusIndex = Array.from(fallbackMenu.querySelectorAll('nav a')).findIndex((link) => link === focused);
+			fallbackMenu.hidePopover();
+			dismissVersion = navigation.version;
+			menuOpen = active = true;
 		}
 		hydrated = true;
 	});
@@ -295,7 +297,42 @@
 		await tick();
 		if (!active && !menuOpen && version === navigation.version) menuToggle?.focus({ preventScroll: true });
 	}
+
+	async function focusMenu(event: Event) {
+		// Cancel in-flight page momentum; bits-ui owns the scroll lock.
+		const lenis = getLenis();
+		lenis?.scrollTo(lenis.scroll, { immediate: true });
+		event.preventDefault();
+		const index = fallbackFocusIndex;
+		fallbackFocusIndex = -1;
+		if (index >= 0) {
+			await tick();
+			if (!menuOpen) return;
+			const link = overlay?.querySelectorAll<HTMLAnchorElement>('a.menu-item')[index];
+			if (link) {
+				link.focus();
+				return;
+			}
+		}
+		menuToggle?.focus({ preventScroll: true });
+	}
 </script>
+
+{#snippet fallbackItems(items: readonly SiteHeaderMenuItem[], heading?: string)}
+	<ul aria-labelledby={heading}>
+		{#each items as item (item.href)}
+			<li>
+				<a
+					href={item.href}
+					target={item.external ? '_blank' : undefined}
+					rel={item.external ? 'noopener noreferrer' : undefined}
+					aria-label={item.ariaLabel}
+					aria-current={item.current ? 'page' : undefined}
+				>{item.label}</a>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 {#snippet menuItem(item: SiteHeaderMenuItem, i: number, items: readonly SiteHeaderMenuItem[], offset = 0)}
 	<a
@@ -342,13 +379,7 @@
 			event.preventDefault();
 			close();
 		}}
-		onOpenAutoFocus={(event) => {
-			// Cancel in-flight page momentum; bits-ui owns the scroll lock.
-			const lenis = getLenis();
-			lenis?.scrollTo(lenis.scroll, { immediate: true });
-			event.preventDefault();
-			menuToggle?.focus({ preventScroll: true });
-		}}
+		onOpenAutoFocus={focusMenu}
 	>
 		{#snippet child({ props })}
 			<div
@@ -416,15 +447,9 @@
 							<span class="nav-divider" aria-hidden="true"></span>
 							{@render actions?.()}
 							{#if !controlsInMenu}
-								<span
-									bind:this={fallbackControls}
-									id="{contentId}-controls"
-									popover={compactMenuControls && !hydrated ? 'auto' : undefined}
-									class="pill-controls"
-									class:compact-controls={compactMenuControls}
-								>
-									<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{labels.theme}</span><ThemeToggle label={labels.theme} /></span>
-									{#if language}<span class="fallback-control-row"><span class="fallback-control-label" aria-hidden="true">{menuLanguageLabel}</span><LanguageToggle {...language} bind:ref={pillLanguageLink} /></span>{/if}
+								<span class="pill-controls" class:compact-controls={compactMenuControls}>
+									<ThemeToggle label={labels.theme} />
+									{#if language}<LanguageToggle {...language} bind:ref={pillLanguageLink} />{/if}
 								</span>
 							{/if}
 							{#if hasMenu}
@@ -435,10 +460,10 @@
 									class="menu-toggle"
 									class:menu-toggle-open={active}
 									aria-label={active ? labels.closeMenu : labels.openMenu}
-									aria-expanded={compactMenuControls && !hydrated ? undefined : menuOpen}
-									popovertarget={compactMenuControls && !hydrated ? `${contentId}-controls` : undefined}
-									aria-controls={compactMenuControls && !hydrated ? `${contentId}-controls` : contentId}
-									onclick={toggleMenu}
+									aria-expanded={hydrated ? menuOpen : undefined}
+									popovertarget={hydrated ? undefined : `${contentId}-fallback`}
+									aria-controls={hydrated ? contentId : `${contentId}-fallback`}
+									onclick={hydrated ? toggleMenu : undefined}
 								>
 									<span class="menu-toggle-line menu-toggle-top"></span>
 									<span class="menu-toggle-line menu-toggle-bottom"></span>
@@ -451,6 +476,31 @@
 							</div>
 						{/if}
 					</nav>
+					{#if !hydrated && hasMenu}
+						<div bind:this={fallbackMenu} id="{contentId}-fallback" popover="auto" class="fallback-menu">
+							<nav aria-label={labels.menu}>
+								{#if menuGroups !== undefined}
+									{#each menuGroups as group, index}
+										<h2 id="{contentId}-fallback-group-{index}">{group.label}</h2>
+										{@render fallbackItems(group.items, `${contentId}-fallback-group-${index}`)}
+									{/each}
+								{:else}
+									{@render fallbackItems(menuItems)}
+								{/if}
+							</nav>
+							{#if compactMenuControls}
+								<div class="fallback-menu-controls">
+									<div><span aria-hidden="true">{labels.theme}</span><ThemeToggle label={labels.theme} /></div>
+									{#if language && language.locales.length >= 2}
+										<div>
+											<span aria-hidden="true">{menuLanguageLabel}</span>
+											<LanguageToggle {...language} label={menuLanguageLabel} />
+										</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					{/if}
 				</header>
 
 				{#if active}
@@ -510,28 +560,52 @@
 </Dialog.Root>
 
 <style>
-	.pill-controls, .fallback-control-row { display: contents; }
-	.fallback-control-label { display: none; }
-	.pill-controls[popover] { border: 0; padding: 0; background: transparent; color: inherit; }
+	.pill-controls { display: contents; }
+	.fallback-menu, .fallback-menu-controls { display: none; }
+	.fallback-menu:popover-open {
+		--fallback-menu-top: calc(var(--app-frame-header-height, var(--nav-clearance)) + 0.5rem);
+		display: block;
+		position: fixed;
+		inset: var(--fallback-menu-top) 0 auto;
+		margin: 0 auto;
+		inline-size: min(var(--measure-lede), calc(100% - 2rem));
+		max-block-size: calc(100dvh - var(--fallback-menu-top) - 1rem);
+		padding: 1rem;
+		border: 1px solid var(--border-brand);
+		border-radius: var(--radius-lg);
+		background: var(--background);
+		color: var(--foreground);
+		box-shadow: var(--shadow-nav);
+		font-family: var(--font-body);
+		overflow: auto;
+		overscroll-behavior: contain;
+		pointer-events: auto;
+	}
+	.fallback-menu h2 {
+		margin-block: 0.75rem 0.25rem;
+		font-size: var(--text-small);
+		color: var(--muted-foreground);
+	}
+	.fallback-menu h2:first-child { margin-block-start: 0; }
+	.fallback-menu ul { list-style: none; padding: 0; margin: 0; }
+	.fallback-menu li a {
+		display: flex;
+		align-items: center;
+		min-block-size: var(--size-tap-min);
+		padding-inline: 0.5rem;
+		overflow-wrap: anywhere;
+	}
+	.fallback-menu li a:is(:hover, [aria-current='page']) { color: var(--primary); }
 	@container site-header (width < 600px) {
 		.pill-controls.compact-controls { display: none; }
-		.pill-controls[popover]:popover-open {
-			display: flex;
-			align-items: stretch;
-			flex-direction: column;
-			gap: 16px;
-			position: fixed;
-			inset: calc(var(--nav-clearance) + 8px) 8px auto;
-			margin: 0 auto;
-			width: fit-content;
-			padding: 16px;
-			border: 1px solid var(--border-brand);
-			border-radius: var(--radius-pill);
-			background: var(--background);
-			color: var(--foreground);
+		.fallback-menu-controls {
+			display: grid;
+			gap: 0.25rem;
+			margin-block-start: 0.75rem;
+			padding-block-start: 0.75rem;
+			border-block-start: 1px solid var(--border);
 		}
-		.pill-controls[popover]:popover-open .fallback-control-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-		.pill-controls[popover]:popover-open .fallback-control-label { display: inline; font-family: var(--font-body); }
+		.fallback-menu-controls > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 	}
 	.menu-group-heading {
 		margin-top: 24px;
