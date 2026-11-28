@@ -12,9 +12,13 @@ const floorHeight = (page: Page) =>
 const footerTop = (page: Page) =>
 	footer(page).evaluate((el) => el.getBoundingClientRect().top);
 
+// A script scroll dispatches its scroll event before the next frame's callbacks, so once that
+// frame arrives the reveal has read the new position. Without the wait a slow runner can read the
+// previous step's height while data-state already says "revealing".
 const placeMarker = (page: Page, viewportShare: number) =>
-	groundAnchor(page).evaluate((el, share) => {
+	groundAnchor(page).evaluate(async (el, share) => {
 		window.scrollBy(0, el.getBoundingClientRect().top - window.innerHeight * share);
+		await new Promise<void>((done) => requestAnimationFrame(() => done()));
 	}, viewportShare);
 
 async function openFixture(page: Page, lang: 'en' | 'fr') {
@@ -112,7 +116,6 @@ test('the ground opens with the props while the footer stays below the viewport'
 
 	for (const share of [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]) {
 		await placeMarker(page, share);
-		await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => done())));
 		expect(await footerTop(page), `footer below viewport at marker ${share}`).toBeGreaterThanOrEqual(900 + 120);
 	}
 
