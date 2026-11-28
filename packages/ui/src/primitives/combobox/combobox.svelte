@@ -112,6 +112,7 @@
 </script>
 
 <script lang="ts">
+	import { ChevronDown, X } from '@lucide/svelte';
 	import { Combobox as BitsCombobox, Select as BitsSelect } from 'bits-ui';
 	import { flushSync } from 'svelte';
 	import { cn } from '../../cn/index.js';
@@ -272,7 +273,7 @@
 				{#snippet child({ props })}
 					<button {...props} onkeydown={(event) => handleSelectKeydown(event, props.onkeydown as (event: KeyboardEvent) => void)}>
 						<span class="combobox-select-label">{selectedLabel || placeholder}</span>
-						<span class="combobox-select-chevron" aria-hidden="true">⌄</span>
+						<span class="combobox-select-chevron" aria-hidden="true"><ChevronDown size={16} /></span>
 					</button>
 				{/snippet}
 			</BitsSelect.Trigger>
@@ -352,7 +353,7 @@
 				{disabled}
 				onclick={clear}
 			>
-				<span aria-hidden="true">✕</span>
+				<X size={16} aria-hidden="true" />
 			</button>
 		{/if}
 		<BitsCombobox.Trigger
@@ -360,7 +361,7 @@
 			class="combobox-trigger"
 			aria-label={label}
 		>
-			<span aria-hidden="true">⌄</span>
+			<ChevronDown size={16} aria-hidden="true" />
 		</BitsCombobox.Trigger>
 	</div>
 
@@ -399,9 +400,7 @@
 {/if}
 
 <style>
-	/* The trigger row: a mono input carrying the same card/border/focus chrome as
-	   SearchInput, with a clear (✕) + open (⌄) affordance tucked at the trailing
-	   edge. Tokens only; --primary is reserved for the highlighted option below. */
+	/* Both field modes share the mono text and chrome of SearchInput. */
 	.combobox {
 		position: relative;
 		display: flex;
@@ -420,16 +419,17 @@
 		background: var(--card);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-md);
-		/* Right padding reserves room for the 44px clear + trigger hit areas. */
-		padding: 0.5rem 5.25rem 0.5rem 0.75rem;
+		padding: 0.5rem var(--size-tap-min) 0.5rem 0.75rem;
 		line-height: 1.4;
 	}
-	/* With no clear affordance, the input reserves room for the trigger alone. */
-	.combobox[data-clearable='false'] :global(.combobox-input) {
-		padding-right: var(--size-tap-min);
+	/* Reserve both targets even before the clear button appears. */
+	.combobox:not([data-clearable='false']) :global(.combobox-input) {
+		padding-inline-end: calc(2 * var(--size-tap-min));
 	}
-	:global(.combobox-input::placeholder) {
+	:global(.combobox-input::placeholder),
+	:global(.combobox-select-trigger[data-placeholder]) {
 		color: var(--muted-foreground);
+		opacity: 1;
 	}
 	:global(.combobox-input:focus-visible),
 	:global(.combobox-select-trigger:focus-visible) {
@@ -437,31 +437,35 @@
 		outline-offset: 2px;
 	}
 	.combobox-clear,
-	:global(.combobox-trigger) {
+	:global(.combobox-trigger),
+	.combobox-select-chevron {
 		position: absolute;
 		top: 50%;
 		translate: 0 -50%;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		/* Tap-target floor (P5.3d §C4 P10): the clear/open affordances were 28px
-		   square → a full --size-tap-min hit area (the glyph stays visually small). */
+		/* The icon is centred within a full-size tap target. */
 		width: var(--size-tap-min);
 		height: var(--size-tap-min);
 		color: var(--muted-foreground);
+	}
+	.combobox-clear,
+	:global(.combobox-trigger) {
 		background: transparent;
 		border: 0;
 		border-radius: var(--radius-sm);
 		cursor: pointer;
-		font-family: var(--font-mono);
 	}
 	.combobox-clear {
-		right: 2.5rem;
-		font-size: var(--text-small);
+		inset-inline-end: var(--size-tap-min);
 	}
-	:global(.combobox-trigger) {
-		right: 0;
-		font-size: var(--text-body);
+	:global(.combobox-trigger),
+	.combobox-select-chevron {
+		inset-inline-end: 0;
+	}
+	.combobox-select-chevron {
+		pointer-events: none;
 	}
 	.combobox-clear:hover,
 	:global(.combobox-trigger:hover) {
@@ -475,15 +479,8 @@
 	:global(.combobox-select-trigger) {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
 		text-align: start;
 		cursor: pointer;
-	}
-	:global(.combobox-select-trigger[data-placeholder]),
-	.combobox-select-chevron {
-		color: var(--muted-foreground);
 	}
 	.combobox-form-select {
 		position: absolute;
@@ -499,10 +496,6 @@
 	.combobox-select-label {
 		min-width: 0;
 		overflow-wrap: anywhere;
-	}
-	.combobox-select-chevron {
-		flex: none;
-		font-size: var(--text-body);
 	}
 
 	/* The portal-rendered listbox: a bordered card popover, capped height with
