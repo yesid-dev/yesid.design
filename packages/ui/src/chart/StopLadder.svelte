@@ -36,7 +36,6 @@
 <div class="stop-ladder" data-slot="stop-ladder">
 	<div class="columns">
 		<span class="column-stop" aria-hidden="true">{columns.stop}</span>
-		{#if threshold}<span class="threshold-label">{threshold.label}</span>{/if}
 		<span class="column-value" aria-hidden="true">{columns.value}</span>
 	</div>
 	<ol role="list" aria-label={label} style:--stop-count={Math.max(1, stops.length)}
@@ -62,6 +61,11 @@
 			</li>
 		{/each}
 	</ol>
+	{#if threshold && stops.length}
+		<div class="threshold-foot" style:--stop-threshold={fraction(threshold.value)}>
+			<span class="threshold-label">{threshold.label}</span>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -86,7 +90,6 @@
 		font-size: var(--text-small);
 	}
 	.column-stop { grid-column: 1; padding-inline-start: var(--stop-indent); }
-	.threshold-label { grid-column: 2; text-align: center; }
 	.column-value { grid-column: 3; text-align: end; }
 	.column-value, .reading {
 		/* Let the value track grow for whole words, with a limit for unusually long values. */
@@ -107,6 +110,29 @@
 		inset-inline-start: calc(100% * var(--stop-threshold));
 		border-inline-start: 1px solid var(--muted-foreground);
 		pointer-events: none;
+	}
+	.threshold-foot {
+		grid-column: 2;
+		display: flex;
+		/* A label wider than the bar column extends toward the stop names. */
+		justify-content: flex-end;
+		min-inline-size: 0;
+		padding-block-start: 0.25rem;
+		color: var(--muted-foreground);
+		font-size: var(--text-small);
+	}
+	/* The spare width splits as the rule splits the track, so the label follows the rule from end to end. */
+	.threshold-foot::before,
+	.threshold-foot::after {
+		content: '';
+		flex: var(--stop-threshold) 1 0;
+	}
+	.threshold-foot::after { flex-grow: calc(1 - var(--stop-threshold)); }
+	/* One line, unless the words are wider than the room the ladder has for them. */
+	.threshold-label {
+		flex: none;
+		inline-size: max-content;
+		max-inline-size: 70cqi;
 	}
 	li {
 		position: relative;
@@ -150,7 +176,7 @@
 		min-block-size: var(--size-tap-min);
 		max-inline-size: 100%;
 	}
-	.column-stop, .threshold-label, .stop-name, .code, .highlight-label {
+	.column-stop, .stop-name, .code, .highlight-label {
 		min-inline-size: 0;
 	}
 	a.stop-name {
@@ -193,9 +219,10 @@
 	}
 	@container (width < 30rem) {
 		/* Reclaim label space at large text sizes while keeping clearance for the rail. */
-		.columns, ol { --stop-indent: clamp(1.25rem, 14cqi, 1.75rem); }
+		.columns, ol, .threshold-foot { --stop-indent: clamp(1.25rem, 14cqi, 1.75rem); }
 		.columns { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.5rem; }
-		.threshold-label { order: 1; flex-basis: 100%; text-align: start; padding-inline-start: var(--stop-indent); }
+		.threshold-foot { grid-column: 1 / -1; padding-inline-start: var(--stop-indent); }
+		.threshold-label { max-inline-size: 100%; }
 		ol { display: block; }
 		ol[data-threshold]::after {
 			inset-inline-start: calc(var(--stop-indent) + (100% - var(--stop-indent)) * var(--stop-threshold));
