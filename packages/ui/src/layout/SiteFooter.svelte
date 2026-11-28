@@ -27,7 +27,7 @@
 		after?: Snippet;
 	}
 
-	export type SiteFooterEdge = 'street' | 'hazard';
+	export type SiteFooterEdge = 'street' | 'hazard' | 'none';
 
 	export type SiteFooterProps = {
 		brand: Snippet;
@@ -37,8 +37,8 @@
 		statusStart?: Snippet;
 		/**
 		 * The decorative edge along the footer's top. `street` is the default road marking (D22);
-		 * `hazard` draws the kit's hazard tape instead, for a product that opts into it. Groups,
-		 * links and the status row are the same either way.
+		 * `hazard` draws the kit's hazard tape instead, for a product that opts into it, and `none`
+		 * draws no edge. Groups, links and the status row are the same in every case.
 		 */
 		edge?: SiteFooterEdge;
 	} & (
@@ -105,7 +105,7 @@
 >
 	{#if edge === 'hazard'}
 		<Separator variant="hazard" hazardSize="sm" class="footer-hazard-edge" data-slot="footer-hazard-edge" />
-	{:else}
+	{:else if edge === 'street'}
 		<div class="footer-street-edge" data-slot="footer-street-edge" {...decorativeAttributes}></div>
 	{/if}
 	<div

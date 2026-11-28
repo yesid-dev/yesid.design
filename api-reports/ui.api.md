@@ -3521,7 +3521,7 @@ const SiteFooter: Component<SiteFooterProps, {}, "">;
 type SiteFooter = ReturnType<typeof SiteFooter>;
 
 // @public (undocumented)
-type SiteFooterEdge = 'street' | 'hazard';
+type SiteFooterEdge = 'street' | 'hazard' | 'none';
 
 // @public (undocumented)
 interface SiteFooterGroup {

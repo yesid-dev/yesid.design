@@ -177,7 +177,8 @@
 		border: 0;
 		background: transparent;
 		color: var(--muted-foreground);
-		font-family: var(--font-mono);
+		/* A product may set `--segmented-choice-font` once in its theme, e.g. to the body font. */
+		font-family: var(--segmented-choice-font, var(--font-mono));
 		font-size: var(--text-small);
 		line-height: 1.2;
 		display: inline-flex;

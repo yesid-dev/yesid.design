@@ -757,7 +757,9 @@ arrow keys move and select, and disabled options are skipped. A disabled checked
 retains its selected colors. It is controlled: every pick,
 the current option included, calls `onSelect`, and the caller sets `value`. `compactLabel` shows
 a short label and keeps `label` as the name, and `variant="joined-grid"` lays options out two per
-row with labels that wrap at enlarged text. `ToggleChip` is a controlled pill button:
+row with labels that wrap at enlarged text. Its labels use the mono font unless the product sets
+`--segmented-choice-font` (for example `--segmented-choice-font: var(--font-body)` once in its
+theme). `ToggleChip` is a controlled pill button:
 the caller sets `pressed` (rendered as `aria-pressed`) and changes it in `onclick`.
 
 ## Listing frame
@@ -1263,10 +1265,10 @@ navigation per entry in `groups` (`navLabel` when the accessible name differs fr
 the owner's own profiles; `after` adds controls inside the group), and a status row with
 optional `statusStart`, and, when `statusPrefix` is supplied, a live lamp (`liveLabel` for screen
 readers) and today's date. `edge` picks the top edge: `hazard`, the diagonal yellow and black
-`Separator variant="hazard"` strip (3px, full width) that every product passes, or `street`, the
-default, one dashed road marking whose 20px dashes alternate yellow and white, edge to edge, with a
-hairline on the white dashes so they read on the light footer. Groups, links, the status row and
-`data-in-view` behave the same either way. Pass `ProductBrand` through `brand` for a product's
+`Separator variant="hazard"` strip (3px, full width), `street`, the default, one dashed road
+marking whose 20px dashes alternate yellow and white, edge to edge, with a hairline on the white
+dashes so they read on the light footer, or `none`, no edge, for quiet pages. Groups, links, the
+status row and `data-in-view` behave the same in every case. Pass `ProductBrand` through `brand` for a product's
 "yesid. | Product" mark. The self-made status pair (`statusPrefix` and `liveLabel`) is deprecated;
 use `statusStart` with a real source, subject and observation time, or omit both props.
 The date describes the visitor's day, not service health. Lamps stay still under the

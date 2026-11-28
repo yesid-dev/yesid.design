@@ -1125,9 +1125,11 @@
 		text-decoration: none;
 		opacity: 1;
 		transform: translateY(0);
+		/* A quick reveal: the stagger is capped so the whole menu lands within 200ms. */
+		--menu-item-delay: min(calc(var(--item-index) * 10ms), 50ms);
 		transition:
-			opacity var(--duration-normal) var(--ease-default) calc(var(--item-index) * 0.04s),
-			transform var(--duration-normal) var(--ease-default) calc(var(--item-index) * 0.04s),
+			opacity var(--duration-fast) var(--ease-default) var(--menu-item-delay),
+			transform var(--duration-fast) var(--ease-default) var(--menu-item-delay),
 			color var(--duration-fast);
 	}
 	.menu-overlay.entering .menu-item {
@@ -1139,8 +1141,8 @@
 		opacity: 0;
 		transform: translateY(-8px);
 		transition:
-			opacity 0.12s ease-in calc(var(--item-index) * 0.02s),
-			transform 0.12s ease-in calc(var(--item-index) * 0.02s);
+			opacity 0.12s ease-in min(calc(var(--item-index) * 10ms), 50ms),
+			transform 0.12s ease-in min(calc(var(--item-index) * 10ms), 50ms);
 	}
 
 	.menu-stop {

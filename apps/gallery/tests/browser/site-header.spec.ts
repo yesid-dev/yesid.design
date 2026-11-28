@@ -854,13 +854,21 @@ test('compact placement follows the header container and adapts while open', asy
 	}
 });
 
-test('group entrance delays follow reading order while metro lines stop at group boundaries', async ({ page }) => {
+test('entrance delays follow reading order and the whole menu lands within 200ms', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
 	await visitHeader(page, `${HOME}?compact`);
 	await toggle(page).click();
 	const items = menuLinks(page).getByRole('link');
-	for (const [index, delay] of ['0s', '0.04s', '0.08s', '0.12s'].entries()) {
+	for (const [index, delay] of ['0s', '0.01s', '0.02s', '0.03s'].entries()) {
 		await expect(items.nth(index)).toHaveCSS('transition-delay', `${delay}, ${delay}, 0s`);
+	}
+	const seconds = (value: string) => Math.max(...value.split(',').map((part) => parseFloat(part)));
+	for (const item of await items.all()) {
+		const [delay, duration] = await item.evaluate((node) => {
+			const style = getComputedStyle(node);
+			return [style.transitionDelay, style.transitionDuration];
+		});
+		expect(seconds(delay) + seconds(duration), 'item fully shown within 200ms').toBeLessThanOrEqual(0.2 + 1e-9);
 	}
 	for (const group of await menuLinks(page).getByRole('list').all()) {
 		await expect(group.getByRole('link').last().locator('.menu-line')).toHaveCount(0);
