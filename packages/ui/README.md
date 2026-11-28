@@ -836,6 +836,20 @@ announced.
 The frame reads `--chrome-offset`, the height of the fixed site chrome, to pull the header under
 it and to park the sticky column below it. It falls back to `0px`.
 
+### ListingBody
+
+`ListingBody` from `@yesid/ui/layout` is the embedded results card for a listing whose page already
+owns its title, dated answer and frame-level filters (for example inside `AppFrame`). It has no
+page title, header rule, edge rail or filter disclosure.
+
+It owns the region order and spacing rhythm: optional title row (`title` at `titleLevel` `2` or `3`,
+default `2`, with optional `titleAside` such as a `Stamp`), optional `search`, optional `summary`
+(such as `FilterSummary` or a catalogue breakdown), optional always-present visually hidden polite
+status (`resultCountText`, `role="status"`), optional `sort`, `children` (a `DataTable`, cards, or a
+`StateNotice`), and optional `more` (such as `ShowMore`). Absent regions emit no element and reserve
+no space; present regions keep their first-paint dimensions through hydration. Values, sort keys,
+paging and state meanings stay with the caller.
+
 ## Detail frame and article header
 
 `DetailFrame` is the detail and article page template: the `header` snippet, a rule, an
