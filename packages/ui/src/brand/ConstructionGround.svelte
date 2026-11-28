@@ -2,7 +2,7 @@
   Construction artwork ground above a footer (wraps ConstructionProps).
 
   The ground opens with the props: its block-size grows from 0 to --construction-ground-height
-  (default 240px) as they rise, so no empty gap sits above the footer before scrolling there:
+  (default 240px) as they rise:
   - the reveal starts when the floor reaches the viewport bottom and runs for one ground height,
     keeping the ground line at the viewport bottom until the floor is fully open;
   - the stage is pinned to the ground's top and moves by transform only;
@@ -139,6 +139,8 @@
 <style>
 	.construction-ground {
 		flex-shrink: 0;
+		/* Reserve the part below the viewport so compositor scroll cannot shift the footer. */
+		block-size: var(--construction-ground-height, 240px);
 	}
 	.construction-ground-floor {
 		position: relative;

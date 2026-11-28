@@ -128,6 +128,8 @@ for (const [width, height, ground] of [[390, 844, 100], [1024, 768, 240], [1440,
 				return { width, height, top };
 			}));
 			const initial = await artLayout();
+			const footerPosition = () => footer(page).evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+			const initialFooterPosition = await footerPosition();
 			expect(initial).toHaveLength(variant === 'spread' ? 5 : 4);
 			expect(await progress(page)).toBe(0);
 
@@ -138,6 +140,7 @@ for (const [width, height, ground] of [[390, 844, 100], [1024, 768, 240], [1440,
 				const bottom = await groundFloor(page).evaluate((el) => el.getBoundingClientRect().bottom);
 				expect(Math.abs(bottom - height)).toBeLessThanOrEqual(0.02);
 				expect(await footerTop(page)).toBeGreaterThanOrEqual(height - 0.02);
+				expect(await footerPosition()).toBeCloseTo(initialFooterPosition, 2);
 
 				const visible = await artLayout();
 				for (const [i, art] of visible.entries()) {

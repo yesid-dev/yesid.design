@@ -566,7 +566,8 @@ Under reduced motion and without JavaScript, the full ground and the whole headr
 Focus or a key that opens the ground shows both too.
 When the collapsed floor reaches the active viewport's bottom edge, it grows by one pixel for
 each pixel scrolled until it reaches the resolved ground height. The ground line stays at the
-viewport edge and the footer stays below it throughout the reveal. Focus landing after the ground,
+viewport edge and the footer stays below it throughout the reveal. The unopened part of the ground
+is reserved below that edge, keeping the footer's document position stable. Focus landing after the ground,
 `End`, and `PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced
 motion and SSR without JavaScript hold the full height with the props shown in place.
 
