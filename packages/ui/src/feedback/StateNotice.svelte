@@ -194,6 +194,13 @@
 		max-inline-size: 34ch;
 	}
 
+	.state-notice:not(.state-notice--row, .state-notice--pill) .state-notice-surface:has(> .state-notice-action) {
+		/* Fit the copy and action on one row when their natural widths allow it. */
+		& > .state-notice-message { flex-basis: max-content; }
+		& .state-notice-copy { max-inline-size: none; }
+		& > .state-notice-action { max-inline-size: 100%; }
+	}
+
 	.state-notice--pill .state-notice-copy {
 		display: inline-block;
 		flex-basis: auto;

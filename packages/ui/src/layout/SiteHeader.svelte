@@ -1032,6 +1032,10 @@
 			width var(--duration-normal) var(--ease-default),
 			background var(--duration-fast);
 	}
+	.menu-toggle:focus-visible {
+		/* Keep the ring clear of the adjacent language control without widening the pill. */
+		outline-offset: -6px;
+	}
 	.menu-toggle-top {
 		width: 16px;
 	}

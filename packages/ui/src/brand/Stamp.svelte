@@ -70,11 +70,16 @@
 	}
 	.stamp-age {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		min-inline-size: 0;
 		font-variant-numeric: tabular-nums;
 	}
 	.stamp-age > span { grid-area: 1 / 1; }
-	.stamp-age-size { visibility: hidden; }
+	.stamp-age-size {
+		visibility: hidden;
+		white-space: nowrap;
+		overflow: clip;
+	}
 	.stamp-age-size::before { content: attr(data-label); }
 	.stamp-mark, .stamp-pause {
 		flex: none;

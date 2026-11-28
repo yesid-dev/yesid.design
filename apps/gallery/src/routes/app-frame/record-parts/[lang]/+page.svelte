@@ -89,6 +89,7 @@
 		{ id: 'd', name: 'Édouard-Montpetit / Louis-Colin', code: '52847', value: null, valueLabel: '', state: c.state },
 	]);
 	let footerCount = $state(5);
+	const wideGroups = $derived(browser && page.url.searchParams.has('wide-groups'));
 	const footerLinks = $derived(browser && page.url.searchParams.has('long-footer')
 		? french
 			? ['Accessibilité', 'Télécharger les données', 'Alertes et avis de service', 'Vie privée', 'Sources']
@@ -123,9 +124,11 @@
 {#snippet longNameTrips(_row: LongNameRow)}{french ? '1 197 sur 1 234' : '1,197 of 1,234'}{/snippet}
 {#snippet footerStatus()}<span>État du service</span>{/snippet}
 {#snippet exampleFooter()}
-	<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
-		{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
-	</SiteFooter>
+	<div class:wide-groups={wideGroups}>
+		<SiteFooter groups={footerGroups} tagline={c.title} statusStart={french ? footerStatus : undefined}>
+			{#snippet brand()}<ProductBrand product="Service" href={here} houseHref="/" />{/snippet}
+		</SiteFooter>
+	</div>
 {/snippet}
 
 <AppFrame mainLabel={c.title}>
@@ -197,6 +200,7 @@
 {#if footerCount < 5}{@render exampleFooter()}{/if}
 
 <style>
+	.wide-groups :global(.footer-columns > nav) { min-inline-size: min(150px, 100%); }
 	.record-parts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; inline-size: min(100%, 64rem); margin-inline: auto; padding: 1rem; }
 	.record-table { inline-size: min(100%, 27rem); }
 	.line-link { display: flex; flex-wrap: wrap; gap: 0 0.35em; align-items: baseline; min-block-size: var(--size-tap-min); }

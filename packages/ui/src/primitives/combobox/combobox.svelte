@@ -400,7 +400,7 @@
 {/if}
 
 <style>
-	/* Both field modes share the mono text and chrome of SearchInput. */
+	/* Both field modes give labels the body face and keep digits aligned. */
 	.combobox {
 		position: relative;
 		display: flex;
@@ -413,7 +413,8 @@
 		min-width: 0;
 		/* Tap-target floor (P5.3d §C4 P10): the input row was 39px tall → 44px. */
 		min-height: var(--size-tap-min);
-		font-family: var(--font-mono);
+		font-family: var(--font-body);
+		font-variant-numeric: tabular-nums;
 		font-size: var(--text-small);
 		color: var(--foreground);
 		background: var(--card);

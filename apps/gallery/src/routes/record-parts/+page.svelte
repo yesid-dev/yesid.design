@@ -84,6 +84,14 @@
 		<StateNotice title="À lire avec prudence" body="Un jour sans signalement ne dit pas si le véhicule a circulé." tone="warning" glyph="△" presentation="frameless" />
 		<DataTable rows={record} {columns} key={(row) => row.day} caption="Heures de service par jour" responsive={{ mode: 'stack', at: 'tablet' }} />
 	</Card>
+	<div class="notice-example" lang="en">
+		<StateNotice title="Not published" role="status" body="Ottawa’s agency does not publish its service alerts here.">
+			{#snippet action()}
+				<a class="inline-flex min-h-11 items-center text-primary underline" href="#notice-source">Check official notices</a>
+			{/snippet}
+		</StateNotice>
+		<p id="notice-source">Local service notices are published by the agency.</p>
+	</div>
 </section>
 
 <style>
@@ -95,6 +103,7 @@
 	h1 { font-size: var(--text-title); }
 	h2 { font-size: var(--text-heading); }
 	.route { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+	.notice-example { inline-size: min(100%, 44rem); }
 	.charts {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr));

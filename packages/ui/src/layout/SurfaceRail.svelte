@@ -264,52 +264,28 @@
 		border-radius: var(--radius-pill);
 		cursor: pointer;
 		touch-action: manipulation;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 		font-family: var(--font-mono);
 	}
 	.surface-rail-pill-copy {
-		display: grid;
-		grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
-		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		column-gap: 0.5rem;
 		min-inline-size: 0;
 	}
 	.surface-rail-pill-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
 		font-size: var(--text-caption);
 		color: var(--foreground);
 	}
 	.surface-rail-pill-summary {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
 		font-size: var(--text-micro);
 		letter-spacing: var(--tracking-eyebrow);
 		text-transform: uppercase;
 		color: var(--accent-text);
 	}
-	/* An inline-size container has no intrinsic width. Size its track with a hidden
-	   copy so the pill still hugs the full summary when there is room. */
-	.surface-rail-pill-summary::before {
-		content: attr(data-summary);
-		visibility: hidden;
-		padding-inline-start: 0.5rem;
-	}
-	.surface-rail-pill-summary::before,
-	.surface-rail-pill-summary-space {
-		grid-area: 1 / 1;
-		overflow: hidden;
-	}
-	.surface-rail-pill-summary-space {
-		container: rail-summary / inline-size;
-	}
 	.surface-rail-pill-summary-text {
 		display: block;
-		margin-inline-start: 0.5rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	@container rail-summary (inline-size < calc(0.5rem + 1ch)) {
-		.surface-rail-pill-summary-text { visibility: hidden; }
 	}
 	.surface-rail.surface-rail-sheet {
 		display: flex;

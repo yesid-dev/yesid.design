@@ -53,7 +53,7 @@
 		{#if labels.has(tick)}
 			<text
 				x={horizontal ? pixel : plot.left - plot.unit * 0.4}
-				y={horizontal ? plot.bottom + plot.unit * 0.65 : pixel}
+				y={horizontal ? plot.bottom + plot.unit : pixel}
 				text-anchor="end"
 				dominant-baseline={horizontal ? 'hanging' : 'central'}
 			>{tick.label}</text>

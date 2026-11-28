@@ -15,6 +15,7 @@
 	const longCode = $derived(browser && page.url.searchParams.has('long-code'));
 	const longName = $derived(browser && page.url.searchParams.has('long-name'));
 	const shortReport = $derived(browser && page.url.searchParams.has('short-report'));
+	const periodSummary = $derived(browser && page.url.searchParams.has('long-summary') ? 'Les sept derniers jours' : 'Seven days');
 	const labels = $derived(french ? {
 		skipToContent: 'Aller au contenu',
 		openMenu: 'Ouvrir le menu',
@@ -49,7 +50,7 @@
 {/snippet}
 
 <AppFrame fullViewport={viewport} bind:chromeHeight mainLabel="Service workspace" controlsRail={{
-	rail: serviceControls, label: 'Controls', summary: 'Seven days', openAria: 'Open controls', closeAria: 'Close controls'
+	rail: serviceControls, label: 'Controls', summary: periodSummary, openAria: 'Open controls', closeAria: 'Close controls'
 }} evidence={{ rail: evidencePane, label: 'Evidence', openAria: 'Open evidence', closeAria: 'Close evidence' }}>
 	{#snippet header()}
 		<SiteHeader {navigation} {labels} home="/app-frame/controls-rail"
