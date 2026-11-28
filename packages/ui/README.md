@@ -1233,7 +1233,9 @@ items; snippets can query the header's width with `@container site-header`. A me
 (any Lucide icon component, such as `@lucide/svelte/icons/map`) replaces its stop and lights up on
 the current page. All copy belongs to the app: `labels.menuFooter` and `labels.skipToContent` are
 required, with an empty footer string hiding it. The header opens with the named skip link to
-`#main`, shown on focus, and the pill is the page's banner. Every product renders the same skeleton: `SiteHeader`, then
+`#main`, shown on focus, and the pill is the page's banner. While the HTML streams, the pill stays
+invisible until the parser has read all of it, so it never paints part-built and widens as its
+controls arrive. Every product renders the same skeleton: `SiteHeader`, then
 `<main id="main">`, then `SiteFooter` outside `main`.
 `--site-header-inset-end` narrows the header beside a docked panel, animated over
 `--site-header-inset-duration`. Set the inset as a length on `:root` for a panel present on
