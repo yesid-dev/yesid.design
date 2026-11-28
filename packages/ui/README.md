@@ -529,7 +529,41 @@ height responsively with `--construction-ground-height` (default `240px`) on an 
 `layout`, `floodlight`, `lighting` and `revealRoot` through to `ConstructionProps`; `ConstructionGround`
 owns its reveal marker and scroll `progress` internally and does not accept `revealAt` or `progress`.
 Use the optional `fixtures` snippet for stationary pieces such as a lit `ConstructionFloodlight`
-and its beam: they render on the same stage outside the moving props group and rise with the ground.
+and its beam: they render on the same stage outside the moving props group, in a layer the size of
+the ground, and the ground clips them like the rest of the stage.
+
+A fixture taller than the ground needs two things from you, on the same height. **Reserve the space
+above the ground that your fixtures use**, and set `--construction-ground-headroom` (default `0px`)
+on an ancestor to it:
+
+```css
+.ground-host {
+	--construction-ground-headroom: 190px;
+	padding-block-start: var(--construction-ground-headroom);
+}
+```
+
+Until 80% of the reveal nothing shows above the ground. Over the last 20% the clip opens upward from
+the ground's top, in step with scrolling and reversing with it, until fixtures can stand the whole
+headroom above the ground. Nothing shows higher than the headroom, so with that space reserved a
+fixture never covers page content. The ground still clips fixtures at its sides and at the ground
+line. Only fixtures use the headroom: the moving props keep their size and stay clipped at the
+ground's top throughout, even where one is taller than the ground. A ground with fixtures is one
+stacking layer.
+
+`--ground-progress` is a supported CSS custom property inside `fixtures`: the reveal as a number
+from 0 to 1. It follows scrolling in both directions, and is 1 once focus or a key has opened the
+ground, in server HTML without JavaScript and under reduced motion. Drive fixture motion from it in
+CSS, with no timed transition; read it, never set it. For example, a lamp that rises over the first
+20% of the reveal and a beam that comes on from 10% to 30%:
+
+```css
+.lamp { translate: 0 calc((1 - clamp(0, var(--ground-progress) / 0.2, 1)) * 100%); }
+.beam { opacity: clamp(0, (var(--ground-progress) - 0.1) / 0.2, 1); }
+```
+
+Under reduced motion and without JavaScript, the full ground and the whole headroom show at once.
+Focus or a key that opens the ground shows both too.
 The internal reveal marker sits `max(5vh, 30vh - height) + 120px` above the ground so the footer
 stays below the viewport throughout the reveal; focus landing after the ground, `End`, and
 `PageDown` or `Space` within two viewports open the ground synchronously before scroll. Reduced

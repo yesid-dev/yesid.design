@@ -146,3 +146,23 @@ describe('ConstructionGround focus and keyboard opening', () => {
 		third.unmount();
 	});
 });
+
+describe('ConstructionGround fixtures marker', () => {
+	const floorOf = (container: Element) =>
+		container.querySelector<HTMLElement>('[data-slot="construction-ground-floor"]')!;
+
+	it('marks only a ground with fixtures, whatever the reveal state', () => {
+		vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+		const bare = render(ConstructionGround, { props: { layout: 'spread', floodlight: true } });
+		expect(floorOf(bare.container).hasAttribute('data-fixtures')).toBe(false);
+		fireEvent.keyDown(document, { key: 'End' });
+		expect(floorOf(bare.container).hasAttribute('data-fixtures')).toBe(false);
+		bare.unmount();
+
+		const view = render(ConstructionGround, { props: { fixtures: html('<div>Lit lamp</div>') } });
+		const floor = floorOf(view.container);
+		expect(floor.dataset.fixtures).toBe('true');
+		fireEvent.keyDown(document, { key: 'End' });
+		expect(floor.dataset.fixtures).toBe('true');
+	});
+});

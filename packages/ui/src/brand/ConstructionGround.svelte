@@ -8,7 +8,10 @@
   - the stage is pinned to the ground's top and moves by transform only;
   - focus landing after the ground, End, and Page Down / Space within two screens open the ground
     synchronously via flushSync before the browser scrolls;
-  - reduced motion and SSR/no-JS render full height with the props in place.
+  - reduced motion and SSR/no-JS render full height with the props in place;
+  - fixtures may stand up to --construction-ground-headroom (default 0) above the ground. That
+    edge opens upward over the last fifth of the reveal. The moving props stay clipped at the
+    ground's top. Inside fixtures, --ground-progress is the reveal from 0 to 1.
 -->
 <script lang="ts" module>
 	import type { Snippet } from 'svelte';
@@ -22,7 +25,13 @@
 		floodlight?: boolean;
 		/** Active scroll viewport; omit for the window. */
 		revealRoot?: Element;
-		/** Stationary pieces (such as a lit ConstructionFloodlight and its beam) on the stage outside the moving props group. */
+		/**
+		 * Stationary pieces (such as a lit ConstructionFloodlight and its beam) on the stage outside
+		 * the moving props group. The ground clips them. To let them stand above it, set
+		 * `--construction-ground-headroom` to that height and reserve the same space above the ground:
+		 * the clip opens to it over the last fifth of the reveal. Inside them the CSS custom property
+		 * `--ground-progress` is the reveal from 0 to 1, for fixture motion.
+		 */
 		fixtures?: Snippet;
 	}
 </script>
@@ -89,6 +98,7 @@
 		data-slot="construction-ground-floor"
 		style:--ground-progress={opened ? 1 : progress}
 		data-opened={opened || undefined}
+		data-fixtures={fixtures ? true : undefined}
 	>
 		<div class="construction-ground-stage" data-slot="construction-ground-stage">
 			<ConstructionProps
@@ -140,12 +150,53 @@
 		inset: 0;
 		pointer-events: none;
 	}
+	/*
+	 * With fixtures, clip-path replaces the vertical overflow clip so its top edge can move: from the
+	 * ground's top at 80% of the reveal to the declared headroom above it at 100%. It also clips the
+	 * sides and the ground line; overflow-x stays clipped so wide fixtures cannot scroll the page.
+	 */
+	.construction-ground-floor[data-fixtures] {
+		overflow-y: visible;
+		clip-path: inset(
+			calc(
+					-1 * var(--construction-ground-headroom, 0px) *
+						clamp(0, (var(--ground-progress, 1) - 0.8) * 5, 1)
+				)
+				0 0
+		);
+	}
+	/*
+	 * Only fixtures use the headroom: each moving prop stays clipped at the ground's top, or one taller
+	 * than the ground would show above it. Props stand on the ground line, and in inset() 100% is the
+	 * prop's own height. Their group has no box of its own to clip. Each prop already clips itself, so
+	 * the other edges, and the top when nothing is cut, stay 1px outside its box and smooth nothing.
+	 */
+	.construction-ground-floor[data-fixtures]
+		.construction-ground-stage
+		> :global([data-slot='construction-props'] :is([data-construction-prop], [data-construction-fixture])) {
+		clip-path: inset(
+			max(-1px, calc(100% - var(--ground-progress, 1) * var(--construction-ground-height, 240px)))
+				-1px -1px
+		);
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.construction-ground-floor {
 			block-size: var(--construction-ground-height, 240px);
 		}
 		.construction-ground-stage {
 			transform: none;
+		}
+		/* The ground is whole wherever the page is scrolled, so fixtures see a finished reveal. */
+		.construction-ground-floor[data-fixtures] {
+			clip-path: inset(calc(-1 * var(--construction-ground-headroom, 0px)) 0 0);
+		}
+		.construction-ground-fixtures {
+			--ground-progress: 1;
+		}
+		.construction-ground-floor[data-fixtures]
+			.construction-ground-stage
+			> :global([data-slot='construction-props'] :is([data-construction-prop], [data-construction-fixture])) {
+			clip-path: inset(max(-1px, calc(100% - var(--construction-ground-height, 240px))) -1px -1px);
 		}
 	}
 </style>
