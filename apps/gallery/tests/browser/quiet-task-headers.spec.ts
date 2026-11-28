@@ -78,11 +78,19 @@ test.describe('error page options', { tag: '@theme' }, () => {
 
 	for (const illustration of ILLUSTRATIONS) {
 		test(`illustration=${illustration} shows a 500 on the poster, or above the heading without a scene`, async ({ page }) => {
-			for (const width of [390, 1440]) {
+			for (const [width, lang] of [[390, 'fr'], [1440, 'en']] as const) {
+				const words = copy[lang];
 				await page.setViewportSize({ width, height: 800 });
-				await open(page, `/error-page/${optionsSegment({ illustration, status: 500 })}`);
+				await open(page, `/error-page/${optionsSegment({ illustration, status: 500, lang })}`);
 				const status = page.getByRole('alert');
 				await expect(status).toContainText('500');
+				// The page's own 5xx copy shows; nothing says the route was not found.
+				await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.serverHeading);
+				await expect(page.getByText(words.serverBody)).toBeVisible();
+				const terminal = page.getByTestId('terminal-line');
+				await expect(terminal).toContainText('500');
+				await expect(terminal).toContainText(words.serverStatusNote);
+				await expect(terminal).not.toContainText(words.statusNote);
 				if (illustration === 'none') {
 					await expect(status).toBeVisible();
 					continue;

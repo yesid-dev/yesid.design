@@ -73,6 +73,10 @@ interface ErrorPageGalleryCopy {
 	body: string;
 	suggestionsLabel: string;
 	statusNote: string;
+	/** The `500` option's copy: a server error says so, never "route not found". */
+	serverHeading: string;
+	serverBody: string;
+	serverStatusNote: string;
 	suggestions: readonly ErrorPageLink[];
 }
 
@@ -85,6 +89,9 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 		body: 'The page you asked for is not on this line.',
 		suggestionsLabel: 'Suggested pages',
 		statusNote: 'route not found',
+		serverHeading: 'This page could not load',
+		serverBody: 'Something went wrong on our side. Try again in a moment.',
+		serverStatusNote: 'service interrupted',
 		suggestions: [
 			{ href: '/', label: 'Home' },
 			{ href: '/listing-frame', label: 'Listing' },
@@ -98,6 +105,9 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 		body: 'Cette page n’existe pas à cette adresse. Le lien a peut-être changé depuis votre dernière visite.',
 		suggestionsLabel: 'Où aller ensuite',
 		statusNote: 'itinéraire introuvable',
+		serverHeading: 'Cette page n’a pas pu se charger',
+		serverBody: 'Un problème est survenu de notre côté. Réessayez dans un instant.',
+		serverStatusNote: 'service interrompu',
 		suggestions: [
 			{ href: '/', label: 'Retourner à l’accueil' },
 			{ href: '/listing-frame', label: 'Voir la liste complète' },
@@ -111,6 +121,9 @@ export const copy: Record<ErrorPageGalleryLang, ErrorPageGalleryCopy> = {
 		body: 'Esta página no existe en esta dirección. El enlace puede haber cambiado desde tu última visita.',
 		suggestionsLabel: 'Adónde ir ahora',
 		statusNote: 'ruta no encontrada',
+		serverHeading: 'Esta página no pudo cargarse',
+		serverBody: 'Algo salió mal de nuestro lado. Inténtalo de nuevo en un momento.',
+		serverStatusNote: 'servicio interrumpido',
 		suggestions: [
 			{ href: '/', label: 'Volver al inicio' },
 			{ href: '/listing-frame', label: 'Ver la lista completa' },

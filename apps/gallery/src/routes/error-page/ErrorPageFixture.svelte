@@ -9,6 +9,7 @@
 	let { options, long = false }: { options: ErrorPageGalleryOptions; long?: boolean } = $props();
 
 	const words = $derived(copy[options.lang]);
+	const serverError = $derived(options.status === 500);
 	const longSuggestions = $derived(
 		words.suggestions.map(({ href, label }) => ({
 			href,
@@ -37,15 +38,19 @@
 		illustration={options.illustration}
 		heading={long
 			? 'Wrong platform, and a heading long enough to wrap across several lines on a narrow screen'
-			: options.construction
-				? words.constructionHeading
-				: words.heading}
+			: serverError
+				? words.serverHeading
+				: options.construction
+					? words.constructionHeading
+					: words.heading}
 		body={long
 			? 'The page you asked for is not on this line. This longer explanation keeps going so the body wraps onto several lines as well and the whole error page grows taller than a short viewport.'
-			: words.body}
+			: serverError
+				? words.serverBody
+				: words.body}
 		suggestions={long ? longSuggestions : words.suggestions}
 		suggestionsLabel={options.named ? words.suggestionsLabel : undefined}
-		statusNote={words.statusNote}
+		statusNote={serverError ? words.serverStatusNote : words.statusNote}
 		signLabel="STATION"
 	/>
 </div>
