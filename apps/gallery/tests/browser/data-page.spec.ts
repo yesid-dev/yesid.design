@@ -8,6 +8,8 @@ const isPhone = (page: Page) => page.viewportSize()!.width < DESKTOP_MIN_WIDTH;
 
 async function open(page: Page): Promise<void> {
 	await page.goto('/data-page');
+	// A click on the prerendered page is lost until it hydrates.
+	await expect(page.locator('html')).toHaveAttribute('data-gallery-ready', 'true');
 	await page.evaluate(() => document.fonts.ready);
 }
 

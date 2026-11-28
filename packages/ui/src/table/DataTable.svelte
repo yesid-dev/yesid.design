@@ -34,6 +34,11 @@
 		readonly header: string;
 		readonly align?: DataTableAlign;
 		readonly numeric?: boolean;
+		/**
+		 * `body` sets the column's body cells in the body font, for words. `mono`, the default, keeps
+		 * the table's own fonts. Numeric columns keep tabular figures in either.
+		 */
+		readonly font?: 'mono' | 'body';
 		readonly width?: string;
 		readonly rowHeader?: true;
 		readonly sortable?: boolean;
@@ -290,6 +295,7 @@
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
+								data-font={column.font === 'body' ? 'body' : undefined}
 							>
 								{@render cellContent(column)}
 							</svelte:element>
@@ -323,6 +329,7 @@
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
+								data-font={column.font === 'body' ? 'body' : undefined}
 							>
 								{@render cellContent(column, { row })}
 							</th>
@@ -335,6 +342,7 @@
 								data-col={column.header}
 								data-align={columnAlignment(column)}
 								data-numeric={column.numeric || undefined}
+								data-font={column.font === 'body' ? 'body' : undefined}
 							>
 								{@render cellContent(column, { row })}
 							</td>
@@ -594,7 +602,8 @@
 
 	.data-table thead th {
 		border-bottom: 1px solid var(--border);
-		font-family: var(--font-mono);
+		/* Left undeclared here, so a product can set it once on an ancestor such as :root. */
+		font-family: var(--data-table-header-font, var(--font-mono));
 		font-size: var(--text-micro);
 		font-weight: 500;
 		letter-spacing: var(--tracking-wide);
@@ -610,6 +619,10 @@
 	.data-table tbody td {
 		font-family: var(--font-mono);
 		color: var(--foreground);
+	}
+
+	.data-table tbody [data-font='body'] {
+		font-family: var(--font-body);
 	}
 
 	.data-table tbody tr + tr > * {
@@ -733,7 +746,7 @@
 		.data-table-frame[data-stack-at='compact'] .data-table-stack-label {
 			display: block;
 			grid-column: 1;
-			font-family: var(--font-mono);
+			font-family: var(--data-table-header-font, var(--font-mono));
 			font-size: var(--text-micro);
 			font-weight: 500;
 			letter-spacing: var(--tracking-wide);
@@ -804,7 +817,7 @@
 		.data-table-frame[data-stack-at='tablet'] .data-table-stack-label {
 			display: block;
 			grid-column: 1;
-			font-family: var(--font-mono);
+			font-family: var(--data-table-header-font, var(--font-mono));
 			font-size: var(--text-micro);
 			font-weight: 500;
 			letter-spacing: var(--tracking-wide);
@@ -1029,6 +1042,8 @@
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {
 			display: inline;
 			color: var(--muted-foreground);
+			/* Unset, this computes to the inherited font of the label's cell. */
+			font-family: var(--data-table-header-font);
 			font-weight: 400;
 		}
 		.data-table-frame[data-responsive='rows'] > .data-table > tbody > tr > :is(th, td):not([data-row-position]) .data-table-stack-label {

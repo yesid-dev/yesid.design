@@ -1650,6 +1650,7 @@ interface DataTableColumn<T> {
     readonly align?: DataTableAlign;
     // (undocumented)
     readonly cell: Snippet<[T]>;
+    readonly font?: 'mono' | 'body';
     // (undocumented)
     readonly header: string;
     // (undocumented)
