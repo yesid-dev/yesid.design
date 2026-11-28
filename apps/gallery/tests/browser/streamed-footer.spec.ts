@@ -11,9 +11,15 @@ const PAUSE_MS = 1_500;
  */
 async function streamingProxy(origin: string, documentPath: string) {
 	const server = createServer(async (request, response) => {
-		const upstream = await fetch(new URL(request.url!, origin));
+		// Only the path and query come from the request; the upstream origin stays fixed, so a
+		// request target such as //other.host/ or an absolute URL cannot redirect the fetch.
+		const requested = new URL(request.url ?? '/', 'http://proxy.invalid');
+		const target = new URL(origin);
+		target.pathname = requested.pathname;
+		target.search = requested.search;
+		const upstream = await fetch(target);
 		const type = upstream.headers.get('content-type') ?? 'application/octet-stream';
-		if (new URL(request.url!, origin).pathname !== documentPath) {
+		if (target.pathname !== documentPath) {
 			response.writeHead(upstream.status, { 'content-type': type });
 			response.end(Buffer.from(await upstream.arrayBuffer()));
 			return;
