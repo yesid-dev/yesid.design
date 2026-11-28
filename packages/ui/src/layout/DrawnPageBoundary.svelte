@@ -44,6 +44,11 @@
 		position: absolute;
 		inset: -10px 0 auto;
 		height: 20px;
+	}
+
+	/* The pen-lifted segments keep to the upper side of the edge. The continuous stroke wanders
+	   across the edge, so clipping it there would break its one line into pieces. */
+	.page-section-boundary:not([data-stroke-segments='1']) > :global(.hand-drawn-line-art) {
 		clip-path: inset(0 0 50%);
 	}
 </style>
