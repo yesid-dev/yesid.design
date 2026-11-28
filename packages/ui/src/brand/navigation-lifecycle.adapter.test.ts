@@ -176,6 +176,20 @@ describe('without a subscription', () => {
 		expect(document.activeElement).toBe(document.body);
 	});
 
+	it('leaves focus to the router for a programmatic goto, which carries no event', async () => {
+		const { hooks, state } = setup(false);
+		state.open = false;
+		// A control that changes the URL with goto(url, { reset: false }), such as a segmented choice.
+		const control = document.createElement('button');
+		document.body.append(control);
+		control.focus();
+		const programmatic = { ...link('/map?layer=waits'), type: 'goto' };
+		hooks.before(programmatic);
+		expect(await hooks.on(programmatic)).toBeUndefined();
+		await hooks.after(programmatic);
+		expect(document.activeElement).toBe(control);
+	});
+
 	it('does not refocus across an eventless after hook', async () => {
 		const { hooks, language, state } = setup(false);
 		const event = await hooks.click(language);
