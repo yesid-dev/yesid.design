@@ -1419,7 +1419,8 @@ next row when they run out of room, with the same gap between columns. Labels wr
 group needs more than the footer's available width. While the HTML streams, the footer stays
 invisible until the parser has read all of it, so its groups never shift as later ones arrive.
 Desktop footers with four or more blocks keep a single row when it fits and distribute blocks as
-evenly as their widths allow when more rows are needed.
+evenly as their widths allow when more rows are needed. If five or more link groups fit together
+but adding the brand would wrap them, the links share their own row below the brand.
 
 The tagline uses `var(--font-mono)` by default. Set `--site-footer-tagline-font: var(--font-body)`
 on the footer or an ancestor to render the tagline in the body font.

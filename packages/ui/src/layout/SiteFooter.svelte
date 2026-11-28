@@ -263,14 +263,6 @@
 		}
 	}
 
-	@media (64rem <= width < 72rem) {
-		/* Give five navigation groups a row of their own at the first desktop widths. */
-		footer[data-balanced-blocks='6'] > .footer-columns > .footer-brand {
-			flex-basis: auto;
-			inline-size: 100%;
-		}
-	}
-
 	/* The street edge (D22): one dashed road marking along the footer's top edge, edge to edge.
 	   Its 20px dashes alternate yellow (`--hazard-a`) and white (`--reflective`), both
 	   theme-invariant like real paint, with 20px gaps: one yellow, one white per 80px, the grid's

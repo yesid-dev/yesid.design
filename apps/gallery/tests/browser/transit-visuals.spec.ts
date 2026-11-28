@@ -78,6 +78,7 @@ for (const width of [390, 1440]) {
 			}).toBeGreaterThanOrEqual(3 * scale / 100);
 			const area = (await chart.locator('[data-slot="chart-area"]').boundingBox())!;
 			const dateBox = (await date.boundingBox())!;
+			expect(dateBox.x).toBeGreaterThanOrEqual(area.x - 0.5);
 			expect(dateBox.y + dateBox.height).toBeLessThanOrEqual(area.y + area.height);
 		});
 
@@ -162,22 +163,27 @@ for (const width of [390, 1440]) {
 	});
 }
 
-test('five fitting footer link groups stay together at the laptop wrap point', async ({ page }) => {
-	await open(page, '/app-frame/record-parts/fr?wide-groups', 1024);
-	const footer = page.getByRole('contentinfo');
-	const columns = footer.locator('.footer-columns');
-	const rows = () => columns.evaluate((element) => {
-		const counts = new Map<number, number>();
-		for (const child of element.children) {
-			const top = Math.round(child.getBoundingClientRect().top);
-			counts.set(top, (counts.get(top) ?? 0) + 1);
-		}
-		return [...counts.values()];
+for (const lang of ['en', 'fr']) {
+	test(`${lang}: five footer groups wrap at 1024px only when the brand and links cannot fit together`, async ({ page }) => {
+		const path = `/app-frame/record-parts/${lang}`;
+		const footer = page.getByRole('contentinfo');
+		const rows = () => footer.locator('.footer-columns').evaluate((element) => {
+			const counts = new Map<number, number>();
+			for (const child of element.children) {
+				const top = Math.round(child.getBoundingClientRect().top);
+				counts.set(top, (counts.get(top) ?? 0) + 1);
+			}
+			return [...counts.values()];
+		});
+
+		await open(page, path, 1024);
+		await expect.poll(rows).toEqual([6]);
+		await open(page, `${path}?wide-groups`, 1024);
+		await expect.poll(rows).toEqual([1, 5]);
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await expect.poll(rows).toEqual([6]);
+		await page.setViewportSize({ width: 390, height: 900 });
+		await expect.poll(rows).toEqual([1, 2, 2, 1]);
+		await expectNoHorizontalOverflow(page);
 	});
-	await expect.poll(rows).toEqual([1, 5]);
-	await page.setViewportSize({ width: 1440, height: 900 });
-	await expect.poll(rows).toEqual([6]);
-	await page.setViewportSize({ width: 390, height: 900 });
-	await expect.poll(rows).toEqual([1, 2, 2, 1]);
-	await expectNoHorizontalOverflow(page);
-});
+}
